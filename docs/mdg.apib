@@ -1,0 +1,646 @@
+FORMAT 1A
+HOST: https://localhost
+
+# Moi.Den.Gi
+
+Moi.Den.Gi is a self-hosted personal accounting web service.
+
+# Group Currencies
+
+Resources describing currncies
+
+## Currency collection [/currency]
+
+A Currency object has the following attributes.
+
+- code
+- name
+
+### List All Currencies [GET]
+
++ Respone 200 (application/vnd.api+json)
+  {
+    "data": [
+        {
+            "type": "currency",
+            "id": 840,
+            "attributes": {
+                "code": "USD",
+                "name": "$"
+            }
+        },
+        {
+            "type": "currency",
+            "id": 978,
+            "attributes": {
+                "code": "EUR",
+                "name": "€"
+            }
+        }
+    ]
+  }
+
+## Currency [/currency/{currency_id}]
+
++ parameters
+    + currency_id: 1 (required, number) - ID of a currency in form of integer
+
+### View a currency detail [GET]
+
++ Respone 200 (application/vnd.api+json)
+  {
+    "data": {
+            "type": "currency",
+            "id": 840,
+            "attributes": {
+                "code": "USD",
+                "name": "$"
+            }
+        }
+  }
+
+# Group Accounts
+
+Resources related to account management
+
+## Account collection [/account]
+
+An Account object has the following attributes
+
+- account_type
+- currency_id
+- name
+- balance
+- parent_id
+- hidden
+
+### List all Accounts [GET?filter={hidden:true}]
+
+Accounts with attribute 'hidden' equal to 'true' are not shown by default.
+
++ Parameters
+  + filter: (optional, json object) - dictionary of fields and their values, to be applied as a filter to accounts list.  
+
++ Response 200 (application/vnd.api+json)
+  {
+    "data": [
+        {
+            "type": "account",
+            "id": 1,
+            "attributes": {
+                "account_type": "asset",
+                "currency_id": 840,
+                "name": "Current USD",
+                "balance": 100500
+            }
+        },
+        {
+            "type": "account",
+            "id": 2,
+            "attributes": {
+                "account_type": "asset",
+                "currency_id": 978,
+                "name": "Savings EUR",
+                "balance": 9000
+            }
+        }
+        {
+            "type": "account",
+            "id": 3,
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Household expenses",
+                "balance": 9000
+            }
+        }
+        {
+            "type": "account",
+            "id": 4,
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Rent",
+                "balance": 9000,
+                "parent_id": 3
+            }
+        }
+    ]
+  }
+
+### Create a new account [POST]
+
++ Request (application/vnd.api+json)
+  {
+    "data": {
+            "type": "account",
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Rent",
+                "balance": 9000,
+                "parent_id": 3
+            }
+        }
+  }
+
++ Response 201 (application/vnd.api+json)
+  + Headers
+    Location: /account/4
+  + Body
+    {
+      "data": {
+            "type": "account",
+            "id": 4
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Rent",
+                "balance": 9000,
+                "parent_id": 3
+            }
+        }
+    }
+
+## Account [/account/{account_id}]
+
++ parameters
+    + account_id: (required, number) - ID of an account in form of integer
+
+### View an account detail [GET]
+
++ Respone 200 (application/vnd.api+json)
+    {
+    "data": {
+            "type": "account",
+            "id": 4,
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Rent",
+                "balance": 9000,
+                "parent_id": 3
+            }
+        }
+  }
+
+### Modify account data [PUT]
+
++ Request (application/vnd.api+json)
+  {
+    "data": {
+            "type": "account",
+            "id": 4
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Montlhy rent",
+                "balance": 9000,
+                "parent_id": 3
+            }
+        }
+  }
+
++ Response 200 (application/vnd.api+json)
+  + Body
+    {
+      "data": {
+            "type": "account",
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Montlhy rent",
+                "balance": 9000,
+                "parent_id": 3
+            }
+        }
+    }
+
+### Delete an account [DELETE]
+
+Actually accounts are immortal, deleting an account puts a 'hidden' flag on it.
+
++ Response 204
+
+# Group Transactions
+
+Resources related to Transaction management
+
+## Transaction collection [/transaction]
+
+A Transaction object has the following attributes
+
+- timestamp
+- comment
+- tags[]
+- operations[] Each operation has the following attributes
+  - account_id
+  - amount
+
+### List all Transactions [GET?filter={tags:[tag1,tag2]}&sort=timestamp,comment&page[number]=2&page[size]=10&timestamp[notEarlier]=value&timeStamp[notLater]=value]
+
++ Parameters
+  + filter: (optional, json object) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. 
+  + sort: (optional, string) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order.
+  + page[number]: (optional, integer) - Paginate list and return only data, matching specified page number
+  + page[size]: (optional, integer) - Paginate list using specified page size (max transactions on page).
+    + Default: `10`
+  + timestamp[notEarlier]: (optional, integer) - Optional, range based filter on timestamp. Will filter out all transactions happened before specified point in time.
+  + timestamp[notLater]: (optional, integer) - Optional, range based filter on timestamp. Will filter out all transactions happened after specified point in time.
+
++ Response 200 (application/vnd.api+json)
+  {
+    "data": [
+        {
+            "type": "transaction",
+            "id": 1,
+            "attributes": {
+                "timestamp": "123456",
+                "comment": "A sample transaction",
+                "tags": ["USD", "New year party"],
+                "operations": [
+                    {
+                        "account_id": 1,
+                        "amount": -100.50
+                    },
+                    {
+                        "account_id": 2,
+                        "amount": 100
+                    },
+                    {
+                        "account_id": 3,
+                        "amount": 0.50
+                    }
+                ]
+            }
+        }
+    ]
+  }
+
+### Create a new transaction [POST]
+
++ Request (application/vnd.api+json)
+  {
+    "data": [
+        {
+            "type": "transaction",
+            "attributes": {
+                "timestamp": "123456",
+                "comment": "A sample transaction",
+                "tags": ["USD", "New year party"],
+                "operations": [
+                    {
+                        "account_id": 1,
+                        "amount": -100.50
+                    },
+                    {
+                        "account_id": 2,
+                        "amount": 100
+                    },
+                    {
+                        "account_id": 3,
+                        "amount": 0.50
+                    }
+                ]
+            }
+        }
+    ]
+  }
+
++ Response 201 (application/vnd.api+json)
+  + Headers
+    Location: /transaction/4
+  + Body
+    {
+    "data": [
+        {
+            "type": "transaction",
+            "id": 4,
+            "attributes": {
+                "timestamp": "123456",
+                "comment": "A sample transaction",
+                "tags": ["USD", "New year party"],
+                "operations": [
+                    {
+                        "account_id": 1,
+                        "amount": -100.50
+                    },
+                    {
+                        "account_id": 2,
+                        "amount": 100
+                    },
+                    {
+                        "account_id": 3,
+                        "amount": 0.50
+                    }
+                ]
+            }
+        }
+    ]
+  }
+
+## Transaction [/account/{transaction_id}]
+
++ parameters
+    + transaction_id: (required, number) - ID of a transaction in form of integer
+
+### View an transaction detail [GET]
+
++ Respone 200 (application/vnd.api+json)
+    {
+    "data": [
+        {
+            "type": "transaction",
+            "id": 4,
+            "attributes": {
+                "timestamp": "123456",
+                "comment": "A sample transaction",
+                "tags": ["USD", "New year party"],
+                "operations": [
+                    {
+                        "account_id": 1,
+                        "amount": -100.50
+                    },
+                    {
+                        "account_id": 2,
+                        "amount": 100
+                    },
+                    {
+                        "account_id": 3,
+                        "amount": 0.50
+                    }
+                ]
+            }
+        }
+    ]
+  }
+
+### Modify transaction data [PUT]
+
++ Request (application/vnd.api+json)
+  {
+    "data": [
+        {
+            "type": "transaction",
+            "id": 4,
+            "attributes": {
+                "timestamp": "123456",
+                "comment": "A sample transaction",
+                "tags": ["USD", "New year party"],
+                "operations": [
+                    {
+                        "account_id": 1,
+                        "amount": -100.50
+                    },
+                    {
+                        "account_id": 2,
+                        "amount": 90
+                    },
+                    {
+                        "account_id": 3,
+                        "amount": 10.50
+                    }
+                ]
+            }
+        }
+    ]
+  }
+
++ Response 200 (application/vnd.api+json)
+  + Body
+    {
+    "data": [
+        {
+            "type": "transaction",
+            "id": 4,
+            "attributes": {
+                "timestamp": "123456",
+                "comment": "A sample transaction",
+                "tags": ["USD", "New year party"],
+                "operations": [
+                    {
+                        "account_id": 1,
+                        "amount": -100.50
+                    },
+                    {
+                        "account_id": 2,
+                        "amount": 90
+                    },
+                    {
+                        "account_id": 3,
+                        "amount": 10.50
+                    }
+                ]
+            }
+        }
+    ]
+  }
+
+### Delete an transaction [DELETE]
+
++ Response 204
+ 
+# Group Budget
+
+Resources related to budget management
+
+## Budget collection [/budget]
+
+A budget object has the following attributes
+
+- term_beginning: (required, timestamp) - Budget is not effective before specified point in time
+- term_end: (required, timestamp) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
+- incoming_amount: (optional, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not supplied until term_beginning comes. It will be automatically filled after submitting first transaction with timestamp within budget effective term
+- outgoing_amount: (optional, json object, readonly) 
+  - expected: (optional, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated simultaneously with incoming_amount calculation and may change with changes in BudgetEntries, related to that budget
+  - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution.
+
+### List all Budgets [GET]
+
++ Response 200 (application/vnd.api+json)
+  {
+    "data": [
+        {
+            "type": "budget",
+            "id": 1,
+            "attributes": {
+                "term_beginning": 123456,
+                "term_end": 223456,
+                "incoming_amount": 9000,
+                "outgoing_amount": {
+                    "expected": 100500,
+                    "actual": 3.62
+                }
+            }
+        }
+    ]
+  }
+
+### Create a new BudgetEntry [POST]
+
+## Current Budget [/budget/current]
+
+Current budget is a budget, effective right now. As budgets are created and handled automatically, it is guaranteed, that only one budget is 'current' for any point in time
+
+### View current Budget detail [GET]
+
++ Response 200 (application/vnd.api+json)
+  {
+    "data": {
+            "type": "budget",
+            "id": 1,
+            "attributes": {
+                "term_beginning": 123456,
+                "term_end": 223456,
+                "incoming_amount": 9000,
+                "outgoing_amount": {
+                    "expected": 100500,
+                    "actual": 3.62
+                }
+            }
+        }
+  }
+
+## BudgetEntry collection [/budget/{budget_id}/entry]
+
++ parameters
+    + budget_id: (required, number) - ID of owning budget in form of integer
+
+A BudgetEntry object has the following attributes
+
+- account_id: (required, integer) - id of account, linked to that BudgetEntry. Every account could be used only once per each Budget.
+- even_distribution: (required, boolean) - whether expected change on that account should be evenly distributes over Budget term or it is expected to be occasional based. For example, 'meal budget' is usually evenly distributed, you spent it in small pieces almost every day during Budget period. On the other hand, 'flat rent' is usually occasional, as you pay it only once during Budget period.
+  - Default: `True`
+- proration: (optional, boolean) - affects of 'change_amount' calculation. Only valid when `even_distribution` is `True`
+  - Default: `True`
+- expected_amount (required, decimal) - your expected change on account_id amount during Budget effective period. 
+- actual_amount (required, decimal, readonly) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
+- change_amount (optional, decimal, readonly) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `True` it will recalculate with each submited budget related transaction as `(expected_amount-actual_amount)/number of days *left* in Budget term`, negative value will be cut to zero. If `BudgetEntry.proration` is set to False it will recalculate with each submited budget related transaction as 
+`expected_amount-actual_amount-(expected_amount/number of days in Budget term)*number of days *left* in Budget term`, negative value will be cut to zero.
+
++ Response 200 (application/vnd.api+json)
+  {
+    "data": [
+        {
+            "type": "budgetentry",
+            "id": 1,
+            "attributes": {
+                "account_id": 1,
+                "even_distribution": false,
+                "expected_amount": 100500,
+                "actual_amount": 100501
+            }
+        },
+        {
+            "type": "budgetentry",
+            "id": 2,
+            "attributes": {
+                "account_id": 2,
+                "even_distribution": True,
+                "proration": True,
+                "expected_amount": 9000,
+                "actual_amount": 4500,
+                "change_amount": 300
+            }
+        },
+        {
+            "type": "budgetentry",
+            "id": 3,
+            "attributes": {
+                "account_id": 3,
+                "even_distribution": True,
+                "proration": False,
+                "expected_amount": 9000,
+                "actual_amount": 4000,
+                "change_amount": 800
+            }
+        }
+    ]
+  }
+
+### Create a new BudgetEntry [POST]
+
++ Request (application/vnd.api+json)
+  {
+    "data": {
+            "type": "budgetentry",
+            "attributes": {
+                "account_id": 3,
+                "even_distribution": True,
+                "proration": False,
+                "expected_amount": 9000
+            }
+        }
+  }
+
++ Response 201 (application/vnd.api+json)
+  + Headers
+    Location: /budget/{budget_id}/entry/3
+  + Body
+    {
+    "data": {
+            "type": "budgetentry",
+            "id": 3,
+            "attributes": {
+                "account_id": 3,
+                "even_distribution": True,
+                "proration": False,
+                "expected_amount": 9000,
+                "actual_amount": 0,
+                "change_amount": 300
+            }
+        }
+  }
+
+## BudgetEntry [/budget/{budget_id}/entry/{entry_id}]
+
++ parameters
+    + budget_id: (required, number) - ID of owning budget in form of integer
+    + entry_id: (required, number) - ID of a transaction in form of integer
+
+### View an BudgetEntry detail [GET]
+
++ Response 200 (application/vnd.api+json)
+  {
+    "data": {
+            "type": "budgetentry",
+            "id": 1,
+            "attributes": {
+                "account_id": 1,
+                "even_distribution": false,
+                "expected_amount": 100500,
+                "actual_amount": 100501
+            }
+        }
+  }
+
+### Modify BudgetEntry data [PUT]
+
++ Request (application/vnd.api+json)
+{
+    "data": {
+            "type": "budgetentry",
+            "id": 1,
+            "attributes": {
+                "even_distribution": false,
+                "expected_amount": 100500,
+            }
+        }
+  }
+
++ Response 200 (application/vnd.api+json)
+  + Body
+    {
+        "data": {
+            "type": "budgetentry",
+            "id": 1,
+            "attributes": {
+                "even_distribution": false,
+                "expected_amount": 100500,
+            }
+        }
+    }
+
+### Delete a BudgetEntry [DELETE]
+
++ Response 204
