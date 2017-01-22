@@ -235,12 +235,12 @@ Resources related to Transaction management
 
 A Transaction object has the following attributes
 
-- timestamp
-- comment
-- tags[]
+- timestamp: (date, required) - transaction timestamp
+- comment: (string, optional) - transaction description
+- tags[]: [string[], optional] - tags, associated with transaction
 - operations[] Each operation has the following attributes
-  - account_id
-  - amount
+  - account_id: (number, required) - Related account id
+  - amount: (decimap, required) - account balance change
 
 ### List all Transactions [GET?filter={tags:[tag1,tag2]}&sort=timestamp,comment&page[number]=2&page[size]=10&timestamp[notEarlier]=value&timeStamp[notLater]=value]
 
