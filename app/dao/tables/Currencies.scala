@@ -1,4 +1,4 @@
-package dao
+package dao.tables
 
 import models.Currency
 import slick.driver.PostgresDriver.api._
