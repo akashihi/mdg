@@ -17,4 +17,8 @@ class CurrencyDao @Inject() (protected val dbConfigProvider: DatabaseConfigProvi
   def list(): Future[Seq[Currency]] = {
     db.run(currencies.result)
   }
+
+  def findById(id: Long): Future[Currency] = {
+    db.run(currencies.filter(_.id === id).result.head)
+  }
 }

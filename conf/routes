@@ -4,6 +4,7 @@
 # ~~~~
 
 GET     /currency                   controllers.CurrencyController.index
+GET     /currency/:id               controllers.CurrencyController.show(id: Long)
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index

@@ -22,4 +22,8 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao)(implicit ec: 
   def index = Action.async {
     dao.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
+
+  def show(id:Long) = Action.async {
+    dao.findById(id).map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+  }
 }
