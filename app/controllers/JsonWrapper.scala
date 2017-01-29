@@ -9,7 +9,7 @@ import play.api.libs.json.Json
   * @param type object type name
   * @param attributes object data
   */
-case class JsonDataWrapper(id: Int, `type`: String, attributes: ApiObject)
+case class JsonDataWrapper(id: Long, `type`: String, attributes: ApiObject)
 
 /**
   * Single entry api object JSON wrapper

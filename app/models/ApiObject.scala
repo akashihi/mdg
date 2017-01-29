@@ -7,7 +7,7 @@ import models.Currency.currencyWrites
   * Base type for all api objects.
   */
 trait ApiObject{
-  def id: Int
+  def id: Long
 }
 
 object ApiObject {
