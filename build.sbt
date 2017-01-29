@@ -10,6 +10,14 @@ scalaVersion := "2.11.8"
 libraryDependencies += filters
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 
+// Static analysis
+enablePlugins(CopyPasteDetector)
+compile in Compile <<= (compile in Compile) dependsOn cpd
+lazy val testScalastyle = taskKey[Unit]("testScalastyle")
+testScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Test).toTask("").value
+(compile in Compile) <<= (compile in Compile) dependsOn testScalastyle
+
+
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "org.akashihi.controllers._"
 

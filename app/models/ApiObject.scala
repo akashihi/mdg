@@ -14,5 +14,4 @@ object ApiObject {
   implicit val apiObjectWrites = Writes[ApiObject] {
     case currency: Currency => currencyWrites.writes(currency)
   }
-
 }
