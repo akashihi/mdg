@@ -6,6 +6,7 @@ import controllers.JsonWrapper._
 import dao.CurrencyDao
 import play.api.libs.json._
 import play.api.mvc._
+import services.ErrorService
 
 import scala.concurrent.ExecutionContext
 
@@ -13,7 +14,7 @@ import scala.concurrent.ExecutionContext
   * Currency resource REST controller
   */
 @Singleton
-class CurrencyController @Inject()(protected val dao: CurrencyDao)(implicit ec: ExecutionContext) extends Controller {
+class CurrencyController @Inject()(protected val dao: CurrencyDao, protected val errors: ErrorService)(implicit ec: ExecutionContext) extends Controller {
 
   /**
     * Currency list access method
@@ -26,8 +27,7 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao)(implicit ec: 
 
   def show(id: Long) = Action.async {
     dao.findById(id).map {
-      //TODO Proper error object should be formed and sent here
-      case None => NotFound(Json.obj("errors" -> "improve me"))
+      case None => errors.errorFor("CURRENCY_NOT_FOUND")
       case Some(x) => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json")
     }
   }
