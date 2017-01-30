@@ -17,13 +17,18 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao)(implicit ec: 
 
   /**
     * Currency list access method
+    *
     * @return list of currencies on system, wrapped to json.
     */
   def index = Action.async {
     dao.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
 
-  def show(id:Long) = Action.async {
-    dao.findById(id).map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+  def show(id: Long) = Action.async {
+    dao.findById(id).map {
+      //TODO Proper error object should be formed and sent here
+      case None => NotFound(Json.obj("errors" -> "improve me"))
+      case Some(x) => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json")
+    }
   }
 }
