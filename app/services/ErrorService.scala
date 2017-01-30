@@ -31,11 +31,11 @@ class ErrorService @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
       case None => Error(code, "500", "Unknown error occurred", Some("This error code have no description in the database"))
       case Some(x) => x
     }
-      .map { x:Error =>
-        val json = Json.toJson(ErrorWrapper(Seq(x)))
-        x.status match {
-          case "404" => NotFound(json)
-          case _ => InternalServerError(json)
+      .map { x => (x.status, Json.toJson(ErrorWrapper(Seq(x)))) }
+      .map { case (status, x) =>
+        status match {
+          case "404" => NotFound(x)
+          case _ => InternalServerError(x)
         }
       }, 1000 millis)
   }
