@@ -5,6 +5,28 @@ HOST: https://localhost/api
 
 Moi.Den.Gi is a self-hosted personal accounting web service.
 
+# Group errors
+
+I case of any problem, server should response with applicable error code (like 404 for non existing entity or 422 if submitted entity could not be processed).
+
+Server also *could* send a "error object" with error code responce:
++ Response {4|5}xx (application/vnd.mdg+json)
+  {
+    "errors": [
+        "status": "404",
+        "code": "CURRENCY_NOT_FOUND",
+        "title": "Requested currency with id 1 could not be found",
+        "detail": "We can not find currency with specified code in the database, check it's id please."
+    ]
+  }
+
+A Error object has the following attributes:
+
+- status (string, required) -  the HTTP status code applicable to this problem, expressed as a string value
+- code (string, required) - internal, mdg specific, error code
+- title (string, required) - human readable summary of the error
+- detail (string, optional) - detailed description of the problem
+
 # Group Currencies
 
 Resources describing currencies
