@@ -8,7 +8,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import services.ErrorService
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Currency resource REST controller
@@ -26,9 +26,9 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao, protected val
   }
 
   def show(id: Long) = Action.async {
-    dao.findById(id).map {
+    dao.findById(id).flatMap {
       case None => errors.errorFor("CURRENCY_NOT_FOUND")
-      case Some(x) => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json")
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
     }
   }
 }

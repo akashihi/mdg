@@ -26,8 +26,8 @@ class ErrorService @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
 
   implicit val errorWrapperWrites = Json.writes[ErrorWrapper]
 
-  def errorFor(code: String): Result = {
-    Await.result(db.run(errors.filter(_.code === code).result.headOption).map {
+  def errorFor(code: String): Future[Result] = {
+    db.run(errors.filter(_.code === code).result.headOption).map {
       case None => Error(code, "500", "Unknown error occurred", Some("This error code have no description in the database"))
       case Some(x) => x
     }
@@ -37,6 +37,6 @@ class ErrorService @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
           case "404" => NotFound(x)
           case _ => InternalServerError(x)
         }
-      }, 1000 millis)
+      }
   }
 }
