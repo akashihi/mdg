@@ -13,9 +13,11 @@ CREATE TABLE ACCOUNT (
 
 INSERT INTO ERROR VALUES('ACCOUNT_NOT_FOUND', '404', 'Requested account could not be found', 'We can not find account with specified code in the database, check it''s id please.');
 INSERT INTO ERROR VALUES('ACCOUNT_DATA_INVALID', '422', 'Account attributes are invalid', 'Some account attributes are missing or have invalid values.');
+INSERT INTO ERROR VALUES('ACCOUNT_NOT_UPDATED', '500', 'Account attributes were not updated', 'For some reason account attributes was not updated.');
 
 # --- !Downs
 DROP TABLE ACCOUNT;
 
 DELETE FROM ERROR WHERE CODE='ACCOUNT_NOT_FOUND';
 DELETE FROM ERROR WHERE CODE='ACCOUNT_DATA_INVALID';
+DELETE FROM ERROR WHERE CODE='ACCOUNT_NOT_UPDATED';

@@ -96,11 +96,10 @@ An Account object has the following attributes
     + `asset`
     + `expense`
     + `income`
-- currency_id
-- name
-- balance
-- parent_id
-- hidden
+- currency_id: (integer, required) - account's currency id
+- name: (string, required) - Account name
+- balance: (decimal, readonly) - Account balance. Initial value could be set during account creation
+- hidden: (boolean, optional) - Marks deleted accounts
 
 ### List all Accounts [GET?filter={hidden:true}]
 
@@ -213,6 +212,8 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
 
 ### Modify account data [PUT]
 
+Only `hidden` and `name` fields could be changed. Value in other fields will be silently ignored.
+
 + Request (application/vnd.mdg+json)
   {
     "data": {
@@ -228,7 +229,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
         }
   }
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 202 (application/vnd.mdg+json)
   + Body
     {
       "data": {

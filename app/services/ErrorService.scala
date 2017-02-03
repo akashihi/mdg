@@ -35,6 +35,7 @@ class ErrorService @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
         status match {
           case "404" => NotFound(x)
           case "422" => UnprocessableEntity(x)
+          case "500" => InternalServerError(x)
           case _ => InternalServerError(x)
         }
       }

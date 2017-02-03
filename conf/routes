@@ -9,6 +9,7 @@ GET     /currency/:id               controllers.CurrencyController.show(id: Long
 POST    /account                    controllers.AccountController.create
 GET     /account                    controllers.AccountController.index
 GET     /account/:id                controllers.AccountController.show(id: Long)
+PUT     /account/:id                controllers.AccountController.edit(id: Long)
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index

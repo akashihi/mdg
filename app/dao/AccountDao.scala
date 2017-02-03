@@ -27,4 +27,11 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   def insert(a: Account): Future[Account] = {
     db.run(insertQuery += a)
   }
+
+  def update(a: Account): Future[Option[Account]] = {
+    db.run(accounts.filter(_.id === a.id).update(a)).map{
+      case 1 => Some(a)
+      case _ => None
+    }
+  }
 }
