@@ -11,7 +11,6 @@ import play.api.mvc.Results._
 import play.api.libs.json._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
-import scala.concurrent.duration._
 
 import scala.concurrent._
 
@@ -35,6 +34,7 @@ class ErrorService @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
       .map { case (status, x) =>
         status match {
           case "404" => NotFound(x)
+          case "422" => UnprocessableEntity(x)
           case _ => InternalServerError(x)
         }
       }

@@ -1,6 +1,6 @@
 package controllers
 
-import models.{ApiObject, Currency}
+import models.{Account, ApiObject, Currency}
 import play.api.libs.json.Json
 
 /**
@@ -56,6 +56,7 @@ object JsonWrapper {
     */
   def typeName(x: ApiObject): String = x match {
     case Currency(_, _, _) => "currency"
+    case Account(_, _, _, _, _, _) => "account"
   }
 
 }

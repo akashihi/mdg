@@ -25,6 +25,11 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao, protected val
     dao.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
 
+  /**
+    * Currency object retrieval method
+    * @param id currency id.
+    * @return currency object.
+    */
   def show(id: Long) = Action.async {
     dao.findById(id).flatMap {
       case None => errors.errorFor("CURRENCY_NOT_FOUND")

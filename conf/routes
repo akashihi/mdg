@@ -6,6 +6,8 @@
 GET     /currency                   controllers.CurrencyController.index
 GET     /currency/:id               controllers.CurrencyController.show(id: Long)
 
+POST    /account                    controllers.AccountController.create
+
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 
