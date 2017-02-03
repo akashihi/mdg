@@ -17,7 +17,7 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   val insertQuery = accounts returning accounts.map(_.id) into ((item, id) => item.copy(id = id))
 
   def list(): Future[Seq[Account]] = {
-    db.run(accounts.result)
+    db.run(accounts.sortBy(_.name.asc).result)
   }
 
   def findById(id: Long): Future[Option[Account]] = {

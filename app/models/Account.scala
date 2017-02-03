@@ -38,7 +38,7 @@ object AccountType {
 object Account {
   implicit val accountWrites = new Writes[Account] {
     override def writes(o: Account): JsValue = {
-      Json.obj("name " -> o.name,
+      Json.obj("name" -> o.name,
         "currency_id" -> o.currency_id,
         "balance" -> o.balance,
         "hidden" -> o.hidden,
