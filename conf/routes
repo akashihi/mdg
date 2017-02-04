@@ -7,9 +7,10 @@ GET     /currency                   controllers.CurrencyController.index
 GET     /currency/:id               controllers.CurrencyController.show(id: Long)
 
 POST    /account                    controllers.AccountController.create
-GET     /account                    controllers.AccountController.index
+GET     /account                    controllers.AccountController.index(filter: Option[String])
 GET     /account/:id                controllers.AccountController.show(id: Long)
 PUT     /account/:id                controllers.AccountController.edit(id: Long)
+DELETE  /account/:id                controllers.AccountController.delete(id: Long)
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index

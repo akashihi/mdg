@@ -2,8 +2,9 @@ package dao
 
 import javax.inject._
 
+import dao.filters.AccountFilter
 import dao.tables.Accounts
-import models.Account
+import models.{Account, AccountType}
 import play.api.db.slick._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
@@ -16,8 +17,14 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
 
   val insertQuery = accounts returning accounts.map(_.id) into ((item, id) => item.copy(id = id))
 
-  def list(): Future[Seq[Account]] = {
-    db.run(accounts.sortBy(_.name.asc).result)
+  def list(filter: AccountFilter): Future[Seq[Account]] = {
+    db.run(accounts.filter { a =>
+      List(
+        filter.currency_id.map(a.currency_id === _),
+        filter.name.map(a.name === _),
+        filter.hidden.map(a.hidden === _)
+      ).collect({ case Some(a) => a }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
+    }.sortBy(_.name.asc).result)
   }
 
   def findById(id: Long): Future[Option[Account]] = {
@@ -29,8 +36,15 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   }
 
   def update(a: Account): Future[Option[Account]] = {
-    db.run(accounts.filter(_.id === a.id).update(a)).map{
+    db.run(accounts.filter(_.id === a.id).update(a)).map {
       case 1 => Some(a)
+      case _ => None
+    }
+  }
+
+  def delete(id: Long): Future[Option[Int]] = {
+    db.run((for {a <- accounts if a.id === id} yield a.hidden).update(true)).map {
+      case 1 => Some(1)
       case _ => None
     }
   }
