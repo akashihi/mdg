@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import controllers.dto.TransactionWrapperDto
+import play.api.libs.json.Json
 import play.api.mvc._
 import services.{ErrorService, TransactionService}
 
@@ -26,6 +27,9 @@ class TransactionController @Inject()(protected val transactionService: Transact
         transactionService.invalidateOperations(tx.operations) match {
           case Some(e) => e
           case None => Future(Ok(""))
+          /*case None => transactionService.add(tx).map {
+            r => Created(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/account/${r.id}")
+          }*/
         }
       }
       case None => errors.errorFor("TRANSACTION_DATA_INVALID")
