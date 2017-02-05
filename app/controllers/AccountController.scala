@@ -32,7 +32,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
         case Some(x) => Some(x)
         case None => Some[BigDecimal](0)
       }
-    } yield Account(0, AccountType(t), c, n, b, hidden = false)
+    } yield Account(Some(0), AccountType(t), c, n, b, hidden = false)
 
     account match {
       case Some(x) => dao.insert(x).map {

@@ -23,7 +23,7 @@ case object ExpenseAccount extends AccountType {
   val value = "expense"
 }
 
-case class Account(id: Long, account_type: AccountType, currency_id: Long, name: String, balance: BigDecimal, hidden: Boolean) extends ApiObject
+case class Account(id: Option[Long], account_type: AccountType, currency_id: Long, name: String, balance: BigDecimal, hidden: Boolean) extends ApiObject
 
 object AccountType {
   def apply(arg: String): AccountType = arg match {

@@ -1,5 +1,6 @@
 package controllers
 
+import controllers.dto.TransactionDto
 import models.{Account, ApiObject, Currency}
 import play.api.libs.json.Json
 
@@ -37,7 +38,7 @@ object JsonWrapper {
     * @return JsonWrapper
     */
   def wrapJson(x: ApiObject): JsonWrapper = {
-    JsonWrapper(JsonDataWrapper(x.id, typeName(x), x))
+    JsonWrapper(JsonDataWrapper(x.id.getOrElse(-1), typeName(x), x))
   }
 
   /**
@@ -46,7 +47,7 @@ object JsonWrapper {
     * @return JsonWrapper
     */
   def wrapJson(x: Seq[ApiObject]): JsonWrapperSeq = {
-    JsonWrapperSeq(x.map(o => JsonDataWrapper(o.id, typeName(o), o)))
+    JsonWrapperSeq(x.map(o => JsonDataWrapper(o.id.getOrElse(-1), typeName(o), o)))
   }
 
   /**
@@ -57,6 +58,7 @@ object JsonWrapper {
   def typeName(x: ApiObject): String = x match {
     case Currency(_, _, _) => "currency"
     case Account(_, _, _, _, _, _) => "account"
+    case TransactionDto(_, _, _, _) => "transaction"
   }
 
 }

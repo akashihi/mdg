@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
+import controllers.JsonWrapper._
 import controllers.dto.TransactionWrapperDto
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -26,10 +27,9 @@ class TransactionController @Inject()(protected val transactionService: Transact
         def tx = x.data.attributes.copy(operations = transactionService.stripEmptyOps(x.data.attributes.operations))
         transactionService.invalidateOperations(tx.operations) match {
           case Some(e) => e
-          case None => Future(Ok(""))
-          /*case None => transactionService.add(tx).map {
-            r => Created(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/account/${r.id}")
-          }*/
+          case None => transactionService.add(tx).map {
+            r => Created(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/transaction/${r.id}")
+          }
         }
       }
       case None => errors.errorFor("TRANSACTION_DATA_INVALID")

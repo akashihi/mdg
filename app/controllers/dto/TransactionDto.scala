@@ -4,12 +4,13 @@ import java.time.LocalDateTime
 
 import play.api.libs.json._
 import controllers.OWritesOps._
+import models.ApiObject
 
 
 /**
   * Transaction wrapper.
   */
-case class TransactionDto(timestamp: LocalDateTime, tags: Seq[String] = Seq(), operations: Seq[OperationDto] = Seq())
+case class TransactionDto(id: Option[Long], timestamp: LocalDateTime, tags: Seq[String] = Seq(), operations: Seq[OperationDto] = Seq()) extends ApiObject
 
 object TransactionDto {
   implicit val localDateTimeFormat = new Format[LocalDateTime] {
