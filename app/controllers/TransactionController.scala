@@ -42,4 +42,16 @@ class TransactionController @Inject()(protected val transactionService: Transact
   def index = Action.async {
     transactionService.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
+
+  /**
+    * Transaction object retrieval method
+    * @param id transaction id.
+    * @return transaction object.
+    */
+  def show(id: Long) = Action.async {
+    transactionService.get(id).flatMap {
+      case None => errors.errorFor("TRANSACTION_NOT_FOUND")
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+    }
+  }
 }

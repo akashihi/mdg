@@ -73,4 +73,12 @@ class TransactionService @Inject()(
   def list(): Future[Seq[TransactionDto]] = {
     transactionDao.list().flatMap(s => Future.sequence(s.map(t => txToDto(t))))
   }
+
+  def get(id: Long): Future[Option[TransactionDto]] = {
+    val tx = transactionDao.findById(id)
+    tx.flatMap {
+      case Some(x) => txToDto(x).map(t => Some(t))
+      case None => Future(None)
+    }
+  }
 }

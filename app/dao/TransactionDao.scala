@@ -41,4 +41,8 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   def list(): Future[Seq[Transaction]] = {
     db.run(transactions.result)
   }
+
+  def findById(id: Long): Future[Option[Transaction]] = {
+    db.run(transactions.filter(_.id === id).result.headOption)
+  }
 }
