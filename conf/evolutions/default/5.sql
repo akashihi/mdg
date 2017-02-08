@@ -33,8 +33,9 @@ CREATE OR REPLACE FUNCTION account_op_add() RETURNS TRIGGER
   BEGIN
     SELECT balance INTO current FROM account WHERE id = NEW.ACCOUNT_ID;
     UPDATE account SET balance = current + NEW.AMOUNT WHERE id = NEW.ACCOUNT_ID;
-  END;
-  $account_op_add$ LANGUAGE plpgsql;
+    RETURN NEW;
+END;
+$account_op_add$ LANGUAGE plpgsql;
 
 CREATE TRIGGER op_add AFTER INSERT ON operation FOR EACH ROW EXECUTE PROCEDURE account_op_add();
 
@@ -43,8 +44,9 @@ AS $account_op_del$
 DECLARE
   CURRENT DECIMAL(32,2);
 BEGIN
-  SELECT balance INTO current FROM account WHERE id = NEW.ACCOUNT_ID;
-  UPDATE account SET balance = current + -1 * NEW.AMOUNT WHERE id = NEW.ACCOUNT_ID;
+  SELECT balance INTO current FROM account WHERE id = OLD.ACCOUNT_ID;
+  UPDATE account SET balance = current + -1 * OLD.AMOUNT WHERE id = OLD.ACCOUNT_ID;
+  RETURN OLD;
 END;
 $account_op_del$ LANGUAGE plpgsql;
 
@@ -58,7 +60,9 @@ END;
 $account_op_upd$ LANGUAGE plpgsql;
 
 CREATE TRIGGER op_upd BEFORE UPDATE ON operation FOR EACH ROW EXECUTE PROCEDURE account_op_upd();
+
 # --- !Downs
+
 DROP TRIGGER op_upd ON operation;
 DROP TRIGGER op_del ON operation;
 DROP TRIGGER op_add ON operation;

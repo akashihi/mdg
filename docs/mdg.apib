@@ -309,30 +309,28 @@ A Transaction object has the following attributes
 
 + Request (application/vnd.mdg+json)
   {
-    "data": [
-        {
-            "type": "transaction",
-            "attributes": {
-                "timestamp": "123456",
-                "comment": "A sample transaction",
-                "tags": ["USD", "New year party"],
-                "operations": [
-                    {
-                        "account_id": 1,
-                        "amount": -100.50
-                    },
-                    {
-                        "account_id": 2,
-                        "amount": 100
-                    },
-                    {
-                        "account_id": 3,
-                        "amount": 0.50
-                    }
-                ]
-            }
+    "data": {
+        "type": "transaction",
+        "attributes": {
+            "timestamp": "123456",
+            "comment": "A sample transaction",
+            "tags": ["USD", "New year party"],
+            "operations": [
+                {
+                    "account_id": 1,
+                    "amount": -100.50
+                },
+                {
+                    "account_id": 2,
+                    "amount": 100
+                },
+                {
+                    "account_id": 3,
+                    "amount": 0.50
+                }
+            ]
         }
-    ]
+    }
   }
 
 + Response 201 (application/vnd.mdg+json)

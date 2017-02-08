@@ -15,15 +15,13 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   val db = dbConfigProvider.get[JdbcProfile].db
   val accounts = TableQuery[Accounts]
 
-  val insertQuery = accounts returning accounts.map(_.id) into ((item, id) => item.copy(id = id))
-
   def list(filter: AccountFilter): Future[Seq[Account]] = {
     db.run(accounts.filter { a =>
       List(
         filter.currency_id.map(a.currency_id === _),
         filter.name.map(a.name === _),
         filter.hidden.map(a.hidden === _)
-      ).collect({ case Some(a) => a }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
+      ).collect({ case Some(x) => x }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
     }.sortBy(_.name.asc).result)
   }
 
@@ -32,7 +30,7 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   }
 
   def insert(a: Account): Future[Account] = {
-    db.run(insertQuery += a)
+    db.run(accounts returning accounts.map(_.id) into ((item, id) => item.copy(id = id)) += a)
   }
 
   def update(a: Account): Future[Option[Account]] = {
