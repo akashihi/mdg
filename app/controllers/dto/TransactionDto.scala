@@ -10,7 +10,13 @@ import models.ApiObject
 /**
   * Transaction wrapper.
   */
-case class TransactionDto(id: Option[Long], timestamp: LocalDateTime, tags: Seq[String] = Seq(), operations: Seq[OperationDto] = Seq()) extends ApiObject
+case class TransactionDto(
+                           id: Option[Long],
+                           timestamp: LocalDateTime,
+                           comment: Option[String],
+                           tags: Seq[String] = Seq(),
+                           operations: Seq[OperationDto] = Seq()
+                         ) extends ApiObject
 
 object TransactionDto {
   implicit val localDateTimeFormat = new Format[LocalDateTime] {

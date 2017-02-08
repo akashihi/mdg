@@ -3,6 +3,7 @@ package services
 import javax.inject.Inject
 
 import controllers.dto.{OperationDto, TransactionDto}
+import models.{Operation, Transaction}
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 
@@ -42,6 +43,9 @@ class TransactionService @Inject()(protected val errors: ErrorService, protected
   }
 
   def add(tx: TransactionDto): Future[TransactionDto] = {
+    val transaction = Transaction(0, tx.timestamp, tx.comment)
+    val tags = tx.tags
+    val operations = tx.operations.map {x => Operation(-1, -1, x.account_id, x.amount)}
     Future(tx)
   }
 }

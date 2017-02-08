@@ -23,7 +23,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
     */
   def create = Action.async(parse.tolerantJson) { request =>
     request.body.validate[TransactionWrapperDto].asOpt match {
-      case Some(x) => {
+      case Some(x) =>
         def tx = x.data.attributes.copy(operations = transactionService.stripEmptyOps(x.data.attributes.operations))
         transactionService.invalidateOperations(tx.operations) match {
           case Some(e) => e
@@ -31,7 +31,6 @@ class TransactionController @Inject()(protected val transactionService: Transact
             r => Created(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/transaction/${r.id}")
           }
         }
-      }
       case None => errors.errorFor("TRANSACTION_DATA_INVALID")
     }
   }
