@@ -9,7 +9,6 @@ import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 
 import scala.concurrent._
-import scala.concurrent.duration._
 
 /**
   * Transaction operations service.
@@ -70,9 +69,7 @@ class TransactionService @Inject()(
     transactionDao.insert(transaction, operations, tags).flatMap(txToDto)
   }
 
-  def list(): Future[Seq[TransactionDto]] = {
-    transactionDao.list().flatMap(s => Future.sequence(s.map(t => txToDto(t))))
-  }
+  def list(): Future[Seq[TransactionDto]] = transactionDao.list().flatMap(s => Future.sequence(s.map(t => txToDto(t))))
 
   def get(id: Long): Future[Option[TransactionDto]] = {
     val tx = transactionDao.findById(id)
@@ -81,4 +78,6 @@ class TransactionService @Inject()(
       case None => Future(None)
     }
   }
+
+  def delete(id: Long): Future[Option[Int]] = transactionDao.delete(id)
 }

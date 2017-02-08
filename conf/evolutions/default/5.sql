@@ -61,7 +61,9 @@ $account_op_upd$ LANGUAGE plpgsql;
 
 CREATE TRIGGER op_upd BEFORE UPDATE ON operation FOR EACH ROW EXECUTE PROCEDURE account_op_upd();
 
+INSERT INTO ERROR VALUES('TRANSACTION_NOT_FOUND', '404', 'Requested transaction could not be found', 'We can not find transaction with specified code in the database, check it''s id please.');
 # --- !Downs
+DELETE FROM ERROR WHERE CODE = 'TRANSACTION_NOT_FOUND';
 
 DROP TRIGGER op_upd ON operation;
 DROP TRIGGER op_del ON operation;

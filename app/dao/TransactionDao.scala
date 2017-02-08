@@ -45,4 +45,11 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   def findById(id: Long): Future[Option[Transaction]] = {
     db.run(transactions.filter(_.id === id).result.headOption)
   }
+
+  def delete(id: Long): Future[Option[Int]] = {
+    db.run(transactions.filter(_.id === id).delete).map {
+      case 1 => Some(1)
+      case _ => None
+    }
+  }
 }

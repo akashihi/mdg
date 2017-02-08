@@ -54,4 +54,17 @@ class TransactionController @Inject()(protected val transactionService: Transact
       case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
     }
   }
+
+  /**
+    * Transaction object deletion method
+    *
+    * @param id transaction to delete
+    * @return HTTP 204 in case of sucess, HTTP error otherwise
+    */
+  def delete(id: Long) = Action.async {
+    transactionService.delete(id).flatMap {
+      case Some(_) => Future(NoContent)
+      case None => errors.errorFor("TRANSACTION_NOT_FOUND")
+    }
+  }
 }
