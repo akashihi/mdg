@@ -31,14 +31,14 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   }
 
   def listTags(txId: Long): Future[Seq[TxTag]] = {
-/*    for {
-      tagIds <- tagMaps.filter(_.tx_id === txId).map(_.tag_id).result
-      txtags <- tags.filter(x => x.id === tagIds.any)
-    }*/
     val query = for {
       t <- tagMaps if t.tx_id === txId
       tt <- tags if tt.id === t.tag_id
     } yield tt
     db.run(query.result)
+  }
+
+  def list(): Future[Seq[Transaction]] = {
+    db.run(transactions.result)
   }
 }

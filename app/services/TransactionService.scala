@@ -9,6 +9,7 @@ import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 
 import scala.concurrent._
+import scala.concurrent.duration._
 
 /**
   * Transaction operations service.
@@ -67,5 +68,9 @@ class TransactionService @Inject()(
     val tags = tx.tags.map(tagDao.ensureIdByValue)
     val operations = tx.operations.map { x => Operation(-1, -1, x.account_id, x.amount) }
     transactionDao.insert(transaction, operations, tags).flatMap(txToDto)
+  }
+
+  def list(): Future[Seq[TransactionDto]] = {
+    transactionDao.list().flatMap(s => Future.sequence(s.map(t => txToDto(t))))
   }
 }

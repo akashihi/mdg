@@ -34,4 +34,12 @@ class TransactionController @Inject()(protected val transactionService: Transact
       case None => errors.errorFor("TRANSACTION_DATA_INVALID")
     }
   }
+
+  /**
+    * Retrieves transactions, matching specified predicates.
+    * @return List of transactions wrapped to JSON.
+    */
+  def index = Action.async {
+    transactionService.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+  }
 }
