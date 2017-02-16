@@ -56,15 +56,41 @@ class TransactionController @Inject()(protected val transactionService: Transact
   }
 
   /**
+    * Replaces transaction with new one.
+    *
+    * @return newly created transaction (with id) wrapped to JSON.
+    */
+  def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
+    request.body.validate[TransactionWrapperDto].asOpt match {
+      case Some(x) =>
+        def tx = x.data.attributes.copy(operations = transactionService.stripEmptyOps(x.data.attributes.operations))
+        transactionService.invalidateOperations(tx.operations) match {
+          case Some(e) => e
+          case None =>
+            transactionService.delete(id).flatMap {
+              case Some(_) => transactionService.add(tx).map {
+                r => Accepted(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/transaction/${r.id}")
+              }
+              case None => errors.errorFor("TRANSACTION_NOT_FOUND")
+            }
+        }
+      case None => errors.errorFor("TRANSACTION_DATA_INVALID")
+    }
+  }
+
+  /**
     * Transaction object deletion method
     *
     * @param id transaction to delete
-    * @return HTTP 204 in case of sucess, HTTP error otherwise
+    * @return HTTP 204 in case of success, HTTP error otherwise
     */
-  def delete(id: Long) = Action.async {
+  def deleter(id: Long, resultHandler: () => Future[Result]): Future[Result] = {
     transactionService.delete(id).flatMap {
-      case Some(_) => Future(NoContent)
+      case Some(_) => resultHandler()
       case None => errors.errorFor("TRANSACTION_NOT_FOUND")
     }
+  }
+  def delete(id: Long) = Action.async {
+    deleter(id, () => Future(NoContent))
   }
 }

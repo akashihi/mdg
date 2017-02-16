@@ -15,6 +15,7 @@ DELETE  /account/:id                controllers.AccountController.delete(id: Lon
 POST    /transaction                controllers.TransactionController.create
 GET     /transaction                controllers.TransactionController.index
 GET     /transaction/:id            controllers.TransactionController.show(id: Long)
+PUT     /transaction/:id            controllers.TransactionController.edit(id: Long)
 DELETE  /transaction/:id            controllers.TransactionController.delete(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path
