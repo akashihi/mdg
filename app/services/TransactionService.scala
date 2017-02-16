@@ -62,6 +62,11 @@ class TransactionService @Inject()(
     } yield TransactionDto(Some(tx.id), tx.timestamp, tx.comment, operations = o, tags = t)
   }
 
+  /**
+    * Creates new transaction.
+    * @param tx transaction description object.
+    * @return transaction description object with id.
+    */
   def add(tx: TransactionDto): Future[TransactionDto] = {
     val transaction = Transaction(0, tx.timestamp, tx.comment)
     val tags = tx.tags.map(tagDao.ensureIdByValue)
@@ -69,8 +74,17 @@ class TransactionService @Inject()(
     transactionDao.insert(transaction, operations, tags).flatMap(txToDto)
   }
 
+  /**
+    * Returns all transaction objects from the database.
+    * @return Sequence of transaction DTOs.
+    */
   def list(): Future[Seq[TransactionDto]] = transactionDao.list().flatMap(s => Future.sequence(s.map(t => txToDto(t))))
 
+  /**
+    * Retrieves specific Transaction.
+    * @param id transaction unique id.
+    * @return DTO object.
+    */
   def get(id: Long): Future[Option[TransactionDto]] = {
     val tx = transactionDao.findById(id)
     tx.flatMap {
@@ -79,5 +93,17 @@ class TransactionService @Inject()(
     }
   }
 
-  def delete(id: Long): Future[Option[Int]] = transactionDao.delete(id)
+  /**
+    * Removes transaction and all dependent objects.
+    *
+    * @param id identificator of transaction to remove.
+    * @param resultHandler callback for successfull removal handling.
+    * @return either error result, or resultHandler processing result.
+    */
+  def delete(id: Long, resultHandler: () => Future[Result]): Future[Result] = {
+    transactionDao.delete(id).flatMap {
+      case Some(_) => resultHandler()
+      case None => errors.errorFor("TRANSACTION_NOT_FOUND")
+    }
+  }
 }

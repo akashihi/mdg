@@ -3,8 +3,8 @@ package controllers
 import javax.inject.Inject
 
 import controllers.JsonWrapper._
-import controllers.dto.TransactionWrapperDto
-import play.api.libs.json.Json
+import controllers.dto.{TransactionDto, TransactionWrapperDto}
+import play.api.libs.json._
 import play.api.mvc._
 import services.{ErrorService, TransactionService}
 
@@ -17,22 +17,43 @@ class TransactionController @Inject()(protected val transactionService: Transact
                                       val errors: ErrorService)(implicit ec: ExecutionContext) extends Controller {
 
   /**
+    * Common transaction modification function.
+    * Retrieves transaction DTO from the json,
+    * checks for data validity.
+    * @param data json representation of transaction.
+    * @param op modification operation to be done.
+    * @return result of modification operation.
+    */
+  def modifyTransaction(data: JsValue, op: (TransactionDto) => Future[Result]): Future[Result] = {
+    data.validate[TransactionWrapperDto].asOpt match {
+      case Some(x) =>
+        def tx = x.data.attributes.copy(operations = transactionService.stripEmptyOps(x.data.attributes.operations))
+        transactionService.invalidateOperations(tx.operations) match {
+          case Some(e) => e
+          case None => op(tx)
+        }
+      case None => errors.errorFor("TRANSACTION_DATA_INVALID")
+    }
+  }
+
+  /**
+    * Transaction creation operation.
+    *
+    * Takes transaction DTO and created it in the system.
+    * @param tx transaction data to create
+    * @return Wrapped to json data of newly created transaction.
+    */
+  def createOp(tx: TransactionDto): Future[Result] = transactionService.add(tx).map {
+    r => Created(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/transaction/${r.id}")
+  }
+
+  /**
     * Adds new transaction to the system.
     *
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    request.body.validate[TransactionWrapperDto].asOpt match {
-      case Some(x) =>
-        def tx = x.data.attributes.copy(operations = transactionService.stripEmptyOps(x.data.attributes.operations))
-        transactionService.invalidateOperations(tx.operations) match {
-          case Some(e) => e
-          case None => transactionService.add(tx).map {
-            r => Created(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/transaction/${r.id}")
-          }
-        }
-      case None => errors.errorFor("TRANSACTION_DATA_INVALID")
-    }
+    modifyTransaction(request.body, createOp)
   }
 
   /**
@@ -61,21 +82,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    request.body.validate[TransactionWrapperDto].asOpt match {
-      case Some(x) =>
-        def tx = x.data.attributes.copy(operations = transactionService.stripEmptyOps(x.data.attributes.operations))
-        transactionService.invalidateOperations(tx.operations) match {
-          case Some(e) => e
-          case None =>
-            transactionService.delete(id).flatMap {
-              case Some(_) => transactionService.add(tx).map {
-                r => Accepted(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/transaction/${r.id}")
-              }
-              case None => errors.errorFor("TRANSACTION_NOT_FOUND")
-            }
-        }
-      case None => errors.errorFor("TRANSACTION_DATA_INVALID")
-    }
+    modifyTransaction(request.body, (tx: TransactionDto) => transactionService.delete(id, () => createOp(tx)))
   }
 
   /**
@@ -84,13 +91,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @param id transaction to delete
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
-  def deleter(id: Long, resultHandler: () => Future[Result]): Future[Result] = {
-    transactionService.delete(id).flatMap {
-      case Some(_) => resultHandler()
-      case None => errors.errorFor("TRANSACTION_NOT_FOUND")
-    }
-  }
   def delete(id: Long) = Action.async {
-    deleter(id, () => Future(NoContent))
+    transactionService.delete(id, () => Future(NoContent))
   }
 }
