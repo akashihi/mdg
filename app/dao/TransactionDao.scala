@@ -2,7 +2,10 @@ package dao
 
 import javax.inject._
 
+import dao.filters.TransactionFilter
+import dao.sort.SortBy
 import dao.tables.{Operations, TagMap, Tags, Transactions}
+import dao.tables.Transactions._
 import models.{Operation, Transaction, TxTag}
 import play.api.db.slick._
 import slick.driver.JdbcProfile
@@ -38,7 +41,7 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     db.run(query.result)
   }
 
-  def list(): Future[Seq[Transaction]] = {
+  def list(filter: TransactionFilter, sort: Seq[SortBy]): Future[Seq[Transaction]] = {
     db.run(transactions.result)
   }
 

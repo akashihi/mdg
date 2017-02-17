@@ -13,7 +13,7 @@ PUT     /account/:id                controllers.AccountController.edit(id: Long)
 DELETE  /account/:id                controllers.AccountController.delete(id: Long)
 
 POST    /transaction                controllers.TransactionController.create
-GET     /transaction                controllers.TransactionController.index
+GET     /transaction                controllers.TransactionController.index(filter: Option[String], sort: Option[String])
 GET     /transaction/:id            controllers.TransactionController.show(id: Long)
 PUT     /transaction/:id            controllers.TransactionController.edit(id: Long)
 DELETE  /transaction/:id            controllers.TransactionController.delete(id: Long)

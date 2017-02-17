@@ -4,6 +4,9 @@ import javax.inject.Inject
 
 import controllers.JsonWrapper._
 import controllers.dto.{TransactionDto, TransactionWrapperDto}
+import dao.filters.TransactionFilter
+import dao.sort.SortBy
+import dao.sort.SortBy._
 import play.api.libs.json._
 import play.api.mvc._
 import services.{ErrorService, TransactionService}
@@ -60,8 +63,17 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * Retrieves transactions, matching specified predicates.
     * @return List of transactions wrapped to JSON.
     */
-  def index = Action.async {
-    transactionService.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+  def index(filter: Option[String], sort: Option[String]) = Action.async {
+
+    transactionService.list(filter match {
+      case Some(x) => Json.parse(x).validate[TransactionFilter].asOpt.getOrElse(TransactionFilter(None, None, None))
+      case None => TransactionFilter(None, None, None)
+    },
+      sort match {
+        case Some(x) => x
+        case None => Seq[SortBy]()
+      }
+    ).map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
 
   /**
