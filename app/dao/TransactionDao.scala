@@ -54,7 +54,7 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
         filter.comment.map(t.comment.getOrElse("") === _),
         tag_tx.map(t.id inSet _)
       ).collect({ case Some(x) => x }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
-    }.result)
+    }.sortBy(_.timestamp.asc).result)
   }
 
   def findById(id: Long): Future[Option[Transaction]] = {

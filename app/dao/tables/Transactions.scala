@@ -11,12 +11,7 @@ import slick.lifted._
   * Maps Transaction entity to the SQL table.
   */
 class Transactions(tag: Tag) extends Table[Transaction](tag, "tx") {
-  implicit val localDTtoDate = MappedColumnType.base[LocalDateTime, Timestamp] (
-    l => Timestamp.valueOf(l),
-    d => d.toLocalDateTime
-  )
-
-
+  implicit val localDTtoDate = Transactions.localDTtoDate
 
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def timestamp = column[LocalDateTime]("ts")
@@ -25,7 +20,10 @@ class Transactions(tag: Tag) extends Table[Transaction](tag, "tx") {
 }
 
 object Transactions {
-  implicit def dateTimeOrdering: Ordering[LocalDateTime] = Ordering.fromLessThan(_ isBefore _)
+  implicit val localDTtoDate = MappedColumnType.base[LocalDateTime, Timestamp] (
+    l => Timestamp.valueOf(l),
+    d => d.toLocalDateTime
+  )
 }
 
 class TagMap(tag: Tag) extends Table[(Long, Long)](tag, "tx_tags") {
