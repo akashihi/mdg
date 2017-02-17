@@ -81,7 +81,7 @@ class TransactionService @Inject()(
     * @return Sequence of transaction DTOs.
     */
   def list(filter: TransactionFilter, sort: Seq[SortBy]): Future[Seq[TransactionDto]] =
-  transactionDao.list(filter).flatMap(s => Future.sequence(s.map(t => txToDto(t))))
+  transactionDao.list(filter, sort).flatMap(s => Future.sequence(s.map(t => txToDto(t))))
 
   /**
     * Retrieves specific Transaction.

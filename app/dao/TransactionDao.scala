@@ -12,6 +12,7 @@ import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
+import scala.concurrent.duration._
 
 class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
@@ -42,7 +43,18 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   }
 
   def list(filter: TransactionFilter, sort: Seq[SortBy]): Future[Seq[Transaction]] = {
-    db.run(transactions.result)
+    val tag_ids = filter.tag.map { t =>
+      Await.result(db.run(tags.filter(_.txtag inSet t).map(_.id).result), 500 milli)
+    }
+    val tag_tx = tag_ids.map { t =>
+      Await.result(db.run(tagMaps.filter(_.tag_id inSet t).map(_.tx_id).result), 500 milli)
+    }
+    db.run(transactions.filter { t  =>
+      List(
+        filter.comment.map(t.comment.getOrElse("") === _),
+        tag_tx.map(t.id inSet _)
+      ).collect({ case Some(x) => x }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
+    }.result)
   }
 
   def findById(id: Long): Future[Option[Transaction]] = {
