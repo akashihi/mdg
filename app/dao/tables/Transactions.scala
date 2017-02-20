@@ -16,7 +16,7 @@ class Transactions(tag: Tag) extends Table[Transaction](tag, "tx") {
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def timestamp = column[LocalDateTime]("ts")
   def comment = column[Option[String]]("comment")
-  def * = (id, timestamp, comment) <> ((Transaction.apply _).tupled, Transaction.unapply)
+  def * = (id.?, timestamp, comment) <> ((Transaction.apply _).tupled, Transaction.unapply)
 }
 
 object Transactions {

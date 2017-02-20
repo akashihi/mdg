@@ -27,10 +27,10 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @param op modification operation to be done.
     * @return result of modification operation.
     */
-  def modifyTransaction(data: JsValue, op: (TransactionDto) => Future[Result]): Future[Result] = {
+  def modifyTransaction(id: Option[Long], data: JsValue, op: (TransactionDto) => Future[Result]): Future[Result] = {
     data.validate[TransactionWrapperDto].asOpt match {
       case Some(x) =>
-        def tx = x.data.attributes.copy(operations = transactionService.stripEmptyOps(x.data.attributes.operations))
+        def tx = x.data.attributes.copy(id = id, operations = transactionService.stripEmptyOps(x.data.attributes.operations))
         transactionService.invalidateOperations(tx.operations) match {
           case Some(e) => e
           case None => op(tx)
@@ -56,7 +56,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    modifyTransaction(request.body, createOp)
+    modifyTransaction(None, request.body, createOp)
   }
 
   /**
@@ -94,7 +94,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    modifyTransaction(request.body, (tx: TransactionDto) => transactionService.delete(id, () => createOp(tx)))
+    modifyTransaction(Some(id), request.body, (tx: TransactionDto) => transactionService.delete(id, () => createOp(tx)))
   }
 
   /**

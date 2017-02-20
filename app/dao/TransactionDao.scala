@@ -23,10 +23,13 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   def insert(tx: Transaction, ops: Seq[Operation], txtags: Seq[TxTag]): Future[Transaction] = {
     val query = (for {
-      txId <- transactions returning transactions.map(_.id) += tx
+      txId <- tx.id match {
+        case None => transactions returning transactions.map(_.id) += tx
+        case Some(txId) => transactions returning transactions.map(_.id) forceInsert  tx
+      }
       _ <- operations ++= ops.map(x => x.copy(txId = txId))
       _ <- tagMaps ++= txtags.map(x => (x.id, txId))
-    } yield tx.copy(id = txId)).transactionally
+    } yield tx.copy(id = Some(txId))).transactionally
     db.run(query)
   }
 

@@ -59,9 +59,9 @@ class TransactionService @Inject()(
     */
   def txToDto(tx: Transaction): Future[TransactionDto] = {
     for {
-      o <- transactionDao.listOperations(tx.id).map(x => x.map(o => OperationDto(o.account_id, o.amount)))
-      t <- transactionDao.listTags(tx.id).map(x => x.map(_.txtag))
-    } yield TransactionDto(Some(tx.id), tx.timestamp, tx.comment, operations = o, tags = t)
+      o <- transactionDao.listOperations(tx.id.get).map(x => x.map(o => OperationDto(o.account_id, o.amount)))
+      t <- transactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
+    } yield TransactionDto(Some(tx.id.get), tx.timestamp, tx.comment, operations = o, tags = t)
   }
 
   /**
@@ -70,7 +70,7 @@ class TransactionService @Inject()(
     * @return transaction description object with id.
     */
   def add(tx: TransactionDto): Future[TransactionDto] = {
-    val transaction = Transaction(0, tx.timestamp, tx.comment)
+    val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
     val tags = tx.tags.map(tagDao.ensureIdByValue)
     val operations = tx.operations.map { x => Operation(-1, -1, x.account_id, x.amount) }
     transactionDao.insert(transaction, operations, tags).flatMap(txToDto)
