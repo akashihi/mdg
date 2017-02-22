@@ -273,8 +273,8 @@ A Transaction object has the following attributes
   + page[number]: (optional, integer) - Paginate list and return only data, matching specified page number
   + page[size]: (optional, integer) - Paginate list using specified page size (max transactions on page).
     + Default: `10`
-  + timestamp[notEarlier]: (optional, integer) - Optional, range based filter on timestamp. Will filter out all transactions happened before specified point in time.
-  + timestamp[notLater]: (optional, integer) - Optional, range based filter on timestamp. Will filter out all transactions happened after specified point in time.
+  + notEarlier: (optional, integer) - Optional, range based filter on timestamp. Will filter out all transactions happened before specified point in time.
+  + notLater: (optional, integer) - Optional, range based filter on timestamp. Will filter out all transactions happened after specified point in time.
 
 + Response 200 (application/vnd.mdg+json)
   {

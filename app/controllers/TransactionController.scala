@@ -1,10 +1,12 @@
 package controllers
 
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 import controllers.JsonWrapper._
 import controllers.dto.{TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
+import dao.filters.TransactionFilter._
 import dao.sort.SortBy
 import dao.sort.SortBy._
 import play.api.libs.json._
@@ -63,12 +65,13 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * Retrieves transactions, matching specified predicates.
     * @return List of transactions wrapped to JSON.
     */
-  def index(filter: Option[String], sort: Option[String]) = Action.async {
+  def index(filter: Option[String], sort: Option[String], notEarlier: Option[String], notLater: Option[String]) = Action.async {
+    val f = (filter match {
+      case Some(x) => Json.parse(x).validate[TransactionFilter].asOpt.getOrElse(TransactionFilter())
+      case None => TransactionFilter()
+    }).copy(notEarlier = notEarlier, notLater = notLater)
 
-    transactionService.list(filter match {
-      case Some(x) => Json.parse(x).validate[TransactionFilter].asOpt.getOrElse(TransactionFilter(None, None, None))
-      case None => TransactionFilter(None, None, None)
-    },
+    transactionService.list(f,
       sort match {
         case Some(x) => x
         case None => Seq[SortBy]()

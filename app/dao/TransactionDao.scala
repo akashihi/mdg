@@ -59,9 +59,11 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     val query = transactions.filter { t  =>
       List(
         filter.comment.map(t.comment.getOrElse("") === _),
+        filter.notEarlier.map(t.timestamp >= _),
+        filter.notLater.map(t.timestamp <= _),
         tag_tx.map(t.id inSet _),
         acc_tx.map(t.id inSet _)
-      ).collect({ case Some(x) => x }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
+      ).collect({ case Some(x) => x }).reduceLeftOption(_ && _).getOrElse(true: Rep[Boolean])
     }
 
     val sortedQuery = sort.headOption.getOrElse(SortBy("timestamp", Asc)) match {
