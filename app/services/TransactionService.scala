@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import controllers.dto.{OperationDto, TransactionDto}
 import dao.filters.TransactionFilter
-import dao.sort.SortBy
+import dao.ordering.{Page, SortBy}
 import dao.{TagDao, TransactionDao}
 import models.{Operation, Transaction}
 import play.api.db.slick.DatabaseConfigProvider
@@ -80,8 +80,8 @@ class TransactionService @Inject()(
     * Returns all transaction objects from the database.
     * @return Sequence of transaction DTOs.
     */
-  def list(filter: TransactionFilter, sort: Seq[SortBy]): Future[Seq[TransactionDto]] =
-  transactionDao.list(filter, sort).flatMap(s => Future.sequence(s.map(t => txToDto(t))))
+  def list(filter: TransactionFilter, sort: Seq[SortBy], page: Option[Page]): Future[Seq[TransactionDto]] =
+  transactionDao.list(filter, sort, page).flatMap(s => Future.sequence(s.map(t => txToDto(t))))
 
   /**
     * Retrieves specific Transaction.

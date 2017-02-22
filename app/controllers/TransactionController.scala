@@ -7,8 +7,8 @@ import controllers.JsonWrapper._
 import controllers.dto.{TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.filters.TransactionFilter._
-import dao.sort.SortBy
-import dao.sort.SortBy._
+import dao.ordering.{Page, SortBy}
+import dao.ordering.SortBy._
 import play.api.libs.json._
 import play.api.mvc._
 import services.{ErrorService, TransactionService}
@@ -65,17 +65,29 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * Retrieves transactions, matching specified predicates.
     * @return List of transactions wrapped to JSON.
     */
-  def index(filter: Option[String], sort: Option[String], notEarlier: Option[String], notLater: Option[String]) = Action.async {
+  def index(
+             filter: Option[String],
+             sort: Option[String],
+             notEarlier: Option[String],
+             notLater: Option[String],
+             pageSize: Option[Int],
+             pageNumber: Option[Int]) = Action.async {
     val f = (filter match {
       case Some(x) => Json.parse(x).validate[TransactionFilter].asOpt.getOrElse(TransactionFilter())
       case None => TransactionFilter()
     }).copy(notEarlier = notEarlier, notLater = notLater)
 
+    val page = (pageSize, pageNumber) match {
+      case (Some(size), Some(no)) => Some(Page(no, size))
+      case _ => None
+    }
+
     transactionService.list(f,
       sort match {
         case Some(x) => x
         case None => Seq[SortBy]()
-      }
+      },
+      page
     ).map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
 

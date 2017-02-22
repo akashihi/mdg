@@ -3,7 +3,7 @@ package dao
 import javax.inject._
 
 import dao.filters.TransactionFilter
-import dao.sort.{Asc, Desc, SortBy}
+import dao.ordering.{Asc, Desc, Page, SortBy}
 import dao.tables.{Operations, TagMap, Tags, Transactions}
 import dao.tables.Transactions._
 import models.{Operation, Transaction, TxTag}
@@ -45,7 +45,7 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     db.run(query.result)
   }
 
-  def list(filter: TransactionFilter, sort: Seq[SortBy]): Future[Seq[Transaction]] = {
+  def list(filter: TransactionFilter, sort: Seq[SortBy], page: Option[Page]): Future[Seq[Transaction]] = {
     val tag_ids = filter.tag.map { t =>
       Await.result(db.run(tags.filter(_.txtag inSet t).map(_.id).result), 500 milli)
     }
@@ -66,12 +66,17 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
       ).collect({ case Some(x) => x }).reduceLeftOption(_ && _).getOrElse(true: Rep[Boolean])
     }
 
-    val sortedQuery = sort.headOption.getOrElse(SortBy("timestamp", Asc)) match {
-      case SortBy("timestamp", Desc) => query.sortBy(_.timestamp.desc)
-      case _ => query.sortBy(_.timestamp.asc)
+    val sortedQuery = sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
+      case SortBy("timestamp", Asc) => query.sortBy(_.timestamp.asc)
+      case _ => query.sortBy(_.timestamp.desc)
     }
 
-    db.run(sortedQuery.result)
+    val pagedQuery = page match {
+      case Some(p) => sortedQuery.drop(p.size*(p.no-1)).take(p.size)
+      case None => sortedQuery
+    }
+
+    db.run(pagedQuery.result)
   }
 
   def findById(id: Long): Future[Option[Transaction]] = {

@@ -1,4 +1,4 @@
-package dao.sort
+package dao.ordering
 
 /**
   * Sorting descriptor library
