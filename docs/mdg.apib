@@ -269,7 +269,7 @@ A Transaction object has the following attributes
 
 + Parameters
   + filter: (optional, json object) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes
-  + sort: (optional, string) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order. Sorting could be done only by `timestamp` field.
+  + sort: (optional, string) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order. Sorting could be done only by `timestamp` field. Only first item in a list is used as a sortf eidl at the moment.
   + page[number]: (optional, integer) - Paginate list and return only data, matching specified page number
   + page[size]: (optional, integer) - Paginate list using specified page size (max transactions on page).
     + Default: `10`

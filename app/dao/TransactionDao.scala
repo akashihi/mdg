@@ -3,7 +3,7 @@ package dao
 import javax.inject._
 
 import dao.filters.TransactionFilter
-import dao.sort.SortBy
+import dao.sort.{Asc, Desc, SortBy}
 import dao.tables.{Operations, TagMap, Tags, Transactions}
 import dao.tables.Transactions._
 import models.{Operation, Transaction, TxTag}
@@ -55,13 +55,21 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     val acc_tx = filter.account_id.map { a =>
       Await.result(db.run(operations.filter(_.account_id inSet  a).map(_.tx_id).result), 500 milli)
     }
-    db.run(transactions.filter { t  =>
+
+    val query = transactions.filter { t  =>
       List(
         filter.comment.map(t.comment.getOrElse("") === _),
         tag_tx.map(t.id inSet _),
         acc_tx.map(t.id inSet _)
       ).collect({ case Some(x) => x }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
-    }.sortBy(_.timestamp.asc).result)
+    }
+
+    val sortedQuery = sort.headOption.getOrElse(SortBy("timestamp", Asc)) match {
+      case SortBy("timestamp", Desc) => query.sortBy(_.timestamp.desc)
+      case _ => query.sortBy(_.timestamp.asc)
+    }
+
+    db.run(sortedQuery.result)
   }
 
   def findById(id: Long): Future[Option[Transaction]] = {
