@@ -52,10 +52,14 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     val tag_tx = tag_ids.map { t =>
       Await.result(db.run(tagMaps.filter(_.tag_id inSet t).map(_.tx_id).result), 500 milli)
     }
+    val acc_tx = filter.account_id.map { a =>
+      Await.result(db.run(operations.filter(_.account_id inSet  a).map(_.tx_id).result), 500 milli)
+    }
     db.run(transactions.filter { t  =>
       List(
         filter.comment.map(t.comment.getOrElse("") === _),
-        tag_tx.map(t.id inSet _)
+        tag_tx.map(t.id inSet _),
+        acc_tx.map(t.id inSet _)
       ).collect({ case Some(x) => x }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
     }.sortBy(_.timestamp.asc).result)
   }
