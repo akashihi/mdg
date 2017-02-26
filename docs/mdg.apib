@@ -476,10 +476,44 @@ A budget object has the following attributes
 
 - term_beginning: (required, timestamp) - Budget is not effective before specified point in time
 - term_end: (required, timestamp) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
-- incoming_amount: (optional, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not supplied until term_beginning comes. It will be automatically filled after submitting first transaction with timestamp within budget effective term
+- incoming_amount: (optional, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled.
 - outgoing_amount: (optional, json object, readonly) 
-  - expected: (optional, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated simultaneously with incoming_amount calculation and may change with changes in BudgetEntries, related to that budget
+  - expected: (optional, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified.
   - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution.
+
+### Create a new budget [POST]
+
+Budgets effective dates are inclusive and should not overlap.
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+        "type": "budget",
+        "attributes": {
+            "term_beginning": "2017-02-01",
+            "term_end": "2017-02-28"
+        }
+    }
+  }
+
++ Response 202 (application/vnd.mdg+json)
+  + Headers
+    Location: /budget/20170201
+  + Body
+    {
+    "data": [
+        {
+            "type": "budget",
+            "id": 20170201,
+            "attributes": {
+                "term_beginning": "2017-02-01",
+                "term_end": "2017-02-28",
+                "incoming_amount": 100.50
+            }
+        }
+    ]
+  }
+
 
 ### List all Budgets [GET]
 
@@ -488,10 +522,10 @@ A budget object has the following attributes
     "data": [
         {
             "type": "budget",
-            "id": 1,
+            "id": 20170201,
             "attributes": {
-                "term_beginning": 123456,
-                "term_end": 223456,
+                "term_beginning": "2017-02-01",
+                "term_end": "2017-02-28",
                 "incoming_amount": 9000,
                 "outgoing_amount": {
                     "expected": 100500,
@@ -502,13 +536,9 @@ A budget object has the following attributes
     ]
   }
 
-### Create a new BudgetEntry [POST]
+## Budget entry [/budget/{YYYY}{MM}/{DD}]
 
-## Current Budget [/budget/current]
-
-Current budget is a budget, effective right now. As budgets are created and handled automatically, it is guaranteed, that only one budget is 'current' for any point in time
-
-### View current Budget detail [GET]
+### View Budget detail [GET]
 
 + Response 200 (application/vnd.mdg+json)
   {
@@ -527,7 +557,7 @@ Current budget is a budget, effective right now. As budgets are created and hand
         }
   }
 
-## BudgetEntry collection [/budget/{budget_id}/entry]
+## BudgetEntry collection [/budget/{YYYY}{MM}/{DD}/entry]
 
 + parameters
     + budget_id: (required, number) - ID of owning budget in form of integer
@@ -601,7 +631,7 @@ A BudgetEntry object has the following attributes
 
 + Response 201 (application/vnd.mdg+json)
   + Headers
-    Location: /budget/{budget_id}/entry/3
+    Location: /budget/{YYYY}{MM}/{DD}/entry/3
   + Body
     {
     "data": {
@@ -618,7 +648,7 @@ A BudgetEntry object has the following attributes
         }
   }
 
-## BudgetEntry [/budget/{budget_id}/entry/{entry_id}]
+## BudgetEntry [/budget/{YYYY}{MM}/{DD}/entry/{entry_id}]
 
 + parameters
     + budget_id: (required, number) - ID of owning budget in form of integer
