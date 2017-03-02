@@ -5,6 +5,7 @@ import play.api.libs.json.Writes
 import models.Currency.currencyWrites
 import models.Account.accountWrites
 import controllers.dto.TransactionDto.transactionWrites
+import models.Budget.budgetWrites
 
 /**
   * Base type for all api objects.
@@ -18,5 +19,6 @@ object ApiObject {
     case currency: Currency => currencyWrites.writes(currency)
     case account: Account => accountWrites.writes(account)
     case transaction: TransactionDto => transactionWrites.writes(transaction)
+    case budget: Budget => budgetWrites.writes(budget)
   }
 }
