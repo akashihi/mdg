@@ -22,6 +22,18 @@ class BudgetController @Inject()(val errors: ErrorService)(implicit ec: Executio
     * @return newly created budget (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    Future(Created(Json.toJson(wrapJson(Budget(Some(20170205), LocalDate.of(2017, 2, 5), LocalDate.of(2017, 2, 6), 0, BudgetOutgoingAmount(0, 0))))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/20170205"))
+    implicit def dateToBudgetId(d: LocalDate): Long = {
+      d.getYear*10000 + d.getMonthValue*100 + d.getDayOfMonth
+    }
+    
+    val budget = for {
+      b <- (request.body \ "data" \ "attributes" \ "term_beginning").asOpt[LocalDate]
+      e <- (request.body \ "data" \ "attributes" \ "term_end").asOpt[LocalDate]
+    } yield Budget(Some(b), b, e, 0, BudgetOutgoingAmount(9,9))
+
+    budget match {
+      case Some(x) => Future(Created(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}"))
+      case None => errors.errorFor("BUDGET_DATA_INVALID")
+    }
   }
 }
