@@ -1,7 +1,6 @@
-# Currency schema
+--liquibase formatted sql
 
-# --- !Ups
-
+--changeset akashihi:1
 CREATE TABLE CURRENCY (
   ID BIGINT PRIMARY KEY,
   CODE CHAR(3) NOT NULL,
@@ -13,5 +12,4 @@ INSERT INTO CURRENCY VALUES (203, 'CZK', 'Czech Koruna');
 INSERT INTO CURRENCY VALUES (840, 'USD', '$');
 INSERT INTO CURRENCY VALUES (978, 'EUR', '€');
 
-# --- !Downs
-DROP TABLE CURRENCY;
+--rollback DROP TABLE CURRENCY;

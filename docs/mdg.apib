@@ -620,39 +620,6 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
     ]
   }
 
-### Create a new BudgetEntry [POST]
-
-+ Request (application/vnd.mdg+json)
-  {
-    "data": {
-            "type": "budgetentry",
-            "attributes": {
-                "account_id": 3,
-                "even_distribution": True,
-                "proration": False,
-                "expected_amount": 9000
-            }
-        }
-  }
-
-+ Response 201 (application/vnd.mdg+json)
-  + Headers
-    Location: /budget/{YYYY}{MM}/{DD}/entry/3
-  + Body
-    {
-    "data": {
-            "type": "budgetentry",
-            "id": 3,
-            "attributes": {
-                "account_id": 3,
-                "even_distribution": True,
-                "proration": False,
-                "expected_amount": 9000,
-                "actual_amount": 0,
-                "change_amount": 300
-            }
-        }
-  }
 
 ## BudgetEntry [/budget/{YYYY}{MM}/{DD}/entry/{entry_id}]
 

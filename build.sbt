@@ -10,7 +10,6 @@ scalaVersion := "2.11.8"
 libraryDependencies += filters
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 libraryDependencies += "com.typesafe.play" %% "play-slick" % "2.0.2"
-libraryDependencies += "com.typesafe.play" %% "play-slick-evolutions" % "2.0.2"
 libraryDependencies += "org.postgresql" % "postgresql" % "9.4.1212.jre7"
 
 // Static analysis

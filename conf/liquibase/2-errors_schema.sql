@@ -1,6 +1,6 @@
-# Errors schema
+--liquibase formatted sql
 
-# --- !Ups
+--changeset akashihi:1
 
 CREATE TABLE ERROR (
   CODE VARCHAR(32) PRIMARY KEY,
@@ -11,5 +11,4 @@ CREATE TABLE ERROR (
 
 INSERT INTO ERROR VALUES('CURRENCY_NOT_FOUND', '404', 'Requested currency could not be found', 'We can not find currency with specified code in the database, check it''s id please.');
 
-# --- !Downs
-DROP TABLE ERROR;
+--rollback DROP TABLE ERROR;

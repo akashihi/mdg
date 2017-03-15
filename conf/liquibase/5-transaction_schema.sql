@@ -1,7 +1,6 @@
-# Transaction schema
+--liquibase formatted sql
 
-# --- !Ups
-
+--changeset akashihi:1
 CREATE TABLE TAG (
   ID BIGSERIAL PRIMARY KEY,
   TAG TEXT NOT NULL UNIQUE
@@ -26,14 +25,20 @@ CREATE TABLE OPERATION (
   AMOUNT DECIMAL(32,2) NOT NULL DEFAULT 0
 );
 
+--rollback DROP TABLE OPERATION;
+--rollback DROP TABLE TX_TAGS;
+--rollback DROP TABLE TX;
+--rollback DROP TABLE TAG;
+
+--changeset akashihi:2 splitStatements:false
 CREATE OR REPLACE FUNCTION account_op_add() RETURNS TRIGGER
-  AS $account_op_add$
-  DECLARE
-    CURRENT DECIMAL(32,2);
-  BEGIN
-    SELECT balance INTO current FROM account WHERE id = NEW.ACCOUNT_ID;
-    UPDATE account SET balance = current + NEW.AMOUNT WHERE id = NEW.ACCOUNT_ID;
-    RETURN NEW;
+AS $account_op_add$
+DECLARE
+  CURRENT DECIMAL(32,2);
+BEGIN
+  SELECT balance INTO current FROM account WHERE id = NEW.ACCOUNT_ID;
+  UPDATE account SET balance = current + NEW.AMOUNT WHERE id = NEW.ACCOUNT_ID;
+  RETURN NEW;
 END;
 $account_op_add$ LANGUAGE plpgsql;
 
@@ -61,17 +66,15 @@ $account_op_upd$ LANGUAGE plpgsql;
 
 CREATE TRIGGER op_upd BEFORE UPDATE ON operation FOR EACH ROW EXECUTE PROCEDURE account_op_upd();
 
-INSERT INTO ERROR VALUES('TRANSACTION_NOT_FOUND', '404', 'Requested transaction could not be found', 'We can not find transaction with specified code in the database, check it''s id please.');
-# --- !Downs
-DELETE FROM ERROR WHERE CODE = 'TRANSACTION_NOT_FOUND';
+--rollback DROP TRIGGER op_upd ON operation;
+--rollback DROP TRIGGER op_del ON operation;
+--rollback DROP TRIGGER op_add ON operation;
+--rollback DROP FUNCTION account_op_upd();
+--rollback DROP FUNCTION account_op_del();
+--rollback DROP FUNCTION account_op_add();
 
-DROP TRIGGER op_upd ON operation;
-DROP TRIGGER op_del ON operation;
-DROP TRIGGER op_add ON operation;
-DROP FUNCTION account_op_upd();
-DROP FUNCTION account_op_del();
-DROP FUNCTION account_op_add();
-DROP TABLE OPERATION;
-DROP TABLE TX_TAGS;
-DROP TABLE TX;
-DROP TABLE TAG;
+--changeset akashihi:3
+INSERT INTO ERROR VALUES('TRANSACTION_NOT_FOUND', '404', 'Requested transaction could not be found', 'We can not find transaction with specified code in the database, check it''s id please.');
+
+--rollback DELETE FROM ERROR WHERE CODE = 'TRANSACTION_NOT_FOUND';
+
