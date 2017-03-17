@@ -4,10 +4,9 @@ import java.time._
 import javax.inject.Inject
 
 import controllers.JsonWrapper._
-import controllers.dto.{BudgetDTO, BudgetOutgoingAmount}
 import models.Budget
 import play.api.mvc._
-import services.{BudgetService, ErrorService, TransactionService}
+import services.{BudgetService, ErrorService}
 import play.api.libs.json._
 
 import scala.concurrent._
@@ -33,21 +32,9 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
       e <- (request.body \ "data" \ "attributes" \ "term_end").asOpt[LocalDate]
     } yield Budget(Some(b), b, e)
 
-    budget match {
-      case Some(x) => {
-        if ( x.term_beginning > x.term_end ) {
-          errors.errorFor("BUDGET_INVALID_TERM")
-        } else {
-          if ( Period.between(x.term_beginning, x.term_end).getDays <= 1 ) {
-            errors.errorFor("BUDGET_SHORT_RANGE")
-          } else {
-            budgetService.add(x).map{ x =>
-              Created(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}")
-            }
-          }
-        }
-      }
-      case None => errors.errorFor("BUDGET_DATA_INVALID")
+    budgetService.add(budget) match {
+      case Left(b) => b map {x => Created(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}")}
+      case Right(msg) => errors.errorFor(msg)
     }
   }
 

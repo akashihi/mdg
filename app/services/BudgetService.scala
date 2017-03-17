@@ -1,5 +1,6 @@
 package services
 
+import java.time._
 import javax.inject.Inject
 
 import controllers.dto.{BudgetDTO, BudgetOutgoingAmount}
@@ -27,7 +28,21 @@ class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: E
     * @param budget budget description object.
     * @return budget description object with id.
     */
-  def add(budget: Budget): Future[BudgetDTO] = budgetDao.insert(budget).map(budgetToDTO)
+  def add(budget: Option[Budget]): Either[Future[BudgetDTO], String] = {
+    budget match {
+      case Some(x) =>
+        if ( x.term_beginning isAfter x.term_end ) {
+          Right("BUDGET_INVALID_TERM")
+        } else {
+          if ( Period.between(x.term_beginning, x.term_end).getDays <= 1 ) {
+            Right("BUDGET_SHORT_RANGE")
+          } else {
+            Left(budgetDao.insert(x).map(budgetToDTO))
+          }
+        }
+      case None => Right("BUDGET_DATA_INVALID")
+    }
+  }
 
   def list(): Future[Seq[BudgetDTO]] = budgetDao.list().map(x => x.map(budgetToDTO))
 }
