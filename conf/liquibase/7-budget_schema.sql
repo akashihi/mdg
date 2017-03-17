@@ -1,0 +1,11 @@
+--liquibase formatted sql
+
+--changeset akashihi:1
+
+CREATE TABLE BUDGET (
+  ID BIGSERIAL PRIMARY KEY,
+  TERM_BEGINNING TIMESTAMP NOT NULL,
+  TERM_END TIMESTAMP NOT NULL
+);
+
+--rollback DROP TABLE BUDGET;
