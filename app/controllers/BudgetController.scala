@@ -7,7 +7,7 @@ import controllers.JsonWrapper._
 import controllers.dto.{BudgetDTO, BudgetOutgoingAmount}
 import models.Budget
 import play.api.mvc._
-import services.ErrorService
+import services.{BudgetService, ErrorService, TransactionService}
 import play.api.libs.json._
 
 import scala.concurrent._
@@ -15,7 +15,8 @@ import scala.concurrent._
 /**
   * Budget REST resource controller.
   */
-class BudgetController @Inject()(val errors: ErrorService)(implicit ec: ExecutionContext)extends Controller {
+class BudgetController @Inject()(protected val budgetService: BudgetService,
+                                 errors: ErrorService)(implicit ec: ExecutionContext)extends Controller {
 
   def budgetToDTO(b: Budget):BudgetDTO = {
     BudgetDTO(b.id, b.term_beginning, b.term_end, 0, BudgetOutgoingAmount(0, 0))
@@ -44,7 +45,9 @@ class BudgetController @Inject()(val errors: ErrorService)(implicit ec: Executio
           if ( Period.between(x.term_beginning, x.term_end).getDays <= 1 ) {
             errors.errorFor("BUDGET_SHORT_RANGE")
           } else {
-            Future(Created(Json.toJson(wrapJson(budgetToDTO(x)))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}"))
+            budgetService.add(x).map{ x =>
+              Created(Json.toJson(wrapJson(budgetToDTO(x)))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}")
+            }
           }
         }
       }
