@@ -18,6 +18,6 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
   val budgets = TableQuery[Budgets]
 
   def insert(a: Budget): Future[Budget] = {
-    db.run(budgets returning budgets.map(_.id) into ((item, id) => item.copy(id = Some(id))) += a)
+    db.run(budgets returning budgets += a)
   }
 }

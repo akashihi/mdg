@@ -13,7 +13,7 @@ import slick.lifted._
 class Budgets(tag: Tag) extends Table[Budget](tag, "budget") {
   implicit val localDtoDate = Budgets.localDtoDate
 
-  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+  def id = column[Long]("id", O.PrimaryKey)
   def term_beginning = column[LocalDate]("term_beginning")
   def term_end = column[LocalDate]("term_end")
   def * = (id.?, term_beginning, term_end) <> ((Budget.apply _).tupled, Budget.unapply)
