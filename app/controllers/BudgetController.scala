@@ -4,7 +4,8 @@ import java.time._
 import javax.inject.Inject
 
 import controllers.JsonWrapper._
-import models.{Budget, BudgetOutgoingAmount}
+import controllers.dto.{BudgetDTO, BudgetOutgoingAmount}
+import models.Budget
 import play.api.mvc._
 import services.ErrorService
 import play.api.libs.json._
@@ -15,6 +16,10 @@ import scala.concurrent._
   * Budget REST resource controller.
   */
 class BudgetController @Inject()(val errors: ErrorService)(implicit ec: ExecutionContext)extends Controller {
+
+  def budgetToDTO(b: Budget):BudgetDTO = {
+    BudgetDTO(b.id, b.term_beginning, b.term_end, 0, BudgetOutgoingAmount(0, 0))
+  }
 
   /**
     * Adds new budget to the system.
@@ -29,7 +34,7 @@ class BudgetController @Inject()(val errors: ErrorService)(implicit ec: Executio
     val budget = for {
       b <- (request.body \ "data" \ "attributes" \ "term_beginning").asOpt[LocalDate]
       e <- (request.body \ "data" \ "attributes" \ "term_end").asOpt[LocalDate]
-    } yield Budget(Some(b), b, e, 0, BudgetOutgoingAmount(0,0))
+    } yield Budget(Some(b), b, e)
 
     budget match {
       case Some(x) => {
@@ -39,7 +44,7 @@ class BudgetController @Inject()(val errors: ErrorService)(implicit ec: Executio
           if ( Period.between(x.term_beginning, x.term_end).getDays <= 1 ) {
             errors.errorFor("BUDGET_SHORT_RANGE")
           } else {
-            Future(Created(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}"))
+            Future(Created(Json.toJson(wrapJson(budgetToDTO(x)))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}"))
           }
         }
       }
