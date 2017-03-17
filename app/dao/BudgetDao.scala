@@ -17,7 +17,7 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
   val db = dbConfigProvider.get[JdbcProfile].db
   val budgets = TableQuery[Budgets]
 
-  def insert(a: Budget): Future[Budget] = {
-    db.run(budgets returning budgets += a)
-  }
+  def insert(a: Budget): Future[Budget] = db.run(budgets returning budgets += a)
+
+  def list(): Future[Seq[Budget]] = db.run(budgets.result)
 }

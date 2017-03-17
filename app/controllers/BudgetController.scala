@@ -18,10 +18,6 @@ import scala.concurrent._
 class BudgetController @Inject()(protected val budgetService: BudgetService,
                                  errors: ErrorService)(implicit ec: ExecutionContext)extends Controller {
 
-  def budgetToDTO(b: Budget):BudgetDTO = {
-    BudgetDTO(b.id, b.term_beginning, b.term_end, 0, BudgetOutgoingAmount(0, 0))
-  }
-
   /**
     * Adds new budget to the system.
     *
@@ -46,14 +42,16 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
             errors.errorFor("BUDGET_SHORT_RANGE")
           } else {
             budgetService.add(x).map{ x =>
-              Created(Json.toJson(wrapJson(budgetToDTO(x)))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}")
+              Created(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}")
             }
           }
         }
       }
       case None => errors.errorFor("BUDGET_DATA_INVALID")
     }
+  }
 
-
+  def index = Action.async {
+    budgetService.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
 }
