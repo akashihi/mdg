@@ -1,8 +1,10 @@
 package dao
 
+import java.time.LocalDate
 import javax.inject.Inject
 
 import dao.tables.Budgets
+import dao.tables.Budgets.localDtoDate
 import models.Budget
 import play.api.db.slick._
 import slick.driver.JdbcProfile
@@ -23,6 +25,10 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 
   def find(id: Long): Future[Option[Budget]] = {
     db.run(budgets.filter(_.id <= id).sortBy(_.id.desc).take(1).result.headOption)
+  }
+
+  def findOverlapping(term_beginning: LocalDate, term_end: LocalDate): Future[Option[Budget]] = {
+    db.run(budgets.filter(b => b.term_beginning <= term_end && b.term_end >= term_beginning).take(1).result.headOption)
   }
 
   def delete(id: Long): Future[Option[Int]] = {

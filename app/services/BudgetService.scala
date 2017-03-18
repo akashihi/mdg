@@ -1,6 +1,7 @@
 package services
 
 import java.time._
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 import controllers.dto.{BudgetDTO, BudgetOutgoingAmount}
@@ -8,6 +9,7 @@ import dao.BudgetDao
 import models.Budget
 
 import scala.concurrent._
+import scala.concurrent.duration._
 
 /**
   * Budget opeartions service.
@@ -34,10 +36,13 @@ class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: E
         if ( x.term_beginning isAfter x.term_end ) {
           Right("BUDGET_INVALID_TERM")
         } else {
-          if ( Period.between(x.term_beginning, x.term_end).getDays <= 1 ) {
+          if ( ChronoUnit.DAYS.between(x.term_beginning, x.term_end) < 1 ) {
             Right("BUDGET_SHORT_RANGE")
           } else {
-            Left(budgetDao.insert(x).map(budgetToDTO))
+            Await.result(budgetDao.findOverlapping(x.term_beginning, x.term_end), 500 millis) match {
+              case Some(_) => Right("BUDGET_OVERLAPPING")
+              case None => Left(budgetDao.insert(x).map(budgetToDTO))
+            }
           }
         }
       case None => Right("BUDGET_DATA_INVALID")

@@ -15,10 +15,7 @@ CREATE OR REPLACE FUNCTION budget_add_upd() RETURNS TRIGGER
 AS $account_op_add$
 DECLARE
 BEGIN
-  IF EXISTS(SELECT 1 FROM BUDGET WHERE TERM_BEGINNING >= NEW.TERM_BEGINNING AND TERM_END <= NEW.TERM_END) THEN
-    RAISE EXCEPTION 'Overlapping budget terms detected';
-  END IF;
-  IF EXISTS(SELECT 1 FROM BUDGET WHERE TERM_BEGINNING >= NEW.TERM_END AND TERM_END <= NEW.TERM_END) THEN
+  IF EXISTS(SELECT 1 FROM BUDGET WHERE (NEW.TERM_BEGINNING <= TERM_END) AND (NEW.TERM_END >= BUDGET.TERM_BEGINNING)) THEN
     RAISE EXCEPTION 'Overlapping budget terms detected';
   END IF;
   RETURN NEW;
@@ -35,3 +32,9 @@ CREATE TRIGGER budget_add_upd BEFORE INSERT OR UPDATE ON budget FOR EACH ROW EXE
 INSERT INTO ERROR VALUES('BUDGET_NOT_FOUND', '404', 'Requested budget could not be found', 'We can not find budget with specified code in the database, check it''s id please.');
 
 --rollback DELETE FROM ERROR WHERE CODE='BUDGET_NOT_FOUND';
+
+--changeset akashihi:4
+
+INSERT INTO ERROR VALUES('BUDGET_OVERLAPPING', '412', 'Budget validity period overlapping detected', 'Budget validity period overlaps with other, already existing budgets');
+
+--rollback DELETE FROM ERROR WHERE CODE='BUDGET_OVERLAPPING';
