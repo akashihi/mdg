@@ -21,6 +21,10 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 
   def list(): Future[Seq[Budget]] = db.run(budgets.result)
 
+  def find(id: Long): Future[Option[Budget]] = {
+    db.run(budgets.filter(_.id <= id).sortBy(_.id.desc).take(1).result.headOption)
+  }
+
   def delete(id: Long): Future[Option[Int]] = {
     db.run(budgets.filter(_.id === id).delete).map {
       case 1 => Some(1)

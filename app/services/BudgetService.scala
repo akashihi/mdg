@@ -46,5 +46,7 @@ class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: E
 
   def list(): Future[Seq[BudgetDTO]] = budgetDao.list().map(x => x.map(budgetToDTO))
 
+  def find(id: Long): Future[Option[BudgetDTO]] = budgetDao.find(id).map(x => x.map(budgetToDTO))
+
   def delete(id: Long): Future[Option[Int]] = budgetDao.delete(id)
 }

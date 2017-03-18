@@ -43,6 +43,18 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
   }
 
   /**
+    * Transaction object retrieval method
+    * @param id transaction id.
+    * @return transaction object.
+    */
+  def show(id: Long) = Action.async {
+    budgetService.find(id).flatMap {
+      case None => errors.errorFor("BUDGET_NOT_FOUND")
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+    }
+  }
+
+  /**
     * Budget object deletion method
     *
     * @param id budget to delete
