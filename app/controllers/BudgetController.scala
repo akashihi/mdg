@@ -41,4 +41,17 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
   def index = Action.async {
     budgetService.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
+
+  /**
+    * Budget object deletion method
+    *
+    * @param id budget to delete
+    * @return HTTP 204 in case of success, HTTP error otherwise
+    */
+  def delete(id: Long) = Action.async {
+    budgetService.delete(id).flatMap {
+      case Some(_) => Future(NoContent)
+      case None => errors.errorFor("BUDGET_NOT_FOUND")
+    }
+  }
 }

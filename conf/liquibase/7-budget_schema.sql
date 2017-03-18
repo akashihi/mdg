@@ -29,3 +29,9 @@ CREATE TRIGGER budget_add_upd BEFORE INSERT OR UPDATE ON budget FOR EACH ROW EXE
 
 --rollback DROP TRIGGER budget_add_upd ON budget;
 --rollback DROP FUNCTION budget_add_upd();
+
+--changeset akashihi:3
+
+INSERT INTO ERROR VALUES('BUDGET_NOT_FOUND', '404', 'Requested budget could not be found', 'We can not find budget with specified code in the database, check it''s id please.');
+
+--rollback DELETE FROM ERROR WHERE CODE='BUDGET_NOT_FOUND';
