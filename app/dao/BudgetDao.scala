@@ -12,9 +12,6 @@ import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
 
-/**
-  * Created by dchaplyg on 3/17/17.
-  */
 class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
   val budgets = TableQuery[Budgets]

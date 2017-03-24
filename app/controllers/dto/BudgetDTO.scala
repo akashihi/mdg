@@ -22,5 +22,4 @@ object BudgetDTO {
   implicit val budgetOutgoingWrites = Json.writes[BudgetOutgoingAmount]
   implicit val budgetWrites = Json.writes[BudgetDTO]
     .removeField("id")
-
 }

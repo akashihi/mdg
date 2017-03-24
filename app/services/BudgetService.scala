@@ -1,6 +1,5 @@
 package services
 
-import java.time._
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
@@ -12,7 +11,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 /**
-  * Budget opeartions service.
+  * Budget operations service.
   */
 class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: ExecutionContext) {
 

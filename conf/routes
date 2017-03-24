@@ -20,8 +20,9 @@ DELETE  /transaction/:id            controllers.TransactionController.delete(id:
 
 POST    /budget                     controllers.BudgetController.create
 GET     /budget                     controllers.BudgetController.index
-GET     /budget/:id            controllers.BudgetController.show(id: Long)
+GET     /budget/:id                 controllers.BudgetController.show(id: Long)
 DELETE  /budget/:id                 controllers.BudgetController.delete(id: Long)
 
+GET     /budget/:budget_id/entry     controllers.BudgetEntryController.index(budget_id: Long)
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
