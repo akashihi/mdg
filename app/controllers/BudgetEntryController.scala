@@ -7,7 +7,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import services.{BudgetEntryService, ErrorService}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Budget REST resource controller.
@@ -18,4 +18,33 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
   def index(budget_id: Long) = Action.async {
     budgetEntryService.list(budget_id).map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
   }
+
+  /**
+    * BudgetEntry object retrieval method
+    * @param id budgetentry id.
+    * @return budgetentry wrapper object.
+    */
+  def show(id: Long, budget_id: Long) = Action.async {
+    budgetEntryService.find(id, budget_id).flatMap {
+      case None => errors.errorFor("BUDGETENTRY_NOT_FOUND")
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+    }
+  }
+
+  /**
+    * Budget entry object modification method
+    *
+    * @param id budget entry id.
+    * @return budget entry wrapper object.
+    */
+  def edit(id: Long, budget_id: Long) = Action.async(parse.tolerantJson) { request =>
+    val e = (request.body \ "data" \ "attributes" \ "even_distribution").asOpt[Boolean]
+    val p = (request.body \ "data" \ "attributes" \ "proration").asOpt[Boolean]
+    val a = (request.body \ "data" \ "attributes" \ "expected_amount").asOpt[BigDecimal]
+    budgetEntryService.edit(id, budget_id, e, p, a).flatMap {
+      case Right(error) => errors.errorFor(error)
+      case Left(entry) => Future(Accepted(Json.toJson(wrapJson(entry))).as("application/vnd.mdg+json"))
+    }
+  }
+
 }

@@ -43,9 +43,9 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
   }
 
   /**
-    * Transaction object retrieval method
-    * @param id transaction id.
-    * @return transaction object.
+    * Budget object retrieval method
+    * @param id budget id.
+    * @return budget wrapper object.
     */
   def show(id: Long) = Action.async {
     budgetService.find(id).flatMap {

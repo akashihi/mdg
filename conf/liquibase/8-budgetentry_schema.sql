@@ -57,3 +57,9 @@ CREATE TRIGGER budget_add AFTER INSERT ON account FOR EACH ROW WHEN (NEW.ACCOUNT
 ALTER TABLE budgetentry ADD CONSTRAINT one_acc_per_budget UNIQUE (budget_id, account_id);
 
 --rollback ALTER TABLE budgetentry DROP CONSTRAINT one_acc_per_budget;
+
+--changeset akashihi:4
+
+INSERT INTO ERROR VALUES('BUDGETENTRY_NOT_FOUND', '404', 'Requested budget entry could not be found', 'We can not find budget entry with specified code in the database, check it''s id please.');
+
+--rollback DELETE FROM ERROR WHERE CODE='BUDGETENTRY_NOT_FOUND'
