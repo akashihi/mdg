@@ -22,7 +22,7 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao, protected val
     * @return list of currencies on system, wrapped to json.
     */
   def index = Action.async {
-    dao.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+    dao.list().map(x => Ok(Json.toJson(wrapJson(x))))
   }
 
   /**
@@ -33,7 +33,7 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao, protected val
   def show(id: Long) = Action.async {
     dao.findById(id).flatMap {
       case None => errors.errorFor("CURRENCY_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
     }
   }
 }

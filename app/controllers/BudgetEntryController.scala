@@ -16,7 +16,7 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
                                       private val errors: ErrorService)(implicit ec: ExecutionContext)extends Controller {
 
   def index(budget_id: Long) = Action.async {
-    budgetEntryService.list(budget_id).map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+    budgetEntryService.list(budget_id).map(x => Ok(Json.toJson(wrapJson(x))))
   }
 
   /**
@@ -27,7 +27,7 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
   def show(id: Long, budget_id: Long) = Action.async {
     budgetEntryService.find(id, budget_id).flatMap {
       case None => errors.errorFor("BUDGETENTRY_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
     }
   }
 
@@ -43,7 +43,7 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
     val a = (request.body \ "data" \ "attributes" \ "expected_amount").asOpt[BigDecimal]
     budgetEntryService.edit(id, budget_id, e, p, a).flatMap {
       case Right(error) => errors.errorFor(error)
-      case Left(entry) => Future(Accepted(Json.toJson(wrapJson(entry))).as("application/vnd.mdg+json"))
+      case Left(entry) => Future(Accepted(Json.toJson(wrapJson(entry))))
     }
   }
 

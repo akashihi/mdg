@@ -33,13 +33,13 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
     } yield Budget(Some(b), b, e)
 
     budgetService.add(budget) match {
-      case Left(b) => b map {x => Created(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/budget/${x.id.get}")}
+      case Left(b) => b map {x => Created(Json.toJson(wrapJson(x))).withHeaders("Location" -> s"/api/budget/${x.id.get}")}
       case Right(msg) => errors.errorFor(msg)
     }
   }
 
   def index = Action.async {
-    budgetService.list().map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+    budgetService.list().map(x => Ok(Json.toJson(wrapJson(x))))
   }
 
   /**
@@ -50,7 +50,7 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
   def show(id: Long) = Action.async {
     budgetService.find(id).flatMap {
       case None => errors.errorFor("BUDGET_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
     }
   }
 

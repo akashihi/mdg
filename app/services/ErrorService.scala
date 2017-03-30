@@ -33,11 +33,11 @@ class ErrorService @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
       .map { x => (x.status, Json.toJson(ErrorWrapper(Seq(x)))) }
       .map { case (status, x) =>
         status match {
-          case "404" => NotFound(x).as("application/vnd.mdg+json")
-          case "412" => PreconditionFailed(x).as("application/vnd.mdg+json")
-          case "422" => UnprocessableEntity(x).as("application/vnd.mdg+json")
-          case "500" => InternalServerError(x).as("application/vnd.mdg+json")
-          case _ => InternalServerError(x).as("application/vnd.mdg+json")
+          case "404" => NotFound(x)
+          case "412" => PreconditionFailed(x)
+          case "422" => UnprocessableEntity(x)
+          case "500" => InternalServerError(x)
+          case _ => InternalServerError(x)
         }
       }
   }

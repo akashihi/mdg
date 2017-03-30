@@ -63,7 +63,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
   def show(id: Long) = Action.async {
     dao.findById(id).flatMap {
       case None => errors.errorFor("ACCOUNT_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
     }
   }
 
@@ -80,7 +80,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
       case None => errors.errorFor("ACCOUNT_NOT_FOUND")
       case Some(x) => dao.update(x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden))).flatMap {
         case None => errors.errorFor("ACCOUNT_NOT_UPDATED")
-        case Some(r) => Future(Accepted(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json"))
+        case Some(r) => Future(Accepted(Json.toJson(wrapJson(r))))
       }
     }
   }
