@@ -4,6 +4,6 @@ import javax.inject.Inject
 import play.api.http.DefaultHttpFilters
 
 /**
-  * Created by dchaplyg on 3/30/17.
+  * Dictionary of filters, that should be applied to the actions.
   */
 class Filters @Inject() (ct: CustomContentTypeAddingFilter) extends DefaultHttpFilters(ct)

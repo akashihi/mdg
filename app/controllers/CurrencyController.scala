@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 
-import controllers.JsonWrapper._
+import controllers.api.JsonWrapper._
 import dao.CurrencyDao
 import play.api.libs.json._
 import play.api.mvc._

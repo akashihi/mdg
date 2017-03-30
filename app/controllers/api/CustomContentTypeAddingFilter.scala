@@ -6,7 +6,7 @@ import play.api.mvc._
 import scala.concurrent._
 
 /**
-  * Created by dchaplyg on 3/30/17.
+  * Adds predefined content-type to every outgoing Result.
   */
 class CustomContentTypeAddingFilter @Inject() (implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
   override def apply(next: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {

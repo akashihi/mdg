@@ -1,7 +1,7 @@
 package models
 
 import play.api.libs.json._
-import controllers.OWritesOps._
+import controllers.api.OWritesOps._
 
 /**
   * Currency entity

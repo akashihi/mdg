@@ -2,7 +2,7 @@ package models
 
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import controllers.OWritesOps._
+import controllers.api.OWritesOps._
 
 /**
   * Account entity.

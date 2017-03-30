@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 
-import controllers.JsonWrapper._
+import controllers.api.JsonWrapper._
 import dao.AccountDao
 import dao.filters.AccountFilter
 import models.{Account, AccountType}

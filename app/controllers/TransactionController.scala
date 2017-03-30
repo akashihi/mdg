@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import controllers.JsonWrapper._
+import controllers.api.JsonWrapper._
 import controllers.dto.{TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.filters.TransactionFilter._

@@ -1,7 +1,7 @@
 package controllers.dto
 
 import play.api.libs.json._
-import controllers.OWritesOps._
+import controllers.api.OWritesOps._
 
 import models.ApiObject
 

@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import controllers.JsonWrapper._
+import controllers.api.JsonWrapper._
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.{BudgetEntryService, ErrorService}

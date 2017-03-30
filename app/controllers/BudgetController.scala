@@ -3,7 +3,7 @@ package controllers
 import java.time._
 import javax.inject.Inject
 
-import controllers.JsonWrapper._
+import controllers.api.JsonWrapper._
 import models.Budget
 import play.api.mvc._
 import services.{BudgetService, ErrorService}
