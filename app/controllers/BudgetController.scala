@@ -7,7 +7,6 @@ import controllers.api.JsonWrapper._
 import models.Budget
 import play.api.mvc._
 import services.{BudgetService, ErrorService}
-import play.api.libs.json._
 
 import scala.concurrent._
 
@@ -33,13 +32,13 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
     } yield Budget(Some(b), b, e)
 
     budgetService.add(budget) match {
-      case Left(b) => b map {x => Created(Json.toJson(wrapJson(x))).withHeaders("Location" -> s"/api/budget/${x.id.get}")}
+      case Left(b) => b map {x => Created(wrapJson(x)).withHeaders("Location" -> s"/api/budget/${x.id.get}")}
       case Right(msg) => errors.errorFor(msg)
     }
   }
 
   def index = Action.async {
-    budgetService.list().map(x => Ok(Json.toJson(wrapJson(x))))
+    budgetService.list().map(x => Ok(wrapJson(x)))
   }
 
   /**
@@ -50,7 +49,7 @@ class BudgetController @Inject()(protected val budgetService: BudgetService,
   def show(id: Long) = Action.async {
     budgetService.find(id).flatMap {
       case None => errors.errorFor("BUDGET_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
+      case Some(x) => Future(Ok(wrapJson(x)))
     }
   }
 

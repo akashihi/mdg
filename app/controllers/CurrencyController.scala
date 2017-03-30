@@ -4,7 +4,6 @@ import javax.inject._
 
 import controllers.api.JsonWrapper._
 import dao.CurrencyDao
-import play.api.libs.json._
 import play.api.mvc._
 import services.ErrorService
 
@@ -22,7 +21,7 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao, protected val
     * @return list of currencies on system, wrapped to json.
     */
   def index = Action.async {
-    dao.list().map(x => Ok(Json.toJson(wrapJson(x))))
+    dao.list().map(x => Ok(wrapJson(x)))
   }
 
   /**
@@ -33,7 +32,7 @@ class CurrencyController @Inject()(protected val dao: CurrencyDao, protected val
   def show(id: Long) = Action.async {
     dao.findById(id).flatMap {
       case None => errors.errorFor("CURRENCY_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
+      case Some(x) => Future(Ok(wrapJson(x)))
     }
   }
 }

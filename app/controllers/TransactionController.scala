@@ -48,7 +48,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @return Wrapped to json data of newly created transaction.
     */
   def createOp(tx: TransactionDto): Future[Result] = transactionService.add(tx).map {
-    r => Created(Json.toJson(wrapJson(r))).withHeaders("Location" -> s"/api/transaction/${r.id}")
+    r => Created(wrapJson(r)).withHeaders("Location" -> s"/api/transaction/${r.id}")
   }
 
   /**
@@ -87,7 +87,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
         case None => Seq[SortBy]()
       },
       page
-    ).map(x => Ok(Json.toJson(wrapJson(x))))
+    ).map(x => Ok(wrapJson(x)))
   }
 
   /**
@@ -98,7 +98,7 @@ class TransactionController @Inject()(protected val transactionService: Transact
   def show(id: Long) = Action.async {
     transactionService.get(id).flatMap {
       case None => errors.errorFor("TRANSACTION_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
+      case Some(x) => Future(Ok(wrapJson(x)))
     }
   }
 

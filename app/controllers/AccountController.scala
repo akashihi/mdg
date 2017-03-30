@@ -36,7 +36,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
 
     account match {
       case Some(x) => dao.insert(x).map {
-        r => Created(Json.toJson(wrapJson(r))).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/account/${r.id}")
+        r => Created(wrapJson(r)).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/account/${r.id}")
       }
       case None => errors.errorFor("ACCOUNT_DATA_INVALID")
     }
@@ -51,7 +51,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
     dao.list(filter match {
       case Some(x) => Json.parse(x).validate[AccountFilter].asOpt.getOrElse(AccountFilter(None, None, None))
       case None => AccountFilter(None, None, None)
-    }).map(x => Ok(Json.toJson(wrapJson(x))).as("application/vnd.mdg+json"))
+    }).map(x => Ok(wrapJson(x)).as("application/vnd.mdg+json"))
   }
 
   /**
@@ -63,7 +63,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
   def show(id: Long) = Action.async {
     dao.findById(id).flatMap {
       case None => errors.errorFor("ACCOUNT_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
+      case Some(x) => Future(Ok(wrapJson(x)))
     }
   }
 
@@ -80,7 +80,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
       case None => errors.errorFor("ACCOUNT_NOT_FOUND")
       case Some(x) => dao.update(x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden))).flatMap {
         case None => errors.errorFor("ACCOUNT_NOT_UPDATED")
-        case Some(r) => Future(Accepted(Json.toJson(wrapJson(r))))
+        case Some(r) => Future(Accepted(wrapJson(r)))
       }
     }
   }

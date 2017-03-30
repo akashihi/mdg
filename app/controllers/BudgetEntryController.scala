@@ -3,7 +3,6 @@ package controllers
 import javax.inject.Inject
 
 import controllers.api.JsonWrapper._
-import play.api.libs.json.Json
 import play.api.mvc._
 import services.{BudgetEntryService, ErrorService}
 
@@ -16,7 +15,7 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
                                       private val errors: ErrorService)(implicit ec: ExecutionContext)extends Controller {
 
   def index(budget_id: Long) = Action.async {
-    budgetEntryService.list(budget_id).map(x => Ok(Json.toJson(wrapJson(x))))
+    budgetEntryService.list(budget_id).map(x => Ok(wrapJson(x)))
   }
 
   /**
@@ -27,7 +26,7 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
   def show(id: Long, budget_id: Long) = Action.async {
     budgetEntryService.find(id, budget_id).flatMap {
       case None => errors.errorFor("BUDGETENTRY_NOT_FOUND")
-      case Some(x) => Future(Ok(Json.toJson(wrapJson(x))))
+      case Some(x) => Future(Ok(wrapJson(x)))
     }
   }
 
@@ -43,7 +42,7 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
     val a = (request.body \ "data" \ "attributes" \ "expected_amount").asOpt[BigDecimal]
     budgetEntryService.edit(id, budget_id, e, p, a).flatMap {
       case Right(error) => errors.errorFor(error)
-      case Left(entry) => Future(Accepted(Json.toJson(wrapJson(entry))))
+      case Left(entry) => Future(Accepted(wrapJson(entry)))
     }
   }
 

@@ -2,7 +2,7 @@ package controllers.api
 
 import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.{Account, ApiObject, Currency}
-import play.api.libs.json.Json
+import play.api.libs.json._
 
 /**
   * Common api object JSON wrapper
@@ -11,6 +11,22 @@ import play.api.libs.json.Json
   * @param attributes object data
   */
 case class JsonDataWrapper(id: Long, `type`: String, attributes: ApiObject)
+object JsonDataWrapper {
+  def apply(o: ApiObject): JsonDataWrapper = new JsonDataWrapper(o.id.getOrElse(-1), typeName(o), o)
+
+  /**
+    * Maps object class to type name
+    * @param x object to match
+    * @return class name
+    */
+  def typeName(x: ApiObject): String = x match {
+    case Currency(_, _, _) => "currency"
+    case Account(_, _, _, _, _, _) => "account"
+    case TransactionDto(_, _, _, _, _) => "transaction"
+    case BudgetDTO(_, _, _, _, _) => "budget"
+    case BudgetEntryDTO(_, _, _, _, _, _, _) => "budgetentry"
+  }
+}
 
 /**
   * Single entry api object JSON wrapper
@@ -33,34 +49,20 @@ object JsonWrapper {
   implicit val wrapperSeqWrites = Json.writes[JsonWrapperSeq]
 
   /**
-    * Converts ApiObject to JsonWrapper object
+    * Converts ApiObject to Json
     * @param x object to convert
-    * @return JsonWrapper
+    * @return JsValue
     */
-  def wrapJson(x: ApiObject): JsonWrapper = {
-    JsonWrapper(JsonDataWrapper(x.id.getOrElse(-1), typeName(x), x))
+  def wrapJson(x: ApiObject): JsValue = {
+    Json.toJson(JsonWrapper(JsonDataWrapper(x)))
   }
 
   /**
-    * Converts several ApiObjects to JsonWrapper object
-    * @param x objects to convert
-    * @return JsonWrapper
+    * Converts several ApiObjects to Json
+    * * @param x objects to convert
+    * @return JsValue
     */
-  def wrapJson(x: Seq[ApiObject]): JsonWrapperSeq = {
-    JsonWrapperSeq(x.map(o => JsonDataWrapper(o.id.getOrElse(-1), typeName(o), o)))
+  def wrapJson(x: Seq[ApiObject]): JsValue = {
+    Json.toJson(JsonWrapperSeq(x.map(JsonDataWrapper.apply)))
   }
-
-  /**
-    * Maps object class to type name
-    * @param x object to match
-    * @return class name
-    */
-  def typeName(x: ApiObject): String = x match {
-    case Currency(_, _, _) => "currency"
-    case Account(_, _, _, _, _, _) => "account"
-    case TransactionDto(_, _, _, _, _) => "transaction"
-    case BudgetDTO(_, _, _, _, _) => "budget"
-    case BudgetEntryDTO(_, _, _, _, _, _, _) => "budgetentry"
-  }
-
 }
