@@ -1,5 +1,6 @@
 package models
 
+import controllers.api.ApiObject
 import play.api.libs.json._
 import controllers.api.OWritesOps._
 

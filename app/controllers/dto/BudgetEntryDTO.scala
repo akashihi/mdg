@@ -1,9 +1,8 @@
 package controllers.dto
 
+import controllers.api.ApiObject
 import play.api.libs.json._
 import controllers.api.OWritesOps._
-
-import models.ApiObject
 
 /**
   * BudgeEntry wrapper.

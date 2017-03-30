@@ -1,7 +1,7 @@
 package controllers.api
 
 import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
-import models.{Account, ApiObject, Currency}
+import models.{Account, Currency}
 import play.api.libs.json._
 
 /**
