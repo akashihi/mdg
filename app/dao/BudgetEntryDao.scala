@@ -12,14 +12,14 @@ import scala.concurrent._
 
 class BudgetEntryDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
-  val budgets = TableQuery[BudgetEntries]
+  val entries = TableQuery[BudgetEntries]
 
-  def list(budget_id: Long): Future[Seq[BudgetEntry]] = db.run(budgets.filter(_.budget_id === budget_id).result)
+  def list(budget_id: Long): Future[Seq[BudgetEntry]] = db.run(entries.filter(_.budget_id === budget_id).result)
 
-  def find(id: Long, budget_id: Long): Future[Option[BudgetEntry]] = db.run(budgets.filter(_.id === id).result.headOption)
+  def find(id: Long, budget_id: Long): Future[Option[BudgetEntry]] = db.run(entries.filter(_.id === id).result.headOption)
 
   def update(entry: BudgetEntry): Future[Option[BudgetEntry]] = {
-    db.run(budgets.filter(_.id === entry.id).update(entry)).map {
+    db.run(entries.filter(_.id === entry.id).update(entry)).map {
       case 1 => Some(entry)
       case _ => None
     }
