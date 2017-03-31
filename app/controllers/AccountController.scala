@@ -51,7 +51,7 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
     dao.list(filter match {
       case Some(x) => Json.parse(x).validate[AccountFilter].asOpt.getOrElse(AccountFilter(None, None, None))
       case None => AccountFilter(None, None, None)
-    }).map(x => Ok(wrapJson(x)).as("application/vnd.mdg+json"))
+    }).map(x => Ok(wrapJson(x)))
   }
 
   /**

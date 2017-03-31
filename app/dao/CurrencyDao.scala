@@ -14,11 +14,7 @@ class CurrencyDao @Inject() (protected val dbConfigProvider: DatabaseConfigProvi
   val db = dbConfigProvider.get[JdbcProfile].db
   val currencies = TableQuery[Currencies]
 
-  def list(): Future[Seq[Currency]] = {
-    db.run(currencies.result)
-  }
+  def list(): Future[Seq[Currency]] = db.run(currencies.result)
 
-  def findById(id: Long): Future[Option[Currency]] = {
-    db.run(currencies.filter(_.id === id).result.headOption)
-  }
+  def findById(id: Long): Future[Option[Currency]] = db.run(currencies.filter(_.id === id).result.headOption)
 }

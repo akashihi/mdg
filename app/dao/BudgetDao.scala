@@ -36,8 +36,11 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     db.run(query.head)
   }
 
-  def getExpectedChange(budget_id: Long): Future[Option[BigDecimal]] = {
-    db.run(entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result)
+  def getExpectedChange(budget_id: Long): Future[BigDecimal] = {
+    db.run(entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result).map {
+      case Some(x) => x
+      case None => 0
+    }
   }
 
   def delete(id: Long): Future[Option[Int]] = {

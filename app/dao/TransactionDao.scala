@@ -46,12 +46,12 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   }
 
   def list(filter: TransactionFilter, sort: Seq[SortBy], page: Option[Page]): Future[Seq[Transaction]] = {
-    val tag_ids = filter.tag.map { t =>
-      Await.result(db.run(tags.filter(_.txtag inSet t).map(_.id).result), 500 milli)
+    val tag_tx = filter.tag.map { f=>
+      Await.result(db.run(tags.filter(_.txtag inSet f).map(_.id).result.flatMap(tag_ids => {
+        tagMaps.filter(_.tag_id inSet tag_ids).map(_.tx_id).result
+      })), 500 millis)
     }
-    val tag_tx = tag_ids.map { t =>
-      Await.result(db.run(tagMaps.filter(_.tag_id inSet t).map(_.tx_id).result), 500 milli)
-    }
+
     val acc_tx = filter.account_id.map { a =>
       Await.result(db.run(operations.filter(_.account_id inSet  a).map(_.tx_id).result), 500 milli)
     }
