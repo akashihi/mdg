@@ -4,7 +4,7 @@ import javax.inject._
 
 import dao.filters.AccountFilter
 import dao.tables.Accounts
-import models.{Account, AccountType}
+import models.Account
 import play.api.db.slick._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._

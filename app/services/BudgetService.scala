@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 /**
   * Budget operations service.
   */
-class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: ExecutionContext) {
+class BudgetService @Inject()(protected val dao: BudgetDao)(implicit ec: ExecutionContext) {
 
   /**
     * Converts Budget object to the DTO
@@ -21,7 +21,8 @@ class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: E
     * @return Fully filled DTO object
     */
   def budgetToDTO(b: Budget):BudgetDTO = {
-    BudgetDTO(b.id, b.term_beginning, b.term_end, 0, BudgetOutgoingAmount(0, 0))
+    val incoming = Await.result(dao.getIncomingAmount(b.term_beginning), 500 millis)
+    BudgetDTO(b.id, b.term_beginning, b.term_end, incoming.getOrElse(0), BudgetOutgoingAmount(0, 0))
   }
 
   /**
@@ -38,9 +39,9 @@ class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: E
           if ( ChronoUnit.DAYS.between(x.term_beginning, x.term_end) < 1 ) {
             Right("BUDGET_SHORT_RANGE")
           } else {
-            Await.result(budgetDao.findOverlapping(x.term_beginning, x.term_end), 500 millis) match {
+            Await.result(dao.findOverlapping(x.term_beginning, x.term_end), 500 millis) match {
               case Some(_) => Right("BUDGET_OVERLAPPING")
-              case None => Left(budgetDao.insert(x).map(budgetToDTO))
+              case None => Left(dao.insert(x).map(budgetToDTO))
             }
           }
         }
@@ -48,9 +49,9 @@ class BudgetService @Inject()(protected val budgetDao: BudgetDao)(implicit ec: E
     }
   }
 
-  def list(): Future[Seq[BudgetDTO]] = budgetDao.list().map(x => x.map(budgetToDTO))
+  def list(): Future[Seq[BudgetDTO]] = dao.list().map(x => x.map(budgetToDTO))
 
-  def find(id: Long): Future[Option[BudgetDTO]] = budgetDao.find(id).map(x => x.map(budgetToDTO))
+  def find(id: Long): Future[Option[BudgetDTO]] = dao.find(id).map(x => x.map(budgetToDTO))
 
-  def delete(id: Long): Future[Option[Int]] = budgetDao.delete(id)
+  def delete(id: Long): Future[Option[Int]] = dao.delete(id)
 }
