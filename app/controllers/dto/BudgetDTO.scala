@@ -11,11 +11,11 @@ import controllers.api.OWritesOps._
   */
 case class BudgetOutgoingAmount(expected: BigDecimal, actual: BigDecimal)
 case class BudgetDTO (
-                    id: Option[Long],
-                    term_beginning: LocalDate,
-                    term_end: LocalDate,
-                    incoming_amount: BigDecimal,
-                    outgoingAmount: BudgetOutgoingAmount
+                       id: Option[Long],
+                       term_beginning: LocalDate,
+                       term_end: LocalDate,
+                       incoming_amount: BigDecimal,
+                       outgoing_amount: BudgetOutgoingAmount
                   ) extends ApiObject
 
 object BudgetDTO {
