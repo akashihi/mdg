@@ -5,11 +5,15 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 import dao.tables.Budgets.localDtoDate
-import dao.tables.{BudgetEntries, Budgets}
-import models.Budget
+import dao.tables.Transactions.localDTtoDate
+import dao.tables._
+import models.{Budget, ExpenseAccount, IncomeAccount}
 import play.api.db.slick._
+import slick.dbio.DBIOAction
+import slick.dbio.Effect.Read
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
+import slick.profile.{FixedSqlAction, SqlStreamingAction}
 
 import scala.concurrent._
 
@@ -17,6 +21,9 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
   val db = dbConfigProvider.get[JdbcProfile].db
   val budgets = TableQuery[Budgets]
   val entries = TableQuery[BudgetEntries]
+  val accounts = TableQuery[Accounts]
+  val transactions = TableQuery[Transactions]
+  val operations = TableQuery[Operations]
 
   def insert(a: Budget): Future[Budget] = db.run(budgets returning budgets += a)
 
@@ -30,17 +37,50 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     db.run(budgets.filter(b => b.term_beginning <= term_end && b.term_end >= term_beginning).take(1).result.headOption)
   }
 
-  def getIncomingAmount(term_beginning: LocalDate): Future[Option[BigDecimal]] = {
+  private def getIncomingAmount(term_beginning: LocalDate): SqlStreamingAction[Vector[Option[BigDecimal]], Option[BigDecimal], Effect] = {
     val dt = Date.valueOf(term_beginning)
-    val query = sql"select sum(o.amount) from operation as o, account as a, tx where o.account_id=a.id and o.tx_id=tx.id and a.account_type='asset' and a.hidden='f' and tx.ts < ${dt}".as[Option[BigDecimal]]
-    db.run(query.head)
+    sql"select sum(o.amount) from operation as o, account as a, tx where o.account_id=a.id and o.tx_id=tx.id and a.account_type='asset' and a.hidden='f' and tx.ts < ${dt}".as[Option[BigDecimal]]
   }
 
-  def getExpectedChange(budget_id: Long): Future[BigDecimal] = {
-    db.run(entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result).map {
-      case Some(x) => x
-      case None => 0
+  private def getExpectedChange(budget_id: Long): FixedSqlAction[Option[BigDecimal], _root_.slick.driver.PostgresDriver.api.NoStream, Read] = {
+    entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result
+  }
+
+  private def getActualSpendings(term_beginning: LocalDate, term_end: LocalDate): DBIOAction[BigDecimal, NoStream, Read with Read with Read with Effect] = {
+    accounts.result.flatMap { a =>
+      val incomeAccounts = a.filter(_.account_type == IncomeAccount).flatMap(_.id)
+      val expenseAccounts = a.filter(_.account_type == ExpenseAccount).flatMap(_.id)
+
+      transactions.filter(_.timestamp >= term_beginning.atStartOfDay()).filter(_.timestamp < term_end.plusDays(1).atStartOfDay()).map(_.id)
+        .result.flatMap { txId =>
+        val ops = operations.filter(_.tx_id inSet txId).result
+
+        ops.flatMap { o =>
+          val income = o.filter(x => incomeAccounts.contains(x.account_id)).foldLeft(BigDecimal(0))(_ + _.amount)
+          val expense = o.filter(x => expenseAccounts.contains(x.account_id)).foldLeft(BigDecimal(0))(_ + _.amount)
+
+          //We have to negate values, as income
+          //ops are substracted from their accounts,
+          //while expense ops are added. But for spending
+          //calculation we need opposite direction.
+          DBIO.successful(-income - expense)
+        }
+      }
     }
+  }
+
+  def getBudgetTotals(b: Budget): Future[(BigDecimal, BigDecimal, BigDecimal)] = {
+    val incomingAction = getIncomingAmount(b.term_beginning).head.map(_.getOrElse(BigDecimal(0)))
+    val actualAction = getActualSpendings(b.term_beginning, b.term_end)
+    val expectedAction = b.id match {
+      case None => DBIO.successful(BigDecimal(0))
+      case Some(x) => getExpectedChange(x).map(_.getOrElse(BigDecimal(0)))
+    }
+
+    val actions = DBIO.sequence(Seq(incomingAction, expectedAction, actualAction))
+
+    val results = db.run(actions)
+    results.map(seq => {(seq.head, seq(1), seq(2))})
   }
 
   def delete(id: Long): Future[Option[Int]] = {

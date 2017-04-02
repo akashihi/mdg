@@ -21,12 +21,8 @@ class BudgetService @Inject()(protected val dao: BudgetDao)(implicit ec: Executi
     * @return Fully filled DTO object
     */
   def budgetToDTO(b: Budget):BudgetDTO = {
-    val incoming: BigDecimal = Await.result(dao.getIncomingAmount(b.term_beginning), 500 millis).getOrElse(0)
-    val expected_change: BigDecimal = b.id match {
-      case None => 0
-      case Some(id) => Await.result(dao.getExpectedChange(id), 500 millis)
-    }
-    BudgetDTO(b.id, b.term_beginning, b.term_end, incoming, BudgetOutgoingAmount(incoming + expected_change, 0))
+    val (incoming, expectedChange, actualChange) = Await.result(dao.getBudgetTotals(b), 500 millis)
+    BudgetDTO(b.id, b.term_beginning, b.term_end, incoming, BudgetOutgoingAmount(incoming + expectedChange, incoming + actualChange))
   }
 
   /**
