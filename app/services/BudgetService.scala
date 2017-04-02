@@ -20,9 +20,11 @@ class BudgetService @Inject()(protected val dao: BudgetDao)(implicit ec: Executi
     * @param b budget object to convert
     * @return Fully filled DTO object
     */
-  def budgetToDTO(b: Budget):BudgetDTO = {
-    val (incoming, expectedChange, actualChange) = Await.result(dao.getBudgetTotals(b), 500 millis)
-    BudgetDTO(b.id, b.term_beginning, b.term_end, incoming, BudgetOutgoingAmount(incoming + expectedChange, incoming + actualChange))
+  def budgetToDTO(b: Budget):Future[BudgetDTO]= {
+    dao.getBudgetTotals(b).map {amount =>
+      val (incoming, expectedChange, actualChange) = amount
+      BudgetDTO(b.id, b.term_beginning, b.term_end, incoming, BudgetOutgoingAmount(incoming + expectedChange, incoming + actualChange))
+    }
   }
 
   /**
@@ -41,7 +43,7 @@ class BudgetService @Inject()(protected val dao: BudgetDao)(implicit ec: Executi
           } else {
             Await.result(dao.findOverlapping(x.term_beginning, x.term_end), 500 millis) match {
               case Some(_) => Right("BUDGET_OVERLAPPING")
-              case None => Left(dao.insert(x).map(budgetToDTO))
+              case None => Left(dao.insert(x).flatMap(budgetToDTO))
             }
           }
         }
@@ -49,9 +51,17 @@ class BudgetService @Inject()(protected val dao: BudgetDao)(implicit ec: Executi
     }
   }
 
-  def list(): Future[Seq[BudgetDTO]] = dao.list().map(x => x.map(budgetToDTO))
+  def list(): Future[Seq[BudgetDTO]] = dao.list().flatMap(x => Future.sequence(x.map(budgetToDTO)))
 
-  def find(id: Long): Future[Option[BudgetDTO]] = dao.find(id).map(x => x.map(budgetToDTO))
+  def find(id: Long): Future[Option[BudgetDTO]] = {
+    val b = dao.find(id)
+    b.flatMap { x =>
+      x.map(budgetToDTO) match {
+        case Some(f) => f.map(Some(_))
+        case None => Future.successful(None)
+      }
+    }
+  }
 
   def delete(id: Long): Future[Option[Int]] = dao.delete(id)
 }
