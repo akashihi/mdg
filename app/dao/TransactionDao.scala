@@ -4,16 +4,22 @@ import javax.inject._
 
 import dao.filters.TransactionFilter
 import dao.ordering.{Asc, Desc, Page, SortBy}
-import dao.tables.{Operations, TagMap, Tags, Transactions}
 import dao.tables.Transactions._
+import dao.tables.{Operations, TagMap, Tags, Transactions}
 import models.{Operation, Transaction, TxTag}
 import play.api.db.slick._
+import slick.dbio.DBIOAction
+import slick.dbio.Effect.Read
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
-import scala.concurrent.duration._
 
+/**
+  * Database access for Transactions.
+  * @param dbConfigProvider external database provider
+  * @param ec external ExecutionContext provider
+  */
 class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
   val transactions = TableQuery[Transactions]
@@ -21,6 +27,13 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   val tags = TableQuery[Tags]
   val tagMaps = TableQuery[TagMap]
 
+  /**
+    * Adds transaction to the database
+    * @param tx transaction object to add
+    * @param ops transaction operations list
+    * @param txtags transaction tag list
+    * @return Newly created transaction object with id
+    */
   def insert(tx: Transaction, ops: Seq[Operation], txtags: Seq[TxTag]): Future[Transaction] = {
     val query = (for {
       txId <- tx.id match {
@@ -33,10 +46,20 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     db.run(query)
   }
 
+  /**
+    * Retrieves transaction's operations.
+    * @param txId transaction id to work on
+    * @return list of transaction's operations
+    */
   def listOperations(txId: Long): Future[Seq[Operation]] = {
     db.run(operations.filter(_.tx_id === txId).result)
   }
 
+  /**
+    * Retrieves transaction's tags
+    * @param txId transaction id to work on
+    * @return list of transaction's tags
+    */
   def listTags(txId: Long): Future[Seq[TxTag]] = {
     val query = for {
       t <- tagMaps if t.tx_id === txId
@@ -45,18 +68,43 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     db.run(query.result)
   }
 
-  def list(filter: TransactionFilter, sort: Seq[SortBy], page: Option[Page]): Future[Seq[Transaction]] = {
-    val tag_tx_action = filter.tag.map { f=>
+  /**
+    * Filtering helper. Retrieves list of transactions ids,
+    * which are tagged with specified tags.
+    * @param filter List of tags
+    * @return List of transactions id, wrapped to DBIO
+    */
+  private def tagTxAction(filter: Option[Seq[String]]): DBIOAction[Seq[Long], NoStream, Read with Read] = {
+    filter.map { f=>
       tags.filter(_.txtag inSet f).map(_.id).result.flatMap(tag_ids => {
         tagMaps.filter(_.tag_id inSet tag_ids).map(_.tx_id).result
       })
     }.getOrElse(DBIO.successful(Seq.empty[Long]))
+  }
 
-    val acc_tx_action = filter.account_id.map { a=>
+  /**
+    * Filtering helper. Retrieves list of transactions ids,
+    * which have operations on the specified acocunt ids
+    * @param filter List of tags
+    * @return List of transactions id, wrapped to DBIO
+    */
+  private def accTxAction(filter: Option[Seq[Long]]) = {
+    filter.map { a=>
       operations.filter(_.account_id inSet  a).map(_.tx_id).result
     }.getOrElse(DBIO.successful(Seq.empty[Long]))
+  }
 
-    val preActions = tag_tx_action zip acc_tx_action
+  /**
+    * Retrieves list of transaction, according to the
+    * specified filter and ordering. List of transaction could be
+    * paginated.
+    * @param filter Transaction filter description.
+    * @param sort Ordering destription.
+    * @param page Pagination specification.
+    * @return List of mathed transactions.
+    */
+  def list(filter: TransactionFilter, sort: Seq[SortBy], page: Option[Page]): Future[Seq[Transaction]] = {
+    val preActions = tagTxAction(filter.tag) zip accTxAction(filter.account_id)
 
 
     val query = preActions.flatMap(tx_id_s => {
@@ -95,10 +143,20 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     db.run(query)
   }
 
+  /**
+    * Retrieves transaction by it's id.
+    * @param id Transaction id to find.
+    * @return Transaction from the database.
+    */
   def findById(id: Long): Future[Option[Transaction]] = {
     db.run(transactions.filter(_.id === id).result.headOption)
   }
 
+  /**
+    * Removes transaction from the database.
+    * @param id Transaction id to remove.
+    * @return Number of removed transactions.
+    */
   def delete(id: Long): Future[Option[Int]] = {
     db.run(transactions.filter(_.id === id).delete).map {
       case 1 => Some(1)
