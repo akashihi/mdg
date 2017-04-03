@@ -1,10 +1,11 @@
 package services
 
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
-import play.api.mvc._
 
 import controllers.dto.BudgetEntryDTO
-import dao.BudgetEntryDao
+import dao.{BudgetDao, BudgetEntryDao}
 import models.BudgetEntry
 
 import scala.concurrent._
@@ -12,7 +13,7 @@ import scala.concurrent._
 /**
   * Budget operations service.
   */
-class BudgetEntryService @Inject()(protected val dao: BudgetEntryDao, protected val budgetService: BudgetService)(implicit ec: ExecutionContext) {
+class BudgetEntryService @Inject()(protected val dao: BudgetEntryDao, protected val budgetDao: BudgetDao)(implicit ec: ExecutionContext) {
 
   /**
     * Converts Budget object to the DTO
@@ -20,8 +21,21 @@ class BudgetEntryService @Inject()(protected val dao: BudgetEntryDao, protected 
     * @return Fully filled DTO object
     */
   def entryToDTO(b: BudgetEntry):Future[BudgetEntryDTO] = {
-    dao.getActualSpendings(b.account_id, b.budget_id).map { actual =>
-      BudgetEntryDTO(b.id, b.account_id, b.even_distribution, b.proration, b.expected_amount, actual, None)
+    budgetDao.find(b.budget_id).flatMap{
+      case None => Future.successful(BudgetEntryDTO(b.id, b.account_id, b.even_distribution, b.proration, b.expected_amount, 0, None))
+      case Some(budget) => dao.getActualSpendings(b.account_id, budget).map { actual =>
+        val budgetLength = ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
+        val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), budget.term_end)
+        val changeAmount = b.even_distribution match {
+          case false => None
+          case true => b.proration match {
+            case Some(true) => Some((b.expected_amount - actual)/daysLeft)
+            case Some(false)|None => Some(b.expected_amount - actual - (b.expected_amount/budgetLength)*daysLeft)
+          }
+        }
+        val normalizedChangeAmount = changeAmount.map(x => if (x < 0) BigDecimal(0) else x)
+        BudgetEntryDTO(b.id, b.account_id, b.even_distribution, b.proration, b.expected_amount, actual, normalizedChangeAmount)
+      }
     }
   }
 

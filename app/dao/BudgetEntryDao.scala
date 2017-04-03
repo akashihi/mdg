@@ -6,7 +6,7 @@ import dao.AccountDao._
 import dao.TransactionDao._
 import dao.BudgetDao._
 import dao.tables.BudgetEntries
-import models.{BudgetEntry, IncomeAccount}
+import models.{Budget, BudgetEntry, IncomeAccount}
 import play.api.db.slick._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
@@ -28,10 +28,8 @@ class BudgetEntryDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     }
   }
 
-  def getActualSpendings(account_id: Long, budget_id: Long): Future[BigDecimal] = {
-    val query = budgetFindByIdAction(budget_id).flatMap {
-      case None => DBIO.successful(BigDecimal(0))
-      case Some(b) => transactionsForPeriod(b.term_beginning, b.term_end).flatMap { txId =>
+  def getActualSpendings(account_id: Long, budget: Budget): Future[BigDecimal] = {
+    val query = transactionsForPeriod(budget.term_beginning, budget.term_end).flatMap { txId =>
         val value = operations.filter(_.tx_id inSet txId).filter(_.account_id === account_id).map(_.amount).sum.result
 
         accountByIdAction(account_id).flatMap { acc =>
@@ -44,7 +42,6 @@ class BudgetEntryDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
           }
         }
       }
-    }
     db.run(query)
   }
 }
