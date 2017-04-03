@@ -12,7 +12,7 @@ import scala.concurrent._
 /**
   * Budget operations service.
   */
-class BudgetEntryService @Inject()(protected val dao: BudgetEntryDao)(implicit ec: ExecutionContext) {
+class BudgetEntryService @Inject()(protected val dao: BudgetEntryDao, protected val budgetService: BudgetService)(implicit ec: ExecutionContext) {
 
   /**
     * Converts Budget object to the DTO
@@ -21,7 +21,7 @@ class BudgetEntryService @Inject()(protected val dao: BudgetEntryDao)(implicit e
     */
   def entryToDTO(b: BudgetEntry):Future[BudgetEntryDTO] = {
     dao.getActualSpendings(b.account_id, b.budget_id).map { actual =>
-      BudgetEntryDTO(b.id, b.account_id, b.even_distribution, b.proration, b.expected_amount, actual, 0)
+      BudgetEntryDTO(b.id, b.account_id, b.even_distribution, b.proration, b.expected_amount, actual, None)
     }
   }
 
