@@ -42,7 +42,7 @@ class BudgetEntryController @Inject()(private val budgetEntryService: BudgetEntr
     val a = (request.body \ "data" \ "attributes" \ "expected_amount").asOpt[BigDecimal]
     budgetEntryService.edit(id, budget_id, e, p, a).flatMap {
       case Right(error) => errors.errorFor(error)
-      case Left(entry) => Future(Accepted(wrapJson(entry)))
+      case Left(entry) => entry.map {x => Accepted(wrapJson(x))}
     }
   }
 

@@ -54,8 +54,7 @@ class BudgetService @Inject()(protected val dao: BudgetDao)(implicit ec: Executi
   def list(): Future[Seq[BudgetDTO]] = dao.list().flatMap(x => Future.sequence(x.map(budgetToDTO)))
 
   def find(id: Long): Future[Option[BudgetDTO]] = {
-    val b = dao.find(id)
-    b.flatMap { x =>
+    dao.find(id).flatMap { x =>
       x.map(budgetToDTO) match {
         case Some(f) => f.map(Some(_))
         case None => Future.successful(None)

@@ -1,5 +1,6 @@
 package dao
 
+import java.time.LocalDate
 import javax.inject._
 
 import dao.filters.TransactionFilter
@@ -12,6 +13,7 @@ import slick.dbio.DBIOAction
 import slick.dbio.Effect.Read
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
+import slick.profile._
 
 import scala.concurrent._
 
@@ -22,8 +24,8 @@ import scala.concurrent._
   */
 class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
-  val transactions = TableQuery[Transactions]
-  val operations = TableQuery[Operations]
+  val transactions = TransactionDao.transactions
+  val operations = TransactionDao.operations
   val tags = TableQuery[Tags]
   val tagMaps = TableQuery[TagMap]
 
@@ -162,5 +164,14 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
       case 1 => Some(1)
       case _ => None
     }
+  }
+}
+
+object TransactionDao {
+  val transactions = TableQuery[Transactions]
+  val operations = TableQuery[Operations]
+
+  def transactionsForPeriod(term_beginning: LocalDate, term_end: LocalDate): FixedSqlStreamingAction[Seq[Long], Long, Read] = {
+    transactions.filter(_.timestamp >= term_beginning.atStartOfDay()).filter(_.timestamp < term_end.plusDays(1).atStartOfDay()).map(_.id).result
   }
 }

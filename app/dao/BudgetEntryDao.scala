@@ -2,8 +2,11 @@ package dao
 
 import javax.inject.Inject
 
+import dao.AccountDao._
+import dao.TransactionDao._
+import dao.BudgetDao._
 import dao.tables.BudgetEntries
-import models.BudgetEntry
+import models.{BudgetEntry, IncomeAccount}
 import play.api.db.slick._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
@@ -12,7 +15,7 @@ import scala.concurrent._
 
 class BudgetEntryDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
-  val entries = TableQuery[BudgetEntries]
+  val entries = BudgetEntryDao.entries
 
   def list(budget_id: Long): Future[Seq[BudgetEntry]] = db.run(entries.filter(_.budget_id === budget_id).result)
 
@@ -24,4 +27,28 @@ class BudgetEntryDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
       case _ => None
     }
   }
+
+  def getActualSpendings(account_id: Long, budget_id: Long): Future[BigDecimal] = {
+    val query = budgetFindByIdAction(budget_id).flatMap {
+      case None => DBIO.successful(BigDecimal(0))
+      case Some(b) => transactionsForPeriod(b.term_beginning, b.term_end).flatMap { txId =>
+        val value = operations.filter(_.tx_id inSet txId).filter(_.account_id === account_id).map(_.amount).sum.result
+
+        accountByIdAction(account_id).flatMap { acc =>
+          value.map { a =>
+            val amount = a.getOrElse(BigDecimal(0))
+            acc match {
+              case None => amount
+              case Some(x) => if (x.account_type == IncomeAccount) -amount else amount
+            }
+          }
+        }
+      }
+    }
+    db.run(query)
+  }
+}
+
+object BudgetEntryDao {
+  val entries = TableQuery[BudgetEntries]
 }

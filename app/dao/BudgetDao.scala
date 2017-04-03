@@ -5,7 +5,9 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 import dao.tables.Budgets.localDtoDate
-import dao.tables.Transactions.localDTtoDate
+import dao.TransactionDao._
+import dao.AccountDao._
+import dao.BudgetEntryDao._
 import dao.tables._
 import models.{Budget, ExpenseAccount, IncomeAccount}
 import play.api.db.slick._
@@ -13,24 +15,20 @@ import slick.dbio.DBIOAction
 import slick.dbio.Effect.Read
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
-import slick.profile.{FixedSqlAction, SqlStreamingAction}
+import slick.profile.{FixedSqlAction, SqlAction, SqlStreamingAction}
 
 import scala.concurrent._
 
 class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
-  val budgets = TableQuery[Budgets]
-  val entries = TableQuery[BudgetEntries]
-  val accounts = TableQuery[Accounts]
-  val transactions = TableQuery[Transactions]
-  val operations = TableQuery[Operations]
+  val budgets = BudgetDao.budgets
 
   def insert(a: Budget): Future[Budget] = db.run(budgets returning budgets += a)
 
   def list(): Future[Seq[Budget]] = db.run(budgets.result)
 
   def find(id: Long): Future[Option[Budget]] = {
-    db.run(budgets.filter(_.id <= id).sortBy(_.id.desc).take(1).result.headOption)
+    db.run(BudgetDao.budgetFindByIdAction(id))
   }
 
   def findOverlapping(term_beginning: LocalDate, term_end: LocalDate): Future[Option[Budget]] = {
@@ -51,8 +49,7 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
       val incomeAccounts = a.filter(_.account_type == IncomeAccount).flatMap(_.id)
       val expenseAccounts = a.filter(_.account_type == ExpenseAccount).flatMap(_.id)
 
-      transactions.filter(_.timestamp >= term_beginning.atStartOfDay()).filter(_.timestamp < term_end.plusDays(1).atStartOfDay()).map(_.id)
-        .result.flatMap { txId =>
+      transactionsForPeriod(term_beginning, term_end).flatMap { txId =>
         val ops = operations.filter(_.tx_id inSet txId).result
 
         ops.flatMap { o =>
@@ -88,5 +85,13 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
       case 1 => Some(1)
       case _ => None
     }
+  }
+}
+
+object BudgetDao {
+  val budgets = TableQuery[Budgets]
+
+  def budgetFindByIdAction(id: Long): SqlAction[Option[Budget], NoStream, Read] = {
+    budgets.filter(_.id <= id).sortBy(_.id.desc).take(1).result.headOption
   }
 }
