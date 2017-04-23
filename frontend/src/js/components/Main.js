@@ -1,8 +1,20 @@
-import React, { Component, PropTypes } from 'react';
-import RaisedButton from 'material-ui/RaisedButton';
+import React, { Component } from 'react';
+import {Tabs, Tab} from 'material-ui/Tabs';
+
+import Overview from './Overview';
 
 export default class Main extends Component {
     render() {
-        return (<RaisedButton label="It works"/> )
+        return (<Tabs>
+            <Tab label="Состояние">
+                <Overview/>
+            </Tab>
+            <Tab label="Бюджет">
+                <p>Бюджет</p>
+            </Tab>
+            <Tab label="Операции">
+                <p>Операции</p>
+            </Tab>
+        </Tabs>)
     }
 }
