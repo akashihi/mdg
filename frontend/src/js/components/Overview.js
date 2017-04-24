@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
-import RaisedButton from 'material-ui/RaisedButton';
+
+import AccountsOverview from './AccountsOverview'
 
 export default class Overview extends Component {
     render() {
@@ -9,14 +10,7 @@ export default class Overview extends Component {
             <Grid fluid>
                 <Row>
                     <Col xs={12} sm={12} md={6} lg={6}>
-                        <Card>
-                            <CardHeader title="Accounts" subtitle="Balance"/>
-                            <CardText>Остатки</CardText>
-                            <CardActions>
-                                <RaisedButton label="Manage accounts"/>
-                                <RaisedButton label="New account"/>
-                            </CardActions>
-                        </Card>
+                        <AccountsOverview/>
                     </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>
                         <Card>
