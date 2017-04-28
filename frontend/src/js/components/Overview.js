@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import {Card, CardHeader, CardText} from 'material-ui/Card';
 
 import AccountsOverview from './AccountsOverview'
 
@@ -14,7 +14,7 @@ export default class Overview extends Component {
                     </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>
                         <Card>
-                            <CardHeader title="Состояние"/>
+                            <CardHeader title='Состояние'/>
                             <CardText>Состояние</CardText>
                         </Card>
                     </Col>
@@ -22,13 +22,13 @@ export default class Overview extends Component {
                 <Row>
                     <Col xs={12} sm={12} md={6} lg={6}>
                         <Card>
-                            <CardHeader title="Бюджет"/>
+                            <CardHeader title='Бюджет'/>
                             <CardText>Бюджет</CardText>
                         </Card>
                     </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>
                         <Card>
-                            <CardHeader title="Операции"/>
+                            <CardHeader title='Операции'/>
                             <CardText>Операции</CardText>
                         </Card>
                     </Col>

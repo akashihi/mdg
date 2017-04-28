@@ -19,10 +19,10 @@ export default class BudgetEntry extends Component {
                                 <p>330 allowed</p>
                             </Col>
                             <Col xs={2} sm={2} md={1} lg={1}>
-                                <CircularProgress mode="determinate" size={20} value={70}/>
+                                <CircularProgress mode='determinate' size={20} value={70}/>
                             </Col>
                             <Col xs={4} sm={4} md={2} lg={2}>
-                                <TextField defaultValue="actual"/>
+                                <TextField defaultValue='actual'/>
                             </Col>
                             <Col xs={6} sm={6} md={3} lg={3}>
                                 <p>expected</p>
@@ -34,10 +34,10 @@ export default class BudgetEntry extends Component {
                     <Grid fluid>
                         <Row>
                             <Col xs={12} sm={12} md={6} lg={6}>
-                                <Checkbox label="Evenly distributed"/>
+                                <Checkbox label='Evenly distributed'/>
                             </Col>
                             <Col xs={12} sm={12} md={6} lg={6}>
-                                <Checkbox label="Prorate spendings"/>
+                                <Checkbox label='Prorate spendings'/>
                             </Col>
                         </Row>
                     </Grid>

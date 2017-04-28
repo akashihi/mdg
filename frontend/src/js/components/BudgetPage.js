@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import {Card, CardHeader, CardText} from 'material-ui/Card';
 import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
 import Divider from 'material-ui/Divider';
@@ -14,9 +14,9 @@ export default class BudgetPage extends Component {
         return (
             <div>
                 <Drawer open={true}>
-                    <DatePicker hintText="Budget beginning" container="inline" />
-                    <DatePicker hintText="Budget end" container="inline" />
-                    <IconButton><FontIcon className="material-icons">add_circle_outline</FontIcon></IconButton>
+                    <DatePicker hintText='Budget beginning' container='inline' />
+                    <DatePicker hintText='Budget end' container='inline' />
+                    <IconButton><FontIcon className='material-icons'>add_circle_outline</FontIcon></IconButton>
                     <Divider/>
                     <Budget/>
                     <Budget/>
@@ -37,9 +37,9 @@ export default class BudgetPage extends Component {
                     <Budget/>
                 </Drawer>
                 <Card>
-                    <CardHeader title="1 Apr 2017 - 30 Apr 2017 Budget"/>
+                    <CardHeader title='1 Apr 2017 - 30 Apr 2017 Budget'/>
                     <CardText>
-                        <IconButton><FontIcon className="material-icons">chevron_left</FontIcon></IconButton>
+                        <IconButton><FontIcon className='material-icons'>chevron_left</FontIcon></IconButton>
                         <Divider/>
                         <p>Assets at first budget day: 9000</p>
                         <p>Expected assets at last budget day: 100500</p>
