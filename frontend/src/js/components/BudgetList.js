@@ -17,13 +17,17 @@ export default class BudgetList extends Component {
     }
 
     render() {
-        var budgets = this.props.budgets.map(function (item) {
-            return (
-                <Budget budget={item} key={item.id}/>
-            )
-        });
-        if (this.props.loading) {
+        var budgets;
+        if (this.props.waiting) {
             budgets = <CircularProgress/>
+        } else if (this.props.error) {
+            budgets = <h1>Unable to load budget list</h1>
+        } else {
+            budgets = this.props.budgets.map(function (item) {
+                return (
+                    <Budget budget={item} key={item.id}/>
+                )
+            });
         }
 
         return (

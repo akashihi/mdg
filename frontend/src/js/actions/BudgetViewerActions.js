@@ -1,4 +1,4 @@
-import { TOGGLE_BUDGET_SELECTOR, GET_BUDGETLIST_SUCCESS, GET_BUDGETLIST_REQUEST } from '../constants/Budget'
+import { TOGGLE_BUDGET_SELECTOR, GET_BUDGETLIST_REQUEST, GET_BUDGETLIST_SUCCESS } from '../constants/Budget'
 
 export function toggleBudgetSelector(visible) {
     return {
@@ -79,7 +79,7 @@ export function loadBudgetList() {
     return (dispatch) => {
         dispatch({
             type: GET_BUDGETLIST_REQUEST,
-            payload: []
+            payload: true
         });
 
         setTimeout(() => {
@@ -87,6 +87,6 @@ export function loadBudgetList() {
                 type: GET_BUDGETLIST_SUCCESS,
                 payload: budgetList
             })
-        }, 5000)
+        }, 15000)
     }
 }
