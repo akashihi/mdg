@@ -7,7 +7,9 @@ import * as BudgetViewerActions from '../actions/BudgetViewerActions'
 
 const mapStateToProps = (state) => {
     return {
-        visible: state.budget.ui.budgetListVisible
+        visible: state.budget.ui.budgetListVisible,
+        loading: state.budget.ui.budgetListLoading,
+        budgets: state.budget.budgetList
     }
 };
 

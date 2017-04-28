@@ -5,6 +5,6 @@
         "loose": true,
         "modules": false
       }
-    }], "react"
+    }], "stage-0", "react"
   ]
 }
