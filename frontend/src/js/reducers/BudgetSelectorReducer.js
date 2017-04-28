@@ -10,15 +10,20 @@ const initialState = {
 };
 
 export default function budgetSelector(state = initialState, action) {
+    var ui = state.ui;
     switch (action.type) {
         case TOGGLE_BUDGET_SELECTOR:
-            return Object.assign({}, state, {ui: {budgetListVisible: action.payload}});
+            ui = {...ui, budgetListVisible: action.payload};
+            return {...state, ui: ui};
         case GET_BUDGETLIST_REQUEST:
-            return Object.assign({}, state, {ui: {budgetListLoading: true, budgetListError: false}});
+            ui = {...ui, budgetListLoading: true, budgetListError: false};
+            return {...state, ui: ui};
         case GET_BUDGETLIST_SUCCESS:
-            return Object.assign({}, state, {budgetList: action.payload}, {ui: {budgetListLoading: false, budgetListError: false}});
+            ui = {...ui, budgetListLoading: false, budgetListError: false};
+            return {...state, budgetList: action.payload, ui: ui};
         case GET_BUDGETLIST_FAILURE:
-            return Object.assign({}, state, {budgetList: []}, {ui: {budgetListLoading: false, budgetListError: true}});
+            ui = {...ui, budgetListLoading: false, budgetListError: true};
+            return {...state, budgetList: [], ui: ui};
         default:
             return state
     }
