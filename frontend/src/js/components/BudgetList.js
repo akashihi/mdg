@@ -17,21 +17,26 @@ export default class BudgetList extends Component {
     }
 
     render() {
+        var props = this.props;
+        var onDeleteBudgetClick = function(id) {
+            props.actions.deleteBudget(id)
+        };
+
         var budgets;
-        if (this.props.waiting) {
+        if (props.waiting) {
             budgets = <CircularProgress/>
-        } else if (this.props.error) {
+        } else if (props.error) {
             budgets = <h1>Unable to load budget list</h1>
         } else {
-            budgets = this.props.budgets.map(function (item) {
+            budgets = props.budgets.map(function (item) {
                 return (
-                    <Budget budget={item} key={item.id}/>
+                    <Budget budget={item} key={item.id} deleteFunc={onDeleteBudgetClick}/>
                 )
             });
         }
 
         return (
-            <Drawer open={this.props.visible}>
+            <Drawer open={props.visible} width='25%'>
                 <IconButton style={{float: 'right'}} onClick={this.onCloseBudgetListClick.bind(this)}><FontIcon
                     className='material-icons'>backspace</FontIcon></IconButton>
                 <DatePicker hintText='Budget beginning' container='inline'/>

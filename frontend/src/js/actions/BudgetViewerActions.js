@@ -39,3 +39,18 @@ export function loadBudgetList() {
             });
     }
 }
+
+export function deleteBudget(id) {
+    return (dispatch) => {
+        dispatch({
+            type: GET_BUDGETLIST_REQUEST,
+            payload: true
+        });
+
+        fetch('/api/budget/'+id, {method: 'DELETE'})
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(()=>dispatch(loadBudgetList()))
+            .catch(()=>dispatch(loadBudgetList()))
+    }
+}
