@@ -11,6 +11,12 @@ var config = {
     },
     devServer: {
         contentBase: __dirname + '/src', // `__dirname` is root of the project
+        proxy: {
+            '/api': {
+                target: 'http://localhost:9000/api',
+                pathRewrite: {'^/api' : ''}
+            }
+        }
     },
     module: {
         rules: [

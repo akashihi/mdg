@@ -7,6 +7,7 @@ import thunk from 'redux-thunk'
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
+import 'whatwg-fetch';
 
 import rootReducer from './reducers/rootReducer'
 import Main from './components/Main'
