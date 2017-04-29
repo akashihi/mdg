@@ -10,7 +10,9 @@ const mapStateToProps = (state) => {
         visible: state.budget.ui.budgetListVisible,
         waiting: state.budget.ui.budgetListLoading,
         error: state.budget.ui.budgetListError,
-        budgets: state.budget.budgetList
+        budgets: state.budget.budgetList,
+        valid: state.budget.newBudgetValid,
+        formError: state.budget.newBudgetError
     }
 };
 
