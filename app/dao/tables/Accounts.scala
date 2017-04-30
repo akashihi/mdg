@@ -5,10 +5,11 @@ import slick.driver.PostgresDriver.api._
 import slick.lifted._
 
 /**
- * Maps Accounts entity to the SQL table.
- */
+  * Maps Accounts entity to the SQL table.
+  */
 class Accounts(tag: Tag) extends Table[Account](tag, "account") {
-  implicit val accountTypeMapper = MappedColumnType.base[AccountType, String](_.value, AccountType(_))
+  implicit val accountTypeMapper =
+    MappedColumnType.base[AccountType, String](_.value, AccountType(_))
 
   def id = column[Option[Long]]("id", O.PrimaryKey, O.AutoInc)
   def account_type = column[AccountType]("account_type")
@@ -16,5 +17,6 @@ class Accounts(tag: Tag) extends Table[Account](tag, "account") {
   def name = column[String]("name")
   def balance = column[BigDecimal]("balance")
   def hidden = column[Boolean]("hidden")
-  def * = (id, account_type, currency_id, name, balance, hidden) <> ((Account.apply _).tupled, Account.unapply)
+  def * =
+    (id, account_type, currency_id, name, balance, hidden) <> ((Account.apply _).tupled, Account.unapply)
 }

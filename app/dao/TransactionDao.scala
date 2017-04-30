@@ -22,7 +22,9 @@ import scala.concurrent._
   * @param dbConfigProvider external database provider
   * @param ec external ExecutionContext provider
   */
-class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
+class TransactionDao @Inject()(
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
   val transactions = TransactionDao.transactions
   val operations = TransactionDao.operations
@@ -36,11 +38,14 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     * @param txtags transaction tag list
     * @return Newly created transaction object with id
     */
-  def insert(tx: Transaction, ops: Seq[Operation], txtags: Seq[TxTag]): Future[Transaction] = {
+  def insert(tx: Transaction,
+             ops: Seq[Operation],
+             txtags: Seq[TxTag]): Future[Transaction] = {
     val query = (for {
       txId <- tx.id match {
         case None => transactions returning transactions.map(_.id) += tx
-        case Some(txId) => transactions returning transactions.map(_.id) forceInsert  tx
+        case Some(txId) =>
+          transactions returning transactions.map(_.id) forceInsert tx
       }
       _ <- operations ++= ops.map(x => x.copy(txId = txId))
       _ <- tagMaps ++= txtags.map(x => (x.id, txId))
@@ -76,12 +81,19 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     * @param filter List of tags
     * @return List of transactions id, wrapped to DBIO
     */
-  private def tagTxAction(filter: Option[Seq[String]]): DBIOAction[Seq[Long], NoStream, Read with Read] = {
-    filter.map { f=>
-      tags.filter(_.txtag inSet f).map(_.id).result.flatMap(tag_ids => {
-        tagMaps.filter(_.tag_id inSet tag_ids).map(_.tx_id).result
-      })
-    }.getOrElse(DBIO.successful(Seq.empty[Long]))
+  private def tagTxAction(filter: Option[Seq[String]])
+    : DBIOAction[Seq[Long], NoStream, Read with Read] = {
+    filter
+      .map { f =>
+        tags
+          .filter(_.txtag inSet f)
+          .map(_.id)
+          .result
+          .flatMap(tag_ids => {
+            tagMaps.filter(_.tag_id inSet tag_ids).map(_.tx_id).result
+          })
+      }
+      .getOrElse(DBIO.successful(Seq.empty[Long]))
   }
 
   /**
@@ -91,9 +103,11 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     * @return List of transactions id, wrapped to DBIO
     */
   private def accTxAction(filter: Option[Seq[Long]]) = {
-    filter.map { a=>
-      operations.filter(_.account_id inSet  a).map(_.tx_id).result
-    }.getOrElse(DBIO.successful(Seq.empty[Long]))
+    filter
+      .map { a =>
+        operations.filter(_.account_id inSet a).map(_.tx_id).result
+      }
+      .getOrElse(DBIO.successful(Seq.empty[Long]))
   }
 
   /**
@@ -105,9 +119,10 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     * @param page Pagination specification.
     * @return List of mathed transactions.
     */
-  def list(filter: TransactionFilter, sort: Seq[SortBy], page: Option[Page]): Future[Seq[Transaction]] = {
+  def list(filter: TransactionFilter,
+           sort: Seq[SortBy],
+           page: Option[Page]): Future[Seq[Transaction]] = {
     val preActions = tagTxAction(filter.tag) zip accTxAction(filter.account_id)
-
 
     val query = preActions.flatMap(tx_id_s => {
       val (tag_tx_s, acc_tx_s) = tx_id_s
@@ -119,23 +134,28 @@ class TransactionDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
       val tag_tx = Option(tag_tx_s).filter(_.nonEmpty)
       val acc_tx = Option(acc_tx_s).filter(_.nonEmpty)
 
-      val criteriaQuery = transactions.filter { t  =>
-        List(
-          filter.comment.map(t.comment.getOrElse("") === _),
-          filter.notEarlier.map(t.timestamp >= _),
-          filter.notLater.map(t.timestamp <= _),
-          tag_tx.map(t.id inSet _),
-          acc_tx.map(t.id inSet _)
-        ).collect({ case Some(x) => x }).reduceLeftOption(_ && _).getOrElse(true: Rep[Boolean])
+      val criteriaQuery = transactions.filter {
+        t =>
+          List(
+            filter.comment.map(t.comment.getOrElse("") === _),
+            filter.notEarlier.map(t.timestamp >= _),
+            filter.notLater.map(t.timestamp <= _),
+            tag_tx.map(t.id inSet _),
+            acc_tx.map(t.id inSet _)
+          ).collect({ case Some(x) => x })
+            .reduceLeftOption(_ && _)
+            .getOrElse(true: Rep[Boolean])
       }
 
-      val sortedQuery = sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
-        case SortBy("timestamp", Asc) => criteriaQuery.sortBy(_.timestamp.asc)
-        case _ => criteriaQuery.sortBy(_.timestamp.desc)
-      }
+      val sortedQuery =
+        sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
+          case SortBy("timestamp", Asc) =>
+            criteriaQuery.sortBy(_.timestamp.asc)
+          case _ => criteriaQuery.sortBy(_.timestamp.desc)
+        }
 
       val pagedQuery = page match {
-        case Some(p) => sortedQuery.drop(p.size*(p.no-1)).take(p.size)
+        case Some(p) => sortedQuery.drop(p.size * (p.no - 1)).take(p.size)
         case None => sortedQuery
       }
 
@@ -171,7 +191,13 @@ object TransactionDao {
   val transactions = TableQuery[Transactions]
   val operations = TableQuery[Operations]
 
-  def transactionsForPeriod(term_beginning: LocalDate, term_end: LocalDate): FixedSqlStreamingAction[Seq[Long], Long, Read] = {
-    transactions.filter(_.timestamp >= term_beginning.atStartOfDay()).filter(_.timestamp < term_end.plusDays(1).atStartOfDay()).map(_.id).result
+  def transactionsForPeriod(
+      term_beginning: LocalDate,
+      term_end: LocalDate): FixedSqlStreamingAction[Seq[Long], Long, Read] = {
+    transactions
+      .filter(_.timestamp >= term_beginning.atStartOfDay())
+      .filter(_.timestamp < term_end.plusDays(1).atStartOfDay())
+      .map(_.id)
+      .result
   }
 }

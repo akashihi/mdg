@@ -3,7 +3,6 @@ package dao.ordering
 /**
   * Sorting descriptor library
   */
-
 sealed abstract class SortDirection
 
 case object Asc extends SortDirection
@@ -16,8 +15,7 @@ object SortBy {
     sort.split(",").toSeq.map { s =>
       if (s.startsWith("-")) {
         SortBy(s.stripPrefix("-"), Asc)
-      }
-      else {
+      } else {
         SortBy(s, Desc)
       }
     }

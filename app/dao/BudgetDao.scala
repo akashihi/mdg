@@ -19,11 +19,14 @@ import slick.profile.{FixedSqlAction, SqlAction, SqlStreamingAction}
 
 import scala.concurrent._
 
-class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
+class BudgetDao @Inject()(
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
   val budgets = BudgetDao.budgets
 
-  def insert(a: Budget): Future[Budget] = db.run(budgets returning budgets += a)
+  def insert(a: Budget): Future[Budget] =
+    db.run(budgets returning budgets += a)
 
   def list(): Future[Seq[Budget]] = db.run(budgets.result)
 
@@ -31,30 +34,54 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     db.run(BudgetDao.budgetFindByIdAction(id))
   }
 
-  def findOverlapping(term_beginning: LocalDate, term_end: LocalDate): Future[Option[Budget]] = {
-    db.run(budgets.filter(b => b.term_beginning <= term_end && b.term_end >= term_beginning).take(1).result.headOption)
+  def findOverlapping(term_beginning: LocalDate,
+                      term_end: LocalDate): Future[Option[Budget]] = {
+    db.run(
+      budgets
+        .filter(b =>
+          b.term_beginning <= term_end && b.term_end >= term_beginning)
+        .take(1)
+        .result
+        .headOption)
   }
 
-  private def getIncomingAmount(term_beginning: LocalDate): SqlStreamingAction[Vector[Option[BigDecimal]], Option[BigDecimal], Effect] = {
+  private def getIncomingAmount(term_beginning: LocalDate)
+    : SqlStreamingAction[Vector[Option[BigDecimal]],
+                         Option[BigDecimal],
+                         Effect] = {
     val dt = Date.valueOf(term_beginning)
-    sql"select sum(o.amount) from operation as o, account as a, tx where o.account_id=a.id and o.tx_id=tx.id and a.account_type='asset' and a.hidden='f' and tx.ts < ${dt}".as[Option[BigDecimal]]
+    sql"select sum(o.amount) from operation as o, account as a, tx where o.account_id=a.id and o.tx_id=tx.id and a.account_type='asset' and a.hidden='f' and tx.ts < ${dt}"
+      .as[Option[BigDecimal]]
   }
 
-  private def getExpectedChange(budget_id: Long): FixedSqlAction[Option[BigDecimal], _root_.slick.driver.PostgresDriver.api.NoStream, Read] = {
+  private def getExpectedChange(budget_id: Long)
+    : FixedSqlAction[Option[BigDecimal],
+                     _root_.slick.driver.PostgresDriver.api.NoStream,
+                     Read] = {
     entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result
   }
 
-  private def getActualSpendings(term_beginning: LocalDate, term_end: LocalDate): DBIOAction[BigDecimal, NoStream, Read with Read with Read with Effect] = {
+  private def getActualSpendings(term_beginning: LocalDate,
+                                 term_end: LocalDate): DBIOAction[
+    BigDecimal,
+    NoStream,
+    Read with Read with Read with Effect] = {
     accounts.result.flatMap { a =>
-      val incomeAccounts = a.filter(_.account_type == IncomeAccount).flatMap(_.id)
-      val expenseAccounts = a.filter(_.account_type == ExpenseAccount).flatMap(_.id)
+      val incomeAccounts =
+        a.filter(_.account_type == IncomeAccount).flatMap(_.id)
+      val expenseAccounts =
+        a.filter(_.account_type == ExpenseAccount).flatMap(_.id)
 
       transactionsForPeriod(term_beginning, term_end).flatMap { txId =>
         val ops = operations.filter(_.tx_id inSet txId).result
 
         ops.flatMap { o =>
-          val income = o.filter(x => incomeAccounts.contains(x.account_id)).foldLeft(BigDecimal(0))(_ + _.amount)
-          val expense = o.filter(x => expenseAccounts.contains(x.account_id)).foldLeft(BigDecimal(0))(_ + _.amount)
+          val income = o
+            .filter(x => incomeAccounts.contains(x.account_id))
+            .foldLeft(BigDecimal(0))(_ + _.amount)
+          val expense = o
+            .filter(x => expenseAccounts.contains(x.account_id))
+            .foldLeft(BigDecimal(0))(_ + _.amount)
 
           //We have to negate values, as income
           //ops are substracted from their accounts,
@@ -66,18 +93,21 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     }
   }
 
-  def getBudgetTotals(b: Budget): Future[(BigDecimal, BigDecimal, BigDecimal)] = {
-    val incomingAction = getIncomingAmount(b.term_beginning).head.map(_.getOrElse(BigDecimal(0)))
+  def getBudgetTotals(
+      b: Budget): Future[(BigDecimal, BigDecimal, BigDecimal)] = {
+    val incomingAction =
+      getIncomingAmount(b.term_beginning).head.map(_.getOrElse(BigDecimal(0)))
     val actualAction = getActualSpendings(b.term_beginning, b.term_end)
     val expectedAction = b.id match {
       case None => DBIO.successful(BigDecimal(0))
       case Some(x) => getExpectedChange(x).map(_.getOrElse(BigDecimal(0)))
     }
 
-    val actions = DBIO.sequence(Seq(incomingAction, expectedAction, actualAction))
+    val actions =
+      DBIO.sequence(Seq(incomingAction, expectedAction, actualAction))
 
     val results = db.run(actions)
-    results.map(seq => {(seq.head, seq(1), seq(2))})
+    results.map(seq => { (seq.head, seq(1), seq(2)) })
   }
 
   def delete(id: Long): Future[Option[Int]] = {
@@ -91,7 +121,8 @@ class BudgetDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 object BudgetDao {
   val budgets = TableQuery[Budgets]
 
-  def budgetFindByIdAction(id: Long): SqlAction[Option[Budget], NoStream, Read] = {
+  def budgetFindByIdAction(
+      id: Long): SqlAction[Option[Budget], NoStream, Read] = {
     budgets.filter(_.id <= id).sortBy(_.id.desc).take(1).result.headOption
   }
 }

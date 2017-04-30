@@ -12,7 +12,8 @@ import play.api.libs.json._
   */
 case class JsonDataWrapper(id: Long, `type`: String, attributes: ApiObject)
 object JsonDataWrapper {
-  def apply(o: ApiObject): JsonDataWrapper = new JsonDataWrapper(o.id.getOrElse(-1), typeName(o), o)
+  def apply(o: ApiObject): JsonDataWrapper =
+    new JsonDataWrapper(o.id.getOrElse(-1), typeName(o), o)
 
   /**
     * Maps object class to type name
@@ -32,15 +33,16 @@ object JsonDataWrapper {
   * Single entry api object JSON wrapper
   * @param data api object
   */
-case class JsonWrapper (data: JsonDataWrapper)
+case class JsonWrapper(data: JsonDataWrapper)
 
 /**
   * Multiple entries api object json wrapper
   * @param data api objects
   */
-case class JsonWrapperSeq (data: Seq[JsonDataWrapper])
+case class JsonWrapperSeq(data: Seq[JsonDataWrapper])
 
 object JsonWrapper {
+
   /**
     * Json helpers
     */

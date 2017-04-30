@@ -17,10 +17,11 @@ libraryDependencies += "com.ticketfly" %% "play-liquibase" % "1.4"
 enablePlugins(CopyPasteDetector)
 compile in Compile <<= (compile in Compile) dependsOn cpd
 lazy val testScalastyle = taskKey[Unit]("testScalastyle")
-testScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Test).toTask("").value
+testScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle
+  .in(Test)
+  .toTask("")
+  .value
 compile in Compile <<= (compile in Compile) dependsOn testScalastyle
-
-
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "org.akashihi.controllers._"
 

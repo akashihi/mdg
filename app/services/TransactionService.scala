@@ -16,11 +16,11 @@ import scala.concurrent._
   * Transaction operations service.
   */
 class TransactionService @Inject()(
-                                    protected val tagDao: TagDao,
-                                    protected val transactionDao: TransactionDao,
-                                    protected val errors: ErrorService,
-                                    protected val dbConfigProvider: DatabaseConfigProvider)
-                                  (implicit ec: ExecutionContext) {
+    protected val tagDao: TagDao,
+    protected val transactionDao: TransactionDao,
+    protected val errors: ErrorService,
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext) {
 
   /**
     * Removes empty operations from list of (DTO) operations.
@@ -30,7 +30,8 @@ class TransactionService @Inject()(
     * @param ops list to process.
     * @return list with non-empty operations only.
     */
-  def stripEmptyOps(ops: Seq[OperationDto]): Seq[OperationDto] = ops.filter(o => o.amount != 0)
+  def stripEmptyOps(ops: Seq[OperationDto]): Seq[OperationDto] =
+    ops.filter(o => o.amount != 0)
 
   /**
     * Checks list of (DTO) operations for validity.
@@ -59,9 +60,16 @@ class TransactionService @Inject()(
     */
   def txToDto(tx: Transaction): Future[TransactionDto] = {
     for {
-      o <- transactionDao.listOperations(tx.id.get).map(x => x.map(o => OperationDto(o.account_id, o.amount)))
+      o <- transactionDao
+        .listOperations(tx.id.get)
+        .map(x => x.map(o => OperationDto(o.account_id, o.amount)))
       t <- transactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
-    } yield TransactionDto(Some(tx.id.get), tx.timestamp, tx.comment, operations = o, tags = t)
+    } yield
+      TransactionDto(Some(tx.id.get),
+                     tx.timestamp,
+                     tx.comment,
+                     operations = o,
+                     tags = t)
   }
 
   /**
@@ -72,7 +80,9 @@ class TransactionService @Inject()(
   def add(tx: TransactionDto): Future[TransactionDto] = {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
     val tags = tx.tags.map(tagDao.ensureIdByValue)
-    val operations = tx.operations.map { x => Operation(-1, -1, x.account_id, x.amount) }
+    val operations = tx.operations.map { x =>
+      Operation(-1, -1, x.account_id, x.amount)
+    }
     transactionDao.insert(transaction, operations, tags).flatMap(txToDto)
   }
 
@@ -80,8 +90,12 @@ class TransactionService @Inject()(
     * Returns all transaction objects from the database.
     * @return Sequence of transaction DTOs.
     */
-  def list(filter: TransactionFilter, sort: Seq[SortBy], page: Option[Page]): Future[Seq[TransactionDto]] =
-  transactionDao.list(filter, sort, page).flatMap(s => Future.sequence(s.map(t => txToDto(t))))
+  def list(filter: TransactionFilter,
+           sort: Seq[SortBy],
+           page: Option[Page]): Future[Seq[TransactionDto]] =
+    transactionDao
+      .list(filter, sort, page)
+      .flatMap(s => Future.sequence(s.map(t => txToDto(t))))
 
   /**
     * Retrieves specific Transaction.

@@ -7,9 +7,11 @@ import controllers.api.OWritesOps._
 /**
   * Currency entity
   */
-case class Currency (id: Option[Long], code: String, name: String) extends ApiObject
+case class Currency(id: Option[Long], code: String, name: String)
+    extends ApiObject
 
 object Currency {
-  implicit val currencyWrites = Json.writes[Currency]
+  implicit val currencyWrites = Json
+    .writes[Currency]
     .removeField("id")
 }

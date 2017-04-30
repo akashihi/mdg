@@ -16,5 +16,11 @@ class BudgetEntries(tag: Tag) extends Table[BudgetEntry](tag, "budgetentry") {
   def even_distribution = column[Boolean]("even_distribution")
   def proration = column[Option[Boolean]]("proration")
   def expected_amount = column[BigDecimal]("expected_amount")
-  def * = (id.?, budget_id, account_id, even_distribution, proration, expected_amount) <> ((BudgetEntry.apply _).tupled, BudgetEntry.unapply)
+  def * =
+    (id.?,
+     budget_id,
+     account_id,
+     even_distribution,
+     proration,
+     expected_amount) <> ((BudgetEntry.apply _).tupled, BudgetEntry.unapply)
 }

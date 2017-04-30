@@ -13,13 +13,17 @@ import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
 
-class BudgetEntryDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
+class BudgetEntryDao @Inject()(
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
   val entries = BudgetEntryDao.entries
 
-  def list(budget_id: Long): Future[Seq[BudgetEntry]] = db.run(entries.filter(_.budget_id === budget_id).result)
+  def list(budget_id: Long): Future[Seq[BudgetEntry]] =
+    db.run(entries.filter(_.budget_id === budget_id).result)
 
-  def find(id: Long, budget_id: Long): Future[Option[BudgetEntry]] = db.run(entries.filter(_.id === id).result.headOption)
+  def find(id: Long, budget_id: Long): Future[Option[BudgetEntry]] =
+    db.run(entries.filter(_.id === id).result.headOption)
 
   def update(entry: BudgetEntry): Future[Option[BudgetEntry]] = {
     db.run(entries.filter(_.id === entry.id).update(entry)).map {
@@ -28,19 +32,28 @@ class BudgetEntryDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     }
   }
 
-  def getActualSpendings(account_id: Long, budget: Budget): Future[BigDecimal] = {
-    val query = transactionsForPeriod(budget.term_beginning, budget.term_end).flatMap { txId =>
-        val value = operations.filter(_.tx_id inSet txId).filter(_.account_id === account_id).map(_.amount).sum.result
+  def getActualSpendings(account_id: Long,
+                         budget: Budget): Future[BigDecimal] = {
+    val query =
+      transactionsForPeriod(budget.term_beginning, budget.term_end).flatMap {
+        txId =>
+          val value = operations
+            .filter(_.tx_id inSet txId)
+            .filter(_.account_id === account_id)
+            .map(_.amount)
+            .sum
+            .result
 
-        accountByIdAction(account_id).flatMap { acc =>
-          value.map { a =>
-            val amount = a.getOrElse(BigDecimal(0))
-            acc match {
-              case None => amount
-              case Some(x) => if (x.account_type == IncomeAccount) -amount else amount
+          accountByIdAction(account_id).flatMap { acc =>
+            value.map { a =>
+              val amount = a.getOrElse(BigDecimal(0))
+              acc match {
+                case None => amount
+                case Some(x) =>
+                  if (x.account_type == IncomeAccount) -amount else amount
+              }
             }
           }
-        }
       }
     db.run(query)
   }

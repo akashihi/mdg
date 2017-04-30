@@ -12,7 +12,7 @@ import play.api.libs.json.Writes
 /**
   * Base type for all api objects.
   */
-trait ApiObject{
+trait ApiObject {
   def id: Option[Long]
 }
 

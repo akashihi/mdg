@@ -5,7 +5,7 @@ import play.api.libs.json._
 /**
   * Operation entity simplified wrapper
   */
-case class OperationDto (account_id: Long, amount: BigDecimal)
+case class OperationDto(account_id: Long, amount: BigDecimal)
 
 object OperationDto {
   implicit val operationDtoRead = Json.reads[OperationDto]

@@ -10,16 +10,17 @@ import controllers.api.OWritesOps._
   * Budget wrapper.
   */
 case class BudgetOutgoingAmount(expected: BigDecimal, actual: BigDecimal)
-case class BudgetDTO (
-                       id: Option[Long],
-                       term_beginning: LocalDate,
-                       term_end: LocalDate,
-                       incoming_amount: BigDecimal,
-                       outgoing_amount: BudgetOutgoingAmount
-                  ) extends ApiObject
+case class BudgetDTO(
+    id: Option[Long],
+    term_beginning: LocalDate,
+    term_end: LocalDate,
+    incoming_amount: BigDecimal,
+    outgoing_amount: BudgetOutgoingAmount
+) extends ApiObject
 
 object BudgetDTO {
   implicit val budgetOutgoingWrites = Json.writes[BudgetOutgoingAmount]
-  implicit val budgetWrites = Json.writes[BudgetDTO]
+  implicit val budgetWrites = Json
+    .writes[BudgetDTO]
     .removeField("id")
 }

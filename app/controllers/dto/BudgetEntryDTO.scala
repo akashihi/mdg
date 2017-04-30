@@ -13,10 +13,11 @@ case class BudgetEntryDTO(id: Option[Long],
                           proration: Option[Boolean],
                           expected_amount: BigDecimal,
                           actual_amount: BigDecimal,
-                          change_amount: Option[BigDecimal]
-                         ) extends ApiObject
+                          change_amount: Option[BigDecimal])
+    extends ApiObject
 
 object BudgetEntryDTO {
-  implicit val budgetEntryWrites = Json.writes[BudgetEntryDTO]
+  implicit val budgetEntryWrites = Json
+    .writes[BudgetEntryDTO]
     .removeField("id")
 }

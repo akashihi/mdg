@@ -15,7 +15,10 @@ import scala.concurrent.{ExecutionContext, Future}
   * Currency resource REST controller
   */
 @Singleton
-class CurrencyController @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, protected val errors: ErrorService)(implicit ec: ExecutionContext) extends Controller {
+class CurrencyController @Inject()(
+    protected val dbConfigProvider: DatabaseConfigProvider,
+    protected val errors: ErrorService)(implicit ec: ExecutionContext)
+    extends Controller {
   val db = dbConfigProvider.get[JdbcProfile].db
 
   /**

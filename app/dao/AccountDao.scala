@@ -13,18 +13,26 @@ import slick.profile.SqlAction
 
 import scala.concurrent._
 
-class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
+class AccountDao @Inject()(
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
   val accounts = AccountDao.accounts
 
   def list(filter: AccountFilter): Future[Seq[Account]] = {
-    db.run(accounts.filter { a =>
-      List(
-        filter.currency_id.map(a.currency_id === _),
-        filter.name.map(a.name === _),
-        filter.hidden.map(a.hidden === _)
-      ).collect({ case Some(x) => x }).reduceLeftOption(_ || _).getOrElse(true: Rep[Boolean])
-    }.sortBy(_.name.asc).result)
+    db.run(
+      accounts
+        .filter { a =>
+          List(
+            filter.currency_id.map(a.currency_id === _),
+            filter.name.map(a.name === _),
+            filter.hidden.map(a.hidden === _)
+          ).collect({ case Some(x) => x })
+            .reduceLeftOption(_ || _)
+            .getOrElse(true: Rep[Boolean])
+        }
+        .sortBy(_.name.asc)
+        .result)
   }
 
   def findById(id: Long): Future[Option[Account]] = {
@@ -32,7 +40,9 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   }
 
   def insert(a: Account): Future[Account] = {
-    db.run(accounts returning accounts.map(_.id) into ((item, id) => item.copy(id = id)) += a)
+    db.run(
+      accounts returning accounts
+        .map(_.id) into ((item, id) => item.copy(id = id)) += a)
   }
 
   def update(a: Account): Future[Option[Account]] = {
@@ -43,10 +53,11 @@ class AccountDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   }
 
   def delete(id: Long): Future[Option[Int]] = {
-    db.run((for {a <- accounts if a.id === id} yield a.hidden).update(true)).map {
-      case 1 => Some(1)
-      case _ => None
-    }
+    db.run((for { a <- accounts if a.id === id } yield a.hidden).update(true))
+      .map {
+        case 1 => Some(1)
+        case _ => None
+      }
   }
 }
 

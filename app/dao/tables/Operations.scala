@@ -12,5 +12,6 @@ class Operations(tag: Tag) extends Table[Operation](tag, "operation") {
   def tx_id = column[Long]("tx_id")
   def account_id = column[Long]("account_id")
   def amount = column[BigDecimal]("amount")
-  def * = (id, tx_id, account_id, amount) <> ((Operation.apply _).tupled, Operation.unapply)
+  def * =
+    (id, tx_id, account_id, amount) <> ((Operation.apply _).tupled, Operation.unapply)
 }

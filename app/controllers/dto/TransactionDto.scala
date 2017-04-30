@@ -6,17 +6,16 @@ import controllers.api.ApiObject
 import play.api.libs.json._
 import controllers.api.OWritesOps._
 
-
 /**
   * Transaction wrapper.
   */
 case class TransactionDto(
-                           id: Option[Long],
-                           timestamp: LocalDateTime,
-                           comment: Option[String],
-                           tags: Seq[String] = Seq(),
-                           operations: Seq[OperationDto] = Seq()
-                         ) extends ApiObject
+    id: Option[Long],
+    timestamp: LocalDateTime,
+    comment: Option[String],
+    tags: Seq[String] = Seq(),
+    operations: Seq[OperationDto] = Seq()
+) extends ApiObject
 
 object TransactionDto {
   implicit val localDateTimeFormat = new Format[LocalDateTime] {
@@ -28,14 +27,16 @@ object TransactionDto {
 
   implicit val transactionRead = Json.reads[TransactionDto]
 
-  implicit val transactionWrites = Json.writes[TransactionDto]
+  implicit val transactionWrites = Json
+    .writes[TransactionDto]
     .removeField("id")
 }
 
 case class TransactionAttributeDto(`type`: String, attributes: TransactionDto)
 object TransactionAttributeDto {
   implicit val transactionAttributesRead = Json.reads[TransactionAttributeDto]
-  implicit val transactionAttributesWrites = Json.writes[TransactionAttributeDto]
+  implicit val transactionAttributesWrites =
+    Json.writes[TransactionAttributeDto]
 }
 
 case class TransactionWrapperDto(data: TransactionAttributeDto)

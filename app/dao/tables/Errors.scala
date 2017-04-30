@@ -12,5 +12,6 @@ class Errors(tag: Tag) extends Table[Error](tag, "error") {
   def status = column[String]("status")
   def title = column[String]("title")
   def detail = column[Option[String]]("detail")
-  def * = (code, status, title, detail) <> ((Error.apply _).tupled, Error.unapply)
+  def * =
+    (code, status, title, detail) <> ((Error.apply _).tupled, Error.unapply)
 }

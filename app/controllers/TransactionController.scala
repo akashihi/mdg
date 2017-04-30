@@ -17,8 +17,10 @@ import scala.concurrent._
 /**
   * Transaction REST resource controller
   */
-class TransactionController @Inject()(protected val transactionService: TransactionService,
-                                      val errors: ErrorService)(implicit ec: ExecutionContext) extends Controller {
+class TransactionController @Inject()(
+    protected val transactionService: TransactionService,
+    val errors: ErrorService)(implicit ec: ExecutionContext)
+    extends Controller {
 
   /**
     * Common transaction modification function.
@@ -28,10 +30,17 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @param op modification operation to be done.
     * @return result of modification operation.
     */
-  def modifyTransaction(id: Option[Long], data: JsValue, op: (TransactionDto) => Future[Result]): Future[Result] = {
+  def modifyTransaction(
+      id: Option[Long],
+      data: JsValue,
+      op: (TransactionDto) => Future[Result]): Future[Result] = {
     data.validate[TransactionWrapperDto].asOpt match {
       case Some(x) =>
-        def tx = x.data.attributes.copy(id = id, operations = transactionService.stripEmptyOps(x.data.attributes.operations))
+        def tx =
+          x.data.attributes.copy(
+            id = id,
+            operations =
+              transactionService.stripEmptyOps(x.data.attributes.operations))
         transactionService.invalidateOperations(tx.operations) match {
           case Some(e) => e
           case None => op(tx)
@@ -47,9 +56,11 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @param tx transaction data to create
     * @return Wrapped to json data of newly created transaction.
     */
-  def createOp(tx: TransactionDto): Future[Result] = transactionService.add(tx).map {
-    r => Created(wrapJson(r)).withHeaders("Location" -> s"/api/transaction/${r.id}")
-  }
+  def createOp(tx: TransactionDto): Future[Result] =
+    transactionService.add(tx).map { r =>
+      Created(wrapJson(r))
+        .withHeaders("Location" -> s"/api/transaction/${r.id}")
+    }
 
   /**
     * Adds new transaction to the system.
@@ -64,15 +75,19 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * Retrieves transactions, matching specified predicates.
     * @return List of transactions wrapped to JSON.
     */
-  def index(
-             filter: Option[String],
-             sort: Option[String],
-             notEarlier: Option[String],
-             notLater: Option[String],
-             pageSize: Option[Int],
-             pageNumber: Option[Int]) = Action.async {
+  def index(filter: Option[String],
+            sort: Option[String],
+            notEarlier: Option[String],
+            notLater: Option[String],
+            pageSize: Option[Int],
+            pageNumber: Option[Int]) = Action.async {
     val f = (filter match {
-      case Some(x) => Json.parse(x).validate[TransactionFilter].asOpt.getOrElse(TransactionFilter())
+      case Some(x) =>
+        Json
+          .parse(x)
+          .validate[TransactionFilter]
+          .asOpt
+          .getOrElse(TransactionFilter())
       case None => TransactionFilter()
     }).copy(notEarlier = notEarlier, notLater = notLater)
 
@@ -81,13 +96,12 @@ class TransactionController @Inject()(protected val transactionService: Transact
       case _ => None
     }
 
-    transactionService.list(f,
-      sort match {
+    transactionService
+      .list(f, sort match {
         case Some(x) => x
         case None => Seq[SortBy]()
-      },
-      page
-    ).map(x => Ok(wrapJson(x)))
+      }, page)
+      .map(x => Ok(wrapJson(x)))
   }
 
   /**
@@ -108,7 +122,10 @@ class TransactionController @Inject()(protected val transactionService: Transact
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    modifyTransaction(Some(id), request.body, (tx: TransactionDto) => transactionService.delete(id, () => createOp(tx)))
+    modifyTransaction(Some(id),
+                      request.body,
+                      (tx: TransactionDto) =>
+                        transactionService.delete(id, () => createOp(tx)))
   }
 
   /**

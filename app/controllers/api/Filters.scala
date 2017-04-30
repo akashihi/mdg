@@ -6,4 +6,5 @@ import play.api.http.DefaultHttpFilters
 /**
   * Dictionary of filters, that should be applied to the actions.
   */
-class Filters @Inject() (ct: CustomContentTypeAddingFilter) extends DefaultHttpFilters(ct)
+class Filters @Inject()(ct: CustomContentTypeAddingFilter)
+    extends DefaultHttpFilters(ct)

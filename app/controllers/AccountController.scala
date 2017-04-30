@@ -16,7 +16,10 @@ import scala.concurrent._
   * Account Resource REST controller.
   */
 @Singleton
-class AccountController @Inject()(protected val dao: AccountDao, protected val errors: ErrorService)(implicit ec: ExecutionContext) extends Controller {
+class AccountController @Inject()(
+    protected val dao: AccountDao,
+    protected val errors: ErrorService)(implicit ec: ExecutionContext)
+    extends Controller {
 
   /**
     * Adds new account to the system.
@@ -26,18 +29,23 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
   def create = Action.async(parse.tolerantJson) { request =>
     val account = for {
       n <- (request.body \ "data" \ "attributes" \ "name").asOpt[String]
-      t <- (request.body \ "data" \ "attributes" \ "account_type").asOpt[String]
+      t <- (request.body \ "data" \ "attributes" \ "account_type")
+        .asOpt[String]
       c <- (request.body \ "data" \ "attributes" \ "currency_id").asOpt[Long]
-      b <- (request.body \ "data" \ "attributes" \ "balance").asOpt[BigDecimal] match {
+      b <- (request.body \ "data" \ "attributes" \ "balance")
+        .asOpt[BigDecimal] match {
         case Some(x) => Some(x)
         case None => Some[BigDecimal](0)
       }
     } yield Account(Some(0), AccountType(t), c, n, b, hidden = false)
 
     account match {
-      case Some(x) => dao.insert(x).map {
-        r => Created(wrapJson(r)).as("application/vnd.mdg+json").withHeaders("Location" -> s"/api/account/${r.id}")
-      }
+      case Some(x) =>
+        dao.insert(x).map { r =>
+          Created(wrapJson(r))
+            .as("application/vnd.mdg+json")
+            .withHeaders("Location" -> s"/api/account/${r.id}")
+        }
       case None => errors.errorFor("ACCOUNT_DATA_INVALID")
     }
   }
@@ -48,10 +56,17 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
     * @return list of accounts on system, wrapped to json.
     */
   def index(filter: Option[String]) = Action.async {
-    dao.list(filter match {
-      case Some(x) => Json.parse(x).validate[AccountFilter].asOpt.getOrElse(AccountFilter(None, None, None))
-      case None => AccountFilter(None, None, None)
-    }).map(x => Ok(wrapJson(x)))
+    dao
+      .list(filter match {
+        case Some(x) =>
+          Json
+            .parse(x)
+            .validate[AccountFilter]
+            .asOpt
+            .getOrElse(AccountFilter(None, None, None))
+        case None => AccountFilter(None, None, None)
+      })
+      .map(x => Ok(wrapJson(x)))
   }
 
   /**
@@ -78,10 +93,14 @@ class AccountController @Inject()(protected val dao: AccountDao, protected val e
     val h = (request.body \ "data" \ "attributes" \ "hidden").asOpt[Boolean]
     dao.findById(id).flatMap {
       case None => errors.errorFor("ACCOUNT_NOT_FOUND")
-      case Some(x) => dao.update(x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden))).flatMap {
-        case None => errors.errorFor("ACCOUNT_NOT_UPDATED")
-        case Some(r) => Future(Accepted(wrapJson(r)))
-      }
+      case Some(x) =>
+        dao
+          .update(
+            x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden)))
+          .flatMap {
+            case None => errors.errorFor("ACCOUNT_NOT_UPDATED")
+            case Some(r) => Future(Accepted(wrapJson(r)))
+          }
     }
   }
 

@@ -16,11 +16,12 @@ class Budgets(tag: Tag) extends Table[Budget](tag, "budget") {
   def id = column[Long]("id", O.PrimaryKey)
   def term_beginning = column[LocalDate]("term_beginning")
   def term_end = column[LocalDate]("term_end")
-  def * = (id.?, term_beginning, term_end) <> ((Budget.apply _).tupled, Budget.unapply)
+  def * =
+    (id.?, term_beginning, term_end) <> ((Budget.apply _).tupled, Budget.unapply)
 }
 
 object Budgets {
-  implicit val localDtoDate = MappedColumnType.base[LocalDate, Date] (
+  implicit val localDtoDate = MappedColumnType.base[LocalDate, Date](
     l => Date.valueOf(l),
     d => d.toLocalDate
   )
