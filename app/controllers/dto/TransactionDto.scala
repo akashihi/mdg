@@ -2,7 +2,7 @@ package controllers.dto
 
 import java.time.LocalDateTime
 
-import controllers.api.ApiObject
+import controllers.api.IdentifiableObject
 import play.api.libs.json._
 import controllers.api.OWritesOps._
 
@@ -15,7 +15,7 @@ case class TransactionDto(
     comment: Option[String],
     tags: Seq[String] = Seq(),
     operations: Seq[OperationDto] = Seq()
-) extends ApiObject
+) extends IdentifiableObject
 
 object TransactionDto {
   implicit val localDateTimeFormat = new Format[LocalDateTime] {

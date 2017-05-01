@@ -2,7 +2,7 @@ package controllers.dto
 
 import java.time.LocalDate
 
-import controllers.api.ApiObject
+import controllers.api.IdentifiableObject
 import play.api.libs.json._
 import controllers.api.OWritesOps._
 
@@ -16,7 +16,7 @@ case class BudgetDTO(
     term_end: LocalDate,
     incoming_amount: BigDecimal,
     outgoing_amount: BudgetOutgoingAmount
-) extends ApiObject
+) extends IdentifiableObject
 
 object BudgetDTO {
   implicit val budgetOutgoingWrites = Json.writes[BudgetOutgoingAmount]

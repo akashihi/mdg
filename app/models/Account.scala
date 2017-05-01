@@ -1,6 +1,6 @@
 package models
 
-import controllers.api.ApiObject
+import controllers.api.IdentifiableObject
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import controllers.api.OWritesOps._
@@ -30,7 +30,7 @@ case class Account(id: Option[Long],
                    name: String,
                    balance: BigDecimal,
                    hidden: Boolean)
-    extends ApiObject
+    extends IdentifiableObject
 
 object AccountType {
   def apply(arg: String): AccountType = arg match {

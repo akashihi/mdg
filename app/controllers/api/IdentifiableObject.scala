@@ -12,12 +12,14 @@ import play.api.libs.json.Writes
 /**
   * Base type for all api objects.
   */
-trait ApiObject {
+trait ApiObject
+
+trait IdentifiableObject {
   def id: Option[Long]
 }
 
-object ApiObject {
-  implicit val apiObjectWrites = Writes[ApiObject] {
+object IdentifiableObject {
+  implicit val apiObjectWrites = Writes[IdentifiableObject] {
     case currency: Currency => currencyWrites.writes(currency)
     case account: Account => accountWrites.writes(account)
     case transaction: TransactionDto => transactionWrites.writes(transaction)
