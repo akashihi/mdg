@@ -3,6 +3,7 @@ import {Tabs, Tab} from 'material-ui/Tabs';
 
 import Overview from './Overview';
 import BudgetViewer from '../containers/BudgetViewer'
+import AccountsPage from '../components/AccountsPage'
 
 
 export default class MainTabs extends Component {
@@ -16,6 +17,9 @@ export default class MainTabs extends Component {
             </Tab>
             <Tab label='Operations'>
                 <p>Operations</p>
+            </Tab>
+            <Tab label='Accounts'>
+                <AccountsPage/>
             </Tab>
         </Tabs>)
     }
