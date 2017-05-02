@@ -10,6 +10,7 @@ import play.api.mvc.Results._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 import controllers.api.JsonWrapper._
+
 import scala.concurrent._
 
 /**
@@ -21,16 +22,23 @@ class ErrorService @Inject()(
   val db = dbConfigProvider.get[JdbcProfile].db
   val errors = TableQuery[Errors]
 
-  def errorFor(code: String): Future[Result] = {
-    db.run(errors.filter(_.code === code).result.headOption)
+  def getErrorFor(code: String): DBIO[Error] = {
+    errors
+      .filter(_.code === code)
+      .result
+      .headOption
       .map {
+        case Some(x) => x
         case None =>
           Error(code,
                 "500",
                 "Unknown error occurred",
                 Some("This error code have no description in the database"))
-        case Some(x) => x
       }
+  }
+
+  def errorFor(code: String): Future[Result] = {
+    db.run(getErrorFor(code))
       .map { x =>
         (x.status, wrapJson(x))
       }

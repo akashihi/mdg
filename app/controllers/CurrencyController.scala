@@ -2,14 +2,15 @@ package controllers
 
 import javax.inject._
 
-import controllers.api.JsonWrapper._
+import controllers.api.ResultMaker._
 import dao._
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 import services.ErrorService
 import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 /**
   * Currency resource REST controller
@@ -27,7 +28,7 @@ class CurrencyController @Inject()(
     * @return list of currencies on system, wrapped to json.
     */
   def index = Action.async {
-    db.run(CurrencyDao.list()).map(x => Ok(wrapJson(x)))
+    db.run(CurrencyDao.list().map(x => makeResult(x)(OK)))
   }
 
   /**
@@ -37,9 +38,11 @@ class CurrencyController @Inject()(
     * @return currency object.
     */
   def show(id: Long) = Action.async {
-    db.run(CurrencyDao.findById(id)).flatMap {
-      case None => errors.errorFor("CURRENCY_NOT_FOUND")
-      case Some(x) => Future(Ok(wrapJson(x)))
+    val result = CurrencyDao.findById(id).flatMap {
+      case Some(x) => DBIO.successful(makeResult(x)(OK))
+      case None =>
+        errors.getErrorFor("CURRENCY_NOT_FOUND").map(x => makeResult(x))
     }
+    db.run(result)
   }
 }
