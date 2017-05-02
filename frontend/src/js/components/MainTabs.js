@@ -3,7 +3,7 @@ import {Tabs, Tab} from 'material-ui/Tabs';
 
 import Overview from './Overview';
 import BudgetViewer from '../containers/BudgetViewer'
-import AccountsPage from '../components/AccountsPage'
+import AccountsViewer from '../containers/AccountsViewer'
 
 
 export default class MainTabs extends Component {
@@ -19,7 +19,7 @@ export default class MainTabs extends Component {
                 <p>Operations</p>
             </Tab>
             <Tab label='Accounts'>
-                <AccountsPage/>
+                <AccountsViewer/>
             </Tab>
         </Tabs>)
     }

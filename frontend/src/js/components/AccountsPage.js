@@ -8,6 +8,9 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 import Divider from 'material-ui/Divider';
 
 export default class AccountsPage extends Component {
+    componentDidMount() {
+        this.props.currencyActions.loadCurrencyList()
+    }
     render() {
         return (
             <Card>
