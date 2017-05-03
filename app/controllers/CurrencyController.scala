@@ -17,8 +17,8 @@ import scala.concurrent.ExecutionContext
   */
 @Singleton
 class CurrencyController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider,
-    protected val errors: ErrorService)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
     extends Controller {
   val db = dbConfigProvider.get[JdbcProfile].db
 
@@ -41,7 +41,7 @@ class CurrencyController @Inject()(
     val result = CurrencyDao.findById(id).flatMap {
       case Some(x) => DBIO.successful(makeResult(x)(OK))
       case None =>
-        errors.getErrorFor("CURRENCY_NOT_FOUND").map(x => makeResult(x))
+        ErrorService.getErrorFor("CURRENCY_NOT_FOUND").map(x => makeResult(x))
     }
     db.run(result)
   }

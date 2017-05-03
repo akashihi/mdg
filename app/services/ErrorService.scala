@@ -20,6 +20,29 @@ class ErrorService @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext) {
   val db = dbConfigProvider.get[JdbcProfile].db
+  val errors = ErrorService.errors
+
+  def errorFor(code: String): Future[Result] = {
+    db.run(ErrorService.getErrorFor(code))
+      .map { x =>
+        (x.status, wrapJson(x))
+      }
+      .map {
+        case (status, x) =>
+          status match {
+            case "404" => NotFound(x)
+            case "412" => PreconditionFailed(x)
+            case "422" => UnprocessableEntity(x)
+            case "500" => InternalServerError(x)
+            case _ => InternalServerError(x)
+          }
+      }
+  }
+}
+
+object ErrorService {
+  import play.api.libs.concurrent.Execution.Implicits._
+
   val errors = TableQuery[Errors]
 
   def getErrorFor(code: String): DBIO[Error] = {
@@ -34,23 +57,6 @@ class ErrorService @Inject()(
                 "500",
                 "Unknown error occurred",
                 Some("This error code have no description in the database"))
-      }
-  }
-
-  def errorFor(code: String): Future[Result] = {
-    db.run(getErrorFor(code))
-      .map { x =>
-        (x.status, wrapJson(x))
-      }
-      .map {
-        case (status, x) =>
-          status match {
-            case "404" => NotFound(x)
-            case "412" => PreconditionFailed(x)
-            case "422" => UnprocessableEntity(x)
-            case "500" => InternalServerError(x)
-            case _ => InternalServerError(x)
-          }
       }
   }
 }
