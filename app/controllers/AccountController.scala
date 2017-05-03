@@ -2,13 +2,16 @@ package controllers
 
 import javax.inject._
 
-import controllers.api.JsonWrapper._
+import controllers.api.ResultMaker._
 import dao.AccountDao
 import dao.filters.AccountFilter
 import models.{Account, AccountType}
+import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.json._
 import play.api.mvc._
 import services.ErrorService
+import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
 
@@ -17,9 +20,10 @@ import scala.concurrent._
   */
 @Singleton
 class AccountController @Inject()(
-    protected val dao: AccountDao,
+    protected val dbConfigProvider: DatabaseConfigProvider,
     protected val errors: ErrorService)(implicit ec: ExecutionContext)
     extends Controller {
+  val db = dbConfigProvider.get[JdbcProfile].db
 
   /**
     * Adds new account to the system.
@@ -39,15 +43,15 @@ class AccountController @Inject()(
       }
     } yield Account(Some(0), AccountType(t), c, n, b, hidden = false)
 
-    account match {
+    val result = account match {
       case Some(x) =>
-        dao.insert(x).map { r =>
-          Created(wrapJson(r))
-            .as("application/vnd.mdg+json")
+        AccountDao.insert(x).map { r =>
+          makeResult(r)(CREATED)
             .withHeaders("Location" -> s"/api/account/${r.id}")
         }
-      case None => errors.errorFor("ACCOUNT_DATA_INVALID")
+      case None => ErrorService.getErrorFor("ACCOUNT_DATA_INVALID").map(x => makeResult(x))
     }
+    db.run(result)
   }
 
   /**
@@ -56,17 +60,13 @@ class AccountController @Inject()(
     * @return list of accounts on system, wrapped to json.
     */
   def index(filter: Option[String]) = Action.async {
-    dao
-      .list(filter match {
-        case Some(x) =>
-          Json
-            .parse(x)
-            .validate[AccountFilter]
-            .asOpt
-            .getOrElse(AccountFilter(None, None, None))
-        case None => AccountFilter(None, None, None)
-      })
-      .map(x => Ok(wrapJson(x)))
+    val accountFilter = filter
+      .flatMap { x =>
+        Json.parse(x).validate[AccountFilter].asOpt
+      }
+      .getOrElse(AccountFilter(None, None, None))
+    val result = AccountDao.list(accountFilter).map(x => makeResult(x)(OK))
+    db.run(result)
   }
 
   /**
@@ -76,10 +76,12 @@ class AccountController @Inject()(
     * @return account object.
     */
   def show(id: Long) = Action.async {
-    dao.findById(id).flatMap {
-      case None => errors.errorFor("ACCOUNT_NOT_FOUND")
-      case Some(x) => Future(Ok(wrapJson(x)))
+    val result = AccountDao.findById(id).flatMap {
+      case None =>
+        ErrorService.getErrorFor("ACCOUNT_NOT_FOUND").map(x => makeResult(x))
+      case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
+    db.run(result)
   }
 
   /**
@@ -91,17 +93,22 @@ class AccountController @Inject()(
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
     val n = (request.body \ "data" \ "attributes" \ "name").asOpt[String]
     val h = (request.body \ "data" \ "attributes" \ "hidden").asOpt[Boolean]
-    dao.findById(id).flatMap {
-      case None => errors.errorFor("ACCOUNT_NOT_FOUND")
+    val result = AccountDao.findById(id).flatMap {
+      case None =>
+        ErrorService.getErrorFor("ACCOUNT_NOT_FOUND").map(x => makeResult(x))
       case Some(x) =>
-        dao
+        AccountDao
           .update(
             x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden)))
           .flatMap {
-            case None => errors.errorFor("ACCOUNT_NOT_UPDATED")
-            case Some(r) => Future(Accepted(wrapJson(r)))
+            case None =>
+              ErrorService
+                .getErrorFor("ACCOUNT_NOT_UPDATED")
+                .map(x => makeResult(x))
+            case Some(r) => DBIO.successful(makeResult(r)(ACCEPTED))
           }
     }
+    db.run(result)
   }
 
   /**
@@ -111,9 +118,11 @@ class AccountController @Inject()(
     * @return HTTP 204 in case of sucess, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    dao.delete(id).flatMap {
-      case Some(_) => Future(NoContent)
-      case None => errors.errorFor("ACCOUNT_NOT_FOUND")
+    val result = AccountDao.delete(id).flatMap {
+      case Some(_) => DBIO.successful(NoContent)
+      case None =>
+        ErrorService.getErrorFor("ACCOUNT_NOT_FOUND").map(x => makeResult(x))
     }
+    db.run(result)
   }
 }

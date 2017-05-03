@@ -44,7 +44,7 @@ class BudgetEntryDao @Inject()(
             .sum
             .result
 
-          accountByIdAction(account_id).flatMap { acc =>
+          findById(account_id).flatMap { acc =>
             value.map { a =>
               val amount = a.getOrElse(BigDecimal(0))
               acc match {
