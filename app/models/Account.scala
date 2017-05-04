@@ -2,8 +2,6 @@ package models
 
 import controllers.api.IdentifiableObject
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import controllers.api.OWritesOps._
 
 /**
   * Account entity.
@@ -29,6 +27,8 @@ case class Account(id: Option[Long],
                    currency_id: Long,
                    name: String,
                    balance: BigDecimal,
+                   operational: Boolean,
+                   favorite: Boolean,
                    hidden: Boolean)
     extends IdentifiableObject
 

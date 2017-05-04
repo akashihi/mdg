@@ -100,6 +100,8 @@ An Account object has the following attributes
 - name: (string, required) - Account name
 - balance: (decimal, readonly) - Account balance. Initial value could be set during account creation
 - hidden: (boolean, optional) - Marks deleted accounts
+- favorite: (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
+- operational: (boolean, optional) - Marks account as operational. Applicable only to the 'asset' accounts
 
 ### List all Accounts [GET?filter={hidden:true}]
 
@@ -118,7 +120,9 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "account_type": "asset",
                 "currency_id": 840,
                 "name": "Current USD",
-                "balance": 100500
+                "balance": 100500,
+                "operational": true,
+                "favorite": true
             }
         },
         {
@@ -212,7 +216,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
 
 ### Modify account data [PUT]
 
-Only `hidden` and `name` fields could be changed. Value in other fields will be silently ignored.
+Only `hidden`, `name`, `favorite` and `operational` fields could be changed. Values in other fields will be silently ignored.
 
 + Request (application/vnd.mdg+json)
   {

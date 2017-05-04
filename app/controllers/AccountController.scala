@@ -41,7 +41,7 @@ class AccountController @Inject()(
         case Some(x) => Some(x)
         case None => Some[BigDecimal](0)
       }
-    } yield Account(Some(0), AccountType(t), c, n, b, hidden = false)
+    } yield Account(Some(0), AccountType(t), c, n, b, operational = false, favorite = false, hidden = false)
 
     val result = account match {
       case Some(x) =>
