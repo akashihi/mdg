@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject._
 
+import util.ApiOps._
 import controllers.api.ResultMaker._
 import dao.AccountDao
 import dao.filters.AccountFilter
@@ -14,7 +15,7 @@ import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
-import scalaz._
+import scalaz.{Failure, Success}
 
 /**
   * Account Resource REST controller.
@@ -24,6 +25,7 @@ class AccountController @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider,
     protected val errors: ErrorService)(implicit ec: ExecutionContext)
     extends Controller {
+
   val db = dbConfigProvider.get[JdbcProfile].db
 
   /**
@@ -55,18 +57,14 @@ class AccountController @Inject()(
     val result = account match {
       case Some(x) =>
         AccountService.validate(x) match {
-          case Failure(e) =>
-            ErrorService.getErrorFor(e).map(x => makeResult(x))
+          case Failure(e) => makeErrorResult(e.head)
           case Success(a) =>
             AccountDao.insert(a).map { r =>
               makeResult(r)(CREATED)
                 .withHeaders("Location" -> s"/api/account/${r.id}")
             }
         }
-      case None =>
-        ErrorService
-          .getErrorFor("ACCOUNT_DATA_INVALID")
-          .map(x => makeResult(x))
+      case None => makeErrorResult("ACCOUNT_DATA_INVALID")
     }
     db.run(result)
   }
@@ -94,8 +92,7 @@ class AccountController @Inject()(
     */
   def show(id: Long) = Action.async {
     val result = AccountDao.findById(id).flatMap {
-      case None =>
-        ErrorService.getErrorFor("ACCOUNT_NOT_FOUND").map(x => makeResult(x))
+      case None => makeErrorResult("ACCOUNT_NOT_FOUND")
       case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
     db.run(result)
@@ -111,19 +108,20 @@ class AccountController @Inject()(
     val n = (request.body \ "data" \ "attributes" \ "name").asOpt[String]
     val h = (request.body \ "data" \ "attributes" \ "hidden").asOpt[Boolean]
     val result = AccountDao.findById(id).flatMap {
-      case None =>
-        ErrorService.getErrorFor("ACCOUNT_NOT_FOUND").map(x => makeResult(x))
+      case None => makeErrorResult("ACCOUNT_NOT_FOUND")
       case Some(x) =>
-        AccountDao
-          .update(
-            x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden)))
-          .flatMap {
-            case None =>
-              ErrorService
-                .getErrorFor("ACCOUNT_NOT_UPDATED")
-                .map(x => makeResult(x))
-            case Some(r) => DBIO.successful(makeResult(r)(ACCEPTED))
-          }
+        val newAccount =
+          x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden))
+        AccountService.validate(newAccount) match {
+          case Failure(e) => makeErrorResult(e.head)
+          case Success(a) =>
+            AccountDao
+              .update(a)
+              .flatMap {
+                case None => makeErrorResult("ACCOUNT_NOT_UPDATED")
+                case Some(r) => DBIO.successful(makeResult(r)(ACCEPTED))
+              }
+        }
     }
     db.run(result)
   }
@@ -137,8 +135,7 @@ class AccountController @Inject()(
   def delete(id: Long) = Action.async {
     val result = AccountDao.delete(id).flatMap {
       case Some(_) => DBIO.successful(NoContent)
-      case None =>
-        ErrorService.getErrorFor("ACCOUNT_NOT_FOUND").map(x => makeResult(x))
+      case None => makeErrorResult("ACCOUNT_NOT_FOUND")
     }
     db.run(result)
   }

@@ -6,7 +6,7 @@ import controllers.api.ResultMaker._
 import dao._
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
-import services.ErrorService
+import util.ApiOps._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
@@ -40,8 +40,7 @@ class CurrencyController @Inject()(
   def show(id: Long) = Action.async {
     val result = CurrencyDao.findById(id).flatMap {
       case Some(x) => DBIO.successful(makeResult(x)(OK))
-      case None =>
-        ErrorService.getErrorFor("CURRENCY_NOT_FOUND").map(x => makeResult(x))
+      case None => makeErrorResult("CURRENCY_NOT_FOUND")
     }
     db.run(result)
   }
