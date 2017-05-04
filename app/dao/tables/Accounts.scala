@@ -20,5 +20,12 @@ class Accounts(tag: Tag) extends Table[Account](tag, "account") {
   def favorite = column[Boolean]("favorite")
   def hidden = column[Boolean]("hidden")
   def * =
-    (id, account_type, currency_id, name, balance, operational, favorite, hidden) <> ((Account.apply _).tupled, Account.unapply)
+    (id,
+     account_type,
+     currency_id,
+     name,
+     balance,
+     operational,
+     favorite,
+     hidden) <> ((Account.apply _).tupled, Account.unapply)
 }

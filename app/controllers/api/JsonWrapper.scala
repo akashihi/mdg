@@ -29,11 +29,11 @@ object JsonDataWrapper {
     * @return class name
     */
   def typeName(x: IdentifiableObject): String = x match {
-    case _:Currency => "currency"
-    case _:Account => "account"
-    case _:TransactionDto => "transaction"
-    case _:BudgetDTO => "budget"
-    case _:BudgetEntryDTO => "budgetentry"
+    case _: Currency => "currency"
+    case _: Account => "account"
+    case _: TransactionDto => "transaction"
+    case _: BudgetDTO => "budget"
+    case _: BudgetEntryDTO => "budgetentry"
   }
 }
 

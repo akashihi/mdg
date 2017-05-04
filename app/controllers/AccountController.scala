@@ -9,11 +9,12 @@ import models.{Account, AccountType}
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.json._
 import play.api.mvc._
-import services.ErrorService
+import services.{AccountService, ErrorService}
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
+import scalaz._
 
 /**
   * Account Resource REST controller.
@@ -41,15 +42,31 @@ class AccountController @Inject()(
         case Some(x) => Some(x)
         case None => Some[BigDecimal](0)
       }
-    } yield Account(Some(0), AccountType(t), c, n, b, operational = false, favorite = false, hidden = false)
+    } yield
+      Account(Some(0),
+              AccountType(t),
+              c,
+              n,
+              b,
+              operational = false,
+              favorite = false,
+              hidden = false)
 
     val result = account match {
       case Some(x) =>
-        AccountDao.insert(x).map { r =>
-          makeResult(r)(CREATED)
-            .withHeaders("Location" -> s"/api/account/${r.id}")
+        AccountService.validate(x) match {
+          case Failure(e) =>
+            ErrorService.getErrorFor(e).map(x => makeResult(x))
+          case Success(a) =>
+            AccountDao.insert(a).map { r =>
+              makeResult(r)(CREATED)
+                .withHeaders("Location" -> s"/api/account/${r.id}")
+            }
         }
-      case None => ErrorService.getErrorFor("ACCOUNT_DATA_INVALID").map(x => makeResult(x))
+      case None =>
+        ErrorService
+          .getErrorFor("ACCOUNT_DATA_INVALID")
+          .map(x => makeResult(x))
     }
     db.run(result)
   }

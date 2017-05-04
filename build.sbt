@@ -13,6 +13,15 @@ libraryDependencies += "com.typesafe.play" %% "play-slick" % "2.0.2"
 libraryDependencies += "org.postgresql" % "postgresql" % "9.4.1212.jre7"
 libraryDependencies += "com.ticketfly" %% "play-liquibase" % "1.4"
 
+val scalazVersion = "7.1.0"
+
+libraryDependencies ++= Seq(
+  "org.scalaz" %% "scalaz-core" % scalazVersion,
+  "org.scalaz" %% "scalaz-effect" % scalazVersion,
+  "org.scalaz" %% "scalaz-typelevel" % scalazVersion,
+  "org.scalaz" %% "scalaz-scalacheck-binding" % scalazVersion % "test"
+)
+
 // Static analysis
 enablePlugins(CopyPasteDetector)
 compile in Compile <<= (compile in Compile) dependsOn cpd

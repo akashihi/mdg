@@ -10,8 +10,8 @@ object AccountDao {
   val accounts = TableQuery[Accounts]
 
   def insert(a: Account): DBIO[Account] = {
-      accounts returning accounts
-        .map(_.id) into ((item, id) => item.copy(id = id)) += a
+    accounts returning accounts
+      .map(_.id) into ((item, id) => item.copy(id = id)) += a
   }
 
   def list(filter: AccountFilter): DBIO[Seq[Account]] = {
