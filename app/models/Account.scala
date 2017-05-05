@@ -49,7 +49,9 @@ object Account {
                "currency_id" -> o.currency_id,
                "balance" -> o.balance,
                "hidden" -> o.hidden,
-               "account_type" -> o.account_type.value)
+               "account_type" -> o.account_type.value,
+               "operational" -> o.operational,
+               "favorite" -> o.favorite)
     }
   }
 }

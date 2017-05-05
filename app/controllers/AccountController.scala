@@ -44,15 +44,13 @@ class AccountController @Inject()(
         case Some(x) => Some(x)
         case None => Some[BigDecimal](0)
       }
-    } yield
-      Account(Some(0),
-              AccountType(t),
-              c,
-              n,
-              b,
-              operational = false,
-              favorite = false,
-              hidden = false)
+      f = (request.body \ "data" \ "attributes" \ "favorite")
+        .asOpt[Boolean]
+        .getOrElse(false)
+      o = (request.body \ "data" \ "attributes" \ "operational")
+        .asOpt[Boolean]
+        .getOrElse(false)
+    } yield Account(Some(0), AccountType(t), c, n, b, f, o, hidden = false)
 
     val result = account match {
       case Some(x) =>
@@ -107,11 +105,19 @@ class AccountController @Inject()(
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
     val n = (request.body \ "data" \ "attributes" \ "name").asOpt[String]
     val h = (request.body \ "data" \ "attributes" \ "hidden").asOpt[Boolean]
+    val f = (request.body \ "data" \ "attributes" \ "favorite")
+      .asOpt[Boolean]
+    val o = (request.body \ "data" \ "attributes" \ "operational")
+      .asOpt[Boolean]
+
     val result = AccountDao.findById(id).flatMap {
       case None => makeErrorResult("ACCOUNT_NOT_FOUND")
       case Some(x) =>
         val newAccount =
-          x.copy(name = n.getOrElse(x.name), hidden = h.getOrElse(x.hidden))
+          x.copy(name = n.getOrElse(x.name),
+                 hidden = h.getOrElse(x.hidden),
+                 operational = o.getOrElse(x.operational),
+                 favorite = f.getOrElse(x.favorite))
         AccountService.validate(newAccount) match {
           case Failure(e) => makeErrorResult(e.head)
           case Success(a) =>
