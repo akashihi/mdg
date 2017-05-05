@@ -24,17 +24,17 @@ export default class AccountsPage extends Component {
         } else {
             var asset = props.assetAccounts.map(function(item) {
                 return (
-                    <div key={item.id}><Account account={item}/><Divider/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies}/><Divider/></div>
                 )
             });
             var income = props.incomeAccounts.map(function(item) {
                 return (
-                    <div key={item.id}><Account account={item}/><Divider/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies}/><Divider/></div>
                 )
             });
             var expense = props.expenseAccounts.map(function(item) {
                 return (
-                    <div key={item.id}><Account account={item}/><Divider/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies}/><Divider/></div>
                 )
             });
 

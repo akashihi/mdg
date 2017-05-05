@@ -7,6 +7,12 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 
 
 export default class Account extends Component {
+    getCurrency = function(account, currencies) {
+        var currencyId = account.currency_id;
+        var names = currencies.filter((item) => item.id == currencyId).map((item) => item.attributes.name);
+        return names[0];
+    };
+
     render() {
         var attr = this.props.account.attributes;
         var favIcon;
@@ -27,6 +33,9 @@ export default class Account extends Component {
         if (attr.hidden) {
             visibilityIcon = <IconButton><FontIcon className='material-icons'>visibility_off</FontIcon></IconButton>
         }
+
+        var currency = this.getCurrency(attr, this.props.currencies);
+
         return (
             <GridTile>
                 <Card>
@@ -37,7 +46,7 @@ export default class Account extends Component {
                                     <p>{attr.name}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <p>{attr.balance} CZK</p>
+                                    <p>{attr.balance} {currency}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
                                     {favIcon}
