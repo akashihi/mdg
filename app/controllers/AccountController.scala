@@ -2,15 +2,15 @@ package controllers
 
 import javax.inject._
 
-import util.ApiOps._
 import controllers.api.ResultMaker._
 import dao.AccountDao
 import dao.filters.AccountFilter
 import models.{Account, AccountType}
 import play.api.db.slick.DatabaseConfigProvider
+import util.ApiOps._
 import play.api.libs.json._
 import play.api.mvc._
-import services.{AccountService, ErrorService}
+import services.AccountService
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
@@ -22,11 +22,17 @@ import scalaz.{Failure, Success}
   */
 @Singleton
 class AccountController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider,
-    protected val errors: ErrorService)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
     extends Controller {
 
   val db = dbConfigProvider.get[JdbcProfile].db
+
+  def execValid(a: Account)(f: (Account) => DBIO[Result]): DBIO[Result] = {
+    AccountService.validate(a) match {
+      case Failure(e) => makeErrorResult(e.head)
+      case Success(x) => f(x)
+    }
+  }
 
   /**
     * Adds new account to the system.
@@ -53,16 +59,14 @@ class AccountController @Inject()(
     } yield Account(Some(0), AccountType(t), c, n, b, f, o, hidden = false)
 
     val result = account match {
-      case Some(x) =>
-        AccountService.validate(x) match {
-          case Failure(e) => makeErrorResult(e.head)
-          case Success(a) =>
-            AccountDao.insert(a).map { r =>
-              makeResult(r)(CREATED)
-                .withHeaders("Location" -> s"/api/account/${r.id}")
-            }
-        }
       case None => makeErrorResult("ACCOUNT_DATA_INVALID")
+      case Some(x) =>
+        execValid(x) { a: Account =>
+          AccountDao.insert(a).map { r =>
+            makeResult(r)(CREATED)
+              .withHeaders("Location" -> s"/api/account/${r.id}")
+          }
+        }
     }
     db.run(result)
   }
@@ -118,15 +122,13 @@ class AccountController @Inject()(
                  hidden = h.getOrElse(x.hidden),
                  operational = o.getOrElse(x.operational),
                  favorite = f.getOrElse(x.favorite))
-        AccountService.validate(newAccount) match {
-          case Failure(e) => makeErrorResult(e.head)
-          case Success(a) =>
-            AccountDao
-              .update(a)
-              .flatMap {
-                case None => makeErrorResult("ACCOUNT_NOT_UPDATED")
-                case Some(r) => DBIO.successful(makeResult(r)(ACCEPTED))
-              }
+        execValid(newAccount) {a:Account =>
+          AccountDao
+            .update(a)
+            .flatMap {
+              case None => makeErrorResult("ACCOUNT_NOT_UPDATED")
+              case Some(r) => DBIO.successful(makeResult(r)(ACCEPTED))
+            }
         }
     }
     db.run(result)

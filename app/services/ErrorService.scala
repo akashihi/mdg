@@ -2,14 +2,13 @@ package services
 
 import javax.inject._
 
+import controllers.api.ResultMaker._
 import dao.tables.Errors
 import models.Error
 import play.api.db.slick._
 import play.api.mvc.Result
-import play.api.mvc.Results._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
-import controllers.api.JsonWrapper._
 
 import scala.concurrent._
 
@@ -23,20 +22,9 @@ class ErrorService @Inject()(
   val errors = ErrorService.errors
 
   def errorFor(code: String): Future[Result] = {
-    db.run(ErrorService.getErrorFor(code))
-      .map { x =>
-        (x.status, wrapJson(x))
-      }
-      .map {
-        case (status, x) =>
-          status match {
-            case "404" => NotFound(x)
-            case "412" => PreconditionFailed(x)
-            case "422" => UnprocessableEntity(x)
-            case "500" => InternalServerError(x)
-            case _ => InternalServerError(x)
-          }
-      }
+    db.run(ErrorService.getErrorFor(code)).map { x =>
+      makeResult(x)
+    }
   }
 }
 

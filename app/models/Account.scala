@@ -45,13 +45,15 @@ object AccountType {
 object Account {
   implicit val accountWrites = new Writes[Account] {
     override def writes(o: Account): JsValue = {
-      Json.obj("name" -> o.name,
-               "currency_id" -> o.currency_id,
-               "balance" -> o.balance,
-               "hidden" -> o.hidden,
-               "account_type" -> o.account_type.value,
-               "operational" -> o.operational,
-               "favorite" -> o.favorite)
+      Json.obj(
+        "name" -> o.name,
+        "currency_id" -> o.currency_id,
+        "balance" -> o.balance,
+        "hidden" -> o.hidden,
+        "account_type" -> o.account_type.value,
+        "operational" -> o.operational,
+        "favorite" -> o.favorite
+      )
     }
   }
 }
