@@ -7,7 +7,9 @@ import * as CurrencyActions from '../actions/CurrencyActions'
 
 const mapStateToProps = (state) => {
     return {
-        currencies: state.currency.currencyList
+        currencies: state.currency.currencyList,
+        waiting: state.account.ui.accountListLoading,
+        error: state.account.ui.accountListError
     }
 };
 
