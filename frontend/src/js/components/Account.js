@@ -8,6 +8,25 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 
 export default class Account extends Component {
     render() {
+        var attr = this.props.account.attributes;
+        var favIcon;
+        var opIcon;
+        if (attr.account_type == 'asset') {
+            if (attr.favorite) {
+                favIcon = <IconButton><FontIcon className='material-icons'>favorite</FontIcon></IconButton>
+            } else {
+                favIcon = <IconButton><FontIcon className='material-icons'>favorite_border</FontIcon></IconButton>
+            }
+            if (attr.operational) {
+                opIcon = <IconButton><FontIcon className='material-icons'>star</FontIcon></IconButton>
+            } else {
+                opIcon = <IconButton><FontIcon className='material-icons'>star_border</FontIcon></IconButton>
+            }
+        }
+        var visibilityIcon = <IconButton><FontIcon className='material-icons'>visibility</FontIcon></IconButton>
+        if (attr.hidden) {
+            visibilityIcon = <IconButton><FontIcon className='material-icons'>visibility_off</FontIcon></IconButton>
+        }
         return (
             <GridTile>
                 <Card>
@@ -15,24 +34,15 @@ export default class Account extends Component {
                         <Grid fluid>
                             <Row>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <p>Account name</p>
+                                    <p>{attr.name}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <p>14.88 CZK</p>
+                                    <p>{attr.balance} CZK</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <IconButton><FontIcon
-                                        className='material-icons'>favorite</FontIcon></IconButton>
-                                    <IconButton><FontIcon
-                                        className='material-icons'>favorite_border</FontIcon></IconButton>
-                                    <IconButton><FontIcon
-                                        className='material-icons'>star</FontIcon></IconButton>
-                                    <IconButton><FontIcon
-                                        className='material-icons'>star_border</FontIcon></IconButton>
-                                    <IconButton><FontIcon
-                                        className='material-icons'>visibility</FontIcon></IconButton>
-                                    <IconButton><FontIcon
-                                        className='material-icons'>visibility_off</FontIcon></IconButton>
+                                    {favIcon}
+                                    {opIcon}
+                                    {visibilityIcon}
                                     <IconButton><FontIcon className='material-icons'>mode_edit</FontIcon></IconButton>
                                 </Col>
                             </Row>

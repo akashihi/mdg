@@ -1,11 +1,11 @@
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
-import { GET_ACCOUNTIST_REQUEST, GET_ACCOUNTLIST_SUCCESS, GET_ACCOUNTLIST_FAILURE} from '../constants/Account'
+import { GET_ACCOUNTLIST_REQUEST, GET_ACCOUNTLIST_SUCCESS, GET_ACCOUNTLIST_FAILURE} from '../constants/Account'
 
 export function loadAccountList() {
     return (dispatch) => {
         dispatch({
-            type: GET_ACCOUNTIST_REQUEST,
+            type: GET_ACCOUNTLIST_REQUEST,
             payload: true
         });
 

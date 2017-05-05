@@ -9,7 +9,11 @@ const mapStateToProps = (state) => {
     return {
         currencies: state.currency.currencyList,
         waiting: state.account.ui.accountListLoading,
-        error: state.account.ui.accountListError
+        error: state.account.ui.accountListError,
+        totals: state.account.totals,
+        assetAccounts: state.account.assetAccountList,
+        incomeAccounts: state.account.incomeAccountList,
+        expenseAccounts: state.account.expenseAccountList
     }
 };
 

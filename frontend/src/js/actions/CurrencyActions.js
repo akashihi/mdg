@@ -1,7 +1,7 @@
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
 import {GET_CURRENCYLIST_REQUEST, GET_CURRENCYLIST_SUCCESS, GET_CURRENCYLIST_FAILURE} from '../constants/Currency'
-import loadAccountList from './AccountViewerActions'
+import {loadAccountList} from './AccountViewerActions'
 
 export function loadCurrencyList() {
     return (dispatch) => {
@@ -17,9 +17,9 @@ export function loadCurrencyList() {
                 dispatch({
                     type: GET_CURRENCYLIST_SUCCESS,
                     payload: json.data
-                })
+                });
             })
-            .then(() => dispatch(loadAccountList))
+            .then(() => dispatch(loadAccountList()))
             .catch(function (response) {
                 dispatch({
                     type: GET_CURRENCYLIST_FAILURE,
