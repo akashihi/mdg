@@ -48,3 +48,25 @@ export function toggleHiddenAccounts(visible) {
         dispatch(()=>dispatch(loadAccountList()))
     };
 }
+
+export function updateAccount(account) {
+    return (dispatch) => {
+        dispatch({
+            type: GET_ACCOUNTLIST_REQUEST,
+            payload: true
+        });
+
+        var url = '/api/account/' + account.id;
+        fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json'
+            },
+            body: JSON.stringify({data: account})
+        })
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(()=>dispatch(loadAccountList()))
+            .catch(()=>dispatch(loadAccountList()))
+    }
+}

@@ -19,19 +19,31 @@ export default class Account extends Component {
         var opIcon;
         if (attr.account_type == 'asset') {
             if (attr.favorite) {
-                favIcon = <IconButton><FontIcon className='material-icons'>favorite</FontIcon></IconButton>
+                favIcon = <IconButton onClick={()=>this.props.switchFavoriteFunc(this.props.account, !attr.favorite)}>
+                    <FontIcon className='material-icons'>favorite</FontIcon>
+                </IconButton>
             } else {
-                favIcon = <IconButton><FontIcon className='material-icons'>favorite_border</FontIcon></IconButton>
+                favIcon = <IconButton onClick={()=>this.props.switchFavoriteFunc(this.props.account, !attr.favorite)}>
+                    <FontIcon className='material-icons'>favorite_border</FontIcon>
+                </IconButton>
             }
             if (attr.operational) {
-                opIcon = <IconButton><FontIcon className='material-icons'>star</FontIcon></IconButton>
+                opIcon = <IconButton onClick={()=>this.props.switchOperationalFunc(this.props.account, !attr.operational)}>
+                    <FontIcon className='material-icons'>star</FontIcon>
+                </IconButton>
             } else {
-                opIcon = <IconButton><FontIcon className='material-icons'>star_border</FontIcon></IconButton>
+                opIcon = <IconButton onClick={()=>this.props.switchOperationalFunc(this.props.account, !attr.operational)}>
+                    <FontIcon className='material-icons'>star_border</FontIcon>
+                </IconButton>
             }
         }
-        var visibilityIcon = <IconButton><FontIcon className='material-icons'>visibility</FontIcon></IconButton>
+        var visibilityIcon = <IconButton onClick={()=>this.props.switchHiddenFunc(this.props.account, !attr.hidden)}>
+            <FontIcon className='material-icons'>visibility</FontIcon>
+        </IconButton>;
         if (attr.hidden) {
-            visibilityIcon = <IconButton><FontIcon className='material-icons'>visibility_off</FontIcon></IconButton>
+            visibilityIcon = <IconButton onClick={()=>this.props.switchHiddenFunc(this.props.account, !attr.hidden)}>
+                <FontIcon className='material-icons'>visibility_off</FontIcon>
+            </IconButton>
         }
 
         var currency = this.getCurrency(attr, this.props.currencies);

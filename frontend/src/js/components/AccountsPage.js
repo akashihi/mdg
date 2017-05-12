@@ -4,7 +4,6 @@ import RaisedButton from 'material-ui/RaisedButton';
 import FlatButton from 'material-ui/FlatButton';
 import {GridList} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import Divider from 'material-ui/Divider';
 import CircularProgress from 'material-ui/CircularProgress';
 
 import Account from './Account'
@@ -21,6 +20,21 @@ export default class AccountsPage extends Component {
     render() {
         var props = this.props;
 
+        var onSwitchFavoriteClick = function(account, value) {
+            account.attributes.favorite = value;
+            props.actions.updateAccount(account);
+        };
+
+        var onSwitchOperationalClick = function(account, value) {
+            account.attributes.operational = value;
+            props.actions.updateAccount(account);
+        };
+
+        var onSwitchHiddenClick = function(account, value) {
+            account.attributes.hidden = value;
+            props.actions.updateAccount(account);
+        };
+
         var accounts;
         if (props.waiting) {
             accounts = <CircularProgress/>
@@ -29,17 +43,17 @@ export default class AccountsPage extends Component {
         } else {
             var asset = props.assetAccounts.map(function(item) {
                 return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies}/><Divider/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies} switchFavoriteFunc={onSwitchFavoriteClick} switchOperationalFunc={onSwitchOperationalClick} switchHiddenFunc={onSwitchHiddenClick}/></div>
                 )
             });
             var income = props.incomeAccounts.map(function(item) {
                 return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies}/><Divider/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies} switchHiddenFunc={onSwitchHiddenClick}/></div>
                 )
             });
             var expense = props.expenseAccounts.map(function(item) {
                 return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies}/><Divider/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies} switchHiddenFunc={onSwitchHiddenClick}/></div>
                 )
             });
 
