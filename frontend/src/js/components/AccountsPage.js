@@ -7,6 +7,7 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 import CircularProgress from 'material-ui/CircularProgress';
 
 import Account from './Account'
+import AccountEditor from '../containers/AccountEditor'
 
 export default class AccountsPage extends Component {
     componentDidMount() {
@@ -20,19 +21,23 @@ export default class AccountsPage extends Component {
     render() {
         var props = this.props;
 
-        var onSwitchFavoriteClick = function(account, value) {
+        var onSwitchFavoriteClick = function (account, value) {
             account.attributes.favorite = value;
             props.actions.updateAccount(account);
         };
 
-        var onSwitchOperationalClick = function(account, value) {
+        var onSwitchOperationalClick = function (account, value) {
             account.attributes.operational = value;
             props.actions.updateAccount(account);
         };
 
-        var onSwitchHiddenClick = function(account, value) {
+        var onSwitchHiddenClick = function (account, value) {
             account.attributes.hidden = value;
             props.actions.updateAccount(account);
+        };
+
+        var onEditAccountClick = function (account) {
+            props.actions.editAccount(account)
         };
 
         var accounts;
@@ -41,19 +46,27 @@ export default class AccountsPage extends Component {
         } else if (props.error) {
             accounts = <h1>Unable to load account list</h1>
         } else {
-            var asset = props.assetAccounts.map(function(item) {
+            var asset = props.assetAccounts.map(function (item) {
                 return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies} switchFavoriteFunc={onSwitchFavoriteClick} switchOperationalFunc={onSwitchOperationalClick} switchHiddenFunc={onSwitchHiddenClick}/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies}
+                                                switchFavoriteFunc={onSwitchFavoriteClick}
+                                                switchOperationalFunc={onSwitchOperationalClick}
+                                                switchHiddenFunc={onSwitchHiddenClick}
+                                                editAccountFunc={onEditAccountClick}/></div>
                 )
             });
-            var income = props.incomeAccounts.map(function(item) {
+            var income = props.incomeAccounts.map(function (item) {
                 return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies} switchHiddenFunc={onSwitchHiddenClick}/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies}
+                                                switchHiddenFunc={onSwitchHiddenClick}
+                                                editAccountFunc={onEditAccountClick}/></div>
                 )
             });
-            var expense = props.expenseAccounts.map(function(item) {
+            var expense = props.expenseAccounts.map(function (item) {
                 return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies} switchHiddenFunc={onSwitchHiddenClick}/></div>
+                    <div key={item.id}><Account account={item} currencies={props.currencies}
+                                                switchHiddenFunc={onSwitchHiddenClick}
+                                                editAccountFunc={onEditAccountClick}/></div>
                 )
             });
 
@@ -75,37 +88,40 @@ export default class AccountsPage extends Component {
         }
 
         return (
-            <Card>
-                <CardHeader>
-                    <Grid fluid>
-                        <Row>
-                            <Col xs={12} sm={12} md={4} lg={4}>
-                                <p>Total: {props.totals.total}</p>
-                            </Col>
-                            <Col xs={6} sm={6} md={4} lg={4}>
-                                <p>Favorite: {props.totals.favorite}</p>
-                            </Col>
-                            <Col xs={6} sm={6} md={4} lg={4}>
-                                <p>Operational: {props.totals.operational}</p>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col xs={12} sm={12} md={3} lg={3}>
-                                <RaisedButton label='Add new account'/>
-                            </Col>
-                            <Col xs={12} sm={12} mdOffset={6} md={3} lgOffset={6} lg={3}>
-                                {hiddenButton}
-                            </Col>
-                        </Row>
-                    </Grid>
-                </CardHeader>
-                <CardText>
+            <div>
+                <AccountEditor/>
+                <Card>
+                    <CardHeader>
+                        <Grid fluid>
+                            <Row>
+                                <Col xs={12} sm={12} md={4} lg={4}>
+                                    <p>Total: {props.totals.total}</p>
+                                </Col>
+                                <Col xs={6} sm={6} md={4} lg={4}>
+                                    <p>Favorite: {props.totals.favorite}</p>
+                                </Col>
+                                <Col xs={6} sm={6} md={4} lg={4}>
+                                    <p>Operational: {props.totals.operational}</p>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col xs={12} sm={12} md={3} lg={3}>
+                                    <RaisedButton label='Add new account'/>
+                                </Col>
+                                <Col xs={12} sm={12} mdOffset={6} md={3} lgOffset={6} lg={3}>
+                                    {hiddenButton}
+                                </Col>
+                            </Row>
+                        </Grid>
+                    </CardHeader>
+                    <CardText>
 
-                    <GridList cellHeight={70} cols={1}>
-                        {accounts}
-                    </GridList>
-                </CardText>
-            </Card>
+                        <GridList cellHeight={70} cols={1}>
+                            {accounts}
+                        </GridList>
+                    </CardText>
+                </Card>
+            </div>
         )
     }
 }

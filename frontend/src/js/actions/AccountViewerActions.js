@@ -2,7 +2,13 @@ import jQuery from 'jquery';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
-import { GET_ACCOUNTLIST_REQUEST, GET_ACCOUNTLIST_SUCCESS, GET_ACCOUNTLIST_FAILURE, TOGGLE_HIDDEN_ACCOUNTS} from '../constants/Account'
+import {
+    GET_ACCOUNTLIST_REQUEST,
+    GET_ACCOUNTLIST_SUCCESS,
+    GET_ACCOUNTLIST_FAILURE,
+    TOGGLE_HIDDEN_ACCOUNTS,
+    ACCOUNT_DIALOG_OPEN
+} from '../constants/Account'
 
 export function loadAccountList() {
     return (dispatch, getState) => {
@@ -16,7 +22,7 @@ export function loadAccountList() {
         var url = '/api/account';
 
         if (state.account.ui.hiddenAccountsVisible) {
-            var filter = {filter: JSON.stringify({ hidden: true})};
+            var filter = {filter: JSON.stringify({hidden: true})};
             url = url + '?' + jQuery.param(filter)
         }
 
@@ -68,5 +74,15 @@ export function updateAccount(account) {
             .then(checkApiError)
             .then(()=>dispatch(loadAccountList()))
             .catch(()=>dispatch(loadAccountList()))
+    }
+}
+
+export function editAccount(account) {
+    return {
+        type: ACCOUNT_DIALOG_OPEN,
+        payload: {
+            full: false,
+            account: account
+        }
     }
 }

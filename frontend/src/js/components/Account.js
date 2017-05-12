@@ -64,7 +64,9 @@ export default class Account extends Component {
                                     {favIcon}
                                     {opIcon}
                                     {visibilityIcon}
-                                    <IconButton><FontIcon className='material-icons'>mode_edit</FontIcon></IconButton>
+                                    <IconButton onClick={()=>this.props.editAccountFunc(this.props.account)}>
+                                        <FontIcon className='material-icons'>mode_edit</FontIcon>
+                                    </IconButton>
                                 </Col>
                             </Row>
                         </Grid>
