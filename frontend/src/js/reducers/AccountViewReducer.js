@@ -1,4 +1,4 @@
-import { GET_ACCOUNTLIST_REQUEST, GET_ACCOUNTLIST_FAILURE, GET_ACCOUNTLIST_SUCCESS} from '../constants/Account'
+import { GET_ACCOUNTLIST_REQUEST, GET_ACCOUNTLIST_FAILURE, GET_ACCOUNTLIST_SUCCESS, TOGGLE_HIDDEN_ACCOUNTS} from '../constants/Account'
 
 const initialState = {
     incomeAccountList: [],
@@ -36,6 +36,9 @@ export default function accountViewReducer(state = initialState, action) {
         case GET_ACCOUNTLIST_FAILURE:
             ui = {...ui, accountListLoading: false, accountListError: true};
             return {...state, incomeAccountList: [], assetAccountList: [], expenseAccountList:[], ui: ui, totals: { total: 0, favorite: 0, operational: 0}};
+        case TOGGLE_HIDDEN_ACCOUNTS:
+            ui = {...ui, hiddenAccountsVisible: action.payload};
+            return {...state, ui: ui};
         default:
             return state;
     }

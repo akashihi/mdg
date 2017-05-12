@@ -3,6 +3,7 @@ import { bindActionCreators } from 'redux'
 
 import AccountsPage from '../components/AccountsPage'
 import * as CurrencyActions from '../actions/CurrencyActions'
+import * as AccountActions from '../actions/AccountViewerActions'
 
 
 const mapStateToProps = (state) => {
@@ -11,6 +12,7 @@ const mapStateToProps = (state) => {
         waiting: state.account.ui.accountListLoading,
         error: state.account.ui.accountListError,
         totals: state.account.totals,
+        hiddenVisible: state.account.ui.hiddenAccountsVisible,
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList
@@ -19,7 +21,8 @@ const mapStateToProps = (state) => {
 
 function mapDispatchToProps(dispatch) {
     return {
-        currencyActions: bindActionCreators(CurrencyActions, dispatch)
+        currencyActions: bindActionCreators(CurrencyActions, dispatch),
+        actions: bindActionCreators(AccountActions, dispatch)
     }
 }
 

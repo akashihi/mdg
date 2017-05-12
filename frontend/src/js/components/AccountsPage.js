@@ -13,6 +13,11 @@ export default class AccountsPage extends Component {
     componentDidMount() {
         this.props.currencyActions.loadCurrencyList()
     }
+
+    onHiddenAccountsClick() {
+        this.props.actions.toggleHiddenAccounts(!this.props.hiddenVisible)
+    }
+
     render() {
         var props = this.props;
 
@@ -48,6 +53,13 @@ export default class AccountsPage extends Component {
             </div>
         }
 
+        var hiddenButton;
+        if (props.hiddenVisible) {
+            hiddenButton = <FlatButton label='Hide hidden accounts' onClick={this.onHiddenAccountsClick.bind(this)}/>
+        } else {
+            hiddenButton = <FlatButton label='Show hidden accounts' onClick={this.onHiddenAccountsClick.bind(this)}/>
+        }
+
         return (
             <Card>
                 <CardHeader>
@@ -68,7 +80,7 @@ export default class AccountsPage extends Component {
                                 <RaisedButton label='Add new account'/>
                             </Col>
                             <Col xs={12} sm={12} mdOffset={6} md={3} lgOffset={6} lg={3}>
-                                <FlatButton label='Show hidden accounts'/>
+                                {hiddenButton}
                             </Col>
                         </Row>
                     </Grid>
