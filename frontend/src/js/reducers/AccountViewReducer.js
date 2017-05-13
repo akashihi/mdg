@@ -23,7 +23,7 @@ const initialState = {
     dialog: {
         open: false,
         full: false,
-        account: {}
+        account: {attributes:{}}
     }
 };
 
