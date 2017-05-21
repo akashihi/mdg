@@ -7,7 +7,9 @@ import {
     GET_ACCOUNTLIST_SUCCESS,
     GET_ACCOUNTLIST_FAILURE,
     TOGGLE_HIDDEN_ACCOUNTS,
-    ACCOUNT_DIALOG_OPEN
+    ACCOUNT_DIALOG_OPEN,
+    ACCOUNT_DIALOG_CLOSE,
+    ACCOUNT_DIALOG_CHANGE
 } from '../constants/Account'
 
 export function loadAccountList() {
@@ -84,5 +86,32 @@ export function editAccount(account) {
             full: false,
             account: account
         }
+    }
+}
+
+export function editAccountCancel() {
+    return {
+        type: ACCOUNT_DIALOG_CLOSE,
+        payload: true
+    }
+}
+
+export function editAccountChange(account) {
+    return {
+        type: ACCOUNT_DIALOG_CHANGE,
+        payload: account
+    }
+}
+
+export function editAccountSave() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: ACCOUNT_DIALOG_CLOSE,
+            payload: true
+        });
+
+        var state = getState();
+        var account = state.account.dialog.account;
+        dispatch(updateAccount(account));
     }
 }

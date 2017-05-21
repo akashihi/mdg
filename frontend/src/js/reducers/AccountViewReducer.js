@@ -3,7 +3,9 @@ import {
     GET_ACCOUNTLIST_FAILURE,
     GET_ACCOUNTLIST_SUCCESS,
     TOGGLE_HIDDEN_ACCOUNTS,
-    ACCOUNT_DIALOG_OPEN
+    ACCOUNT_DIALOG_OPEN,
+    ACCOUNT_DIALOG_CLOSE,
+    ACCOUNT_DIALOG_CHANGE
 } from '../constants/Account'
 
 const initialState = {
@@ -23,7 +25,7 @@ const initialState = {
     dialog: {
         open: false,
         full: false,
-        account: {attributes:{}}
+        account: {attributes: {}}
     }
 };
 
@@ -33,6 +35,12 @@ export default function accountViewReducer(state = initialState, action) {
     switch (action.type) {
         case ACCOUNT_DIALOG_OPEN:
             dialog = {...dialog, open: true, full: action.payload.full, account: action.payload.account};
+            return {...state, dialog: dialog};
+        case ACCOUNT_DIALOG_CLOSE:
+            dialog = {...dialog, open: false};
+            return {...state, dialog: dialog};
+        case ACCOUNT_DIALOG_CHANGE:
+            dialog = {...dialog, account: action.payload};
             return {...state, dialog: dialog};
         case GET_ACCOUNTLIST_REQUEST:
             ui = {...ui, accountListLoading: true, accountListError: false};

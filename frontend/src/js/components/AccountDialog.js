@@ -8,9 +8,24 @@ import MenuItem from 'material-ui/MenuItem';
 
 
 export default class AccountDialog extends React.Component {
+    onSaveClick() {
+        this.props.actions.editAccountSave();
+    }
+
+    onCancelClick() {
+        this.props.actions.editAccountCancel();
+    }
+
+    onNameChange(event, value) {
+        var attr = {...this.props.account.attributes};
+        attr.name = value;
+        var account = {...this.props.account, attributes: attr};
+        this.props.actions.editAccountChange(account);
+    }
+
     render() {
         var props = this.props;
-        console.log(props.account);
+
         var currencies = props.currencies.map(function (item) {
             return (
                 <MenuItem value={item.id} key={item.id} primaryText={item.attributes.name}/>
@@ -24,9 +39,9 @@ export default class AccountDialog extends React.Component {
                 <MenuItem value='expense' primaryText='Expense account' />
             </SelectField>
             <br/>
-            <TextField hintText='Account name' value={props.account.attributes.name}/>
+            <TextField hintText='Account name' value={props.account.attributes.name} onChange={::this.onNameChange}/>
             <br/>
-            <TextField hintText='Initial amount' disabled={!props.full}/>
+            <TextField hintText='Initial amount' value={props.account.attributes.balance} disabled={!props.full}/>
             <br/>
             <SelectField floatingLabelText='Account currency' disabled={!props.full} value={props.account.attributes.currency_id}>
                 {currencies}
@@ -36,8 +51,8 @@ export default class AccountDialog extends React.Component {
             <Toggle label='Operational' toggled={props.account.attributes.operational}/>
             <Toggle label='Hidden' toggled={props.account.attributes.hidden}/>
             <br/>
-            <FlatButton label='Save' primary={true}/>
-            <FlatButton label='Cancel' secondary={true}/>
+            <FlatButton label='Save' primary={true} onClick={::this.onSaveClick}/>
+            <FlatButton label='Cancel' secondary={true} onClick={::this.onCancelClick}/>
         </Dialog>)
     }
 }
