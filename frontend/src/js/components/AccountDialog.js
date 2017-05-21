@@ -23,6 +23,27 @@ export default class AccountDialog extends React.Component {
         this.props.actions.editAccountChange(account);
     }
 
+    onFavoriteChange(event, value) {
+        var attr = {...this.props.account.attributes};
+        attr.favorite = value;
+        var account = {...this.props.account, attributes: attr};
+        this.props.actions.editAccountChange(account);
+    }
+
+    onOperationalChange(event, value) {
+        var attr = {...this.props.account.attributes};
+        attr.operational = value;
+        var account = {...this.props.account, attributes: attr};
+        this.props.actions.editAccountChange(account);
+    }
+
+    onHiddenChange(event, value) {
+        var attr = {...this.props.account.attributes};
+        attr.hidden = value;
+        var account = {...this.props.account, attributes: attr};
+        this.props.actions.editAccountChange(account);
+    }
+
     render() {
         var props = this.props;
 
@@ -47,9 +68,9 @@ export default class AccountDialog extends React.Component {
                 {currencies}
             </SelectField>
             <br/>
-            <Toggle label='Favorite' toggled={props.account.attributes.favorite}/>
-            <Toggle label='Operational' toggled={props.account.attributes.operational}/>
-            <Toggle label='Hidden' toggled={props.account.attributes.hidden}/>
+            <Toggle label='Favorite' toggled={props.account.attributes.favorite} onToggle={::this.onFavoriteChange}/>
+            <Toggle label='Operational' toggled={props.account.attributes.operational} onToggle={::this.onOperationalChange}/>
+            <Toggle label='Hidden' toggled={props.account.attributes.hidden} onToggle={::this.onHiddenChange}/>
             <br/>
             <FlatButton label='Save' primary={true} onClick={::this.onSaveClick}/>
             <FlatButton label='Cancel' secondary={true} onClick={::this.onCancelClick}/>
