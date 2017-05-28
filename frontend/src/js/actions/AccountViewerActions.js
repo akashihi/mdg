@@ -64,9 +64,15 @@ export function updateAccount(account) {
             payload: true
         });
 
-        var url = '/api/account/' + account.id;
+        var url = '/api/account';
+        var method = 'POST';
+        if (account.hasOwnProperty('id') && account['id'] ) {
+            url = url + '/' + account.id;
+            method = 'PUT';
+        }
+
         fetch(url, {
-            method: 'PUT',
+            method: method,
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
@@ -84,7 +90,7 @@ export function createAccount() {
         type: ACCOUNT_DIALOG_OPEN,
         payload: {
             full: true,
-            account: { attributes: {amount: 0} }
+            account: { attributes: {balance: 0} }
         }
     }
 }

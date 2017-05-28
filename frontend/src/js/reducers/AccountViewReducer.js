@@ -58,7 +58,8 @@ export default function accountViewReducer(state = initialState, action) {
     var dialog = state.dialog;
     switch (action.type) {
         case ACCOUNT_DIALOG_OPEN:
-            dialog = {...dialog, open: true, full: action.payload.full, account: action.payload.account, valid: !action.payload.full};
+            var validInitial = validateAccountForm(action.payload.account);
+            dialog = {...dialog, open: true, full: action.payload.full, account: action.payload.account, valid: validInitial.valid, errors: validInitial.errors};
             return {...state, dialog: dialog};
         case ACCOUNT_DIALOG_CLOSE:
             dialog = {...dialog, open: false};
