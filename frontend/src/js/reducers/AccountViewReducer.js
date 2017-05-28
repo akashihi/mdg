@@ -25,22 +25,47 @@ const initialState = {
     dialog: {
         open: false,
         full: false,
-        account: {attributes: {}}
+        account: {attributes: {}},
+        valid: false,
+        errors: { }
     }
 };
+
+function validateAccountForm(account) {
+    var attributes = account.attributes;
+    var errors = {};
+    if (!attributes.name) {
+        errors.name = 'Name is empty'
+    }
+
+    if (!attributes.account_type) {
+        errors.account_type = 'Type is not selected'
+    }
+
+    if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(attributes.balance)) {
+        errors.balance = 'Amount is invalid'
+    }
+
+    if (!attributes.currency_id) {
+        errors.currency_id = 'Currency is not selected'
+    }
+
+    return {valid: Object.keys(errors).length == 0, errors: errors}
+}
 
 export default function accountViewReducer(state = initialState, action) {
     var ui = state.ui;
     var dialog = state.dialog;
     switch (action.type) {
         case ACCOUNT_DIALOG_OPEN:
-            dialog = {...dialog, open: true, full: action.payload.full, account: action.payload.account};
+            dialog = {...dialog, open: true, full: action.payload.full, account: action.payload.account, valid: !action.payload.full};
             return {...state, dialog: dialog};
         case ACCOUNT_DIALOG_CLOSE:
             dialog = {...dialog, open: false};
             return {...state, dialog: dialog};
         case ACCOUNT_DIALOG_CHANGE:
-            dialog = {...dialog, account: action.payload};
+            var valid = validateAccountForm(action.payload);
+            dialog = {...dialog, account: action.payload, valid: valid.valid, errors: valid.errors};
             return {...state, dialog: dialog};
         case GET_ACCOUNTLIST_REQUEST:
             ui = {...ui, accountListLoading: true, accountListError: false};

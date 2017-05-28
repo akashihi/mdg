@@ -18,6 +18,10 @@ export default class AccountsPage extends Component {
         this.props.actions.toggleHiddenAccounts(!this.props.hiddenVisible)
     }
 
+    onCreateAccountClick() {
+        this.props.actions.createAccount();
+    }
+
     render() {
         var props = this.props;
 
@@ -106,7 +110,7 @@ export default class AccountsPage extends Component {
                             </Row>
                             <Row>
                                 <Col xs={12} sm={12} md={3} lg={3}>
-                                    <RaisedButton label='Add new account'/>
+                                    <RaisedButton label='Add new account' onClick={::this.onCreateAccountClick}/>
                                 </Col>
                                 <Col xs={12} sm={12} mdOffset={6} md={3} lgOffset={6} lg={3}>
                                     {hiddenButton}

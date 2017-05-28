@@ -11,6 +11,8 @@ const mapStateToProps = (state) => {
         open: state.account.dialog.open,
         full: state.account.dialog.full,
         account: state.account.dialog.account,
+        valid: state.account.dialog.valid,
+        errors: state.account.dialog.errors
     }
 };
 

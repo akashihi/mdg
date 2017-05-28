@@ -79,6 +79,16 @@ export function updateAccount(account) {
     }
 }
 
+export function createAccount() {
+    return {
+        type: ACCOUNT_DIALOG_OPEN,
+        payload: {
+            full: true,
+            account: { attributes: {amount: 0} }
+        }
+    }
+}
+
 export function editAccount(account) {
     return {
         type: ACCOUNT_DIALOG_OPEN,
