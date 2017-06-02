@@ -8,8 +8,14 @@ import CircularProgress from 'material-ui/CircularProgress';
 import Transaction from './Transaction';
 
 export default class OperationsPage extends Component {
+    makeAccountsList(props) {
+        return props.assetAccounts.concat(props.incomeAccounts, props.expenseAccounts)
+    }
+
     render() {
         var props = this.props;
+
+        var accounts = ::this.makeAccountsList(props);
 
         var transactions;
         if (props.waiting) {
@@ -19,7 +25,7 @@ export default class OperationsPage extends Component {
         } else {
             transactions = props.transactions.map(function (item) {
                 return (
-                    <GridTile key={item.id}><Transaction transaction={item}/></GridTile>
+                    <GridTile key={item.id}><Transaction transaction={item} accounts={accounts}/></GridTile>
                 )
             });
         }
