@@ -24,10 +24,10 @@ export default class Transaction extends Component {
         }
     }
 
-    renderOperations(tx) {
+    renderOperations(tx, accounts) {
         return tx.attributes.operations.map(function (item) {
             return (
-                <div key={tx.id + '-' + item.account_id}><Operation operation={item}/></div>
+                <div key={tx.id + '-' + item.account_id}><Operation operation={item} accounts={accounts}/></div>
             )
         });
     }
@@ -36,7 +36,7 @@ export default class Transaction extends Component {
         var props = this.props;
         var attributes = props.transaction.attributes;
 
-        var operations = ::this.renderOperations(props.transaction);
+        var operations = ::this.renderOperations(props.transaction, props.accounts);
 
         return <Card>
             <CardHeader
