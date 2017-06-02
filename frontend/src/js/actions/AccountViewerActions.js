@@ -1,6 +1,7 @@
 import jQuery from 'jquery';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {loadTransactionList} from './TransactionViewerActions';
 
 import {
     GET_ACCOUNTLIST_REQUEST,
@@ -37,6 +38,7 @@ export function loadAccountList() {
                     payload: json.data
                 })
             })
+            .then(() => dispatch(loadTransactionList()))
             .catch(function (response) {
                 dispatch({
                     type: GET_ACCOUNTLIST_FAILURE,

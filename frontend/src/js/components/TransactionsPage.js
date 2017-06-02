@@ -3,11 +3,25 @@ import {Card, CardHeader, CardText} from 'material-ui/Card';
 import Divider from 'material-ui/Divider';
 import {GridList, GridTile} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
+import CircularProgress from 'material-ui/CircularProgress';
 
 import Transaction from './Transaction';
 
 export default class OperationsPage extends Component {
     render() {
+        var props = this.props;
+
+        var transactions;
+        if (props.waiting) {
+            transactions = <CircularProgress/>;
+        } else if (props.error) {
+            transactions = <h1>Unable to load transactions list</h1>
+        } else {
+            transactions = <GridTile>
+                <Transaction/>
+            </GridTile>
+        }
+
         return <div>
             <Card>
                 <CardHeader
@@ -38,36 +52,7 @@ export default class OperationsPage extends Component {
                         </CardHeader>
                     </Card>
                 </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
-                <GridTile>
-                    <Transaction/>
-                </GridTile>
+                {transactions}
             </GridList>
         </div>;
     }
