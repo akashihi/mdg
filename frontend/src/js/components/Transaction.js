@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import {Card, CardHeader, CardText} from 'material-ui/Card';
-import Divider from 'material-ui/Divider';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import Checkbox from 'material-ui/Checkbox';
 
@@ -17,7 +16,7 @@ export default class Transaction extends Component {
         var usedAccounts = accounts.filter((item) => opAcounts.includes(item.id));
 
         var nonAssetAccounts = usedAccounts.filter((item) => item.attributes.account_type != 'asset');
-        if (nonAssetAccounts.length>0) {
+        if (nonAssetAccounts.length > 0) {
             return nonAssetAccounts.map((item) => item.attributes.name).join(', ')
         } else {
             return usedAccounts.map((item) => item.attributes.name).join(', ')
@@ -32,11 +31,66 @@ export default class Transaction extends Component {
         });
     }
 
+    getTotalChange(tx, accounts) {
+        //We need to calculate totals for all
+        //types of accounts.
+        //
+        //If sum of 'asset' is positive in the tx and
+        //at least on of other sums is not negative, it
+        //is a 'earn' transaction.
+        //
+        //if sum of 'asset' is negative it's a 'spending'
+        //transaction.
+        //
+        //if sum of 'asset' is zero and sum of 'expense' is
+        //positive, it is still spending.
+        //
+        //In other cases it's a 'transfer' transaction.
+
+        var summary = tx.attributes.operations.map((op) => {
+            var opAccount = accounts.filter((item) => item.id == op.account_id)[0];
+            return {amount: op.amount, type: opAccount.attributes.account_type}
+        }).reduce((acc, item) => {acc[item.type] += item.amount; return acc}, {asset: 0, income: 0, expense: 0});
+
+        if (summary['asset'] > 0 && (summary['income'] != 0 || summary['expense'] != 0)) {
+            return {color: 'green', total: summary['asset']};
+        }
+
+        if (summary['asset'] < 0) {
+            return {color: 'red', total: summary['asset']};
+        }
+
+        if (summary['asset'] == 0 && summary['expense'] > 0) {
+            return {color: 'red', total: summary['expense']};
+        }
+
+        var positives = tx.attributes.operations.map((item) => {
+            var opAccount = accounts.filter((item) => item.id == item.account_id)[0];
+            return {amount: item.amount, type: opAccount.attributes.account_type}
+        }).filter((item) => item.amount > 0)
+            .reduce((acc, item) => {acc[item.type] += item.amount; return acc}, {asset: 0, income: 0, expense: 0});
+
+        if (positives['asset'] != 0) {
+            return {color: 'yellow', total: positives['asset']};
+        }
+
+        if (positives['income'] != 0) {
+            return {color: 'yellow', total: positives['income']};
+        }
+
+        if (positives['income'] != 0) {
+            return {color: 'yellow', total: positives['income']};
+        }
+
+        return {color: 'black', total: 0}
+    }
+
     render() {
         var props = this.props;
         var attributes = props.transaction.attributes;
 
         var operations = ::this.renderOperations(props.transaction, props.accounts);
+        var totals = ::this.getTotalChange(props.transaction, props.accounts);
 
         return <Card>
             <CardHeader
@@ -48,7 +102,7 @@ export default class Transaction extends Component {
                         <Col xs={1}>{timestampToFormattedDate(attributes.timestamp)}</Col>
                         <Col xs={3}>{attributes.comment}</Col>
                         <Col xs={2}>
-                            <div style={{color: 'red'}}> -100500</div>
+                            <div style={{color: totals.color}}>{totals.total}</div>
                         </Col>
                         <Col xs={2}>{::this.renderTransactionAccountList(attributes.operations, props.accounts)}</Col>
                         <Col xs={2}>{attributes.tags.join(', ')}</Col>
@@ -59,19 +113,6 @@ export default class Transaction extends Component {
             <CardText expandable={true}>
                 <Grid>
                     {operations}
-                    <Row><Col xs={12} sm={12} mdOffset={6} md={6} lgOffset={6} lg={6}><Divider/></Col></Row>
-                    <Row>
-                        <Col xs={6} sm={6} mdOffset={6} md={4} lgOffset={6} lg={4}>Earned:</Col>
-                        <Col xs={6} sm={6} md={2} lg={2}>Amount</Col>
-                    </Row>
-                    <Row>
-                        <Col xs={6} sm={6} mdOffset={6} md={4} lgOffset={6} lg={4}>Kept:</Col>
-                        <Col xs={6} sm={6} md={2} lg={2}>Amount</Col>
-                    </Row>
-                    <Row>
-                        <Col xs={6} sm={6} mdOffset={6} md={4} lgOffset={6} lg={4}>Spent:</Col>
-                        <Col xs={6} sm={6} md={2} lg={2}>Amount</Col>
-                    </Row>
                 </Grid>
             </CardText>
         </Card>;
