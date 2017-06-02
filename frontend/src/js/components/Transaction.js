@@ -4,8 +4,13 @@ import Divider from 'material-ui/Divider';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import Checkbox from 'material-ui/Checkbox';
 
+import {timestampToFormattedDate} from '../util/DateUtil'
+
 export default class Transaction extends Component {
     render() {
+        var props = this.props;
+        var attributes = props.transaction.attributes;
+
         return <Card>
             <CardHeader
                 actAsExpander={false}
@@ -13,8 +18,8 @@ export default class Transaction extends Component {
                 <Grid>
                     <Row>
                         <Col xs={1}><Checkbox/></Col>
-                        <Col xs={1}>2017-31-05</Col>
-                        <Col xs={3}>Blackjack and hookers</Col>
+                        <Col xs={1}>{timestampToFormattedDate(attributes.timestamp)}</Col>
+                        <Col xs={3}>{attributes.comment}</Col>
                         <Col xs={2}>
                             <div style={{color: 'red'}}> -100500</div>
                         </Col>

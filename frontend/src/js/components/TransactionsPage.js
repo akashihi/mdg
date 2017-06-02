@@ -17,9 +17,11 @@ export default class OperationsPage extends Component {
         } else if (props.error) {
             transactions = <h1>Unable to load transactions list</h1>
         } else {
-            transactions = <GridTile>
-                <Transaction/>
-            </GridTile>
+            transactions = props.transactions.map(function (item) {
+                return (
+                    <GridTile key={item.id}><Transaction transaction={item}/></GridTile>
+                )
+            });
         }
 
         return <div>

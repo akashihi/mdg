@@ -12,7 +12,7 @@ const mapStateToProps = (state) => {
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
-        transctions: state.transaction.transactionList
+        transactions: state.transaction.transactionList
     }
 };
 
