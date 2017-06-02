@@ -4,7 +4,7 @@ import {Tabs, Tab} from 'material-ui/Tabs';
 import Overview from './Overview';
 import BudgetViewer from '../containers/BudgetViewer'
 import AccountsViewer from '../containers/AccountsViewer'
-import OperationsViewer from '../components/OperationsPage'
+import TransactionsViewer from '../containers/TransactionsViewer'
 
 
 export default class MainTabs extends Component {
@@ -16,8 +16,8 @@ export default class MainTabs extends Component {
             <Tab label='Budget'>
                 <BudgetViewer/>
             </Tab>
-            <Tab label='Operations'>
-                <OperationsViewer/>
+            <Tab label='Transactions'>
+                <TransactionsViewer/>
             </Tab>
             <Tab label='Accounts'>
                 <AccountsViewer/>
