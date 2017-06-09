@@ -12,7 +12,7 @@ import controllers.api.ResultMaker._
 import util.ApiOps._
 import play.api.libs.json._
 import play.api.mvc._
-import services.{ErrorService, TransactionService}
+import services.TransactionService
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
@@ -24,8 +24,7 @@ import scalaz._
   * Transaction REST resource controller
   */
 class TransactionController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    val errors: ErrorService)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
     extends Controller {
 
   val db = dbConfigProvider.get[JdbcProfile].db
