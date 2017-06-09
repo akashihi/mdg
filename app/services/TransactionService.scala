@@ -20,7 +20,6 @@ import Scalaz._
   * Transaction operations service.
   */
 class TransactionService @Inject()(
-    protected val tagDao: TagDao,
     protected val errors: ErrorService,
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext) {
@@ -89,11 +88,11 @@ class TransactionService @Inject()(
     */
   def add(tx: TransactionDto): DBIO[TransactionDto] = {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
-    val tags = tx.tags.map(tagDao.ensureIdByValue)
+    val tags = DBIO.sequence(tx.tags.map(TagDao.ensureIdByValue))
     val operations = tx.operations.map { x =>
       Operation(-1, -1, x.account_id, x.amount)
     }
-    TransactionDao.insert(transaction, operations, tags).flatMap(txToDto)
+    tags.flatMap{ txTags => TransactionDao.insert(transaction, operations, txTags)}.flatMap(txToDto)
   }
 
   /**

@@ -1,24 +1,13 @@
 package dao
 
-import javax.inject._
-
-import dao.tables.Tags
 import models.TxTag
-import play.api.db.slick._
-import slick.driver.JdbcProfile
+import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
 
-import scala.concurrent._
-import scala.concurrent.duration._
+object TagDao {
+  val tags = TransactionDao.tags
 
-class TagDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext) {
-  val db = dbConfigProvider.get[JdbcProfile].db
-  val tags = TableQuery[Tags]
-
-  def ensureIdByValue(value: String): TxTag = {
-    Await.result(
-      db.run(
+  def ensureIdByValue(value: String): DBIO[TxTag] = {
         tags
           .filter(_.txtag === value)
           .result
@@ -30,8 +19,6 @@ class TagDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(
                   (item,
                    id) => item.copy(id = id)) += TxTag(-1, value)
           }
-          .transactionally),
-      500 millis
-    )
+          .transactionally
   }
 }
