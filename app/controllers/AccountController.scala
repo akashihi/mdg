@@ -8,9 +8,9 @@ import dao.filters.AccountFilter
 import models.{Account, AccountType}
 import play.api.db.slick.DatabaseConfigProvider
 import util.ApiOps._
+import util.Validator._
 import play.api.libs.json._
 import play.api.mvc._
-import services.AccountService
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
@@ -22,13 +22,14 @@ import scalaz.{Failure, Success}
   */
 @Singleton
 class AccountController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
     extends Controller {
 
   val db = dbConfigProvider.get[JdbcProfile].db
 
   def execValid(a: Account)(f: (Account) => DBIO[Result]): DBIO[Result] = {
-    AccountService.validate(a) match {
+    validate(a) match {
       case Failure(e) => makeErrorResult(e.head)
       case Success(x) => f(x)
     }
@@ -122,7 +123,7 @@ class AccountController @Inject()(
                  hidden = h.getOrElse(x.hidden),
                  operational = o.getOrElse(x.operational),
                  favorite = f.getOrElse(x.favorite))
-        execValid(newAccount) {a:Account =>
+        execValid(newAccount) { a: Account =>
           AccountDao
             .update(a)
             .flatMap {

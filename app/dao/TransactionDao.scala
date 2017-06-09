@@ -1,79 +1,24 @@
 package dao
 
 import java.time.LocalDate
-import javax.inject._
 
 import dao.filters.TransactionFilter
 import dao.ordering.{Asc, Desc, Page, SortBy}
 import dao.tables.Transactions._
 import dao.tables.{Operations, TagMap, Tags, Transactions}
 import models.{Operation, Transaction, TxTag}
-import play.api.db.slick._
-import slick.dbio.DBIOAction
-import slick.dbio.Effect.Read
-import slick.driver.JdbcProfile
+import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
-import slick.profile._
 
-import scala.concurrent._
 
 /**
-  * Database access for Transactions.
-  * @param dbConfigProvider external database provider
-  * @param ec external ExecutionContext provider
+  * Database actions for Transactions.
   */
-class TransactionDao @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext) {
-  val db = dbConfigProvider.get[JdbcProfile].db
-  val transactions = TransactionDao.transactions
-  val operations = TransactionDao.operations
+object TransactionDao {
+  val transactions = TableQuery[Transactions]
+  val operations = TableQuery[Operations]
   val tags = TableQuery[Tags]
   val tagMaps = TableQuery[TagMap]
-
-  /**
-    * Adds transaction to the database
-    * @param tx transaction object to add
-    * @param ops transaction operations list
-    * @param txtags transaction tag list
-    * @return Newly created transaction object with id
-    */
-  def insert(tx: Transaction,
-             ops: Seq[Operation],
-             txtags: Seq[TxTag]): Future[Transaction] = {
-    val query = (for {
-      txId <- tx.id match {
-        case None => transactions returning transactions.map(_.id) += tx
-        case Some(txId) =>
-          transactions returning transactions.map(_.id) forceInsert tx
-      }
-      _ <- operations ++= ops.map(x => x.copy(txId = txId))
-      _ <- tagMaps ++= txtags.map(x => (x.id, txId))
-    } yield tx.copy(id = Some(txId))).transactionally
-    db.run(query)
-  }
-
-  /**
-    * Retrieves transaction's operations.
-    * @param txId transaction id to work on
-    * @return list of transaction's operations
-    */
-  def listOperations(txId: Long): Future[Seq[Operation]] = {
-    db.run(operations.filter(_.tx_id === txId).result)
-  }
-
-  /**
-    * Retrieves transaction's tags
-    * @param txId transaction id to work on
-    * @return list of transaction's tags
-    */
-  def listTags(txId: Long): Future[Seq[TxTag]] = {
-    val query = for {
-      t <- tagMaps if t.tx_id === txId
-      tt <- tags if tt.id === t.tag_id
-    } yield tt
-    db.run(query.result)
-  }
 
   /**
     * Filtering helper. Retrieves list of transactions ids,
@@ -81,8 +26,7 @@ class TransactionDao @Inject()(
     * @param filter List of tags
     * @return List of transactions id, wrapped to DBIO
     */
-  private def tagTxAction(filter: Option[Seq[String]])
-    : DBIOAction[Seq[Long], NoStream, Read with Read] = {
+  def tagTxFilter(filter: Option[Seq[String]]): DBIO[Seq[Long]] = {
     filter
       .map { f =>
         tags
@@ -102,12 +46,33 @@ class TransactionDao @Inject()(
     * @param filter List of tags
     * @return List of transactions id, wrapped to DBIO
     */
-  private def accTxAction(filter: Option[Seq[Long]]) = {
+  def accTxFilter(filter: Option[Seq[Long]]): DBIO[Seq[Long]] = {
     filter
       .map { a =>
         operations.filter(_.account_id inSet a).map(_.tx_id).result
       }
       .getOrElse(DBIO.successful(Seq.empty[Long]))
+  }
+
+  /**
+    * Adds transaction to the database
+    * @param tx transaction object to add
+    * @param ops transaction operations list
+    * @param txtags transaction tag list
+    * @return Newly created transaction object with id
+    */
+  def insert(tx: Transaction,
+             ops: Seq[Operation],
+             txtags: Seq[TxTag]): DBIO[Transaction] = {
+    (for {
+      txId <- tx.id match {
+        case None => transactions returning transactions.map(_.id) += tx
+        case Some(txId) =>
+          transactions returning transactions.map(_.id) forceInsert tx
+      }
+      _ <- operations ++= ops.map(x => x.copy(txId = txId))
+      _ <- tagMaps ++= txtags.map(x => (x.id, txId))
+    } yield tx.copy(id = Some(txId))).transactionally
   }
 
   /**
@@ -121,8 +86,9 @@ class TransactionDao @Inject()(
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
-           page: Option[Page]): Future[Seq[Transaction]] = {
-    val preActions = tagTxAction(filter.tag) zip accTxAction(filter.account_id)
+           page: Option[Page]): DBIO[Seq[Transaction]] = {
+    val preActions = TransactionDao.tagTxFilter(filter.tag) zip TransactionDao
+      .accTxFilter(filter.account_id)
 
     val query = preActions.flatMap(tx_id_s => {
       val (tag_tx_s, acc_tx_s) = tx_id_s
@@ -162,7 +128,7 @@ class TransactionDao @Inject()(
       pagedQuery.result
     })
 
-    db.run(query)
+    query
   }
 
   /**
@@ -170,8 +136,45 @@ class TransactionDao @Inject()(
     * @param id Transaction id to find.
     * @return Transaction from the database.
     */
-  def findById(id: Long): Future[Option[Transaction]] = {
-    db.run(transactions.filter(_.id === id).result.headOption)
+  def findById(id: Long): DBIO[Option[Transaction]] = {
+    transactions.filter(_.id === id).result.headOption
+  }
+
+  /**
+    * Retrieves transaction's tags
+    * @param txId transaction id to work on
+    * @return list of transaction's tags
+    */
+  def listTags(txId: Long): DBIO[Seq[TxTag]] = {
+    val query = for {
+      t <- tagMaps if t.tx_id === txId
+      tt <- tags if tt.id === t.tag_id
+    } yield tt
+    query.result
+  }
+
+  /**
+    * Retrieves transaction's operations.
+    * @param txId transaction id to work on
+    * @return list of transaction's operations
+    */
+  def listOperations(txId: Long): DBIO[Seq[Operation]] = {
+    operations.filter(_.tx_id === txId).result
+  }
+
+  /**
+    * Retrieves ids of transactions, logged between specified dates.
+    * @param term_beginning Beginning of period, inclusive
+    * @param term_end End of period, exclusive
+    * @return Sequence of mathcing transaction's ids, wrapped to DBIO
+    */
+  def transactionsForPeriod(term_beginning: LocalDate,
+                            term_end: LocalDate): DBIO[Seq[Long]] = {
+    transactions
+      .filter(_.timestamp >= term_beginning.atStartOfDay())
+      .filter(_.timestamp < term_end.plusDays(1).atStartOfDay())
+      .map(_.id)
+      .result
   }
 
   /**
@@ -179,25 +182,5 @@ class TransactionDao @Inject()(
     * @param id Transaction id to remove.
     * @return Number of removed transactions.
     */
-  def delete(id: Long): Future[Option[Int]] = {
-    db.run(transactions.filter(_.id === id).delete).map {
-      case 1 => Some(1)
-      case _ => None
-    }
-  }
-}
-
-object TransactionDao {
-  val transactions = TableQuery[Transactions]
-  val operations = TableQuery[Operations]
-
-  def transactionsForPeriod(
-      term_beginning: LocalDate,
-      term_end: LocalDate): FixedSqlStreamingAction[Seq[Long], Long, Read] = {
-    transactions
-      .filter(_.timestamp >= term_beginning.atStartOfDay())
-      .filter(_.timestamp < term_end.plusDays(1).atStartOfDay())
-      .map(_.id)
-      .result
-  }
+  def delete(id: Long): DBIO[Int] = transactions.filter(_.id === id).delete
 }

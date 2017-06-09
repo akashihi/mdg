@@ -11,7 +11,6 @@ import dao.BudgetEntryDao._
 import dao.tables._
 import models.{Budget, ExpenseAccount, IncomeAccount}
 import play.api.db.slick._
-import slick.dbio.DBIOAction
 import slick.dbio.Effect.Read
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
@@ -62,10 +61,7 @@ class BudgetDao @Inject()(
   }
 
   private def getActualSpendings(term_beginning: LocalDate,
-                                 term_end: LocalDate): DBIOAction[
-    BigDecimal,
-    NoStream,
-    Read with Read with Read with Effect] = {
+                                 term_end: LocalDate): DBIO[BigDecimal] = {
     accounts.result.flatMap { a =>
       val incomeAccounts =
         a.filter(_.account_type == IncomeAccount).flatMap(_.id)

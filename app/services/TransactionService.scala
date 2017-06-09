@@ -2,25 +2,36 @@ package services
 
 import javax.inject.Inject
 
-import controllers.dto.{OperationDto, TransactionDto}
+import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
 import dao.{TagDao, TransactionDao}
 import models.{Operation, Transaction}
 import play.api.db.slick.DatabaseConfigProvider
-import play.api.mvc._
+import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
+import _root_.util.Validator._
+
+import scalaz._
+import Scalaz._
 
 /**
   * Transaction operations service.
   */
 class TransactionService @Inject()(
     protected val tagDao: TagDao,
-    protected val transactionDao: TransactionDao,
     protected val errors: ErrorService,
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext) {
+
+  /**
+    * Clears transaction of empty operations.
+    * @param tx Transaction (DTO) to process.
+    * @return Transaction (DTO) without useless operations.
+    */
+  def stripEmptyOps(tx: TransactionDto): TransactionDto =
+  tx.copy(operations = removeEmptyOps(tx.operations))
 
   /**
     * Removes empty operations from list of (DTO) operations.
@@ -30,27 +41,26 @@ class TransactionService @Inject()(
     * @param ops list to process.
     * @return list with non-empty operations only.
     */
-  def stripEmptyOps(ops: Seq[OperationDto]): Seq[OperationDto] =
+  def removeEmptyOps(ops: Seq[OperationDto]): Seq[OperationDto] =
     ops.filter(o => o.amount != 0)
 
   /**
-    * Checks list of (DTO) operations for validity.
-    * Valid list should have it's balance (sum of all amounts)
-    * equal to zero and have at list one operation simultaneously.
-    *
-    * @param ops list to process.
-    * @return error in case of invalid list.
+    * Extracts Transaction (DTO) data from the
+    * supplied wrapper and checks for data validity.
+    * @param id Separately defined transaction id.
+    * @param wrapper TransactoinWrapperDto object.
+    * @return Error XOR valid Transaction(DTO) object.
     */
-  def invalidateOperations(ops: Seq[OperationDto]): Option[Future[Result]] = {
-    if (ops.map(o => o.amount).sum != 0) {
-      Some(errors.errorFor("TRANSACTION_NOT_BALANCED"))
-    } else {
-      if (!ops.exists(o => o.amount != 0)) {
-        Some(errors.errorFor("TRANSACTION_EMPTY"))
-      } else {
-        None
-      }
+  def prepareTransactionDto(id: Option[Long], wrapper: Option[TransactionWrapperDto]): \/[String,TransactionDto] = {
+    val d = wrapper match {
+      case None => "TRANSACTION_DATA_INVALID".left
+      case Some(x) => x.right
     }
+    d.map { x => x.data.attributes }
+      .map { x => x.copy(id = id)}
+      .map {stripEmptyOps}
+      .map {validate}
+      .flatMap {validationToXor}
   }
 
   /**
@@ -58,12 +68,12 @@ class TransactionService @Inject()(
     * @param tx Transaction to convert.
     * @return Fully filled DTO object.
     */
-  def txToDto(tx: Transaction): Future[TransactionDto] = {
+  def txToDto(tx: Transaction): DBIO[TransactionDto] = {
     for {
-      o <- transactionDao
+      o <- TransactionDao
         .listOperations(tx.id.get)
         .map(x => x.map(o => OperationDto(o.account_id, o.amount)))
-      t <- transactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
+      t <- TransactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
     } yield
       TransactionDto(Some(tx.id.get),
                      tx.timestamp,
@@ -77,13 +87,13 @@ class TransactionService @Inject()(
     * @param tx transaction description object.
     * @return transaction description object with id.
     */
-  def add(tx: TransactionDto): Future[TransactionDto] = {
+  def add(tx: TransactionDto): DBIO[TransactionDto] = {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
     val tags = tx.tags.map(tagDao.ensureIdByValue)
     val operations = tx.operations.map { x =>
       Operation(-1, -1, x.account_id, x.amount)
     }
-    transactionDao.insert(transaction, operations, tags).flatMap(txToDto)
+    TransactionDao.insert(transaction, operations, tags).flatMap(txToDto)
   }
 
   /**
@@ -92,21 +102,28 @@ class TransactionService @Inject()(
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
-           page: Option[Page]): Future[Seq[TransactionDto]] =
-    transactionDao
+           page: Option[Page]): DBIO[Seq[TransactionDto]] =
+    TransactionDao
       .list(filter, sort, page)
-      .flatMap(s => Future.sequence(s.map(t => txToDto(t))))
+      .flatMap(s => DBIO.sequence(s.map(t => txToDto(t))))
 
   /**
     * Retrieves specific Transaction.
     * @param id transaction unique id.
     * @return DTO object.
     */
-  def get(id: Long): Future[Option[TransactionDto]] = {
-    val tx = transactionDao.findById(id)
+  def get(id: Long): DBIO[Option[TransactionDto]] = {
+    val tx = TransactionDao.findById(id)
     tx.flatMap {
       case Some(x) => txToDto(x).map(t => Some(t))
-      case None => Future(None)
+      case None => DBIO.successful(None)
+    }
+  }
+
+  def replace(id: Long, tx: TransactionDto): DBIO[\/[String, TransactionDto]] = {
+    TransactionDao.delete(id).flatMap {
+      case 1 => add(tx)map(_.right)
+      case _ => DBIO.successful("TRANSACTION_NOT_FOUND".left)
     }
   }
 
@@ -114,13 +131,12 @@ class TransactionService @Inject()(
     * Removes transaction and all dependent objects.
     *
     * @param id identificator of transaction to remove.
-    * @param resultHandler callback for successfull removal handling.
     * @return either error result, or resultHandler processing result.
     */
-  def delete(id: Long, resultHandler: () => Future[Result]): Future[Result] = {
-    transactionDao.delete(id).flatMap {
-      case Some(_) => resultHandler()
-      case None => errors.errorFor("TRANSACTION_NOT_FOUND")
+  def delete(id: Long): DBIO[\/[String, Int]] = {
+    TransactionDao.delete(id).map {
+      case 1 => 1.right
+      case _ => "TRANSACTION_NOT_FOUND".left
     }
   }
 }

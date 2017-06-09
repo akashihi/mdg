@@ -2,65 +2,57 @@ package controllers
 
 import javax.inject.Inject
 
-import controllers.api.JsonWrapper._
 import controllers.dto.{TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.filters.TransactionFilter._
 import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
+import api.ErrorHandler._
+import controllers.api.ResultMaker._
+import util.ApiOps._
 import play.api.libs.json._
 import play.api.mvc._
 import services.{ErrorService, TransactionService}
+import play.api.db.slick.DatabaseConfigProvider
+import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
+import scalaz._
 
 /**
   * Transaction REST resource controller
   */
 class TransactionController @Inject()(
     protected val transactionService: TransactionService,
+    protected val dbConfigProvider: DatabaseConfigProvider)(
     val errors: ErrorService)(implicit ec: ExecutionContext)
     extends Controller {
 
-  /**
-    * Common transaction modification function.
-    * Retrieves transaction DTO from the json,
-    * checks for data validity.
-    * @param data json representation of transaction.
-    * @param op modification operation to be done.
-    * @return result of modification operation.
-    */
-  def modifyTransaction(
-      id: Option[Long],
-      data: JsValue,
-      op: (TransactionDto) => Future[Result]): Future[Result] = {
-    data.validate[TransactionWrapperDto].asOpt match {
-      case Some(x) =>
-        def tx =
-          x.data.attributes.copy(
-            id = id,
-            operations =
-              transactionService.stripEmptyOps(x.data.attributes.operations))
-        transactionService.invalidateOperations(tx.operations) match {
-          case Some(e) => e
-          case None => op(tx)
-        }
-      case None => errors.errorFor("TRANSACTION_DATA_INVALID")
-    }
-  }
+  val db = dbConfigProvider.get[JdbcProfile].db
 
   /**
-    * Transaction creation operation.
-    *
-    * Takes transaction DTO and created it in the system.
-    * @param tx transaction data to create
-    * @return Wrapped to json data of newly created transaction.
+    * Tries to convert Json data to TransactionWrapperDTO
+    * @param data json representation of transaction.
+    * @return conversion result.
     */
-  def createOp(tx: TransactionDto): Future[Result] =
-    transactionService.add(tx).map { r =>
-      Created(wrapJson(r))
-        .withHeaders("Location" -> s"/api/transaction/${r.id}")
-    }
+  def parseDto(data: JsValue): Option[TransactionWrapperDto] = data.validate[TransactionWrapperDto].asOpt
+
+  /**
+    * Makes Play result form Transaction(DTO)
+    *
+    * @param tx transaction data
+    * @return Wrapped to json data of created transaction.
+    */
+  def createResult(tx: TransactionDto): Result = makeResult(tx)(CREATED).withHeaders("Location" -> s"/api/transaction/${tx.id}")
+
+  /**
+    * Makes Play result form Transaction(DTO)
+    *
+    * @param tx transaction data
+    * @return Wrapped to json data of modified transaction.
+    */
+  def editResult(tx: TransactionDto): Result = makeResult(tx)(ACCEPTED)
 
   /**
     * Adds new transaction to the system.
@@ -68,7 +60,9 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    modifyTransaction(None, request.body, createOp)
+    val tx = transactionService.prepareTransactionDto(None, parseDto(request.body)).map(transactionService.add)
+    val result = handleErrors(tx, createResult _)
+    db.run(result)
   }
 
   /**
@@ -81,27 +75,23 @@ class TransactionController @Inject()(
             notLater: Option[String],
             pageSize: Option[Int],
             pageNumber: Option[Int]) = Action.async {
-    val f = (filter match {
-      case Some(x) =>
-        Json
-          .parse(x)
-          .validate[TransactionFilter]
-          .asOpt
-          .getOrElse(TransactionFilter())
-      case None => TransactionFilter()
-    }).copy(notEarlier = notEarlier, notLater = notLater)
+    val f = filter.flatMap { x =>
+      Json.parse(x).validate[TransactionFilter].asOpt
+    }.getOrElse(TransactionFilter())
+      .copy(notEarlier = notEarlier, notLater = notLater)
 
     val page = (pageSize, pageNumber) match {
       case (Some(size), Some(no)) => Some(Page(no, size))
       case _ => None
     }
 
-    transactionService
-      .list(f, sort match {
-        case Some(x) => x
-        case None => Seq[SortBy]()
-      }, page)
-      .map(x => Ok(wrapJson(x)))
+    val ordering: Seq[SortBy] = sort match {
+      case Some(x) => x
+      case None => Seq[SortBy]()
+    }
+
+    val result = transactionService.list(f, ordering, page).map(x => makeResult(x)(OK))
+    db.run(result)
   }
 
   /**
@@ -110,10 +100,11 @@ class TransactionController @Inject()(
     * @return transaction object.
     */
   def show(id: Long) = Action.async {
-    transactionService.get(id).flatMap {
-      case None => errors.errorFor("TRANSACTION_NOT_FOUND")
-      case Some(x) => Future(Ok(wrapJson(x)))
+    val result = transactionService.get(id).flatMap {
+      case None => makeErrorResult("TRANSACTION_NOT_FOUND")
+      case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
+    db.run(result)
   }
 
   /**
@@ -122,10 +113,12 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    modifyTransaction(Some(id),
-                      request.body,
-                      (tx: TransactionDto) =>
-                        transactionService.delete(id, () => createOp(tx)))
+    val tx = transactionService.prepareTransactionDto(Some(id), parseDto(request.body))
+    val result = tx match {
+      case -\/(e) => makeErrorResult(e) //Fail fast
+      case \/-(dto) => transactionService.replace(id, dto).flatMap(x => handleErrors(x, editResult _));
+    }
+    db.run(result)
   }
 
   /**
@@ -135,6 +128,8 @@ class TransactionController @Inject()(
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    transactionService.delete(id, () => Future(NoContent))
+    def deleteResult(v: Int) = NoContent
+    val result = transactionService.delete(id).flatMap(x => handleErrors(x, deleteResult _))
+    db.run(result)
   }
 }
