@@ -24,7 +24,6 @@ import scalaz._
   * Transaction REST resource controller
   */
 class TransactionController @Inject()(
-    protected val transactionService: TransactionService,
     protected val dbConfigProvider: DatabaseConfigProvider)(
     val errors: ErrorService)(implicit ec: ExecutionContext)
     extends Controller {
@@ -60,7 +59,7 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    val tx = transactionService.prepareTransactionDto(None, parseDto(request.body)).map(transactionService.add)
+    val tx = TransactionService.prepareTransactionDto(None, parseDto(request.body)).map(TransactionService.add)
     val result = handleErrors(tx, createResult _)
     db.run(result)
   }
@@ -90,7 +89,7 @@ class TransactionController @Inject()(
       case None => Seq[SortBy]()
     }
 
-    val result = transactionService.list(f, ordering, page).map(x => makeResult(x)(OK))
+    val result = TransactionService.list(f, ordering, page).map(x => makeResult(x)(OK))
     db.run(result)
   }
 
@@ -100,7 +99,7 @@ class TransactionController @Inject()(
     * @return transaction object.
     */
   def show(id: Long) = Action.async {
-    val result = transactionService.get(id).flatMap {
+    val result = TransactionService.get(id).flatMap {
       case None => makeErrorResult("TRANSACTION_NOT_FOUND")
       case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
@@ -113,10 +112,10 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    val tx = transactionService.prepareTransactionDto(Some(id), parseDto(request.body))
+    val tx = TransactionService.prepareTransactionDto(Some(id), parseDto(request.body))
     val result = tx match {
       case -\/(e) => makeErrorResult(e) //Fail fast
-      case \/-(dto) => transactionService.replace(id, dto).flatMap(x => handleErrors(x, editResult _));
+      case \/-(dto) => TransactionService.replace(id, dto).flatMap(x => handleErrors(x, editResult _));
     }
     db.run(result)
   }
@@ -129,7 +128,7 @@ class TransactionController @Inject()(
     */
   def delete(id: Long) = Action.async {
     def deleteResult(v: Int) = NoContent
-    val result = transactionService.delete(id).flatMap(x => handleErrors(x, deleteResult _))
+    val result = TransactionService.delete(id).flatMap(x => handleErrors(x, deleteResult _))
     db.run(result)
   }
 }

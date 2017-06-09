@@ -1,17 +1,14 @@
 package services
 
-import javax.inject.Inject
-
 import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
 import dao.{TagDao, TransactionDao}
 import models.{Operation, Transaction}
-import play.api.db.slick.DatabaseConfigProvider
+import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
 
-import scala.concurrent._
-import _root_.util.Validator._
+import util.Validator._
 
 import scalaz._
 import Scalaz._
@@ -19,10 +16,7 @@ import Scalaz._
 /**
   * Transaction operations service.
   */
-class TransactionService @Inject()(
-    protected val errors: ErrorService,
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext) {
+object TransactionService {
 
   /**
     * Clears transaction of empty operations.
