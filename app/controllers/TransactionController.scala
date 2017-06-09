@@ -65,7 +65,7 @@ class TransactionController @Inject()(
     val tx = TransactionService
       .prepareTransactionDto(None, parseDto(request.body))
       .map(TransactionService.add)
-    val result = handleErrors(tx, createResult _)
+    val result = handleErrors(tx, createResult)
     db.run(result)
   }
 
@@ -127,7 +127,7 @@ class TransactionController @Inject()(
       case \/-(dto) =>
         TransactionService
           .replace(id, dto)
-          .flatMap(x => handleErrors(x, editResult _));
+          .flatMap(x => handleErrors(x) { tx => makeResult(tx)(ACCEPTED) });
     }
     db.run(result)
   }
@@ -139,10 +139,9 @@ class TransactionController @Inject()(
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    def deleteResult(v: Int) = NoContent
     val result = TransactionService
       .delete(id)
-      .flatMap(x => handleErrors(x, deleteResult _))
+      .flatMap(x => handleErrors(x) {_ => NoContent })
     db.run(result)
   }
 }
