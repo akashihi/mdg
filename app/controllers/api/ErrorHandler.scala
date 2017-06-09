@@ -7,6 +7,7 @@ import util.ApiOps._
 import play.api.libs.concurrent.Execution.Implicits._
 
 object ErrorHandler {
+
   /**
     * Takes pair of possible processing error or processing result
     * and wraps them to the Play Result.
@@ -15,7 +16,8 @@ object ErrorHandler {
     * @tparam T Type of the result
     * @return Play Result object
     */
-  def handleErrors[T](resultWrapper: \/[String, DBIO[T]], op: T => Result): DBIO[Result] = {
+  def handleErrors[T](resultWrapper: \/[String, DBIO[T]],
+                      op: T => Result): DBIO[Result] = {
     resultWrapper match {
       case \/-(x) => x.map(op)
       case -\/(e) => makeErrorResult(e)
@@ -30,7 +32,8 @@ object ErrorHandler {
     * @tparam T Type of the result
     * @return Play Result object
     */
-  def handleErrors[T](resultWrapper: => \/[String, T], op: T => Result): DBIO[Result] = {
+  def handleErrors[T](resultWrapper: => \/[String, T],
+                      op: T => Result): DBIO[Result] = {
     resultWrapper match {
       case \/-(x) => DBIO.successful(op(x))
       case -\/(e) => makeErrorResult(e)

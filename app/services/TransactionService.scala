@@ -24,7 +24,7 @@ object TransactionService {
     * @return Transaction (DTO) without useless operations.
     */
   def stripEmptyOps(tx: TransactionDto): TransactionDto =
-  tx.copy(operations = removeEmptyOps(tx.operations))
+    tx.copy(operations = removeEmptyOps(tx.operations))
 
   /**
     * Removes empty operations from list of (DTO) operations.
@@ -44,16 +44,22 @@ object TransactionService {
     * @param wrapper TransactoinWrapperDto object.
     * @return Error XOR valid Transaction(DTO) object.
     */
-  def prepareTransactionDto(id: Option[Long], wrapper: Option[TransactionWrapperDto]): \/[String,TransactionDto] = {
+  def prepareTransactionDto(
+      id: Option[Long],
+      wrapper: Option[TransactionWrapperDto]): \/[String, TransactionDto] = {
     val d = wrapper match {
       case None => "TRANSACTION_DATA_INVALID".left
       case Some(x) => x.right
     }
-    d.map { x => x.data.attributes }
-      .map { x => x.copy(id = id)}
-      .map {stripEmptyOps}
-      .map {validate}
-      .flatMap {validationToXor}
+    d.map { x =>
+        x.data.attributes
+      }
+      .map { x =>
+        x.copy(id = id)
+      }
+      .map { stripEmptyOps }
+      .map { validate }
+      .flatMap { validationToXor }
   }
 
   /**
@@ -86,7 +92,11 @@ object TransactionService {
     val operations = tx.operations.map { x =>
       Operation(-1, -1, x.account_id, x.amount)
     }
-    tags.flatMap{ txTags => TransactionDao.insert(transaction, operations, txTags)}.flatMap(txToDto)
+    tags
+      .flatMap { txTags =>
+        TransactionDao.insert(transaction, operations, txTags)
+      }
+      .flatMap(txToDto)
   }
 
   /**
@@ -115,7 +125,7 @@ object TransactionService {
 
   def replace(id: Long, tx: TransactionDto): DBIO[\/[String, TransactionDto]] = {
     TransactionDao.delete(id).flatMap {
-      case 1 => add(tx)map(_.right)
+      case 1 => add(tx) map (_.right)
       case _ => DBIO.successful("TRANSACTION_NOT_FOUND".left)
     }
   }

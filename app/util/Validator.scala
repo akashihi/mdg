@@ -49,13 +49,15 @@ object Validator {
     * @return List of errors or tx object
     */
   def validate(tx: TransactionDto): StringValidation[TransactionDto] = {
-    def transactionBalanced(tx: TransactionDto): StringValidation[TransactionDto] = {
+    def transactionBalanced(
+        tx: TransactionDto): StringValidation[TransactionDto] = {
       if (tx.operations.map(o => o.amount).sum != 0) {
         "TRANSACTION_NOT_BALANCED".failureNel
       } else { tx.success }
     }
 
-    def transactionNotEmpty(tx: TransactionDto): StringValidation[TransactionDto] = {
+    def transactionNotEmpty(
+        tx: TransactionDto): StringValidation[TransactionDto] = {
       if (!tx.operations.exists(o => o.amount != 0)) {
         "TRANSACTION_EMPTY".failureNel
       } else { tx.success }

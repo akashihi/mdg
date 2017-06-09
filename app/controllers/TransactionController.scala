@@ -24,7 +24,8 @@ import scalaz._
   * Transaction REST resource controller
   */
 class TransactionController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
     extends Controller {
 
   val db = dbConfigProvider.get[JdbcProfile].db
@@ -34,7 +35,8 @@ class TransactionController @Inject()(
     * @param data json representation of transaction.
     * @return conversion result.
     */
-  def parseDto(data: JsValue): Option[TransactionWrapperDto] = data.validate[TransactionWrapperDto].asOpt
+  def parseDto(data: JsValue): Option[TransactionWrapperDto] =
+    data.validate[TransactionWrapperDto].asOpt
 
   /**
     * Makes Play result form Transaction(DTO)
@@ -42,7 +44,9 @@ class TransactionController @Inject()(
     * @param tx transaction data
     * @return Wrapped to json data of created transaction.
     */
-  def createResult(tx: TransactionDto): Result = makeResult(tx)(CREATED).withHeaders("Location" -> s"/api/transaction/${tx.id}")
+  def createResult(tx: TransactionDto): Result =
+    makeResult(tx)(CREATED)
+      .withHeaders("Location" -> s"/api/transaction/${tx.id}")
 
   /**
     * Makes Play result form Transaction(DTO)
@@ -58,7 +62,9 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    val tx = TransactionService.prepareTransactionDto(None, parseDto(request.body)).map(TransactionService.add)
+    val tx = TransactionService
+      .prepareTransactionDto(None, parseDto(request.body))
+      .map(TransactionService.add)
     val result = handleErrors(tx, createResult _)
     db.run(result)
   }
@@ -73,9 +79,11 @@ class TransactionController @Inject()(
             notLater: Option[String],
             pageSize: Option[Int],
             pageNumber: Option[Int]) = Action.async {
-    val f = filter.flatMap { x =>
-      Json.parse(x).validate[TransactionFilter].asOpt
-    }.getOrElse(TransactionFilter())
+    val f = filter
+      .flatMap { x =>
+        Json.parse(x).validate[TransactionFilter].asOpt
+      }
+      .getOrElse(TransactionFilter())
       .copy(notEarlier = notEarlier, notLater = notLater)
 
     val page = (pageSize, pageNumber) match {
@@ -88,7 +96,8 @@ class TransactionController @Inject()(
       case None => Seq[SortBy]()
     }
 
-    val result = TransactionService.list(f, ordering, page).map(x => makeResult(x)(OK))
+    val result =
+      TransactionService.list(f, ordering, page).map(x => makeResult(x)(OK))
     db.run(result)
   }
 
@@ -111,10 +120,14 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    val tx = TransactionService.prepareTransactionDto(Some(id), parseDto(request.body))
+    val tx = TransactionService.prepareTransactionDto(Some(id),
+                                                      parseDto(request.body))
     val result = tx match {
       case -\/(e) => makeErrorResult(e) //Fail fast
-      case \/-(dto) => TransactionService.replace(id, dto).flatMap(x => handleErrors(x, editResult _));
+      case \/-(dto) =>
+        TransactionService
+          .replace(id, dto)
+          .flatMap(x => handleErrors(x, editResult _));
     }
     db.run(result)
   }
@@ -127,7 +140,9 @@ class TransactionController @Inject()(
     */
   def delete(id: Long) = Action.async {
     def deleteResult(v: Int) = NoContent
-    val result = TransactionService.delete(id).flatMap(x => handleErrors(x, deleteResult _))
+    val result = TransactionService
+      .delete(id)
+      .flatMap(x => handleErrors(x, deleteResult _))
     db.run(result)
   }
 }

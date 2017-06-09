@@ -10,7 +10,6 @@ import models.{Operation, Transaction, TxTag}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
 
-
 /**
   * Database actions for Transactions.
   */
