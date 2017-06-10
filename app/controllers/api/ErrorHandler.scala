@@ -32,8 +32,8 @@ object ErrorHandler {
     * @tparam T Type of the result
     * @return Play Result object
     */
-  def handleErrors[T](resultWrapper: => \/[String, T])
-                     (op: T => Result): DBIO[Result] = {
+  def handleErrors[T](resultWrapper: => \/[String, T])(
+      op: T => Result): DBIO[Result] = {
     resultWrapper match {
       case \/-(x) => DBIO.successful(op(x))
       case -\/(e) => makeErrorResult(e)

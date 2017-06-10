@@ -127,7 +127,10 @@ class TransactionController @Inject()(
       case \/-(dto) =>
         TransactionService
           .replace(id, dto)
-          .flatMap(x => handleErrors(x) { tx => makeResult(tx)(ACCEPTED) });
+          .flatMap(x =>
+            handleErrors(x) { tx =>
+              makeResult(tx)(ACCEPTED)
+          });
     }
     db.run(result)
   }
@@ -141,7 +144,10 @@ class TransactionController @Inject()(
   def delete(id: Long) = Action.async {
     val result = TransactionService
       .delete(id)
-      .flatMap(x => handleErrors(x) {_ => NoContent })
+      .flatMap(x =>
+        handleErrors(x) { _ =>
+          NoContent
+      })
     db.run(result)
   }
 }

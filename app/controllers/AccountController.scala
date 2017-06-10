@@ -2,20 +2,18 @@ package controllers
 
 import javax.inject._
 
+import controllers.api.ErrorHandler._
 import controllers.api.ResultMaker._
 import dao.AccountDao
 import dao.filters.AccountFilter
 import models.{Account, AccountType}
 import play.api.db.slick.DatabaseConfigProvider
-import util.ApiOps._
-import util.Validator._
 import play.api.libs.json._
 import play.api.mvc._
+import services.AccountService
 import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
-import scalaz.{Failure, Success}
 
 /**
   * Account Resource REST controller.
@@ -28,12 +26,15 @@ class AccountController @Inject()(
 
   val db = dbConfigProvider.get[JdbcProfile].db
 
-  def execValid(a: Account)(f: (Account) => DBIO[Result]): DBIO[Result] = {
-    validate(a) match {
-      case Failure(e) => makeErrorResult(e.head)
-      case Success(x) => f(x)
-    }
-  }
+  /**
+    * Makes Play result form Account
+    *
+    * @param acc account data
+    * @return Wrapped to json data of created account.
+    */
+  def createResult(acc: Account): Result =
+    makeResult(acc)(CREATED)
+      .withHeaders("Location" -> s"/api/account/${acc.id}")
 
   /**
     * Adds new account to the system.
@@ -59,16 +60,8 @@ class AccountController @Inject()(
         .getOrElse(false)
     } yield Account(Some(0), AccountType(t), c, n, b, f, o, hidden = false)
 
-    val result = account match {
-      case None => makeErrorResult("ACCOUNT_DATA_INVALID")
-      case Some(x) =>
-        execValid(x) { a: Account =>
-          AccountDao.insert(a).map { r =>
-            makeResult(r)(CREATED)
-              .withHeaders("Location" -> s"/api/account/${r.id}")
-          }
-        }
-    }
+    val result = handleErrors(AccountService.create(account), createResult)
+
     db.run(result)
   }
 
@@ -94,10 +87,10 @@ class AccountController @Inject()(
     * @return account object.
     */
   def show(id: Long) = Action.async {
-    val result = AccountDao.findById(id).flatMap {
-      case None => makeErrorResult("ACCOUNT_NOT_FOUND")
-      case Some(x) => DBIO.successful(makeResult(x)(OK))
-    }
+    val result = AccountService
+      .get(id)
+      .flatMap(x =>
+        handleErrors(x) { x => makeResult(x)(OK)})
     db.run(result)
   }
 
@@ -115,23 +108,10 @@ class AccountController @Inject()(
     val o = (request.body \ "data" \ "attributes" \ "operational")
       .asOpt[Boolean]
 
-    val result = AccountDao.findById(id).flatMap {
-      case None => makeErrorResult("ACCOUNT_NOT_FOUND")
-      case Some(x) =>
-        val newAccount =
-          x.copy(name = n.getOrElse(x.name),
-                 hidden = h.getOrElse(x.hidden),
-                 operational = o.getOrElse(x.operational),
-                 favorite = f.getOrElse(x.favorite))
-        execValid(newAccount) { a: Account =>
-          AccountDao
-            .update(a)
-            .flatMap {
-              case None => makeErrorResult("ACCOUNT_NOT_UPDATED")
-              case Some(r) => DBIO.successful(makeResult(r)(ACCEPTED))
-            }
-        }
+    val result = AccountService.edit(id, n, o, f, h).flatMap { x =>
+      handleErrors(x) { x => makeResult(x)(ACCEPTED) }
     }
+
     db.run(result)
   }
 
@@ -142,10 +122,12 @@ class AccountController @Inject()(
     * @return HTTP 204 in case of sucess, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    val result = AccountDao.delete(id).flatMap {
-      case Some(_) => DBIO.successful(NoContent)
-      case None => makeErrorResult("ACCOUNT_NOT_FOUND")
-    }
+    val result = AccountService
+      .delete(id)
+      .flatMap(x =>
+        handleErrors(x) { _ =>
+          NoContent
+      })
     db.run(result)
   }
 }
