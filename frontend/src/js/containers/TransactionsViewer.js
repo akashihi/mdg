@@ -12,7 +12,8 @@ const mapStateToProps = (state) => {
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
-        transactions: state.transaction.transactionList
+        transactions: state.transaction.transactionList,
+        pageSize: state.transaction.ui.pageSize
     }
 };
 

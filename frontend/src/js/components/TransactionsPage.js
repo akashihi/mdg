@@ -1,15 +1,21 @@
 import React, {Component} from 'react';
-import {Card, CardHeader, CardText} from 'material-ui/Card';
+import {Card, CardHeader, CardActions} from 'material-ui/Card';
 import Divider from 'material-ui/Divider';
 import {GridList, GridTile} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import CircularProgress from 'material-ui/CircularProgress';
+import SelectField from 'material-ui/SelectField';
+import MenuItem from 'material-ui/MenuItem';
 
 import Transaction from './Transaction';
 
 export default class OperationsPage extends Component {
     makeAccountsList(props) {
         return props.assetAccounts.concat(props.incomeAccounts, props.expenseAccounts)
+    }
+
+    pageSizeChange(event, key, value) {
+        this.props.actions.setTransactionPageSize(value);
     }
 
     render() {
@@ -37,9 +43,22 @@ export default class OperationsPage extends Component {
                     actAsExpander={true}
                     showExpandableButton={true}
                 />
-                <CardText expandable={true}>
-                    Filter is here
-                </CardText>
+                <CardActions expandable={true}>
+                    <Grid>
+                        <Row>
+                            <Col xsOffset={6} xs={6} smOffset={6} sm={6} md={2} mdOffset={9} lg={2} lgOffset={9}>
+                                <SelectField floatingLabelText='Transactions on page:' value={props.pageSize} onChange={::this.pageSizeChange}>
+                                    <MenuItem value={10} primaryText='10'/>
+                                    <MenuItem value={25} primaryText='20'/>
+                                    <MenuItem value={50} primaryText='50'/>
+                                    <MenuItem value={100} primaryText='100'/>
+                                    <MenuItem value={250} primaryText='250'/>
+                                    <MenuItem value={500} primaryText='500'/>
+                                </SelectField>
+                            </Col>
+                        </Row>
+                    </Grid>
+                </CardActions>
             </Card>
             <Divider/>
             <GridList cols={1} cellHeight='auto'>
