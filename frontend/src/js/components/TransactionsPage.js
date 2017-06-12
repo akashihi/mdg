@@ -6,6 +6,8 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 import CircularProgress from 'material-ui/CircularProgress';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
+import IconButton from 'material-ui/IconButton';
+import FontIcon from 'material-ui/FontIcon';
 
 import Transaction from './Transaction';
 
@@ -18,10 +20,19 @@ export default class OperationsPage extends Component {
         this.props.actions.setTransactionPageSize(value);
     }
 
+    loadNextPage() {
+        this.props.actions.nextTransactionPage();
+    }
+
     render() {
         var props = this.props;
 
         var accounts = ::this.makeAccountsList(props);
+
+        var nextPageLoader;
+        if (props.nextPageAvailable) {
+            nextPageLoader = <IconButton style={{display: 'block', margin: '0 auto'}} onClick={::this.loadNextPage}><FontIcon className='material-icons'>file_download</FontIcon></IconButton>
+        }
 
         var transactions;
         if (props.waiting) {
@@ -81,6 +92,7 @@ export default class OperationsPage extends Component {
                 </GridTile>
                 {transactions}
             </GridList>
+            {nextPageLoader}
         </div>;
     }
 }
