@@ -30,6 +30,8 @@ class TransactionController @Inject()(
 
   val db = dbConfigProvider.get[JdbcProfile].db
 
+  val DEFAULT_PAGE_SIZE = 10
+
   /**
     * Tries to convert Json data to TransactionWrapperDTO
     * @param data json representation of transaction.
@@ -86,10 +88,7 @@ class TransactionController @Inject()(
       .getOrElse(TransactionFilter())
       .copy(notEarlier = notEarlier, notLater = notLater)
 
-    val page = (pageSize, pageNumber) match {
-      case (Some(size), Some(no)) => Some(Page(no, size))
-      case _ => None
-    }
+    val page = pageNumber.flatMap { no => Some(Page(no, pageSize.getOrElse(DEFAULT_PAGE_SIZE).toLong))}
 
     val ordering: Seq[SortBy] = sort match {
       case Some(x) => x
