@@ -1,4 +1,5 @@
 import jQuery from 'jquery';
+import moment from 'moment';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
@@ -8,7 +9,10 @@ import {
     GET_TRANSACTIONLIST_FAILURE,
     SET_TRANSACTION_PAGESIZE,
     GET_TRANSACTION_NEXTPAGE,
-    GET_TRANSACTIONLIST_NODATA
+    GET_TRANSACTIONLIST_NODATA,
+    SET_TRANSACTION_VIEW_PERIOD,
+    SET_TRANSACTION_VIEW_BEGINNING,
+    SET_TRANSACTION_VIEW_END
 } from '../constants/Transaction'
 
 export function loadTransactionList() {
@@ -20,9 +24,12 @@ export function loadTransactionList() {
 
         var state = getState();
 
-        var paginationParams = jQuery.param({pageSize: state.transaction.ui.pageSize, pageNumber: state.transaction.ui.pageNumber});
+        var paginationParams = {pageSize: state.transaction.ui.pageSize, pageNumber: state.transaction.ui.pageNumber};
+        var periodParams = {notLater: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT00:00:00'), notEarlier: state.transaction.ui.periodEnd.format('YYYY-MM-DDT00:00:00')};
 
-        var url = '/api/transaction' + '?' + paginationParams;
+        var params = Object.assign({}, paginationParams, periodParams);
+
+        var url = '/api/transaction' + '?' + jQuery.param(params);
 
         fetch(url)
             .then(parseJSON)
@@ -64,6 +71,39 @@ export function nextTransactionPage() {
         dispatch({
             type: GET_TRANSACTION_NEXTPAGE,
             payload: true
+        });
+        dispatch(loadTransactionList())
+    }
+}
+
+export function setTransactionViewPeriod(days) {
+    return (dispatch) => {
+        dispatch({
+            type: SET_TRANSACTION_VIEW_PERIOD,
+            payload: {
+                beginning: moment(),
+                end: moment().subtract(days, 'days')
+            }
+        });
+        dispatch(loadTransactionList())
+    }
+}
+
+export function setTransactionViewBeginning(value) {
+    return (dispatch) => {
+        dispatch({
+            type: SET_TRANSACTION_VIEW_BEGINNING,
+            payload: moment(value)
+        });
+        dispatch(loadTransactionList())
+    }
+}
+
+export function setTransactionViewEnd(value) {
+    return (dispatch) => {
+        dispatch({
+            type: SET_TRANSACTION_VIEW_END,
+            payload: moment(value)
         });
         dispatch(loadTransactionList())
     }
