@@ -50,6 +50,14 @@ export default class OperationsPage extends Component {
 
         var title = 'Showing transactions from ' + props.periodBeginning.format('DD-MM-YYYY') + ' till ' + props.periodEnd.format('DD-MM-YYYY');
 
+        var nextPageLoader;
+        if (props.nextPageAvailable) {
+            nextPageLoader = <IconButton style={{display: 'block', margin: '0 auto'}} onClick={::this.loadNextPage}><FontIcon className='material-icons' disabled={!props.nextPageAvailable}>file_download</FontIcon></IconButton>
+        } else {
+            nextPageLoader = 'No more pages to load'
+        }
+
+
         var transactions;
         if (props.waiting) {
             transactions = <CircularProgress/>;
@@ -121,7 +129,7 @@ export default class OperationsPage extends Component {
                 </GridTile>
                 {transactions}
             </GridList>
-            <IconButton style={{display: 'block', margin: '0 auto'}} onClick={::this.loadNextPage}><FontIcon className='material-icons' disabled={!props.nextPageAvailable}>file_download</FontIcon></IconButton>
+            {nextPageLoader}
         </div>;
     }
 }

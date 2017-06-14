@@ -50,7 +50,7 @@ export default function transactionViewReducer(state = initialState, action) {
             ui = {...ui, transactionListLoading: true, transactionListError: false};
             return {...state, ui: ui};
         case GET_TRANSACTIONLIST_SUCCESS:
-            ui = {...ui, transactionListLoading: false, transactionListError: false};
+            ui = {...ui, transactionListLoading: false, transactionListError: false, nextPageAvailable: true};
             return {...state, transactionList: state.transactionList.concat(action.payload), ui: ui};
         case GET_TRANSACTIONLIST_FAILURE:
             ui = {...ui, transactionListLoading: false, transactionListError: true};
