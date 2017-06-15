@@ -12,7 +12,8 @@ import {
     GET_TRANSACTIONLIST_NODATA,
     SET_TRANSACTION_VIEW_PERIOD,
     SET_TRANSACTION_VIEW_BEGINNING,
-    SET_TRANSACTION_VIEW_END
+    SET_TRANSACTION_VIEW_END,
+    SET_TRANSACTION_FILTER_ACCOUNT
 } from '../constants/Transaction'
 
 export function loadTransactionList() {
@@ -106,5 +107,12 @@ export function setTransactionViewEnd(value) {
             payload: moment(value)
         });
         dispatch(loadTransactionList())
+    }
+}
+
+export function setTransactionFilterAccount(values) {
+    return {
+        type: SET_TRANSACTION_FILTER_ACCOUNT,
+        payload: values
     }
 }

@@ -6,6 +6,10 @@ import DatePicker from 'material-ui/DatePicker';
 import FlatButton from 'material-ui/FlatButton';
 
 export default class TransactionsPageFilter extends Component {
+    makeAccountsList(props) {
+        return props.assetAccounts.concat(props.incomeAccounts, props.expenseAccounts)
+    }
+
     pageSizeChange(event, key, value) {
         this.props.actions.setTransactionPageSize(value);
     }
@@ -22,13 +26,29 @@ export default class TransactionsPageFilter extends Component {
         this.props.actions.setTransactionViewEnd(value)
     }
 
+    setFilterAccounts(ev, key, values) {
+        this.props.actions.setTransactionFilterAccount(values)
+    }
+
     render() {
         var props = this.props;
+
+        var accounts = ::this.makeAccountsList(props);
 
         var buttonStyle = {
             'textDecorationLine': 'underline',
             'textDecorationStyle': 'dashed'
         };
+
+        var accountItems = accounts.map((acc) => {
+            return <MenuItem
+                key={acc.id}
+                insetChildren={true}
+                checked={props.accountFilter.indexOf(acc.id) > -1}
+                value={acc.id}
+                primaryText={acc.attributes.name}
+            />
+        });
 
         return <Grid fluid>
             <Row>
@@ -54,6 +74,22 @@ export default class TransactionsPageFilter extends Component {
                 <Col xs={6} sm={6} md={2} lg={2}>
                     <DatePicker container='inline' hintText='Period beginning' value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
                     <DatePicker container='inline' hintText='Period end' value={props.periodEnd.toDate()} onChange={::this.setEnd}/>
+                </Col>
+                <Col xs={2} sm={2} md={3} mdOffset={1} lg={3} lgOffset={1}>
+                    Comment filter
+                </Col>
+                <Col xs={2} sm={2} md={3} lg={3}>
+                    <SelectField
+                        multiple={true}
+                        hintText='Select accounts'
+                        value={props.accountFilter}
+                        onChange={::this.setFilterAccounts}
+                    >
+                        {accountItems}
+                    </SelectField>
+                </Col>
+                <Col xs={2} sm={2} md={3} lg={3}>
+                    Tags filter
                 </Col>
             </Row>
         </Grid>;

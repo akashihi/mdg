@@ -11,7 +11,8 @@ const mapStateToProps = (state) => {
         expenseAccounts: state.account.expenseAccountList,
         pageSize: state.transaction.ui.pageSize,
         periodBeginning: state.transaction.ui.periodBeginning,
-        periodEnd: state.transaction.ui.periodEnd
+        periodEnd: state.transaction.ui.periodEnd,
+        accountFilter: state.transaction.ui.accountFilter
     }
 };
 

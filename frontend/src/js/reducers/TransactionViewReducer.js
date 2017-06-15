@@ -9,7 +9,8 @@ import {
     GET_TRANSACTIONLIST_NODATA,
     SET_TRANSACTION_VIEW_PERIOD,
     SET_TRANSACTION_VIEW_BEGINNING,
-    SET_TRANSACTION_VIEW_END
+    SET_TRANSACTION_VIEW_END,
+    SET_TRANSACTION_FILTER_ACCOUNT
 } from '../constants/Transaction'
 
 const initialState = {
@@ -21,13 +22,17 @@ const initialState = {
         pageNumber: 1,
         nextPageAvailable: true,
         periodBeginning: moment(),
-        periodEnd: moment().subtract(7, 'days')
+        periodEnd: moment().subtract(7, 'days'),
+        accountFilter: []
     }
 };
 
 export default function transactionViewReducer(state = initialState, action) {
     var ui = state.ui;
     switch (action.type) {
+        case SET_TRANSACTION_FILTER_ACCOUNT:
+            ui = {...ui, accountFilter: action.payload};
+            return {...state, ui: ui};
         case SET_TRANSACTION_VIEW_BEGINNING:
             ui = {...ui, periodBeginning: action.payload, pageNumber: 1};
             return {...state, ui: ui, transactionList: []};
