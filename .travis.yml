@@ -15,6 +15,9 @@ script:
   - |    
     sbt run&
     SERVER_PID=$!
+  - echo Mdg server is running with $SERVER_PID pid.
+  # Give sbt some time to settle
+  - sleep 10
   # Execute test suite
   - cd mdg-api-test
   - gradle test
