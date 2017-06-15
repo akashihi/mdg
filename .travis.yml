@@ -11,14 +11,20 @@ before_script:
   - psql -f docs/createdb.sql -U postgres
   - git clone https://github.com/akashihi/mdg-api-test
 script:
+  # Build it
+  - sbt dist
+  - cd target/universal
+  - unzip mdg.zip
+  - cd mdg  
   # Run the server
   - |    
-    sbt run&
+    ./bin/mdg -Dplay.crypto.secret=test &
     SERVER_PID=$!
   - echo Mdg server is running with $SERVER_PID pid.
-  # Give sbt some time to settle
+  # Give mdg some time to settle
   - sleep 10
   # Execute test suite
+  - cd ../../../
   - cd mdg-api-test
   - gradle test
 after_script:

@@ -2,6 +2,7 @@ name := """mdg"""
 organization := "org.akashihi"
 
 version := "1.0-SNAPSHOT"
+packageName in Universal := "mdg"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
