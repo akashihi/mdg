@@ -1,0 +1,24 @@
+dist: trusty
+sudo: required
+language: scala
+scala: 
+  - 2.11.8
+addons:
+  postgresql: "9.2"
+services:
+  - postgresql
+before_script:
+  - psql -f docs/createdb.sql -U postgres
+  - git clone https://github.com/akashihi/mdg-api-test
+script:
+  # Run the server
+  - |    
+    sbt run &
+    SERVER_PID=$!
+  # Execute test suite
+  - cd mdg-api-test
+  - gradle test
+after_script:
+  # Stop server
+  - kill $SERVER_PID  
+
