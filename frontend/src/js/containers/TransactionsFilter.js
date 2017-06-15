@@ -1,19 +1,15 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionsPage from '../components/TransactionsPage'
+import TransactionsPageFilter from '../components/TransactionsPageFilter'
 import * as TransactionActions from '../actions/TransactionViewerActions'
 
 const mapStateToProps = (state) => {
     return {
-        currencies: state.currency.currencyList,
-        waiting: state.transaction.ui.transactionListLoading,
-        error: state.transaction.ui.transactionListError,
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
-        transactions: state.transaction.transactionList,
-        nextPageAvailable: state.transaction.ui.nextPageAvailable,
+        pageSize: state.transaction.ui.pageSize,
         periodBeginning: state.transaction.ui.periodBeginning,
         periodEnd: state.transaction.ui.periodEnd
     }
@@ -25,4 +21,4 @@ function mapDispatchToProps(dispatch) {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TransactionsPage)
+export default connect(mapStateToProps, mapDispatchToProps)(TransactionsPageFilter)

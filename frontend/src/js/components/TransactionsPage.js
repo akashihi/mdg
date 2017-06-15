@@ -4,38 +4,14 @@ import Divider from 'material-ui/Divider';
 import {GridList, GridTile} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import CircularProgress from 'material-ui/CircularProgress';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
-import IconButton from 'material-ui/IconButton';
-import FontIcon from 'material-ui/FontIcon';
-import DatePicker from 'material-ui/DatePicker';
-import FlatButton from 'material-ui/FlatButton';
 
 import Transaction from './Transaction';
+import TransactionPagePager from './TransactionsPagePager'
+import TransactionFilter from '../containers/TransactionsFilter'
 
-export default class OperationsPage extends Component {
+export default class TransactionsPage extends Component {
     makeAccountsList(props) {
         return props.assetAccounts.concat(props.incomeAccounts, props.expenseAccounts)
-    }
-
-    pageSizeChange(event, key, value) {
-        this.props.actions.setTransactionPageSize(value);
-    }
-
-    loadNextPage() {
-        this.props.actions.nextTransactionPage();
-    }
-
-    setPeriodDays(days) {
-        this.props.actions.setTransactionViewPeriod(days)
-    }
-
-    setBeginning(ev ,value) {
-        this.props.actions.setTransactionViewBeginning(value)
-    }
-
-    setEnd(ev, value) {
-        this.props.actions.setTransactionViewEnd(value)
     }
 
     render() {
@@ -43,20 +19,7 @@ export default class OperationsPage extends Component {
 
         var accounts = ::this.makeAccountsList(props);
 
-        var buttonStyle = {
-            'textDecorationLine': 'underline',
-            'textDecorationStyle': 'dashed'
-        };
-
         var title = 'Showing transactions from ' + props.periodBeginning.format('DD-MM-YYYY') + ' till ' + props.periodEnd.format('DD-MM-YYYY');
-
-        var nextPageLoader;
-        if (props.nextPageAvailable) {
-            nextPageLoader = <IconButton style={{display: 'block', margin: '0 auto'}} onClick={::this.loadNextPage}><FontIcon className='material-icons' disabled={!props.nextPageAvailable}>file_download</FontIcon></IconButton>
-        } else {
-            nextPageLoader = 'No more pages to load'
-        }
-
 
         var transactions;
         if (props.waiting) {
@@ -79,33 +42,7 @@ export default class OperationsPage extends Component {
                     showExpandableButton={true}
                 />
                 <CardActions expandable={true}>
-                    <Grid fluid>
-                        <Row>
-                            <Col xs={6} sm={6} md={4} lg={4}>
-                                <FlatButton label='Today' style={buttonStyle} onClick={() => ::this.setPeriodDays(0)}/>
-                                <FlatButton label='Week' style={buttonStyle} onClick={() => ::this.setPeriodDays(7)}/>
-                                <FlatButton label='Month' style={buttonStyle} onClick={() => ::this.setPeriodDays(30)}/>
-                                <FlatButton label='Three months' style={buttonStyle} onClick={() => ::this.setPeriodDays(90)}/>
-                                <FlatButton label='Year' style={buttonStyle} onClick={() => ::this.setPeriodDays(365)}/>
-                            </Col>
-                            <Col xs={6} sm={6} md={2} mdOffset={6} lg={2} lgOffset={6}>
-                                <SelectField floatingLabelText='Transactions on page:' value={props.pageSize} onChange={::this.pageSizeChange}>
-                                    <MenuItem value={10} primaryText='10'/>
-                                    <MenuItem value={25} primaryText='20'/>
-                                    <MenuItem value={50} primaryText='50'/>
-                                    <MenuItem value={100} primaryText='100'/>
-                                    <MenuItem value={250} primaryText='250'/>
-                                    <MenuItem value={500} primaryText='500'/>
-                                </SelectField>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col xs={6} sm={6} md={2} lg={2}>
-                                <DatePicker container='inline' hintText='Period beginning' value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
-                                <DatePicker container='inline' hintText='Period end' value={props.periodEnd.toDate()} onChange={::this.setEnd}/>
-                            </Col>
-                        </Row>
-                    </Grid>
+                    <TransactionFilter/>
                 </CardActions>
             </Card>
             <Divider/>
@@ -129,7 +66,7 @@ export default class OperationsPage extends Component {
                 </GridTile>
                 {transactions}
             </GridList>
-            {nextPageLoader}
+            <TransactionPagePager nextAction={props.actions.nextTransactionPage} nextPageAvailable={props.nextPageAvailable}/>
         </div>;
     }
 }
