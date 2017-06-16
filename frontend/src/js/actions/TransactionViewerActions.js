@@ -13,7 +13,8 @@ import {
     SET_TRANSACTION_VIEW_PERIOD,
     SET_TRANSACTION_VIEW_BEGINNING,
     SET_TRANSACTION_VIEW_END,
-    SET_TRANSACTION_FILTER_ACCOUNT
+    SET_TRANSACTION_FILTER_ACCOUNT,
+    SET_TRANSACTION_FILTER_TAG
 } from '../constants/Transaction'
 
 export function loadTransactionList() {
@@ -113,6 +114,13 @@ export function setTransactionViewEnd(value) {
 export function setTransactionFilterAccount(values) {
     return {
         type: SET_TRANSACTION_FILTER_ACCOUNT,
+        payload: values
+    }
+}
+
+export function setTransactionFilterTag(values) {
+    return {
+        type: SET_TRANSACTION_FILTER_TAG,
         payload: values
     }
 }

@@ -6,13 +6,15 @@ import * as TransactionActions from '../actions/TransactionViewerActions'
 
 const mapStateToProps = (state) => {
     return {
+        tags: state.tag.tagList,
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
         pageSize: state.transaction.ui.pageSize,
         periodBeginning: state.transaction.ui.periodBeginning,
         periodEnd: state.transaction.ui.periodEnd,
-        accountFilter: state.transaction.ui.accountFilter
+        accountFilter: state.transaction.ui.accountFilter,
+        tagFilter: state.transaction.ui.tagFilter
     }
 };
 

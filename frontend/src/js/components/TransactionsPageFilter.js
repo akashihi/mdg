@@ -30,6 +30,10 @@ export default class TransactionsPageFilter extends Component {
         this.props.actions.setTransactionFilterAccount(values)
     }
 
+    setFilterTags(ev, key, values) {
+        this.props.actions.setTransactionFilterTag(values)
+    }
+
     render() {
         var props = this.props;
 
@@ -47,6 +51,16 @@ export default class TransactionsPageFilter extends Component {
                 checked={props.accountFilter.indexOf(acc.id) > -1}
                 value={acc.id}
                 primaryText={acc.attributes.name}
+            />
+        });
+
+        var tagItems = props.tags.map((tag) => {
+            return <MenuItem
+                key={tag.attributes.txtag}
+                insetChildren={true}
+                checked={props.tagFilter.indexOf(tag.attributes.txtag) > -1}
+                value={tag.attributes.txtag}
+                primaryText={tag.attributes.txtag}
             />
         });
 
@@ -89,7 +103,14 @@ export default class TransactionsPageFilter extends Component {
                     </SelectField>
                 </Col>
                 <Col xs={2} sm={2} md={3} lg={3}>
-                    Tags filter
+                    <SelectField
+                        multiple={true}
+                        hintText='Select tags'
+                        value={props.tagFilter}
+                        onChange={::this.setFilterTags}
+                    >
+                        {tagItems}
+                    </SelectField>
                 </Col>
             </Row>
         </Grid>;
