@@ -1,7 +1,7 @@
 package controllers.api
 
 import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
-import models.{Account, Currency, Error}
+import models.{Account, Currency, Error, TxTag}
 import play.api.libs.json._
 
 /**
@@ -34,6 +34,7 @@ object JsonDataWrapper {
     case _: TransactionDto => "transaction"
     case _: BudgetDTO => "budget"
     case _: BudgetEntryDTO => "budgetentry"
+    case _: TxTag => "tag"
   }
 }
 

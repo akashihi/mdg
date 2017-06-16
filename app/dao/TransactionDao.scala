@@ -16,8 +16,8 @@ import slick.driver.PostgresDriver.api._
 object TransactionDao {
   val transactions = TableQuery[Transactions]
   val operations = TableQuery[Operations]
-  val tags = TableQuery[Tags]
   val tagMaps = TableQuery[TagMap]
+  val tags = TagDao.tags
 
   /**
     * Filtering helper. Retrieves list of transactions ids,
@@ -33,7 +33,7 @@ object TransactionDao {
           .map(_.id)
           .result
           .flatMap(tag_ids => {
-            tagMaps.filter(_.tag_id inSet tag_ids).map(_.tx_id).result
+            tagMaps.filter(_.tag_id inSet tag_ids.flatten).map(_.tx_id).result
           })
       }
       .getOrElse(DBIO.successful(Seq.empty[Long]))
@@ -70,7 +70,7 @@ object TransactionDao {
           transactions returning transactions.map(_.id) forceInsert tx
       }
       _ <- operations ++= ops.map(x => x.copy(txId = txId))
-      _ <- tagMaps ++= txtags.map(x => (x.id, txId))
+      _ <- tagMaps ++= txtags.map(x => (x.id.get, txId))
     } yield tx.copy(id = Some(txId))).transactionally
   }
 

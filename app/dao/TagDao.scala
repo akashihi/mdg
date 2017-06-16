@@ -1,11 +1,14 @@
 package dao
 
+import dao.tables.Tags
 import models.TxTag
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
 
 object TagDao {
-  val tags = TransactionDao.tags
+  val tags = TableQuery[Tags]
+
+  def list(): DBIO[Seq[TxTag]] = tags.result
 
   def ensureIdByValue(value: String): DBIO[TxTag] = {
     tags
@@ -16,7 +19,7 @@ object TagDao {
         case Some(x) => DBIO.successful(x)
         case None =>
           tags returning tags.map(_.id) into ((item, id) => item.copy(id = id)) += TxTag(
-            -1,
+            Some(-1),
             value)
       }
       .transactionally

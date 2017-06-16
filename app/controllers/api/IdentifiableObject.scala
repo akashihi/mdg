@@ -6,7 +6,8 @@ import controllers.dto.TransactionDto.transactionWrites
 import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.Account.accountWrites
 import models.Currency.currencyWrites
-import models.{Account, Currency}
+import models.TxTag.txtagWrites
+import models.{Account, Currency, TxTag}
 import play.api.libs.json.Writes
 
 /**
@@ -25,5 +26,6 @@ object IdentifiableObject {
     case transaction: TransactionDto => transactionWrites.writes(transaction)
     case budget: BudgetDTO => budgetWrites.writes(budget)
     case budgetentry: BudgetEntryDTO => budgetEntryWrites.writes(budgetentry)
+    case tag: TxTag => txtagWrites.writes(tag)
   }
 }
