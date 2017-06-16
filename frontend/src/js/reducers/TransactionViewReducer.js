@@ -11,7 +11,10 @@ import {
     SET_TRANSACTION_VIEW_BEGINNING,
     SET_TRANSACTION_VIEW_END,
     SET_TRANSACTION_FILTER_ACCOUNT,
-    SET_TRANSACTION_FILTER_TAG
+    SET_TRANSACTION_FILTER_TAG,
+    SET_TRANSACTION_FILTER_COMMENT,
+    CLEAR_TRANSACTION_FILTER,
+    APPLY_TRANSACTION_FILTER
 } from '../constants/Transaction'
 
 const initialState = {
@@ -25,18 +28,28 @@ const initialState = {
         periodBeginning: moment(),
         periodEnd: moment().subtract(7, 'days'),
         accountFilter: [],
-        tagFilter: []
+        tagFilter: [],
+        commentFilter: ''
     }
 };
 
 export default function transactionViewReducer(state = initialState, action) {
     var ui = state.ui;
     switch (action.type) {
+        case APPLY_TRANSACTION_FILTER:
+            ui = {...ui,  pageNumber: 1};
+            return {...state, ui: ui, transactionList: []};
+        case CLEAR_TRANSACTION_FILTER:
+            ui = {...ui, accountFilter: [], tagFilter: [], commentFilter: '', pageNumber: 1};
+            return {...state, ui: ui};
         case SET_TRANSACTION_FILTER_TAG:
             ui = {...ui, tagFilter: action.payload};
             return {...state, ui: ui};
         case SET_TRANSACTION_FILTER_ACCOUNT:
             ui = {...ui, accountFilter: action.payload};
+            return {...state, ui: ui};
+        case SET_TRANSACTION_FILTER_COMMENT:
+            ui = {...ui, commentFilter: action.payload};
             return {...state, ui: ui};
         case SET_TRANSACTION_VIEW_BEGINNING:
             ui = {...ui, periodBeginning: action.payload, pageNumber: 1};

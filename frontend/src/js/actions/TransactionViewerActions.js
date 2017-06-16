@@ -14,7 +14,10 @@ import {
     SET_TRANSACTION_VIEW_BEGINNING,
     SET_TRANSACTION_VIEW_END,
     SET_TRANSACTION_FILTER_ACCOUNT,
-    SET_TRANSACTION_FILTER_TAG
+    SET_TRANSACTION_FILTER_TAG,
+    SET_TRANSACTION_FILTER_COMMENT,
+    CLEAR_TRANSACTION_FILTER,
+    APPLY_TRANSACTION_FILTER
 } from '../constants/Transaction'
 
 export function loadTransactionList() {
@@ -26,10 +29,22 @@ export function loadTransactionList() {
 
         var state = getState();
 
-        var paginationParams = {pageSize: state.transaction.ui.pageSize, pageNumber: state.transaction.ui.pageNumber};
-        var periodParams = {notLater: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT00:00:00'), notEarlier: state.transaction.ui.periodEnd.format('YYYY-MM-DDT00:00:00')};
+        var paginationParams = {
+            pageSize: state.transaction.ui.pageSize,
+            pageNumber: state.transaction.ui.pageNumber
+        };
+        var periodParams = {
+            notLater: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT00:00:00'),
+            notEarlier: state.transaction.ui.periodEnd.format('YYYY-MM-DDT00:00:00')
+        };
+        var filter = {
+            comment: state.transaction.ui.commentFilter,
+            tag: state.transaction.ui.tagFilter,
+            account_id: state.transaction.ui.accountFilter,
+        };
+        var filterParams = {filter: JSON.stringify(filter)};
 
-        var params = Object.assign({}, paginationParams, periodParams);
+        var params = Object.assign({}, paginationParams, periodParams, filterParams);
 
         var url = '/api/transaction' + '?' + jQuery.param(params);
 
@@ -122,5 +137,32 @@ export function setTransactionFilterTag(values) {
     return {
         type: SET_TRANSACTION_FILTER_TAG,
         payload: values
+    }
+}
+
+export function setTransactionFilterComment(values) {
+    return {
+        type: SET_TRANSACTION_FILTER_COMMENT,
+        payload: values
+    }
+}
+
+export function transactionFilterClear() {
+    return (dispatch) => {
+        dispatch({
+            type: CLEAR_TRANSACTION_FILTER,
+            payload: true
+        });
+        dispatch(loadTransactionList())
+    }
+}
+
+export function transactionFilterApply() {
+    return (dispatch) => {
+        dispatch({
+            type: APPLY_TRANSACTION_FILTER,
+            payload: true
+        });
+        dispatch(loadTransactionList())
     }
 }

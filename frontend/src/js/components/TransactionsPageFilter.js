@@ -4,6 +4,9 @@ import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import DatePicker from 'material-ui/DatePicker';
 import FlatButton from 'material-ui/FlatButton';
+import TextField from 'material-ui/TextField';
+import IconButton from 'material-ui/IconButton';
+import FontIcon from 'material-ui/FontIcon';
 
 export default class TransactionsPageFilter extends Component {
     makeAccountsList(props) {
@@ -18,7 +21,7 @@ export default class TransactionsPageFilter extends Component {
         this.props.actions.setTransactionViewPeriod(days)
     }
 
-    setBeginning(ev ,value) {
+    setBeginning(ev, value) {
         this.props.actions.setTransactionViewBeginning(value)
     }
 
@@ -32,6 +35,18 @@ export default class TransactionsPageFilter extends Component {
 
     setFilterTags(ev, key, values) {
         this.props.actions.setTransactionFilterTag(values)
+    }
+
+    setFilterComment(ev, values) {
+        this.props.actions.setTransactionFilterComment(values)
+    }
+
+    clearFilter() {
+        this.props.actions.transactionFilterClear()
+    }
+
+    applyFilter() {
+        this.props.actions.transactionFilterApply()
     }
 
     render() {
@@ -74,7 +89,8 @@ export default class TransactionsPageFilter extends Component {
                     <FlatButton label='Year' style={buttonStyle} onClick={() => ::this.setPeriodDays(365)}/>
                 </Col>
                 <Col xs={6} sm={6} md={2} mdOffset={6} lg={2} lgOffset={6}>
-                    <SelectField floatingLabelText='Transactions on page:' value={props.pageSize} onChange={::this.pageSizeChange}>
+                    <SelectField floatingLabelText='Transactions on page:' value={props.pageSize}
+                                 onChange={::this.pageSizeChange}>
                         <MenuItem value={10} primaryText='10'/>
                         <MenuItem value={25} primaryText='20'/>
                         <MenuItem value={50} primaryText='50'/>
@@ -86,11 +102,14 @@ export default class TransactionsPageFilter extends Component {
             </Row>
             <Row>
                 <Col xs={6} sm={6} md={2} lg={2}>
-                    <DatePicker container='inline' hintText='Period beginning' value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
-                    <DatePicker container='inline' hintText='Period end' value={props.periodEnd.toDate()} onChange={::this.setEnd}/>
+                    <DatePicker container='inline' hintText='Period beginning' value={props.periodBeginning.toDate()}
+                                onChange={::this.setBeginning}/>
+                    <DatePicker container='inline' hintText='Period end' value={props.periodEnd.toDate()}
+                                onChange={::this.setEnd}/>
                 </Col>
-                <Col xs={2} sm={2} md={3} mdOffset={1} lg={3} lgOffset={1}>
-                    Comment filter
+                <Col xs={2} sm={2} md={3} lg={3}>
+                    <TextField hintText='Comment contains...' onChange={::this.setFilterComment}
+                               value={props.commentFilter}/>
                 </Col>
                 <Col xs={2} sm={2} md={3} lg={3}>
                     <SelectField
@@ -111,6 +130,10 @@ export default class TransactionsPageFilter extends Component {
                     >
                         {tagItems}
                     </SelectField>
+                </Col>
+                <Col xs={1} sm={1} md={1} lg={1}>
+                    <IconButton><FontIcon className='material-icons' onClick={::this.applyFilter}>done</FontIcon></IconButton>
+                    <IconButton><FontIcon className='material-icons' onClick={::this.clearFilter}>clear</FontIcon></IconButton>
                 </Col>
             </Row>
         </Grid>;

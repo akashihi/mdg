@@ -14,7 +14,8 @@ const mapStateToProps = (state) => {
         periodBeginning: state.transaction.ui.periodBeginning,
         periodEnd: state.transaction.ui.periodEnd,
         accountFilter: state.transaction.ui.accountFilter,
-        tagFilter: state.transaction.ui.tagFilter
+        tagFilter: state.transaction.ui.tagFilter,
+        commentFilter: state.transaction.ui.commentFilter
     }
 };
 
