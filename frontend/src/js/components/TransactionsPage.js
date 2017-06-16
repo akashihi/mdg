@@ -10,6 +10,10 @@ import TransactionPagePager from './TransactionsPagePager'
 import TransactionFilter from '../containers/TransactionsFilter'
 
 export default class TransactionsPage extends Component {
+    componentDidMount() {
+        this.props.tagActions.loadTagList()
+    }
+
     makeAccountsList(props) {
         return props.assetAccounts.concat(props.incomeAccounts, props.expenseAccounts)
     }

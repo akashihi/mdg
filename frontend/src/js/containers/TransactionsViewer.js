@@ -3,6 +3,7 @@ import { bindActionCreators } from 'redux'
 
 import TransactionsPage from '../components/TransactionsPage'
 import * as TransactionActions from '../actions/TransactionViewerActions'
+import * as TagActions from '../actions/TagActions'
 
 const mapStateToProps = (state) => {
     return {
@@ -21,7 +22,8 @@ const mapStateToProps = (state) => {
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(TransactionActions, dispatch)
+        actions: bindActionCreators(TransactionActions, dispatch),
+        tagActions: bindActionCreators(TagActions, dispatch),
     }
 }
 
