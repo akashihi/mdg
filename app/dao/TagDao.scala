@@ -8,7 +8,7 @@ import slick.driver.PostgresDriver.api._
 object TagDao {
   val tags = TableQuery[Tags]
 
-  def list(): DBIO[Seq[TxTag]] = tags.result
+  def list(): DBIO[Seq[TxTag]] = tags.sortBy(_.txtag.asc).result
 
   def ensureIdByValue(value: String): DBIO[TxTag] = {
     tags
