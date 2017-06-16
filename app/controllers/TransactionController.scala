@@ -81,12 +81,15 @@ class TransactionController @Inject()(
             notLater: Option[String],
             pageSize: Option[Int],
             pageNumber: Option[Int]) = Action.async {
+    val filterComment = Lens.lensu[TransactionFilter, Option[String]] ((a, value) => a.copy(comment = value), _.comment)
     val f = filter
       .flatMap { x =>
         Json.parse(x).validate[TransactionFilter].asOpt
       }
       .getOrElse(TransactionFilter())
       .copy(notEarlier = notEarlier, notLater = notLater)
+
+    val filterObj = filterComment.mod(_.filter(!_.trim.isEmpty), f)
 
     val page = pageNumber.flatMap { no => Some(Page(no, pageSize.getOrElse(DEFAULT_PAGE_SIZE).toLong))}
 
@@ -96,7 +99,7 @@ class TransactionController @Inject()(
     }
 
     val result =
-      TransactionService.list(f, ordering, page).map(x => makeResult(x)(OK))
+      TransactionService.list(filterObj, ordering, page).map(x => makeResult(x)(OK))
     db.run(result)
   }
 
