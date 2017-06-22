@@ -3,10 +3,18 @@ import ReactMaterialUiNotifications from 'react-materialui-notifications'
 import Message from 'material-ui/svg-icons/communication/message'
 
 export function parseJSON(response) {
-    return response.json()
+    try {
+        return response.json()
+    } catch (e) {
+        //Not a json, pass
+    }
+
 }
 
 export function checkApiError(json) {
+    if (typeof json === 'undefined') {
+        return json
+    }
     if (json.hasOwnProperty('errors')) {
         json.errors.forEach((e)=>{
             ReactMaterialUiNotifications.showNotification({

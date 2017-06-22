@@ -14,7 +14,12 @@ import {
     SET_TRANSACTION_FILTER_TAG,
     SET_TRANSACTION_FILTER_COMMENT,
     CLEAR_TRANSACTION_FILTER,
-    APPLY_TRANSACTION_FILTER
+    APPLY_TRANSACTION_FILTER,
+    DELETE_TRANSACTION_REQUEST,
+    DELETE_TRANSACTION_CANCEL,
+    DELETE_TRANSACTION_APPROVE,
+    DELETE_TRANSACTION_SUCCESS,
+    DELETE_TRANSACTION_FAILURE
 } from '../constants/Transaction'
 
 const initialState = {
@@ -30,14 +35,38 @@ const initialState = {
         accountFilter: [],
         tagFilter: [],
         commentFilter: ''
+    },
+    delete: {
+        transaction: {attributes: {comment: ''}},
+        approvementDialogVisible: false,
+        loading: false
     }
 };
 
 export default function transactionViewReducer(state = initialState, action) {
+    var deleteUi = state.delete;
     var ui = state.ui;
     switch (action.type) {
+        case DELETE_TRANSACTION_REQUEST:
+            deleteUi = {...deleteUi, approvementDialogVisible: true, transaction: action.payload};
+            return {...state, delete: deleteUi};
+        case DELETE_TRANSACTION_CANCEL:
+            deleteUi = {...deleteUi, approvementDialogVisible: false, transaction: {attributes: {comment: ''}}};
+            return {...state, delete: deleteUi};
+        case DELETE_TRANSACTION_APPROVE:
+            deleteUi = {...deleteUi, loading: true};
+            return {...state, delete: deleteUi};
+        case DELETE_TRANSACTION_FAILURE:
+            deleteUi = {...deleteUi, loading: false};
+            return {...state, delete: deleteUi};
+        case DELETE_TRANSACTION_SUCCESS:
+            var deletedTransactionIndex = state.transactionList.map((i) => i.id).indexOf(action.payload.id);
+            var listToClean = state.transactionList.slice();
+            listToClean.splice(deletedTransactionIndex, 1);
+            deleteUi = {...deleteUi, approvementDialogVisible: false, loading: false, transaction: {attributes: {comment: ''}}};
+            return {...state, delete: deleteUi, transactionList: listToClean};
         case APPLY_TRANSACTION_FILTER:
-            ui = {...ui,  pageNumber: 1};
+            ui = {...ui, pageNumber: 1};
             return {...state, ui: ui, transactionList: []};
         case CLEAR_TRANSACTION_FILTER:
             ui = {...ui, accountFilter: [], tagFilter: [], commentFilter: '', pageNumber: 1};
@@ -64,7 +93,7 @@ export default function transactionViewReducer(state = initialState, action) {
             ui = {...ui, nextPageAvailable: false, transactionListLoading: false, transactionListError: false};
             return {...state, ui: ui};
         case GET_TRANSACTION_NEXTPAGE:
-            ui = {...ui, pageNumber: ui.pageNumber+1};
+            ui = {...ui, pageNumber: ui.pageNumber + 1};
             return {...state, ui: ui};
         case SET_TRANSACTION_PAGESIZE:
             ui = {...ui, pageSize: action.payload, pageNumber: 1, nextPageAvailable: true};

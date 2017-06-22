@@ -2,6 +2,9 @@ import React, {Component} from 'react';
 import {Card, CardHeader, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import Checkbox from 'material-ui/Checkbox';
+import IconButton from 'material-ui/IconButton';
+import FontIcon from 'material-ui/FontIcon';
+
 
 import {timestampToFormattedDate} from '../util/DateUtil'
 import Operation from './Operation'
@@ -106,7 +109,10 @@ export default class Transaction extends Component {
                         </Col>
                         <Col xs={2}>{::this.renderTransactionAccountList(attributes.operations, props.accounts)}</Col>
                         <Col xs={2}>{attributes.tags.join(', ')}</Col>
-                        <Col xs={1}>Actions</Col>
+                        <Col xs={1}>
+                            <IconButton><FontIcon className='material-icons'>mode_edit</FontIcon></IconButton>
+                            <IconButton onClick={() => props.deleteAction(props.transaction)}><FontIcon className='material-icons'>delete</FontIcon></IconButton>
+                        </Col>
                     </Row>
                 </Grid>
             </CardHeader>

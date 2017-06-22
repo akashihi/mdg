@@ -8,6 +8,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 import Transaction from './Transaction';
 import TransactionPagePager from './TransactionsPagePager'
 import TransactionFilter from '../containers/TransactionsFilter'
+import TransactionDeleteDialog from '../containers/TransactionDeleteDialog'
 
 export default class TransactionsPage extends Component {
     componentDidMount() {
@@ -33,12 +34,13 @@ export default class TransactionsPage extends Component {
         } else {
             transactions = props.transactions.map(function (item) {
                 return (
-                    <GridTile key={item.id}><Transaction transaction={item} accounts={accounts}/></GridTile>
+                    <GridTile key={item.id}><Transaction transaction={item} accounts={accounts} deleteAction={props.actions.deleteTransactionRequest}/></GridTile>
                 )
             });
         }
 
         return <div>
+            <TransactionDeleteDialog/>
             <Card>
                 <CardHeader
                     title={title}

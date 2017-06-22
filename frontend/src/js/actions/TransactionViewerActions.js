@@ -17,7 +17,12 @@ import {
     SET_TRANSACTION_FILTER_TAG,
     SET_TRANSACTION_FILTER_COMMENT,
     CLEAR_TRANSACTION_FILTER,
-    APPLY_TRANSACTION_FILTER
+    APPLY_TRANSACTION_FILTER,
+    DELETE_TRANSACTION_REQUEST,
+    DELETE_TRANSACTION_CANCEL,
+    DELETE_TRANSACTION_APPROVE,
+    DELETE_TRANSACTION_SUCCESS,
+    DELETE_TRANSACTION_FAILURE
 } from '../constants/Transaction'
 
 export function loadTransactionList() {
@@ -164,5 +169,48 @@ export function transactionFilterApply() {
             payload: true
         });
         dispatch(loadTransactionList())
+    }
+}
+
+export function deleteTransactionRequest(tx) {
+    return {
+        type: DELETE_TRANSACTION_REQUEST,
+        payload: tx
+    }
+}
+
+export function deleteTransactionCancel() {
+    return {
+        type: DELETE_TRANSACTION_CANCEL,
+        payload: false
+    }
+}
+
+export function deleteTransaction(tx) {
+    return (dispatch) => {
+        dispatch({
+            type: DELETE_TRANSACTION_APPROVE,
+            payload: tx
+        });
+
+        var url = '/api/transaction/' + tx.id;
+
+        fetch(url, {method: 'DELETE'})
+            .then(function(response) {
+                if (response.status == 204) {
+                    dispatch({
+                        type: DELETE_TRANSACTION_SUCCESS,
+                        payload: tx
+                    })
+                }
+            })
+            .then(parseJSON)
+            .then(checkApiError)
+            .catch(function (response) {
+                dispatch({
+                    type: DELETE_TRANSACTION_FAILURE,
+                    payload: response.json
+                })
+            });
     }
 }
