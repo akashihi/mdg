@@ -19,7 +19,8 @@ import {
     DELETE_TRANSACTION_CANCEL,
     DELETE_TRANSACTION_APPROVE,
     DELETE_TRANSACTION_SUCCESS,
-    DELETE_TRANSACTION_FAILURE
+    DELETE_TRANSACTION_FAILURE,
+    TRANSACTION_DIALOG_OPEN
 } from '../constants/Transaction'
 
 const initialState = {
@@ -40,13 +41,21 @@ const initialState = {
         transaction: {attributes: {comment: ''}},
         approvementDialogVisible: false,
         loading: false
+    },
+    dialog: {
+        open: false,
+        transaction: {attributes: {comment: '', operations: []}}
     }
 };
 
 export default function transactionViewReducer(state = initialState, action) {
     var deleteUi = state.delete;
+    var dialog = state.dialog;
     var ui = state.ui;
     switch (action.type) {
+        case TRANSACTION_DIALOG_OPEN:
+            dialog = {...dialog, open: true, transaction: action.payload};
+            return {...state, dialog: dialog};
         case DELETE_TRANSACTION_REQUEST:
             deleteUi = {...deleteUi, approvementDialogVisible: true, transaction: action.payload};
             return {...state, delete: deleteUi};

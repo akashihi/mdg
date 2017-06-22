@@ -17,7 +17,7 @@ export default class TransactionsPage extends Component {
     }
 
     makeAccountsList(props) {
-        return props.assetAccounts.concat(props.incomeAccounts, props.expenseAccounts)
+        return props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts)
     }
 
     render() {
@@ -35,7 +35,7 @@ export default class TransactionsPage extends Component {
         } else {
             transactions = props.transactions.map(function (item) {
                 return (
-                    <GridTile key={item.id}><Transaction transaction={item} accounts={accounts} deleteAction={props.actions.deleteTransactionRequest}/></GridTile>
+                    <GridTile key={item.id}><Transaction transaction={item} accounts={accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridTile>
                 )
             });
         }

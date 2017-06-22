@@ -8,14 +8,15 @@ import * as TransactionActions from '../actions/TransactionViewerActions'
 const mapStateToProps = (state) => {
     return {
         currencies: state.currency.currencyList,
+        tags: state.tag.tagList,
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
-        open: true,
+        open: state.transaction.dialog.open,
+        transaction: state.transaction.dialog.transaction,
         valid: true
-        /*open: state.account.dialog.open,
+        /*
         full: state.account.dialog.full,
-        account: state.account.dialog.account,
         valid: state.account.dialog.valid,
         errors: state.account.dialog.errors*/
     }

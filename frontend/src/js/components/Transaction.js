@@ -110,7 +110,7 @@ export default class Transaction extends Component {
                         <Col xs={2}>{::this.renderTransactionAccountList(attributes.operations, props.accounts)}</Col>
                         <Col xs={2}>{attributes.tags.join(', ')}</Col>
                         <Col xs={1}>
-                            <IconButton><FontIcon className='material-icons'>mode_edit</FontIcon></IconButton>
+                            <IconButton onClick={() => props.editAction(props.transaction)}><FontIcon className='material-icons'>mode_edit</FontIcon></IconButton>
                             <IconButton onClick={() => props.deleteAction(props.transaction)}><FontIcon className='material-icons'>delete</FontIcon></IconButton>
                         </Col>
                     </Row>

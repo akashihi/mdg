@@ -22,7 +22,8 @@ import {
     DELETE_TRANSACTION_CANCEL,
     DELETE_TRANSACTION_APPROVE,
     DELETE_TRANSACTION_SUCCESS,
-    DELETE_TRANSACTION_FAILURE
+    DELETE_TRANSACTION_FAILURE,
+    TRANSACTION_DIALOG_OPEN
 } from '../constants/Transaction'
 
 export function loadTransactionList() {
@@ -212,5 +213,12 @@ export function deleteTransaction(tx) {
                     payload: response.json
                 })
             });
+    }
+}
+
+export function editTransaction(tx) {
+    return {
+        type: TRANSACTION_DIALOG_OPEN,
+        payload: tx
     }
 }
