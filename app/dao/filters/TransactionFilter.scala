@@ -4,6 +4,8 @@ import java.time.LocalDateTime
 
 import play.api.libs.json._
 
+import scala.util.Try
+
 /**
   * Transaction filtering operations.
   */
@@ -17,15 +19,8 @@ case class TransactionFilter(
 
 object TransactionFilter {
   implicit val transactionFilterRead = Json.reads[TransactionFilter]
-  implicit def stringToLDT(s: Option[String]): Option[LocalDateTime] = {
+  implicit def stringToLDT(s: Option[String]): Option[LocalDateTime] =
     s.flatMap { d =>
-      try {
-        Some(LocalDateTime.parse(d))
-      } catch {
-        case e @ (_: IllegalArgumentException |
-            _: UnsupportedOperationException) =>
-          None
-      }
+      Try(LocalDateTime.parse(d)).toOption
     }
-  }
 }
