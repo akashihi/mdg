@@ -15,9 +15,9 @@ import scala.concurrent.ExecutionContext
   */
 @Singleton
 class TagController @Inject()(
-                               protected val dbConfigProvider: DatabaseConfigProvider)(
-                               implicit ec: ExecutionContext)
-  extends Controller {
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
+    extends Controller {
   val db = dbConfigProvider.get[JdbcProfile].db
 
   /**

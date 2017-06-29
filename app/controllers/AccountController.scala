@@ -90,7 +90,9 @@ class AccountController @Inject()(
     val result = AccountService
       .get(id)
       .flatMap(x =>
-        handleErrors(x) { x => makeResult(x)(OK)})
+        handleErrors(x) { x =>
+          makeResult(x)(OK)
+      })
     db.run(result)
   }
 
@@ -109,7 +111,9 @@ class AccountController @Inject()(
       .asOpt[Boolean]
 
     val result = AccountService.edit(id, n, o, f, h).flatMap { x =>
-      handleErrors(x) { x => makeResult(x)(ACCEPTED) }
+      handleErrors(x) { x =>
+        makeResult(x)(ACCEPTED)
+      }
     }
 
     db.run(result)
