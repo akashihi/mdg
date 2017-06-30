@@ -101,7 +101,7 @@ export default function transactionViewReducer(state = initialState, action) {
             dialog = {...dialog, transaction: action.payload, valid: valid.valid, errors: valid.errors};
             return {...state, dialog: dialog};
         case TRANSACTION_DIALOG_CLOSE:
-            dialog = {...dialog, open: false, transaction: {attributes: {comment: '', operations: []}}};
+            dialog = {...dialog, open: false};
             return {...state, dialog: dialog};
         case TRANSACTION_DIALOG_OPEN:
             var validInitial = validateTransactionForm(action.payload);

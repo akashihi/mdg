@@ -15,6 +15,10 @@ import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 
 export default class TransactionDialog extends React.Component {
+    onSaveClick() {
+        this.props.actions.editTransactionSave();
+    }
+
     onCancelClick() {
         this.props.actions.editTransactionCancel();
     }
@@ -77,8 +81,8 @@ export default class TransactionDialog extends React.Component {
         var validationErrorStyle = {
             'position': 'relative',
             'bottom': '-2px',
-            'font-size': '12px',
-            'line-height': '12px',
+            'fontSize': '12px',
+            'lineHeight': '12px',
             'color': 'rgb(244, 67, 54)',
             'transition': 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms'
         };
@@ -171,7 +175,7 @@ export default class TransactionDialog extends React.Component {
                     </Grid>
                 </GridTile>
             </GridList>
-            <FlatButton label='Save' primary={true} disabled={!props.valid}/>
+            <FlatButton label='Save' primary={true} disabled={!props.valid} onClick={::this.onSaveClick}/>
             <FlatButton label='Cancel' secondary={true} onClick={::this.onCancelClick}/>
         </Dialog>)
     }

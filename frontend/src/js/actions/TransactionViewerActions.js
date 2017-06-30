@@ -238,3 +238,44 @@ export function editTransactionChange(tx) {
         payload: tx
     }
 }
+
+export function editTransactionSave() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: TRANSACTION_DIALOG_CLOSE,
+            payload: true
+        });
+
+        var state = getState();
+        var transaction = state.transaction.dialog.transaction;
+        dispatch(updateTransaction(transaction));
+    }
+}
+
+export function updateTransaction(tx) {
+    return (dispatch) => {
+        dispatch({
+            type: GET_TRANSACTIONLIST_REQUEST,
+            payload: true
+        });
+
+        var url = '/api/transaction';
+        var method = 'POST';
+        if (tx.hasOwnProperty('id') && tx['id'] ) {
+            url = url + '/' + tx.id;
+            method = 'PUT';
+        }
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json'
+            },
+            body: JSON.stringify({data: tx})
+        })
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(()=>dispatch(loadTransactionList()))
+            .catch(()=>dispatch(loadTransactionList()))
+    }
+}
