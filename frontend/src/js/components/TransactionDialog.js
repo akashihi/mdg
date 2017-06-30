@@ -22,22 +22,22 @@ export default class TransactionDialog extends React.Component {
     onCommentChange(event, key, value) {
         var attr = {...this.props.transaction.attributes};
         attr.comment = value;
-        var account = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(account);
+        var tx = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(tx);
     }
 
     onTagAdd(tag) {
         var attr = {...this.props.transaction.attributes};
         attr.tags.push(tag);
-        var account = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(account);
+        var tx = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(tx);
     }
 
     onTagDelete(tag, index) {
         var attr = {...this.props.transaction.attributes};
         attr.tags.splice(index, 1);
-        var account = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(account);
+        var tx = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(tx);
     }
 
     onDateChange(ev, date) {
@@ -50,28 +50,38 @@ export default class TransactionDialog extends React.Component {
             date: newDate.get('date')
         });
         attr.timestamp = dt.format('YYYY-MM-DDTHH:mm:ss');
-        var account = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(account);
+        var tx = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(tx);
     }
 
     onTimeChange(ev, date) {
         var attr = {...this.props.transaction.attributes};
         attr.timestamp = moment(date).format('YYYY-MM-DDTHH:mm:ss');
-        var account = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(account);
+        var tx = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(tx);
     }
 
     onOperationAdd() {
         var attr = {...this.props.transaction.attributes};
         attr.operations.push({amount: 0});
-        var account = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(account);
+        var tx = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(tx);
     }
 
     render() {
         var props = this.props;
         var transaction = props.transaction;
         var attributes = transaction.attributes;
+        var errors = props.errors;
+
+        var validationErrorStyle = {
+            'position': 'relative',
+            'bottom': '-2px',
+            'font-size': '12px',
+            'line-height': '12px',
+            'color': 'rgb(244, 67, 54)',
+            'transition': 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms'
+        };
 
         var onAmountChange=function(index, value) {
             attributes.operations[index].amount = value;
@@ -104,10 +114,10 @@ export default class TransactionDialog extends React.Component {
                 <Grid fluid>
                     <Row>
                         <Col xs={6} sm={6} md={6} lg={6}>
-                            <TextField hintText='Amount' value={item.amount} onChange={(ev, value) => onAmountChange(index, value)}/>
+                            <TextField hintText='Amount' errorText={errors.operations[index].amount} value={item.amount} onChange={(ev, value) => onAmountChange(index, value)}/>
                         </Col>
                         <Col xs={6} sm={6} md={6} lg={6}>
-                            <SelectField hintText='Account' value={item.account_id} onChange={(ev, key, value) => onAccountChange(index,value)}>
+                            <SelectField hintText='Account' errorText={errors.operations[index].account_id} value={item.account_id} onChange={(ev, key, value) => onAccountChange(index,value)}>
                                 {accounts}
                             </SelectField>
                         </Col>
@@ -148,6 +158,11 @@ export default class TransactionDialog extends React.Component {
                 {ops}
                 <GridTile>
                     <Grid fluid>
+                        <Row>
+                            <Col xs={12} sm={12} md={12} lg={12}>
+                                <div style={validationErrorStyle}>{errors.transaction}</div>
+                            </Col>
+                         </Row>
                         <Row>
                             <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1} lgOffset={5}>
                                 <IconButton onClick={::this.onOperationAdd}><FontIcon className='material-icons'>playlist_add</FontIcon></IconButton>

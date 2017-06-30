@@ -14,11 +14,8 @@ const mapStateToProps = (state) => {
         expenseAccounts: state.account.expenseAccountList,
         open: state.transaction.dialog.open,
         transaction: state.transaction.dialog.transaction,
-        valid: true
-        /*
-        full: state.account.dialog.full,
-        valid: state.account.dialog.valid,
-        errors: state.account.dialog.errors*/
+        valid: state.transaction.dialog.valid,
+        errors: state.transaction.dialog.errors
     }
 };
 

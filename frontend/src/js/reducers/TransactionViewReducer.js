@@ -46,9 +46,50 @@ const initialState = {
     },
     dialog: {
         open: false,
-        transaction: {attributes: {comment: '', operations: []}}
+        transaction: {attributes: {comment: '', operations: []}},
+        valid: false,
+        errors: { }
     }
 };
+
+function validateTransactionForm(tx) {
+    var attributes = tx.attributes;
+    var errors = {};
+    var operationErrors = [];
+
+    var valid = true;
+
+    attributes.operations.forEach((item) => {
+        var operationError = {};
+
+        if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(item.amount)) {
+            operationError.amount = 'Amount is invalid';
+            valid = false;
+        }
+
+        if (!item.account_id) {
+            operationError.account_id = 'Account is not selected';
+            valid = false;
+        }
+
+        operationErrors.push(operationError);
+    });
+    errors.operations = operationErrors;
+
+
+    var ops = attributes.operations.filter((item) => parseInt(item.amount) !=0);
+    if (ops.length == 0 ) {
+        errors.transaction = 'Empty transaction';
+        valid = false;
+    }
+    var sum = ops.reduce((acc, item) => acc+parseInt(item.amount), 0);
+    if (sum != 0) {
+        errors.transaction = 'Transaction not balanced';
+        valid = false;
+    }
+
+    return {valid: valid, errors: errors}
+}
 
 export default function transactionViewReducer(state = initialState, action) {
     var deleteUi = state.delete;
@@ -56,12 +97,15 @@ export default function transactionViewReducer(state = initialState, action) {
     var ui = state.ui;
     switch (action.type) {
         case TRANSACTION_DIALOG_CHANGE:
-            dialog = {...dialog, transaction: action.payload};
+            var valid = validateTransactionForm(action.payload);
+            dialog = {...dialog, transaction: action.payload, valid: valid.valid, errors: valid.errors};
             return {...state, dialog: dialog};
         case TRANSACTION_DIALOG_CLOSE:
             dialog = {...dialog, open: false, transaction: {attributes: {comment: '', operations: []}}};
             return {...state, dialog: dialog};
         case TRANSACTION_DIALOG_OPEN:
+            var validInitial = validateTransactionForm(action.payload);
+            dialog = {...dialog, open: true, transaction: action.payload, valid: validInitial.valid, errors: validInitial.errors};
             dialog = {...dialog, open: true, transaction: action.payload};
             return {...state, dialog: dialog};
         case DELETE_TRANSACTION_REQUEST:
