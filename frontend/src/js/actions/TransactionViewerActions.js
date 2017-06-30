@@ -23,7 +23,8 @@ import {
     DELETE_TRANSACTION_APPROVE,
     DELETE_TRANSACTION_SUCCESS,
     DELETE_TRANSACTION_FAILURE,
-    TRANSACTION_DIALOG_OPEN
+    TRANSACTION_DIALOG_OPEN,
+    TRANSACTION_DIALOG_CLOSE
 } from '../constants/Transaction'
 
 export function loadTransactionList() {
@@ -220,5 +221,12 @@ export function editTransaction(tx) {
     return {
         type: TRANSACTION_DIALOG_OPEN,
         payload: tx
+    }
+}
+
+export function editTransactionCancel() {
+    return {
+        type: TRANSACTION_DIALOG_CLOSE,
+        payload: true
     }
 }

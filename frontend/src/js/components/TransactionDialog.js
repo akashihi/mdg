@@ -15,6 +15,10 @@ import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 
 export default class TransactionDialog extends React.Component {
+    onCancelClick() {
+        this.props.actions.editTransactionCancel();
+    }
+
     render() {
 
         var props = this.props;
@@ -90,7 +94,7 @@ export default class TransactionDialog extends React.Component {
                 </GridTile>
             </GridList>
             <FlatButton label='Save' primary={true} disabled={!props.valid}/>
-            <FlatButton label='Cancel' secondary={true}/>
+            <FlatButton label='Cancel' secondary={true} onClick={::this.onCancelClick}/>
         </Dialog>)
     }
 }
