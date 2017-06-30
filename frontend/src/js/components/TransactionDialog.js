@@ -19,11 +19,72 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionCancel();
     }
 
-    render() {
+    onCommentChange(event, key, value) {
+        var attr = {...this.props.transaction.attributes};
+        attr.comment = value;
+        var account = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(account);
+    }
 
+    onTagAdd(tag) {
+        var attr = {...this.props.transaction.attributes};
+        attr.tags.push(tag);
+        var account = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(account);
+    }
+
+    onTagDelete(tag, index) {
+        var attr = {...this.props.transaction.attributes};
+        attr.tags.splice(index, 1);
+        var account = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(account);
+    }
+
+    onDateChange(ev, date) {
+        var attr = {...this.props.transaction.attributes};
+        var newDate = moment(date);
+        var dt = moment(attr.timestamp);
+        dt.set({
+            year: newDate.get('year'),
+            month: newDate.get('month'),
+            date: newDate.get('date')
+        });
+        attr.timestamp = dt.format('YYYY-MM-DDTHH:mm:ss');
+        var account = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(account);
+    }
+
+    onTimeChange(ev, date) {
+        var attr = {...this.props.transaction.attributes};
+        attr.timestamp = moment(date).format('YYYY-MM-DDTHH:mm:ss');
+        var account = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(account);
+    }
+
+    onOperationAdd() {
+        var attr = {...this.props.transaction.attributes};
+        attr.operations.push({amount: 0});
+        var account = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(account);
+    }
+
+    render() {
         var props = this.props;
         var transaction = props.transaction;
         var attributes = transaction.attributes;
+
+        var onAmountChange=function(index, value) {
+            attributes.operations[index].amount = value;
+            var account = {...transaction, attributes: attributes};
+            props.actions.editTransactionChange(account);
+        };
+
+
+        var onAccountChange = function (index, value) {
+            attributes.operations[index].account_id = value;
+            var account = {...transaction, attributes: attributes};
+            props.actions.editTransactionChange(account);
+        };
 
         var tags = props.tags.map((item) => item.attributes.txtag);
 
@@ -39,14 +100,14 @@ export default class TransactionDialog extends React.Component {
         });
 
         var ops = attributes.operations.map(function(item, index) {
-            return (<GridTile key={transaction.id+item.account_id+index}>
+            return (<GridTile key={transaction.id+index}>
                 <Grid fluid>
                     <Row>
                         <Col xs={6} sm={6} md={6} lg={6}>
-                            {item.amount}
+                            <TextField hintText='Amount' value={item.amount} onChange={(ev, value) => onAmountChange(index, value)}/>
                         </Col>
                         <Col xs={6} sm={6} md={6} lg={6}>
-                            <SelectField hintText='Account' value={item.account_id} >
+                            <SelectField hintText='Account' value={item.account_id} onChange={(ev, key, value) => onAccountChange(index,value)}>
                                 {accounts}
                             </SelectField>
                         </Col>
@@ -55,14 +116,14 @@ export default class TransactionDialog extends React.Component {
             </GridTile>)
         });
 
-        return (<Dialog title='Transaction editing' open={props.open}>
+        return (<Dialog title='Transaction editing' open={props.open} autoScrollBodyContent={true}>
             <Grid fluid>
                 <Row>
                     <Col xs={12} sm={12} md={6} lg={6}>
-                        <DatePicker hintText='Transaction date' container='inline' mode='landscape' value={ts.toDate()}/>
+                        <DatePicker hintText='Transaction date' container='inline' mode='landscape' value={ts.toDate()} onChange={::this.onDateChange}/>
                         </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>
-                        <TimePicker format='24hr' hintText='Transaction time' value={ts.toDate()}/>
+                        <TimePicker format='24hr' hintText='Transaction time' value={ts.toDate()} onChange={::this.onTimeChange}/>
                     </Col>
                 </Row>
                 <Row>
@@ -71,12 +132,14 @@ export default class TransactionDialog extends React.Component {
                             value={attributes.tags}
                             dataSource={tags}
                             hintText='Tags'
+                            onRequestAdd={::this.onTagAdd}
+                            onRequestDelete={::this.onTagDelete}
                         />
                     </Col>
                 </Row>
                 <Row>
                     <Col xs={12} sm={12} md={12} lg={12}>
-                        <TextField hintText='Comment on transaction' fullWidth={true} multiLine={true} rows={4} value={attributes.comment}/>
+                        <TextField hintText='Comment on transaction' fullWidth={true} multiLine={true} rows={4} value={attributes.comment} onChange={::this.onCommentChange}/>
                     </Col>
                 </Row>
             </Grid>
@@ -87,7 +150,7 @@ export default class TransactionDialog extends React.Component {
                     <Grid fluid>
                         <Row>
                             <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1} lgOffset={5}>
-                                <IconButton><FontIcon className='material-icons'>playlist_add</FontIcon></IconButton>
+                                <IconButton onClick={::this.onOperationAdd}><FontIcon className='material-icons'>playlist_add</FontIcon></IconButton>
                             </Col>
                         </Row>
                     </Grid>

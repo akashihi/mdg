@@ -21,7 +21,8 @@ import {
     DELETE_TRANSACTION_SUCCESS,
     DELETE_TRANSACTION_FAILURE,
     TRANSACTION_DIALOG_OPEN,
-    TRANSACTION_DIALOG_CLOSE
+    TRANSACTION_DIALOG_CLOSE,
+    TRANSACTION_DIALOG_CHANGE
 } from '../constants/Transaction'
 
 const initialState = {
@@ -54,6 +55,9 @@ export default function transactionViewReducer(state = initialState, action) {
     var dialog = state.dialog;
     var ui = state.ui;
     switch (action.type) {
+        case TRANSACTION_DIALOG_CHANGE:
+            dialog = {...dialog, transaction: action.payload};
+            return {...state, dialog: dialog};
         case TRANSACTION_DIALOG_CLOSE:
             dialog = {...dialog, open: false, transaction: {attributes: {comment: '', operations: []}}};
             return {...state, dialog: dialog};
