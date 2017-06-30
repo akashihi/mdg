@@ -218,6 +218,13 @@ export function deleteTransaction(tx) {
     }
 }
 
+export function createTransaction() {
+    return {
+        type: TRANSACTION_DIALOG_OPEN,
+        payload: { attributes: {comment: '', timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'), operations: [ {amount: 0}, {amount: 0}]} }
+    }
+}
+
 export function editTransaction(tx) {
     return {
         type: TRANSACTION_DIALOG_OPEN,

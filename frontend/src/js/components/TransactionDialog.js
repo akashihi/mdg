@@ -114,7 +114,7 @@ export default class TransactionDialog extends React.Component {
         });
 
         var ops = attributes.operations.map(function(item, index) {
-            return (<GridTile key={transaction.id+index}>
+            return (<GridTile key={index}>
                 <Grid fluid>
                     <Row>
                         <Col xs={6} sm={6} md={6} lg={6}>
