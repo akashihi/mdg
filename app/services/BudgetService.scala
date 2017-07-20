@@ -9,6 +9,10 @@ import models.Budget
 
 import scala.concurrent._
 import scala.concurrent.duration._
+import slick.driver.PostgresDriver.api._
+
+import scalaz._
+import Scalaz._
 
 /**
   * Budget operations service.
@@ -69,6 +73,21 @@ class BudgetService @Inject()(protected val dao: BudgetDao)(
       }
     }
   }
+}
 
-  def delete(id: Long): Future[Option[Int]] = dao.delete(id)
+object BudgetService {
+  import play.api.libs.concurrent.Execution.Implicits._
+
+  /**
+    * Removes budget and all dependent objects.
+    *
+    * @param id identification of budget to remove.
+    * @return either error result, or resultHandler processing result.
+    */
+  def delete(id: Long): DBIO[\/[String, Int]] = {
+    BudgetDao.delete(id).map {
+      case 1 => 1.right
+      case _ => "BUDGET_NOT_FOUND".left
+    }
+  }
 }

@@ -3,10 +3,15 @@ package controllers
 import java.time._
 import javax.inject.Inject
 
+import controllers.api.ErrorHandler._
 import controllers.api.JsonWrapper._
 import models.Budget
 import play.api.mvc._
 import services.{BudgetService, ErrorService}
+import play.api.db.slick.DatabaseConfigProvider
+import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
+
 
 import scala.concurrent._
 
@@ -15,9 +20,11 @@ import scala.concurrent._
   */
 class BudgetController @Inject()(
     protected val budgetService: BudgetService,
+    protected val dbConfigProvider: DatabaseConfigProvider,
     errors: ErrorService)(implicit ec: ExecutionContext)
     extends Controller {
 
+  val db = dbConfigProvider.get[JdbcProfile].db
   /**
     * Adds new budget to the system.
     *
@@ -67,9 +74,12 @@ class BudgetController @Inject()(
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    budgetService.delete(id).flatMap {
-      case Some(_) => Future(NoContent)
-      case None => errors.errorFor("BUDGET_NOT_FOUND")
-    }
+    val result = BudgetService
+      .delete(id)
+      .flatMap(x =>
+        handleErrors(x) { _ =>
+          NoContent
+        })
+    db.run(result)
   }
 }

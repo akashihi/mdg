@@ -105,13 +105,6 @@ class BudgetDao @Inject()(
     val results = db.run(actions)
     results.map(seq => { (seq.head, seq(1), seq(2)) })
   }
-
-  def delete(id: Long): Future[Option[Int]] = {
-    db.run(budgets.filter(_.id === id).delete).map {
-      case 1 => Some(1)
-      case _ => None
-    }
-  }
 }
 
 object BudgetDao {
@@ -121,4 +114,11 @@ object BudgetDao {
       id: Long): SqlAction[Option[Budget], NoStream, Read] = {
     budgets.filter(_.id <= id).sortBy(_.id.desc).take(1).result.headOption
   }
+
+  /**
+    * Removes budget from the database
+    * @param id Budget id to remove
+    * @return Number of removed budgets
+    */
+  def delete(id: Long): DBIO[Int] = budgets.filter(_.id === id).delete
 }
