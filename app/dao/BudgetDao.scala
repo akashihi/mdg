@@ -2,7 +2,6 @@ package dao
 
 import java.sql.Date
 import java.time.LocalDate
-import javax.inject.Inject
 
 import dao.tables.Budgets.localDtoDate
 import dao.TransactionDao._
@@ -10,56 +9,40 @@ import dao.AccountDao._
 import dao.BudgetEntryDao._
 import dao.tables._
 import models.{Budget, ExpenseAccount, IncomeAccount}
-import play.api.db.slick._
-import slick.dbio.Effect.Read
-import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
-import slick.profile.{FixedSqlAction, SqlAction, SqlStreamingAction}
 
-import scala.concurrent._
+import play.api.libs.concurrent.Execution.Implicits._
 
-class BudgetDao @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext) {
-  val db = dbConfigProvider.get[JdbcProfile].db
-  val budgets = BudgetDao.budgets
+object BudgetDao {
+  val budgets = TableQuery[Budgets]
 
-  def insert(a: Budget): Future[Budget] =
-    db.run(budgets returning budgets += a)
-
-  def list(): Future[Seq[Budget]] = db.run(budgets.result)
-
-  def find(id: Long): Future[Option[Budget]] = {
-    db.run(BudgetDao.budgetFindByIdAction(id))
-  }
-
-  def findOverlapping(term_beginning: LocalDate,
-                      term_end: LocalDate): Future[Option[Budget]] = {
-    db.run(
-      budgets
-        .filter(b =>
-          b.term_beginning <= term_end && b.term_end >= term_beginning)
-        .take(1)
-        .result
-        .headOption)
-  }
-
-  private def getIncomingAmount(term_beginning: LocalDate)
-    : SqlStreamingAction[Vector[Option[BigDecimal]],
-                         Option[BigDecimal],
-                         Effect] = {
+  /**
+    * Calculates remains on asset accounts for specified date.
+    * @param term_beginning date on which remain is calculated
+    * @return remains on that date
+    */
+  private def getIncomingAmount(term_beginning: LocalDate): DBIO[BigDecimal] = {
     val dt = Date.valueOf(term_beginning)
     sql"select sum(o.amount) from operation as o, account as a, tx where o.account_id=a.id and o.tx_id=tx.id and a.account_type='asset' and a.hidden='f' and tx.ts < ${dt}"
-      .as[Option[BigDecimal]]
+      .as[Option[BigDecimal]].map(_.head).map(_.getOrElse(BigDecimal(0)))
   }
 
-  private def getExpectedChange(budget_id: Long)
-    : FixedSqlAction[Option[BigDecimal],
-                     _root_.slick.driver.PostgresDriver.api.NoStream,
-                     Read] = {
-    entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result
+  /**
+    * Calculates, how budget is expected to change remains on asset accounts.
+    * @param budget_id baudget to estimate
+    * @return estimated remains delta.
+    */
+  private def getExpectedChange(budget_id: Long) : DBIO[BigDecimal] = {
+    entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result.map(_.getOrElse(BigDecimal(0)))
   }
 
+  /**
+    * Calculates actual change of remains on asset account during
+    * specified period.
+    * @param term_beginning period first day.
+    * @param term_end period last day.
+    * @return actual remains delta during that period.
+    */
   private def getActualSpendings(term_beginning: LocalDate,
                                  term_end: LocalDate): DBIO[BigDecimal] = {
     accounts.result.flatMap { a =>
@@ -89,29 +72,59 @@ class BudgetDao @Inject()(
     }
   }
 
+  /**
+    * Calculates budget totals: remains at the budget beginning, estimated
+    * remains change, actual remains change.
+    * @param b budget to estimate
+    * @return tuple of three values (incoming remains, expected change, actual change)
+    */
   def getBudgetTotals(
-      b: Budget): Future[(BigDecimal, BigDecimal, BigDecimal)] = {
-    val incomingAction =
-      getIncomingAmount(b.term_beginning).head.map(_.getOrElse(BigDecimal(0)))
+                       b: Budget): DBIO[(BigDecimal, BigDecimal, BigDecimal)] = {
+    val incomingAction = getIncomingAmount(b.term_beginning)
     val actualAction = getActualSpendings(b.term_beginning, b.term_end)
-    val expectedAction = b.id match {
-      case None => DBIO.successful(BigDecimal(0))
-      case Some(x) => getExpectedChange(x).map(_.getOrElse(BigDecimal(0)))
-    }
+    val expectedAction = b.id.map(x => getExpectedChange(x)).getOrElse(DBIO.successful(BigDecimal(0)))
 
     val actions =
       DBIO.sequence(Seq(incomingAction, expectedAction, actualAction))
 
-    val results = db.run(actions)
-    results.map(seq => { (seq.head, seq(1), seq(2)) })
+    actions.map(seq => { (seq.head, seq(1), seq(2)) })
   }
-}
 
-object BudgetDao {
-  val budgets = TableQuery[Budgets]
+  /**
+    * Looks for a budgets, that overlap with specified period.
+    * @param term_beginning period first day
+    * @param term_end period last day
+    * @return first found overlapping budget
+    */
+  def findOverlapping(term_beginning: LocalDate,
+                      term_end: LocalDate): DBIO[Option[Budget]] = {
+      budgets
+        .filter(b =>
+          b.term_beginning <= term_end && b.term_end >= term_beginning)
+        .take(1)
+        .result
+        .headOption
+  }
 
-  def budgetFindByIdAction(
-      id: Long): SqlAction[Option[Budget], NoStream, Read] = {
+  /**
+    * Adds budget to the database.
+    * @param b budget to add.
+    * @return Nwely added budget with id specified.
+    */
+  def insert(b: Budget): DBIO[Budget] =budgets returning budgets += b
+
+  /**
+    * Returns all known budgets.
+    * @return list o budgets.
+    */
+  def list(): DBIO[Seq[Budget]] = budgets.result
+
+  /**
+    * Finds budget by its id.
+    * @param id Budget to look for.
+    * @return matching budget object.
+    */
+  def find(id: Long): DBIO[Option[Budget]] = {
     budgets.filter(_.id <= id).sortBy(_.id.desc).take(1).result.headOption
   }
 

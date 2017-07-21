@@ -1,7 +1,9 @@
 package util
 
+import java.time.temporal.ChronoUnit
+
 import controllers.dto.TransactionDto
-import models.{Account, AssetAccount}
+import models.{Account, AssetAccount, Budget}
 
 import scalaz.Scalaz._
 import scalaz._
@@ -67,4 +69,28 @@ object Validator {
       |@| transactionNotEmpty(tx)) { case _ => tx }
   }
 
+  /**
+    * Checks Budget for validity.
+    * Valid budget should start before own end
+    * and should be at least one day long.
+    */
+  def validate(b: Budget): StringValidation[Budget] = {
+    def budgetPeriodNotInverted(b: Budget): StringValidation[Budget] = {
+      if (b.term_beginning isAfter b.term_end) {
+        "BUDGET_INVALID_TERM".failureNel
+      } else {
+        b.success
+      }
+    }
+
+    def budgetPeriodNotShort(b: Budget): StringValidation[Budget] = {
+      if (ChronoUnit.DAYS.between(b.term_beginning, b.term_end) < 1) {
+        "BUDGET_SHORT_RANGE".failureNel
+      } else {
+        b.success
+      }
+    }
+
+    (budgetPeriodNotInverted(b) |@| budgetPeriodNotShort(b)) { case _ => b }
+  }
 }

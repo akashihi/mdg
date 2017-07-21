@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 import controllers.dto.BudgetEntryDTO
-import dao.{BudgetDao, BudgetEntryDao}
+import dao.BudgetEntryDao
 import models.BudgetEntry
 
 import scala.concurrent._
@@ -14,8 +14,7 @@ import scala.concurrent._
   * Budget operations service.
   */
 class BudgetEntryService @Inject()(
-    protected val dao: BudgetEntryDao,
-    protected val budgetDao: BudgetDao)(implicit ec: ExecutionContext) {
+    protected val dao: BudgetEntryDao)(implicit ec: ExecutionContext) {
 
   /**
     * Converts Budget object to the DTO
@@ -23,7 +22,15 @@ class BudgetEntryService @Inject()(
     * @return Fully filled DTO object
     */
   def entryToDTO(b: BudgetEntry): Future[BudgetEntryDTO] = {
-    budgetDao.find(b.budget_id).flatMap {
+    Future.successful(
+      BudgetEntryDTO(b.id,
+        b.account_id,
+        b.even_distribution,
+        b.proration,
+        b.expected_amount,
+        0,
+        None))
+    /*budgetDao.find(b.budget_id).flatMap {
       case None =>
         Future.successful(
           BudgetEntryDTO(b.id,
@@ -60,7 +67,7 @@ class BudgetEntryService @Inject()(
                          actual,
                          normalizedChangeAmount)
         }
-    }
+    }*/
   }
 
   def list(budget_id: Long): Future[Seq[BudgetEntryDTO]] =
