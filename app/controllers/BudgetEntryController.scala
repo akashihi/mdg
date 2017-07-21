@@ -2,22 +2,30 @@ package controllers
 
 import javax.inject.Inject
 
+import controllers.api.ErrorHandler._
 import controllers.api.JsonWrapper._
+import controllers.api.ResultMaker._
 import play.api.mvc._
 import services.{BudgetEntryService, ErrorService}
+import util.ApiOps._
+import play.api.db.slick.DatabaseConfigProvider
+import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 /**
   * Budget REST resource controller.
   */
 class BudgetEntryController @Inject()(
-    private val budgetEntryService: BudgetEntryService,
+    protected val dbConfigProvider: DatabaseConfigProvider,
     private val errors: ErrorService)(implicit ec: ExecutionContext)
     extends Controller {
+  val db = dbConfigProvider.get[JdbcProfile].db
 
   def index(budget_id: Long) = Action.async {
-    budgetEntryService.list(budget_id).map(x => Ok(wrapJson(x)))
+    val result = BudgetEntryService.list(budget_id).map(x => Ok(wrapJson(x)))
+    db.run(result)
   }
 
   /**
@@ -26,10 +34,11 @@ class BudgetEntryController @Inject()(
     * @return budgetentry wrapper object.
     */
   def show(id: Long, budget_id: Long) = Action.async {
-    budgetEntryService.find(id, budget_id).flatMap {
-      case None => errors.errorFor("BUDGETENTRY_NOT_FOUND")
-      case Some(x) => Future(Ok(wrapJson(x)))
+    val result = BudgetEntryService.find(id, budget_id).flatMap {
+      case None => makeErrorResult("BUDGETENTRY_NOT_FOUND")
+      case Some(x) => DBIO.successful(Ok(wrapJson(x)))
     }
+    db.run(result)
   }
 
   /**
@@ -46,13 +55,14 @@ class BudgetEntryController @Inject()(
         (request.body \ "data" \ "attributes" \ "proration").asOpt[Boolean]
       val a = (request.body \ "data" \ "attributes" \ "expected_amount")
         .asOpt[BigDecimal]
-      budgetEntryService.edit(id, budget_id, e, p, a).flatMap {
-        case Right(error) => errors.errorFor(error)
-        case Left(entry) =>
-          entry.map { x =>
-            Accepted(wrapJson(x))
+
+      val result = BudgetEntryService.edit(id, budget_id, e, p, a).flatMap {
+        x =>
+          handleErrors(x) { x =>
+            makeResult(x)(ACCEPTED)
           }
       }
-  }
 
+      db.run(result)
+  }
 }
