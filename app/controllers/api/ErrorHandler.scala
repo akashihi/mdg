@@ -11,22 +11,6 @@ object ErrorHandler {
   /**
     * Takes pair of possible processing error or processing result
     * and wraps them to the Play Result.
-    * @param resultWrapper container containg error XOR result
-    * @param op operation to be applied to the result.
-    * @tparam T Type of the result
-    * @return Play Result object
-    */
-  def handleErrors[T](resultWrapper: \/[String, DBIO[T]],
-                      op: T => Result): DBIO[Result] = {
-    resultWrapper match {
-      case \/-(x) => x.map(op)
-      case -\/(e) => makeErrorResult(e)
-    }
-  }
-
-  /**
-    * Takes pair of possible processing error or processing result
-    * and wraps them to the Play Result.
     * @param resultWrapper container containg error XOR result wrapped to DBIO
     * @param op operation to be applied to the result.
     * @tparam T Type of the result

@@ -3,9 +3,8 @@ package services
 import controllers.dto.{BudgetDTO, BudgetOutgoingAmount}
 import dao.BudgetDao
 import models.Budget
-
 import slick.driver.PostgresDriver.api._
-
+import util.ErrXor._
 import util.Validator._
 
 import scalaz._
@@ -53,20 +52,8 @@ object BudgetService {
           case None => x.right
       })
 
-    val z = v match {
-      case -\/(e) => DBIO.successful(e.left)
-      case \/-(e) => e.map(_.right)
-    }
-    val d = z.map(_.flatMap(identity))
-    def budgetSave(bbb: Budget): DBIO[BudgetDTO] = {
-      BudgetDao.insert(bbb).flatMap(budgetToDTO)
-    }
-    val s = d.map(_.map(BudgetDao.insert(_).flatMap(budgetToDTO)))
-    val f = s.map {
-      case -\/(e) => DBIO.successful(e.left)
-      case \/-(e) => e.map(_.right)
-    }
-    f.flatMap(identity)
+    val s = invert(v).map(_.map(BudgetDao.insert(_).flatMap(budgetToDTO)))
+    invert(s)
   }
 
   def list(): DBIO[Seq[BudgetDTO]] =

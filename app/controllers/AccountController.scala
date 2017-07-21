@@ -60,8 +60,7 @@ class AccountController @Inject()(
         .getOrElse(false)
     } yield Account(Some(0), AccountType(t), c, n, b, f, o, hidden = false)
 
-    val result = handleErrors(AccountService.create(account), createResult)
-
+    val result = AccountService.create(account).flatMap(x => handleErrors(x)(createResult))
     db.run(result)
   }
 
