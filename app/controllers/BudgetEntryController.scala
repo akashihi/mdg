@@ -6,7 +6,7 @@ import controllers.api.ErrorHandler._
 import controllers.api.JsonWrapper._
 import controllers.api.ResultMaker._
 import play.api.mvc._
-import services.{BudgetEntryService, ErrorService}
+import services.BudgetEntryService
 import util.ApiOps._
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
@@ -18,8 +18,8 @@ import scala.concurrent.ExecutionContext
   * Budget REST resource controller.
   */
 class BudgetEntryController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider,
-    private val errors: ErrorService)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
     extends Controller {
   val db = dbConfigProvider.get[JdbcProfile].db
 
