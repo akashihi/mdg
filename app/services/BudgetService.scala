@@ -26,11 +26,11 @@ object BudgetService {
     BudgetDao.getBudgetTotals(b).map { amount =>
       val (incoming, expectedChange, actualChange) = amount
       BudgetDTO(b.id,
-        b.term_beginning,
-        b.term_end,
-        incoming,
-        BudgetOutgoingAmount(incoming + expectedChange,
-          incoming + actualChange))
+                b.term_beginning,
+                b.term_end,
+                incoming,
+                BudgetOutgoingAmount(incoming + expectedChange,
+                                     incoming + actualChange))
     }
   }
 
@@ -44,12 +44,14 @@ object BudgetService {
       case Some(x) => x.right
       case None => "BUDGET_DATA_INVALID".left
     }
-    val v = b.map { validate }
+    val v = b
+      .map { validate }
       .flatMap { validationToXor }
-      .map(x => BudgetDao.findOverlapping(x.term_beginning, x.term_end).map {
-      case Some(_) => "BUDGET_OVERLAPPING".left
-      case None => x.right
-    })
+      .map(x =>
+        BudgetDao.findOverlapping(x.term_beginning, x.term_end).map {
+          case Some(_) => "BUDGET_OVERLAPPING".left
+          case None => x.right
+      })
 
     val z = v match {
       case -\/(e) => DBIO.successful(e.left)
@@ -67,7 +69,8 @@ object BudgetService {
     f.flatMap(identity)
   }
 
-  def list(): DBIO[Seq[BudgetDTO]] = BudgetDao.list().flatMap(x => DBIO.sequence(x.map(budgetToDTO)))
+  def list(): DBIO[Seq[BudgetDTO]] =
+    BudgetDao.list().flatMap(x => DBIO.sequence(x.map(budgetToDTO)))
 
   /**
     * Retrieves specific Budget.

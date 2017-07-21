@@ -24,7 +24,9 @@ object BudgetDao {
   private def getIncomingAmount(term_beginning: LocalDate): DBIO[BigDecimal] = {
     val dt = Date.valueOf(term_beginning)
     sql"select sum(o.amount) from operation as o, account as a, tx where o.account_id=a.id and o.tx_id=tx.id and a.account_type='asset' and a.hidden='f' and tx.ts < ${dt}"
-      .as[Option[BigDecimal]].map(_.head).map(_.getOrElse(BigDecimal(0)))
+      .as[Option[BigDecimal]]
+      .map(_.head)
+      .map(_.getOrElse(BigDecimal(0)))
   }
 
   /**
@@ -32,8 +34,13 @@ object BudgetDao {
     * @param budget_id baudget to estimate
     * @return estimated remains delta.
     */
-  private def getExpectedChange(budget_id: Long) : DBIO[BigDecimal] = {
-    entries.filter(_.budget_id === budget_id).map(_.expected_amount).sum.result.map(_.getOrElse(BigDecimal(0)))
+  private def getExpectedChange(budget_id: Long): DBIO[BigDecimal] = {
+    entries
+      .filter(_.budget_id === budget_id)
+      .map(_.expected_amount)
+      .sum
+      .result
+      .map(_.getOrElse(BigDecimal(0)))
   }
 
   /**
@@ -78,11 +85,12 @@ object BudgetDao {
     * @param b budget to estimate
     * @return tuple of three values (incoming remains, expected change, actual change)
     */
-  def getBudgetTotals(
-                       b: Budget): DBIO[(BigDecimal, BigDecimal, BigDecimal)] = {
+  def getBudgetTotals(b: Budget): DBIO[(BigDecimal, BigDecimal, BigDecimal)] = {
     val incomingAction = getIncomingAmount(b.term_beginning)
     val actualAction = getActualSpendings(b.term_beginning, b.term_end)
-    val expectedAction = b.id.map(x => getExpectedChange(x)).getOrElse(DBIO.successful(BigDecimal(0)))
+    val expectedAction = b.id
+      .map(x => getExpectedChange(x))
+      .getOrElse(DBIO.successful(BigDecimal(0)))
 
     val actions =
       DBIO.sequence(Seq(incomingAction, expectedAction, actualAction))
@@ -98,12 +106,12 @@ object BudgetDao {
     */
   def findOverlapping(term_beginning: LocalDate,
                       term_end: LocalDate): DBIO[Option[Budget]] = {
-      budgets
-        .filter(b =>
-          b.term_beginning <= term_end && b.term_end >= term_beginning)
-        .take(1)
-        .result
-        .headOption
+    budgets
+      .filter(b =>
+        b.term_beginning <= term_end && b.term_end >= term_beginning)
+      .take(1)
+      .result
+      .headOption
   }
 
   /**
@@ -111,7 +119,7 @@ object BudgetDao {
     * @param b budget to add.
     * @return Nwely added budget with id specified.
     */
-  def insert(b: Budget): DBIO[Budget] =budgets returning budgets += b
+  def insert(b: Budget): DBIO[Budget] = budgets returning budgets += b
 
   /**
     * Returns all known budgets.

@@ -20,7 +20,8 @@ import controllers.dto.BudgetDTO
   * Budget REST resource controller.
   */
 class BudgetController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
     extends Controller {
 
   val db = dbConfigProvider.get[JdbcProfile].db
@@ -32,8 +33,9 @@ class BudgetController @Inject()(
     * @return Wrapped to json data of created budget.
     */
   def createResult(b: BudgetDTO): Result =
-  makeResult(b)(CREATED)
-    .withHeaders("Location" -> s"/api/budget/${b.id.get}")
+    makeResult(b)(CREATED)
+      .withHeaders("Location" -> s"/api/budget/${b.id.get}")
+
   /**
     * Adds new budget to the system.
     *
@@ -85,7 +87,7 @@ class BudgetController @Inject()(
       .flatMap(x =>
         handleErrors(x) { _ =>
           NoContent
-        })
+      })
     db.run(result)
   }
 }
