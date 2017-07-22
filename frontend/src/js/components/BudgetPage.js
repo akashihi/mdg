@@ -13,6 +13,9 @@ export default class BudgetPage extends Component {
     }
 
     render() {
+        var props = this.props;
+        var attrs = props.budget.attributes;
+
         return (
             <div>
                 <BudgetSelector/>
@@ -21,9 +24,9 @@ export default class BudgetPage extends Component {
                     <CardText>
                         <IconButton onClick={this.onOpenBudgetListClick.bind(this)}><FontIcon className='material-icons'>chevron_left</FontIcon></IconButton>
                         <Divider/>
-                        <p>Assets at first budget day: 9000</p>
-                        <p>Expected assets at last budget day: 100500</p>
-                        <p>Actual assets at last budget day: 3.62</p>
+                        <p>Assets at first budget day: {attrs.incoming_amount}</p>
+                        <p>Expected assets at last budget day: {attrs.outgoing_amount.expected}</p>
+                        <p>Actual assets at last budget day: {attrs.outgoing_amount.actual}</p>
                         <p>Income: 1500 actual / 8080 expected</p>
                         <p>Spendings: 9000 actual / 270 expected</p>
                         <p>Today's spending: 0 allowed/ 2600 actual</p>

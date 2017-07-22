@@ -1,7 +1,15 @@
-import { SET_CURRENT_BUDGET } from '../constants/BudgetEntry'
+import {SET_CURRENT_BUDGET} from '../constants/BudgetEntry'
 
 const initialState = {
-    currentBudget: {}
+    currentBudget: {
+        attributes: {
+            incoming_amount: 0,
+            outgoing_amount: {
+                expected: 0,
+                actual: 0
+            }
+        }
+    }
 };
 
 export default function budgetEntryReducer(state = initialState, action) {
