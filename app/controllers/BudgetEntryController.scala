@@ -2,11 +2,11 @@ package controllers
 
 import javax.inject.Inject
 
-import controllers.api.ErrorHandler._
 import controllers.api.JsonWrapper._
 import controllers.api.ResultMaker._
 import play.api.mvc._
 import services.BudgetEntryService
+import services.ErrorService._
 import util.ApiOps._
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile

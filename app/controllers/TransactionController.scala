@@ -7,13 +7,13 @@ import dao.filters.TransactionFilter
 import dao.filters.TransactionFilter._
 import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
-import api.ErrorHandler._
 import controllers.api.ResultMaker._
 import util.ApiOps._
 import util.ErrXor._
 import play.api.libs.json._
 import play.api.mvc._
 import services.TransactionService
+import services.ErrorService._
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._

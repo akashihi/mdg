@@ -2,7 +2,6 @@ package controllers
 
 import javax.inject._
 
-import controllers.api.ErrorHandler._
 import controllers.api.ResultMaker._
 import dao.AccountDao
 import dao.filters.AccountFilter
@@ -11,6 +10,7 @@ import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.json._
 import play.api.mvc._
 import services.AccountService
+import services.ErrorService._
 import slick.driver.JdbcProfile
 
 import scala.concurrent._
