@@ -2,14 +2,17 @@ package util
 
 import java.time.temporal.ChronoUnit
 
-import controllers.dto.TransactionDto
-import models.{Account, AssetAccount, Budget}
+import controllers.dto._
+import models._
 
 import scalaz.Scalaz._
 import scalaz._
 
 object Validator {
   type StringValidation[T] = ValidationNel[String, T]
+  type AccountValidation = StringValidation[Account]
+  type TransactionDTOValidation = StringValidation[TransactionDto]
+  type BudgetValidation = StringValidation[Budget]
 
   def validationToXor[T](v: StringValidation[T]): \/[String, T] = {
     v match {
@@ -25,14 +28,14 @@ object Validator {
     * @param account Account to process
     * @return List of errors or account object
     */
-  def validate(account: Account): StringValidation[Account] = {
-    def validateOpsFlag(account: Account): StringValidation[Account] = {
+  def validate(account: Account): AccountValidation = {
+    def validateOpsFlag(account: Account): AccountValidation = {
       if (account.operational && account.account_type != AssetAccount) {
         "ACCOUNT_NONASSET_INVALIDFLAG".failureNel
       } else { account.success }
     }
 
-    def validateFavFlag(account: Account): StringValidation[Account] = {
+    def validateFavFlag(account: Account): AccountValidation = {
       if (account.favorite && account.account_type != AssetAccount) {
         "ACCOUNT_NONASSET_INVALIDFLAG".failureNel
       } else { account.success }
@@ -50,16 +53,16 @@ object Validator {
     * @param tx list to process.
     * @return List of errors or tx object
     */
-  def validate(tx: TransactionDto): StringValidation[TransactionDto] = {
+  def validate(tx: TransactionDto): TransactionDTOValidation = {
     def transactionBalanced(
-        tx: TransactionDto): StringValidation[TransactionDto] = {
+        tx: TransactionDto): TransactionDTOValidation = {
       if (tx.operations.map(o => o.amount).sum != 0) {
         "TRANSACTION_NOT_BALANCED".failureNel
       } else { tx.success }
     }
 
     def transactionNotEmpty(
-        tx: TransactionDto): StringValidation[TransactionDto] = {
+        tx: TransactionDto): TransactionDTOValidation = {
       if (!tx.operations.exists(o => o.amount != 0)) {
         "TRANSACTION_EMPTY".failureNel
       } else { tx.success }
@@ -74,8 +77,8 @@ object Validator {
     * Valid budget should start before own end
     * and should be at least one day long.
     */
-  def validate(b: Budget): StringValidation[Budget] = {
-    def budgetPeriodNotInverted(b: Budget): StringValidation[Budget] = {
+  def validate(b: Budget): BudgetValidation = {
+    def budgetPeriodNotInverted(b: Budget): BudgetValidation = {
       if (b.term_beginning isAfter b.term_end) {
         "BUDGET_INVALID_TERM".failureNel
       } else {
@@ -83,7 +86,7 @@ object Validator {
       }
     }
 
-    def budgetPeriodNotShort(b: Budget): StringValidation[Budget] = {
+    def budgetPeriodNotShort(b: Budget): BudgetValidation = {
       if (ChronoUnit.DAYS.between(b.term_beginning, b.term_end) < 1) {
         "BUDGET_SHORT_RANGE".failureNel
       } else {
