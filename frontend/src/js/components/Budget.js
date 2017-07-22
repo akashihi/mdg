@@ -5,6 +5,12 @@ import FontIcon from 'material-ui/FontIcon';
 
 
 export default class Budget extends Component {
+    selectBudget() {
+        this.props.selectFunc(this.props.budget)
+    }
+    deleteBudget() {
+        this.props.deleteFunc(this.props.budget.id)
+    }
     render() {
         var attr = this.props.budget.attributes;
         var title = attr.term_beginning + ' - ' + attr.term_end;
@@ -13,10 +19,10 @@ export default class Budget extends Component {
         return (
             <Card>
                 <CardHeader title={title}>
-                    <IconButton style={{float: 'right'}} onClick={()=>this.props.deleteFunc(this.props.budget.id)}><FontIcon
+                    <IconButton style={{float: 'right'}} onClick={::this.deleteBudget}><FontIcon
                         className='material-icons'>delete_forever</FontIcon></IconButton>
                 </CardHeader>
-                <CardText>
+                <CardText  onClick={::this.selectBudget}>
                     <p>Actual income: {income_actual}</p>
                     <p>Expected income: {income_expected}</p>
                 </CardText>

@@ -9,6 +9,10 @@ import {
     SET_NEWBUDGET_END
 } from '../constants/Budget'
 
+import {
+    SET_CURRENT_BUDGET
+} from '../constants/BudgetEntry'
+
 export function toggleBudgetSelector(visible) {
     return {
         type: TOGGLE_BUDGET_SELECTOR,
@@ -30,7 +34,8 @@ export function loadBudgetList() {
                 dispatch({
                     type: GET_BUDGETLIST_SUCCESS,
                     payload: json.data
-                })
+                });
+                dispatch(selectBudget(json.data[0]))
             })
             .catch(function (response) {
                 dispatch({
@@ -100,5 +105,12 @@ export function budgetCreate() {
             .then(checkApiError)
             .then(()=>dispatch(loadBudgetList()))
             .catch(()=>dispatch(loadBudgetList()))
+    }
+}
+
+export function selectBudget(budget) {
+    return {
+        type: SET_CURRENT_BUDGET,
+        payload: budget
     }
 }

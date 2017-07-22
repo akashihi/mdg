@@ -31,6 +31,9 @@ export default class BudgetList extends Component {
 
     render() {
         var props = this.props;
+        var onSelectBudgetClick = function (budget) {
+            props.actions.selectBudget(budget)
+        };
         var onDeleteBudgetClick = function (id) {
             props.actions.deleteBudget(id)
         };
@@ -43,7 +46,7 @@ export default class BudgetList extends Component {
         } else {
             budgets = props.budgets.map(function (item) {
                 return (
-                    <Budget budget={item} key={item.id} deleteFunc={onDeleteBudgetClick}/>
+                    <Budget budget={item} key={item.id} deleteFunc={onDeleteBudgetClick} selectFunc={onSelectBudgetClick}/>
                 )
             });
         }
