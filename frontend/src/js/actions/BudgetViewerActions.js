@@ -13,6 +13,8 @@ import {
     SET_CURRENT_BUDGET
 } from '../constants/BudgetEntry'
 
+import { loadBudgetEntryList } from './BudgetEntryActions'
+
 export function toggleBudgetSelector(visible) {
     return {
         type: TOGGLE_BUDGET_SELECTOR,
@@ -35,7 +37,7 @@ export function loadBudgetList() {
                     type: GET_BUDGETLIST_SUCCESS,
                     payload: json.data
                 });
-                dispatch(selectBudget(json.data[0]))
+                dispatch(selectBudget(json.data[0]));
             })
             .catch(function (response) {
                 dispatch({
@@ -109,8 +111,11 @@ export function budgetCreate() {
 }
 
 export function selectBudget(budget) {
-    return {
-        type: SET_CURRENT_BUDGET,
-        payload: budget
+    return (dispatch) => {
+        dispatch({
+            type: SET_CURRENT_BUDGET,
+            payload: budget
+        });
+        dispatch(loadBudgetEntryList());
     }
 }
