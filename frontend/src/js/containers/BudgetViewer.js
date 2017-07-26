@@ -7,7 +7,13 @@ import * as BudgetViewerActions from '../actions/BudgetViewerActions'
 const mapStateToProps = (state) => {
     return {
         drawerVisible: state.budget.ui.budgetListVisible,
-        budget: state.budgetentry.currentBudget
+        budget: state.budgetentry.currentBudget,
+        entries: state.budgetentry.entryList,
+        loading: state.budgetentry.ui.entryListLoading,
+        error: state.budgetentry.ui.entryListError,
+        assetAccounts: state.account.assetAccountList,
+        incomeAccounts: state.account.incomeAccountList,
+        expenseAccounts: state.account.expenseAccountList
     }
 };
 
