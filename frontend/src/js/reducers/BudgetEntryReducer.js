@@ -2,7 +2,7 @@ import {
     SET_CURRENT_BUDGET,
     GET_BUDGETENTRYLIST_REQUEST,
     GET_BUDGETENTRYLIST_SUCCESS,
-    GET_BUDGETENTRYLIST_FAILURE,
+    GET_BUDGETENTRYLIST_FAILURE
 } from '../constants/BudgetEntry'
 
 const initialState = {

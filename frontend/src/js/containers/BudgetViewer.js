@@ -3,6 +3,7 @@ import { bindActionCreators } from 'redux'
 
 import BudgetPage from '../components/BudgetPage'
 import * as BudgetViewerActions from '../actions/BudgetViewerActions'
+import * as BudgetEntryActions from '../actions/BudgetEntryActions'
 
 const mapStateToProps = (state) => {
     return {
@@ -19,7 +20,8 @@ const mapStateToProps = (state) => {
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(BudgetViewerActions, dispatch)
+        actions: bindActionCreators(BudgetViewerActions, dispatch),
+        entryActions: bindActionCreators(BudgetEntryActions, dispatch)
     }
 }
 

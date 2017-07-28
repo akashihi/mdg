@@ -27,7 +27,7 @@ export default class BudgetPage extends Component {
             }
         }
         return (
-            <BudgetEntry entry={item} key={item.id} account={account}/>
+            <BudgetEntry entry={item} key={item.id} account={account} saveBudgetEntryChange={props.entryActions.updateBudgetEntry}/>
         )
     }
 
