@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {checkApiError, parseJSON, dateToYMD} from '../util/ApiUtils';
 
 import {
@@ -10,10 +11,11 @@ import {
 } from '../constants/Budget'
 
 import {
-    SET_CURRENT_BUDGET
+    SET_CURRENT_BUDGET,
+    GET_BUDGETENTRYLIST_REQUEST
 } from '../constants/BudgetEntry'
 
-import { loadBudgetEntryList } from './BudgetEntryActions'
+import {loadBudgetEntryList} from './BudgetEntryActions'
 
 export function toggleBudgetSelector(visible) {
     return {
@@ -37,7 +39,7 @@ export function loadBudgetList() {
                     type: GET_BUDGETLIST_SUCCESS,
                     payload: json.data
                 });
-                dispatch(selectBudget(json.data[0]));
+                dispatch(getCurrentBudget());
             })
             .catch(function (response) {
                 dispatch({
@@ -107,6 +109,26 @@ export function budgetCreate() {
             .then(checkApiError)
             .then(()=>dispatch(loadBudgetList()))
             .catch(()=>dispatch(loadBudgetList()))
+    }
+}
+
+export function getCurrentBudget() {
+    return (dispatch) => {
+        dispatch({
+            type: GET_BUDGETENTRYLIST_REQUEST,
+            payload: true
+        });
+
+        var id = moment().format('YYYYMMDD');
+
+        fetch('/api/budget/' + id)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(function (json) {
+                console.log(json)
+
+                dispatch(selectBudget(json.data));
+            })
     }
 }
 
