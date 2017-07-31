@@ -55,9 +55,41 @@ object BudgetEntryService {
     * @return Fully filled DTO object
     */
   def entryToDTO(b: BudgetEntry): DBIO[BudgetEntryDTO] = {
+    /*.map {
+      case Some(budget) => if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate.now().isBefore(budget.term_end)) {
+        Some(budget)
+      } else {
+        None
+      }
+    }.*/
     val amounts = BudgetDao.find(b.budget_id).flatMap {
       case None => DBIO.successful((BigDecimal(0), None))
-      case Some(budget) => getEntryAmounts(b, budget)
+      case Some(budget) => {
+        BudgetEntryDao.getActualSpendings(b.account_id, budget).map { actual =>
+          if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate.now().isBefore(budget.term_end)) {
+            (actual, None)
+          } else {
+            val budgetLength =
+              ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
+            val daysLeft =
+              ChronoUnit.DAYS.between(LocalDate.now(), budget.term_end)
+            val changeAmount = b.even_distribution match {
+              case false => None
+              case true =>
+                b.proration match {
+                  case Some(true) =>
+                    Some((b.expected_amount - actual) / daysLeft)
+                  case Some(false) | None =>
+                    Some(
+                      b.expected_amount - actual - (b.expected_amount / budgetLength) * daysLeft)
+                }
+            }
+            val normalizedChangeAmount =
+              changeAmount.map(x => if (x < 0) BigDecimal(0) else x)
+            (actual, normalizedChangeAmount)
+          }
+        }
+      }
     }
     amounts.map { p =>
       val (actual, normalizedChangeAmount) = p
