@@ -13,7 +13,6 @@ export default class BudgetEntry extends Component {
         var attr = {...this.props.entry.attributes};
         attr.expected_amount = value;
         this.entry = {...this.props.entry, attributes: attr};
-        console.log(this.entry)
     }
 
     onEvenEdit(ev, value) {

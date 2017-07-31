@@ -12,6 +12,16 @@ const initialState = {
             outgoing_amount: {
                 expected: 0,
                 actual: 0
+            },
+            state: {
+                income: {
+                    actual: 0,
+                    expected: 0
+                },
+                expense: {
+                    actual: 0,
+                    expected: 0
+                }
             }
         }
     },
