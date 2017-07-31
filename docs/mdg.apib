@@ -480,10 +480,17 @@ A budget object has the following attributes
 
 - term_beginning: (required, timestamp) - Budget is not effective before specified point in time
 - term_end: (required, timestamp) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
-- incoming_amount: (optional, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled.
-- outgoing_amount: (optional, json object, readonly) 
-  - expected: (optional, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified.
+- incoming_amount: (required, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled.
+- outgoing_amount: (required, json object, readonly) 
+  - expected: (required, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified.
   - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution.
+- state: (required, json object, readonly)
+  - income (required, json object, readonly)
+    - actual(required, decimal, readonly) - Actual income, received during budget validity period. Calculated as a sum of income account operations, happened during transaction validity period
+    - expected(required, decimal, readonly) - Income expected to be received during budget validity period. Calculated as a sum of expected values on budget entries related to income accounts
+  - expense (required, json object, readonly)
+    - actual(required, decimal, readonly) - Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period
+    - expected(required, decimal, readonly) - Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts    
 
 ### Create a new budget [POST]
 

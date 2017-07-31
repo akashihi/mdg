@@ -1,7 +1,8 @@
 package services
 
 import dao.AccountDao
-import models.Account
+import dao.filters.AccountFilter
+import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
 import util.ErrXor._
@@ -30,6 +31,24 @@ object AccountService {
     invert(a)
   }
 
+  /**
+    * Retrieves acocunts matching filter and returns them
+    * separated on account type.
+    * @param filter Filter to apply.
+    * @return tuple of three sequences (income accounts, asset accounts, expense accounts)
+    */
+  def listSeparate(filter: AccountFilter) : DBIO[(Seq[Account], Seq[Account], Seq[Account])] = {
+    AccountDao.list(filter).map { a =>
+      val incomeAccounts =
+        a.filter(_.account_type == IncomeAccount)
+      val assetAccounts =
+        a.filter(_.account_type == AssetAccount)
+      val expenseAccounts =
+        a.filter(_.account_type == ExpenseAccount)
+
+      (incomeAccounts, assetAccounts, expenseAccounts)
+    }
+  }
   /**
     * Retrieves account by id or returns error
     * @param id Account id to retrieve

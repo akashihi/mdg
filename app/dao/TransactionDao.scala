@@ -157,9 +157,14 @@ object TransactionDao {
     * @param txId transaction id to work on
     * @return list of transaction's operations
     */
-  def listOperations(txId: Long): DBIO[Seq[Operation]] = {
-    operations.filter(_.tx_id === txId).result
-  }
+  def listOperations(txId: Long): DBIO[Seq[Operation]] = operations.filter(_.tx_id === txId).result
+
+  /**
+    * Retrieves operations of specified transactions.
+    * @param txId transactions ids to work on
+    * @return list of operations
+    */
+  def listOperations(txId: Seq[Long]): DBIO[Seq[Operation]] = operations.filter(_.tx_id inSet txId).result
 
   /**
     * Retrieves ids of transactions, logged between specified dates.
