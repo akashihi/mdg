@@ -55,13 +55,6 @@ object BudgetEntryService {
     * @return Fully filled DTO object
     */
   def entryToDTO(b: BudgetEntry): DBIO[BudgetEntryDTO] = {
-    /*.map {
-      case Some(budget) => if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate.now().isBefore(budget.term_end)) {
-        Some(budget)
-      } else {
-        None
-      }
-    }.*/
     val amounts = BudgetDao.find(b.budget_id).flatMap {
       case None => DBIO.successful((BigDecimal(0), None))
       case Some(budget) => {
