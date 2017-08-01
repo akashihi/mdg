@@ -33,8 +33,8 @@ const initialState = {
         pageSize: 10,
         pageNumber: 1,
         nextPageAvailable: true,
-        periodBeginning: moment(),
-        periodEnd: moment().subtract(7, 'days'),
+        periodBeginning: moment().subtract(7, 'days'),
+        periodEnd: moment(),
         accountFilter: [],
         tagFilter: [],
         commentFilter: ''

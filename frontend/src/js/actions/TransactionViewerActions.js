@@ -42,8 +42,8 @@ export function loadTransactionList() {
             pageNumber: state.transaction.ui.pageNumber
         };
         var periodParams = {
-            notLater: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT00:00:00'),
-            notEarlier: state.transaction.ui.periodEnd.format('YYYY-MM-DDT00:00:00')
+            notLater: state.transaction.ui.periodEnd.format('YYYY-MM-DDT00:00:00'),
+            notEarlier: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT00:00:00')
         };
         var filter = {
             comment: state.transaction.ui.commentFilter,
