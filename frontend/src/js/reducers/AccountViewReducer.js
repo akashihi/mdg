@@ -50,6 +50,10 @@ function validateAccountForm(account) {
         errors.currency_id = 'Currency is not selected'
     }
 
+    if (attributes.favorite || attributes.operational && attributes.account_type != 'asset') {
+        errors.account_type = 'Only asset accounts can be favorite or operational'
+    }
+
     return {valid: Object.keys(errors).length == 0, errors: errors}
 }
 
