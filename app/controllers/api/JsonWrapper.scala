@@ -2,6 +2,7 @@ package controllers.api
 
 import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.{Account, Currency, Error, TxTag}
+import controllers.api.IdentifiableObject._
 import play.api.libs.json._
 
 /**
@@ -48,7 +49,7 @@ case class JsonWrapper(data: JsonDataWrapper)
   * Multiple entries api object json wrapper
   * @param data api objects
   */
-case class JsonWrapperSeq(data: Seq[JsonDataWrapper])
+case class JsonWrapperSeq(data: Seq[JsonDataWrapper], count: Option[Int] = None)
 
 object JsonWrapper {
 
@@ -57,7 +58,12 @@ object JsonWrapper {
     */
   implicit val dataWrites = Json.writes[JsonDataWrapper]
   implicit val wrapperWrites = Json.writes[JsonWrapper]
-  implicit val wrapperSeqWrites = Json.writes[JsonWrapperSeq]
+  implicit val wrapperSeqWrites = Writes[JsonWrapperSeq] { wrapper =>
+    wrapper.count match {
+      case None => (JsPath \ "data").write[Seq[JsonDataWrapper]].writes(wrapper.data)
+      case Some(count) => (JsPath \ "data").write[Seq[JsonDataWrapper]].writes(wrapper.data) ++ (JsPath \ "count").write[Int].writes(count)
+    }
+  }
   implicit val errorWrapperWrites = Json.writes[ErrorWrapper]
 
   /**
@@ -74,8 +80,8 @@ object JsonWrapper {
     * * @param x objects to convert
     * @return JsValue
     */
-  def wrapJson(x: Seq[IdentifiableObject]): JsValue = {
-    Json.toJson(JsonWrapperSeq(x.map(JsonDataWrapper.apply)))
+  def wrapJson(x: Seq[IdentifiableObject], count: Option[Int] = None): JsValue = {
+    Json.toJson(JsonWrapperSeq(x.map(JsonDataWrapper.apply), count))
   }
 
   /**
