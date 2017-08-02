@@ -1,7 +1,6 @@
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
 import {GET_TAGLIST_REQUEST, GET_TAGLIST_SUCCESS, GET_TAGLIST_FAILURE} from '../constants/Tag'
-import {loadAccountList} from './AccountViewerActions'
 
 export function loadTagList() {
     return (dispatch) => {
@@ -19,7 +18,6 @@ export function loadTagList() {
                     payload: json.data
                 });
             })
-            .then(() => dispatch(loadAccountList()))
             .catch(function () {
                 dispatch({
                     type: GET_TAGLIST_FAILURE,
