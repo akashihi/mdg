@@ -104,10 +104,14 @@ class TransactionController @Inject()(
       case None => Seq[SortBy]()
     }
 
+
     val result =
       TransactionService
         .list(filterObj, ordering, page)
-        .map(x => makeResult(x)(OK))
+        .map { x =>
+          val (transactions, count) = x
+          makeResult(transactions, count)(OK)
+        }
     db.run(result)
   }
 

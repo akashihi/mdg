@@ -8,6 +8,8 @@ import dao.tables.Transactions._
 import dao.tables.{Operations, TagMap, Tags, Transactions}
 import models.{Operation, Transaction, TxTag}
 import play.api.libs.concurrent.Execution.Implicits._
+import slick.dbio.DBIOAction
+import slick.dbio.Effect.All
 import slick.driver.PostgresDriver.api._
 
 /**
@@ -75,21 +77,15 @@ object TransactionDao {
   }
 
   /**
-    * Retrieves list of transaction, according to the
-    * specified filter and ordering. List of transaction could be
-    * paginated.
-    * @param filter Transaction filter description.
-    * @param sort Ordering destription.
-    * @param page Pagination specification.
-    * @return List of mathed transactions.
+    * Converts a Transaction filter specification to the Slick query definition.
+    * @param filter Filter to work on.
+    * @return Slick query, configured to match supplied filter.
     */
-  def list(filter: TransactionFilter,
-           sort: Seq[SortBy],
-           page: Option[Page]): DBIO[Seq[Transaction]] = {
+  private def makeCriteria(filter: TransactionFilter): DBIO[Query[Transactions, Transaction, Seq]] = {
     val preActions = TransactionDao.tagTxFilter(filter.tag) zip TransactionDao
       .accTxFilter(filter.account_id)
 
-    val query = preActions.flatMap(tx_id_s => {
+    preActions.map(tx_id_s => {
       val (tag_tx_s, acc_tx_s) = tx_id_s
 
       //We need tag_tx_s and acc_tx_s lists
@@ -99,7 +95,7 @@ object TransactionDao {
       val tag_tx = Option(tag_tx_s).filter(_.nonEmpty)
       val acc_tx = Option(acc_tx_s).filter(_.nonEmpty)
 
-      val criteriaQuery = transactions.filter {
+      transactions.filter {
         t =>
           List(
             filter.comment.map(t.comment.getOrElse("") === _),
@@ -111,24 +107,45 @@ object TransactionDao {
             .reduceLeftOption(_ && _)
             .getOrElse(true: Rep[Boolean])
       }
+  })
+  }
 
-      val sortedQuery =
-        sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
-          case SortBy("timestamp", Asc) =>
-            criteriaQuery.sortBy(_.timestamp.asc)
-          case _ => criteriaQuery.sortBy(_.timestamp.desc)
+  /**
+    * Retrieves list of transaction, according to the
+    * specified filter and ordering. List of transaction could be
+    * paginated.
+    * @param filter Transaction filter description.
+    * @param sort Ordering destription.
+    * @param page Pagination specification.
+    * @return List of mathed transactions.
+    */
+  def list(filter: TransactionFilter,
+           sort: Seq[SortBy],
+           page: Option[Page]): DBIO[Seq[Transaction]] = {
+      makeCriteria(filter).flatMap { criteriaQuery =>
+        val sortedQuery =
+          sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
+            case SortBy("timestamp", Asc) =>
+              criteriaQuery.sortBy(_.timestamp.asc)
+            case _ => criteriaQuery.sortBy(_.timestamp.desc)
+          }
+
+        val pagedQuery = page match {
+          case Some(p) => sortedQuery.drop(p.size * (p.no - 1)).take(p.size)
+          case None => sortedQuery
         }
 
-      val pagedQuery = page match {
-        case Some(p) => sortedQuery.drop(p.size * (p.no - 1)).take(p.size)
-        case None => sortedQuery
+        pagedQuery.result
       }
-
-      pagedQuery.result
-    })
-
-    query
   }
+
+  /**
+    * Counts number of transactions, matching
+    * specified filter.
+    * @param filter Transaction filter description.
+    * @return Number pof matched transactions.
+    */
+  def count(filter: TransactionFilter): DBIO[Int] = makeCriteria(filter).flatMap(_.length.result)
 
   /**
     * Retrieves transaction by it's id.

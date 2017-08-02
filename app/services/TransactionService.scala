@@ -105,10 +105,14 @@ object TransactionService {
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
-           page: Option[Page]): DBIO[Seq[TransactionDto]] =
-    TransactionDao
+           page: Option[Page]): DBIO[(Seq[TransactionDto], Int)] = {
+    val list = TransactionDao
       .list(filter, sort, page)
       .flatMap(s => DBIO.sequence(s.map(t => txToDto(t))))
+    val count = TransactionDao.count(filter)
+
+    list zip count
+  }
 
   /**
     * Retrieves specific Transaction.
