@@ -125,8 +125,6 @@ export function getCurrentBudget() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                console.log(json)
-
                 dispatch(selectBudget(json.data));
             })
     }
