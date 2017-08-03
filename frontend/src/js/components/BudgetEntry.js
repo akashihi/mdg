@@ -40,6 +40,8 @@ export default class BudgetEntry extends Component {
             if (progress > 100) {
                 progress = 100
             }
+        } else if (attr.actual_amount > 0) {
+            progress = 100
         }
 
         var change=<p/>;

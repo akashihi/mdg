@@ -59,7 +59,7 @@ export default class BudgetPage extends Component {
                         <p>Actual assets at last budget day: {attrs.outgoing_amount.actual}</p>
                         <p>Income: {attrs.state.income.actual} actual / {attrs.state.income.expected} expected</p>
                         <p>Spendings: {attrs.state.expense.actual} actual / {attrs.state.expense.expected} expected</p>
-                        <p>Today's spending: {attrs.state.change.actual} actual/ {attrs.state.change.expected} actual</p>
+                        <p>Today's spending: {attrs.state.change.actual} actual/ {attrs.state.change.expected} allowed</p>
                         <Divider/>
                         {entries}
                     </CardText>
