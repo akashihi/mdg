@@ -7,11 +7,11 @@ import controllers.dto.BudgetEntryDTO
 import dao.{BudgetDao, BudgetEntryDao}
 import models.{Budget, BudgetEntry}
 import slick.driver.PostgresDriver.api._
-
 import play.api.libs.concurrent.Execution.Implicits._
 
 import scalaz._
 import Scalaz._
+import scala.math.BigDecimal.RoundingMode
 
 /**
   * Budget operations service.
@@ -19,19 +19,20 @@ import Scalaz._
 object BudgetEntryService {
 
   /**
-    * Finds amount spent on BudgetEntry anow allowed future spendings.
+    * Calculates allowed future spendings.
     * @param b BudgetEntry
     * @param budget related Budget
     * @return tuple of actual spendings, allowed future spendings.
     */
   private def getEntryAmounts(
       b: BudgetEntry,
-      budget: Budget): DBIO[(BigDecimal, Option[BigDecimal])] = {
-    val budgetLength =
-      ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
-    val daysLeft =
-      ChronoUnit.DAYS.between(LocalDate.now(), budget.term_end)
-    BudgetEntryDao.getActualSpendings(b.account_id, budget).map { actual =>
+      budget: Budget,
+      actual: BigDecimal): Option[BigDecimal] = {
+    if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate.now().isBefore(budget.term_end)) {
+      val budgetLength =
+        ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
+      val daysLeft =
+        ChronoUnit.DAYS.between(LocalDate.now(), budget.term_end)
       val changeAmount = b.even_distribution match {
         case false => None
         case true =>
@@ -43,9 +44,9 @@ object BudgetEntryService {
                 b.expected_amount - actual - (b.expected_amount / budgetLength) * daysLeft)
           }
       }
-      val normalizedChangeAmount =
-        changeAmount.map(x => if (x < 0) BigDecimal(0) else x)
-      (actual, normalizedChangeAmount)
+      changeAmount.map(x => if (x < 0) BigDecimal(0) else x).map(_.setScale(0, RoundingMode.HALF_DOWN))
+    } else {
+      None
     }
   }
 
@@ -55,34 +56,9 @@ object BudgetEntryService {
     * @return Fully filled DTO object
     */
   def entryToDTO(b: BudgetEntry): DBIO[BudgetEntryDTO] = {
-    val amounts = BudgetDao.find(b.budget_id).flatMap {
+    val amounts:DBIO[(BigDecimal, Option[BigDecimal])] = BudgetDao.find(b.budget_id).flatMap {
       case None => DBIO.successful((BigDecimal(0), None))
-      case Some(budget) => {
-        BudgetEntryDao.getActualSpendings(b.account_id, budget).map { actual =>
-          if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate.now().isBefore(budget.term_end)) {
-            (actual, None)
-          } else {
-            val budgetLength =
-              ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
-            val daysLeft =
-              ChronoUnit.DAYS.between(LocalDate.now(), budget.term_end)
-            val changeAmount = b.even_distribution match {
-              case false => None
-              case true =>
-                b.proration match {
-                  case Some(true) =>
-                    Some((b.expected_amount - actual) / daysLeft)
-                  case Some(false) | None =>
-                    Some(
-                      b.expected_amount - actual - (b.expected_amount / budgetLength) * daysLeft)
-                }
-            }
-            val normalizedChangeAmount =
-              changeAmount.map(x => if (x < 0) BigDecimal(0) else x)
-            (actual, normalizedChangeAmount)
-          }
-        }
-      }
+      case Some(budget) => BudgetEntryDao.getActualSpendings(b.account_id, budget).map { actual => (actual, getEntryAmounts(b, budget, actual)) }
     }
     amounts.map { p =>
       val (actual, normalizedChangeAmount) = p
