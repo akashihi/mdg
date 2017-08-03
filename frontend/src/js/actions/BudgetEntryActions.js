@@ -1,21 +1,39 @@
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
 import {
+    SET_CURRENT_BUDGET,
     GET_BUDGETENTRYLIST_REQUEST,
     GET_BUDGETENTRYLIST_SUCCESS,
     GET_BUDGETENTRYLIST_FAILURE
 } from '../constants/BudgetEntry'
 
-export function loadBudgetEntryList() {
-    return (dispatch, getState) => {
+export function loadBudgetInfoById(id) {
+    return (dispatch) => {
         dispatch({
             type: GET_BUDGETENTRYLIST_REQUEST,
             payload: true
         });
 
-        var state = getState();
+        fetch('/api/budget/' + id)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(function (json) {
+                dispatch({
+                    type: SET_CURRENT_BUDGET,
+                    payload: json.data
+                });
+                dispatch(loadBudgetEntryList(json.data.id));
+            })
+    }
+}
 
-        var budgetId = state.budgetentry.currentBudget.id;
+export function loadBudgetEntryList(budgetId) {
+    return (dispatch) => {
+        dispatch({
+            type: GET_BUDGETENTRYLIST_REQUEST,
+            payload: true
+        });
+
         if (budgetId == null) {
             dispatch({
                 type: GET_BUDGETENTRYLIST_FAILURE,
@@ -63,7 +81,7 @@ export function updateBudgetEntry(entry) {
         })
             .then(parseJSON)
             .then(checkApiError)
-            .then(()=>dispatch(loadBudgetEntryList()))
-            .catch(()=>dispatch(loadBudgetEntryList()))
+            .then(()=>dispatch(loadBudgetInfoById(budgetId)))
+            .catch(()=>dispatch(loadBudgetInfoById(budgetId)))
     }
 }

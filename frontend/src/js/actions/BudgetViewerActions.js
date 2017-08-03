@@ -10,12 +10,7 @@ import {
     SET_NEWBUDGET_END
 } from '../constants/Budget'
 
-import {
-    SET_CURRENT_BUDGET,
-    GET_BUDGETENTRYLIST_REQUEST
-} from '../constants/BudgetEntry'
-
-import {loadBudgetEntryList} from './BudgetEntryActions'
+import {loadBudgetInfoById} from './BudgetEntryActions'
 
 export function toggleBudgetSelector(visible) {
     return {
@@ -114,28 +109,13 @@ export function budgetCreate() {
 
 export function getCurrentBudget() {
     return (dispatch) => {
-        dispatch({
-            type: GET_BUDGETENTRYLIST_REQUEST,
-            payload: true
-        });
-
         var id = moment().format('YYYYMMDD');
-
-        fetch('/api/budget/' + id)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json) {
-                dispatch(selectBudget(json.data));
-            })
+        dispatch(loadBudgetInfoById(id));
     }
 }
 
 export function selectBudget(budget) {
     return (dispatch) => {
-        dispatch({
-            type: SET_CURRENT_BUDGET,
-            payload: budget
-        });
-        dispatch(loadBudgetEntryList());
+        dispatch(loadBudgetInfoById(budget.id));
     }
 }
