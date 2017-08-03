@@ -44,7 +44,7 @@ export default class BudgetEntry extends Component {
 
         var change=<p/>;
         var editable = false;
-        if (props.account.attributes.account_type == 'expense') {
+        if (props.account.attributes.account_type == 'expense' && attr.change_amount) {
             change = <p>{attr.change_amount} allowed</p>;
             editable = true;
         }
