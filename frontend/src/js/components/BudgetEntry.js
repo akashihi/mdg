@@ -79,7 +79,7 @@ export default class BudgetEntry extends Component {
                                 <Checkbox label='Evenly distributed' checked={attr.even_distribution} onCheck={::this.onEvenEdit}/>
                             </Col>
                             <Col xs={12} sm={12} md={6} lg={6}>
-                                <Checkbox label='Prorate spendings' checked={attr.proration} onCheck={::this.onProratedEdit}/>
+                                <Checkbox label='Prorate spendings' checked={attr.proration} onCheck={::this.onProratedEdit} disabled={!attr.even_distribution}/>
                             </Col>
                         </Row>
                     </Grid>
