@@ -129,12 +129,16 @@ object BudgetEntryService {
            ed: Option[Boolean],
            p: Option[Boolean],
            ea: Option[BigDecimal]): DBIO[\/[String, BudgetEntryDTO]] = {
+    val proration = ed match {
+      case Some(true) => p
+      case _ => Some(false)
+    }
     BudgetEntryDao.find(id, budget_id).flatMap {
       case None => DBIO.successful("BUDGETENTRY_NOT_FOUND".left)
       case Some(x) =>
         val updated = x.copy(even_distribution =
                                ed.getOrElse(x.even_distribution),
-                             proration = p,
+                             proration = proration,
                              expected_amount = ea.getOrElse(x.expected_amount))
         BudgetEntryDao.update(updated).flatMap {
           case 1 => entryToDTO(updated).map(_.right)
