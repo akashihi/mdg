@@ -21,6 +21,10 @@ const initialState = {
                 expense: {
                     actual: 0,
                     expected: 0
+                },
+                change: {
+                    actual: 0,
+                    expected: 0
                 }
             }
         }
