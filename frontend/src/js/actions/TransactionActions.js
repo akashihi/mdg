@@ -41,8 +41,8 @@ export function loadTransactionList() {
             pageNumber: state.transactionview.pageNumber
         };
         var periodParams = {
-            notLater: state.transactionview.periodBeginning.format('YYYY-MM-DDT23:59:59'),
-            notEarlier: state.transactionview.periodEnd.format('YYYY-MM-DDT00:00:00')
+            notLater: state.transactionview.periodEnd.format('YYYY-MM-DDT23:59:59'),
+            notEarlier: state.transactionview.periodBeginning.format('YYYY-MM-DDT00:00:00')
         };
         var filter = {
             comment: state.transactionview.commentFilter,
@@ -98,8 +98,8 @@ export function setTransactionViewPeriod(days) {
         dispatch({
             type: SET_TRANSACTION_VIEW_PERIOD,
             payload: {
-                beginning: moment(),
-                end: moment().subtract(days, 'days')
+                beginning: moment().subtract(days, 'days'),
+                end: moment()
             }
         });
         dispatch(loadTransactionList())
