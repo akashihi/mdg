@@ -41,13 +41,13 @@ export function loadTransactionList() {
             pageNumber: state.transactionview.pageNumber
         };
         var periodParams = {
-            notLater: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT23:59:59'),
-            notEarlier: state.transaction.ui.periodEnd.format('YYYY-MM-DDT00:00:00')
+            notLater: state.transactionview.periodBeginning.format('YYYY-MM-DDT23:59:59'),
+            notEarlier: state.transactionview.periodEnd.format('YYYY-MM-DDT00:00:00')
         };
         var filter = {
-            comment: state.transaction.ui.commentFilter,
-            tag: state.transaction.ui.tagFilter,
-            account_id: state.transaction.ui.accountFilter,
+            comment: state.transactionview.commentFilter,
+            tag: state.transactionview.tagFilter,
+            account_id: state.transactionview.accountFilter,
         };
         var filterParams = {filter: JSON.stringify(filter)};
 

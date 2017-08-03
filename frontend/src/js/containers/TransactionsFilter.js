@@ -11,11 +11,11 @@ const mapStateToProps = (state) => {
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
         pageSize: state.transactionview.pageSize,
-        periodBeginning: state.transaction.ui.periodBeginning,
-        periodEnd: state.transaction.ui.periodEnd,
-        accountFilter: state.transaction.ui.accountFilter,
-        tagFilter: state.transaction.ui.tagFilter,
-        commentFilter: state.transaction.ui.commentFilter
+        periodBeginning: state.transactionview.periodBeginning,
+        periodEnd: state.transactionview.periodEnd,
+        accountFilter: state.transactionview.accountFilter,
+        tagFilter: state.transactionview.tagFilter,
+        commentFilter: state.transactionview.commentFilter
     }
 };
 
