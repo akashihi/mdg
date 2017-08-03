@@ -10,7 +10,7 @@ import controllers.api.OWritesOps._
   * Budget wrapper.
   */
 case class BudgetPairedAmount(expected: BigDecimal, actual: BigDecimal)
-case class BudgetState(income: BudgetPairedAmount, expense: BudgetPairedAmount)
+case class BudgetState(income: BudgetPairedAmount, expense: BudgetPairedAmount, change: BudgetPairedAmount)
 case class BudgetDTO(
     id: Option[Long],
     term_beginning: LocalDate,

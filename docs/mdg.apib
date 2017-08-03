@@ -491,6 +491,9 @@ A budget object has the following attributes
   - expense (required, json object, readonly)
     - actual(required, decimal, readonly) - Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period
     - expected(required, decimal, readonly) - Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts    
+  - change (required, json object, readonly)
+    - actual(required, decimal, readonly) - Actual change on expense accounts amounts, happened today. Calculated as a sum of expense account operations, happened today. For non-current account will be zero.
+    - expected(required, decimal, readonly) - Expected change on expense accounts amounts for today. Calculated as a sum of change values on budget entries related to expense accounts. For non-current account will be zero.    
 
 ### Create a new budget [POST]
 

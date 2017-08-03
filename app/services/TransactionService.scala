@@ -1,13 +1,14 @@
 package services
 
+import java.time.LocalDate
+
 import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
 import dao.{TagDao, TransactionDao}
-import models.{Operation, Transaction}
+import models.{Account, Operation, Transaction}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
-
 import util.Validator._
 
 import scalaz._
@@ -144,6 +145,21 @@ object TransactionService {
     TransactionDao.delete(id).map {
       case 1 => 1.right
       case _ => "TRANSACTION_NOT_FOUND".left
+    }
+  }
+
+  /**
+    * Calculates total of operations on specified accounts during specified period.
+    * @param from period first day.
+    * @param till period last day.
+    * @param accounts list of accounts to operate on.
+    * @return sum of all operation on specified account during specified period.
+    */
+  def getTotalsForDate(from: LocalDate, till: LocalDate)(accounts: Seq[Account]): DBIO[BigDecimal] = {
+    TransactionDao.transactionsForPeriod(from, till).flatMap { txId =>
+      val ops = TransactionDao.listOperations(txId)
+
+      ops.map (_.filter(x => accounts.flatMap(_.id).contains(x.account_id)).foldLeft(BigDecimal(0))(_ + _.amount))
     }
   }
 }

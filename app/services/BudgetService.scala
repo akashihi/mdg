@@ -1,9 +1,11 @@
 package services
 
+import java.time.LocalDate
+
 import controllers.dto.{BudgetDTO, BudgetPairedAmount, BudgetState}
 import dao.filters.EmptyAccountFilter
-import dao.{AccountDao, BudgetDao, TransactionDao}
-import models.{Account, Budget, ExpenseAccount, IncomeAccount}
+import dao.BudgetDao
+import models.{Account, Budget}
 import slick.driver.PostgresDriver.api._
 import util.ErrXor._
 import util.Validator._
@@ -24,24 +26,22 @@ object BudgetService {
     * @return actual remains delta during that period.
     */
   private def getActualSpendings(b: Budget, incomeAccounts: Seq[Account], expenseAccounts: Seq[Account]): DBIO[(BigDecimal, BigDecimal)] = {
-      TransactionDao.transactionsForPeriod(b.term_beginning, b.term_end).flatMap { txId =>
-        val ops = TransactionDao.listOperations(txId)
+    val getTotalsForBudget = TransactionService.getTotalsForDate(b.term_beginning, b.term_end) _
+    getTotalsForBudget(incomeAccounts).map(-_) zip getTotalsForBudget(expenseAccounts)
+  }
 
-        ops.flatMap { o =>
-          val income = o
-            .filter(x => incomeAccounts.flatMap(_.id).contains(x.account_id))
-            .foldLeft(BigDecimal(0))(_ + _.amount)
-          val expense = o
-            .filter(x => expenseAccounts.flatMap(_.id).contains(x.account_id))
-            .foldLeft(BigDecimal(0))(_ + _.amount)
+  /**
+    * Calculates, how balances on specified accounts changed today.
+    * @param accounts accounts to look on.
+    * @return sum of amounts of all operations on specified accounts today.
+    */
+  private def getTodaySpendings(accounts: Seq[Account]): DBIO[BigDecimal] = {
+    val today = LocalDate.now()
+    TransactionService.getTotalsForDate(today, today)(accounts)
+  }
 
-          //We have to negate values, as income
-          //ops are substracted from their accounts,
-          //while expense ops are added. But for spending
-          //calculation we need opposite direction.
-          DBIO.successful((-income, expense))
-        }
-      }
+  private def getAllowedSpendings(b: Budget): DBIO[BigDecimal] = {
+    BudgetEntryService.list(b.id.get).map(_.flatMap(_.change_amount).foldLeft(BigDecimal(0))(_ + _))
   }
 
   /**
@@ -66,15 +66,21 @@ object BudgetService {
       BudgetDao.getIncomingAmount(b.term_beginning).flatMap { incoming =>
         getExpectedChange(b, incomeAccounts.flatMap(_.id), expenseAccounts.flatMap(_.id)).flatMap { expectedChange =>
           val (expectedIncome, expectedExpense) = expectedChange
-          getActualSpendings(b, incomeAccounts, expenseAccounts).map { spendings =>
+          getActualSpendings(b, incomeAccounts, expenseAccounts).flatMap { spendings =>
             val (income, expense) = spendings
-            BudgetDTO(b.id,
-              b.term_beginning,
-              b.term_end,
-              incoming,
-              BudgetPairedAmount(incoming + expectedIncome - expectedExpense,
-                incoming + income - expense),
-              BudgetState(BudgetPairedAmount(expectedIncome,income), BudgetPairedAmount(expectedExpense,expense)))
+            getTodaySpendings(expenseAccounts).flatMap { todaySpendings =>
+              getAllowedSpendings(b).map{ todayChange =>
+                BudgetDTO(b.id,
+                  b.term_beginning,
+                  b.term_end,
+                  incoming,
+                  BudgetPairedAmount(incoming + expectedIncome - expectedExpense,
+                    incoming + income - expense),
+                  BudgetState(BudgetPairedAmount(expectedIncome,income),
+                    BudgetPairedAmount(expectedExpense,expense),
+                    BudgetPairedAmount(todayChange, todaySpendings)))
+              }
+            }
           }
         }
       }
