@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
 import TransactionsPageFilter from '../components/TransactionsPageFilter'
-import * as TransactionActions from '../actions/TransactionViewerActions'
+import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {
     return {
@@ -10,7 +10,7 @@ const mapStateToProps = (state) => {
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
-        pageSize: state.transaction.ui.pageSize,
+        pageSize: state.transactionview.pageSize,
         periodBeginning: state.transaction.ui.periodBeginning,
         periodEnd: state.transaction.ui.periodEnd,
         accountFilter: state.transaction.ui.accountFilter,

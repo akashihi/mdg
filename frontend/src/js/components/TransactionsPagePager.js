@@ -1,17 +1,23 @@
 import React, {Component} from 'react';
-import IconButton from 'material-ui/IconButton';
-import FontIcon from 'material-ui/FontIcon';
+import Pagination from 'material-ui-pagination';
 
 export default class TransactionsPagePager extends Component {
+    setPage(no) {
+        this.props.actions.setTransactionPage(no)
+    }
+
     render() {
         var props = this.props;
-
-        var nextAction = props.nextAction;
-
-        if (props.nextPageAvailable) {
-            return <IconButton style={{display: 'block', margin: '0 auto'}} onClick={() => nextAction()}><FontIcon className='material-icons'>file_download</FontIcon></IconButton>
-        } else {
-            return <div>No more pages to load</div>
+        if (props.count ==0) {
+            return <div/>
         }
+
+        var pages = Math.ceil(props.count/props.pageSize);
+
+        return (
+            <div style = {{width: 500,margin: '0 auto',}}>
+                <Pagination style={{display: 'block', margin: '0 auto'}} total={pages} current={props.pageNumber} display={10} onChange = {::this.setPage} />
+            </div>
+        )
     }
 }

@@ -32,6 +32,7 @@
     "jquery": "^3.2.1",
     "material-ui": "^0.17.4",
     "material-ui-chip-input": "^0.15.0",
+    "material-ui-pagination": "^1.0.4",
     "moment": "^2.18.1",
     "prop-types": "^15.5.8",
     "react": "^15.5.4",

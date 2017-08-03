@@ -6,7 +6,7 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 import CircularProgress from 'material-ui/CircularProgress';
 
 import Transaction from './Transaction';
-import TransactionPagePager from './TransactionsPagePager'
+import TransactionPager from '../containers/TransactionsPager'
 import TransactionFilter from '../containers/TransactionsFilter'
 import TransactionDeleteDialog from '../containers/TransactionDeleteDialog'
 import TransactionEditor from '../containers/TransactionEditor'
@@ -74,7 +74,7 @@ export default class TransactionsPage extends Component {
                 </GridTile>
                 {transactions}
             </GridList>
-            <TransactionPagePager nextAction={props.actions.nextTransactionPage} nextPageAvailable={props.nextPageAvailable}/>
+            <TransactionPager/>
         </div>;
     }
 }

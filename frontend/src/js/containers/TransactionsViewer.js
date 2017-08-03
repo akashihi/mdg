@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
 import TransactionsPage from '../components/TransactionsPage'
-import * as TransactionActions from '../actions/TransactionViewerActions'
+import * as TransactionActions from '../actions/TransactionActions'
 import * as TagActions from '../actions/TagActions'
 
 const mapStateToProps = (state) => {

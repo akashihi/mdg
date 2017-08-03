@@ -8,8 +8,7 @@ import {
     GET_TRANSACTIONLIST_SUCCESS,
     GET_TRANSACTIONLIST_FAILURE,
     SET_TRANSACTION_PAGESIZE,
-    GET_TRANSACTION_NEXTPAGE,
-    GET_TRANSACTIONLIST_NODATA,
+    SET_TRANSACTION_PAGENO,
     SET_TRANSACTION_VIEW_PERIOD,
     SET_TRANSACTION_VIEW_BEGINNING,
     SET_TRANSACTION_VIEW_END,
@@ -38,12 +37,12 @@ export function loadTransactionList() {
         var state = getState();
 
         var paginationParams = {
-            pageSize: state.transaction.ui.pageSize,
-            pageNumber: state.transaction.ui.pageNumber
+            pageSize: state.transactionview.pageSize,
+            pageNumber: state.transactionview.pageNumber
         };
         var periodParams = {
-            notLater: state.transaction.ui.periodEnd.format('YYYY-MM-DDT23:59:59'),
-            notEarlier: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT00:00:00')
+            notLater: state.transaction.ui.periodBeginning.format('YYYY-MM-DDT23:59:59'),
+            notEarlier: state.transaction.ui.periodEnd.format('YYYY-MM-DDT00:00:00')
         };
         var filter = {
             comment: state.transaction.ui.commentFilter,
@@ -60,17 +59,10 @@ export function loadTransactionList() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                if (json.data.length == 0) {
-                    dispatch({
-                        type: GET_TRANSACTIONLIST_NODATA,
-                        payload: true
-                    })
-                } else {
-                    dispatch({
-                        type: GET_TRANSACTIONLIST_SUCCESS,
-                        payload: json.data
-                    })
-                }
+                dispatch({
+                    type: GET_TRANSACTIONLIST_SUCCESS,
+                    payload: json
+                })
             })
             .catch(function (response) {
                 dispatch({
@@ -91,11 +83,11 @@ export function setTransactionPageSize(size) {
     }
 }
 
-export function nextTransactionPage() {
+export function setTransactionPage(page) {
     return (dispatch) => {
         dispatch({
-            type: GET_TRANSACTION_NEXTPAGE,
-            payload: true
+            type: SET_TRANSACTION_PAGENO,
+            payload: page
         });
         dispatch(loadTransactionList())
     }

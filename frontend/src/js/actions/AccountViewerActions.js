@@ -1,7 +1,7 @@
 import jQuery from 'jquery';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
-import {loadTransactionList} from './TransactionViewerActions';
+import {loadTransactionList} from './TransactionActions';
 
 import {
     GET_ACCOUNTLIST_REQUEST,

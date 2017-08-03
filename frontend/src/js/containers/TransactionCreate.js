@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
 import TransactionCreateButton from '../components/TransactionCreateButton'
-import * as TransactionActions from '../actions/TransactionViewerActions'
+import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = () => {
     return { }
