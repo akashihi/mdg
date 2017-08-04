@@ -24,8 +24,35 @@ import {
     DELETE_TRANSACTION_FAILURE,
     TRANSACTION_DIALOG_OPEN,
     TRANSACTION_DIALOG_CLOSE,
-    TRANSACTION_DIALOG_CHANGE
+    TRANSACTION_DIALOG_CHANGE,
+    GET_LASTTRANSACTION_SUCCESS
 } from '../constants/Transaction'
+
+export function loadLastTransactions() {
+    return (dispatch) => {
+        var paginationParams = {
+            pageSize: 5,
+            pageNumber: 1
+        };
+        var periodParams = {
+            notLater: moment().format('YYYY-MM-DDT23:59:59'),
+        };
+
+        var params = Object.assign({}, paginationParams, periodParams);
+
+        var url = '/api/transaction' + '?' + jQuery.param(params);
+
+        fetch(url)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(function (json) {
+                dispatch({
+                    type: GET_LASTTRANSACTION_SUCCESS,
+                    payload: json
+                })
+            });
+    }
+}
 
 export function loadTransactionList() {
     return (dispatch, getState) => {
@@ -62,7 +89,8 @@ export function loadTransactionList() {
                 dispatch({
                     type: GET_TRANSACTIONLIST_SUCCESS,
                     payload: json
-                })
+                });
+                dispatch(loadLastTransactions())
             })
             .catch(function (response) {
                 dispatch({

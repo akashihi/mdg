@@ -9,11 +9,13 @@ import {
     DELETE_TRANSACTION_FAILURE,
     TRANSACTION_DIALOG_OPEN,
     TRANSACTION_DIALOG_CLOSE,
-    TRANSACTION_DIALOG_CHANGE
+    TRANSACTION_DIALOG_CHANGE,
+    GET_LASTTRANSACTION_SUCCESS
 } from '../constants/Transaction'
 
 const initialState = {
     transactionList: [],
+    lastTransactionList: [],
     ui: {
         transactionListLoading: true,
         transactionListError: false,
@@ -75,6 +77,8 @@ export default function transactionReducer(state = initialState, action) {
     var dialog = state.dialog;
     var ui = state.ui;
     switch (action.type) {
+        case GET_LASTTRANSACTION_SUCCESS:
+            return {...state, lastTransactionList: action.payload};
         case TRANSACTION_DIALOG_CHANGE:
             var valid = validateTransactionForm(action.payload);
             dialog = {...dialog, transaction: action.payload, valid: valid.valid, errors: valid.errors};

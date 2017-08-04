@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import {Card, CardHeader, CardText} from 'material-ui/Card';
+import Card from 'material-ui/Card';
 
 import AccountsOverview from '../containers/AccountsOverview'
 import BudgetOverview from '../containers/BudgetOverview'
 import FinanceOverview from '../containers/FinanceOverview'
+import TransactionsOverview from '../containers/TransactionsOverview'
 
 export default class Overview extends Component {
     render() {
@@ -36,8 +37,7 @@ export default class Overview extends Component {
                     </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>
                         <Card style={cardStyle}>
-                            <CardHeader title='Операции'/>
-                            <CardText>Операции</CardText>
+                            <TransactionsOverview/>
                         </Card>
                     </Col>
                 </Row>
