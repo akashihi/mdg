@@ -27,7 +27,8 @@ export default class BudgetPage extends Component {
             }
         }
         return (
-            <BudgetEntry entry={item} key={item.id} account={account} saveBudgetEntryChange={props.entryActions.updateBudgetEntry}/>
+            <BudgetEntry entry={item} key={item.id} account={account}
+                         saveBudgetEntryChange={props.entryActions.updateBudgetEntry}/>
         )
     }
 
@@ -50,16 +51,20 @@ export default class BudgetPage extends Component {
             <div>
                 <BudgetSelector/>
                 <Card>
-                    <CardHeader title='1 Apr 2017 - 30 Apr 2017 Budget'/>
+                    <CardHeader>
+                        Budget for: {attrs.term_beginning}&nbsp;-&nbsp;{attrs.term_end}
+                    </CardHeader>
                     <CardText>
-                        <IconButton onClick={this.onOpenBudgetListClick.bind(this)}><FontIcon className='material-icons'>chevron_left</FontIcon></IconButton>
+                        <IconButton onClick={this.onOpenBudgetListClick.bind(this)}><FontIcon
+                            className='material-icons'>chevron_left</FontIcon></IconButton>
                         <Divider/>
                         <p>Assets at first budget day: {attrs.incoming_amount}</p>
                         <p>Expected assets at last budget day: {attrs.outgoing_amount.expected}</p>
                         <p>Actual assets at last budget day: {attrs.outgoing_amount.actual}</p>
                         <p>Income: {attrs.state.income.actual} actual / {attrs.state.income.expected} expected</p>
                         <p>Spendings: {attrs.state.expense.actual} actual / {attrs.state.expense.expected} expected</p>
-                        <p>Today's spending: {attrs.state.change.actual} actual/ {attrs.state.change.expected} allowed</p>
+                        <p>Today's spending: {attrs.state.change.actual} actual/ {attrs.state.change.expected}
+                            allowed</p>
                         <Divider/>
                         {entries}
                     </CardText>
