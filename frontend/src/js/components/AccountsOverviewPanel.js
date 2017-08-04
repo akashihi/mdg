@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Card, CardHeader, CardText} from 'material-ui/Card';
+import {CardHeader, CardText} from 'material-ui/Card';
 import IconButton from 'material-ui/IconButton';
 import {GridList} from 'material-ui/GridList';
 import FontIcon from 'material-ui/FontIcon';
@@ -18,7 +18,7 @@ export default class AccountsOverviewPanel extends Component {
         var accounts = props.assetAccounts.filter((item) => item.attributes.favorite);
 
         return (
-            <Card>
+            <div>
                 <CardHeader title='Accounts'/>
                 <CardText>
                     <IconButton onClick={::this.onCreateAccountClick}><FontIcon className='material-icons'>add_circle_outline</FontIcon></IconButton>
@@ -26,7 +26,7 @@ export default class AccountsOverviewPanel extends Component {
                         <AccountList actions={props.actions} currencies={props.currencies} accounts={accounts}/>
                     </GridList>
                 </CardText>
-            </Card>
+            </div>
         )
     }
 }
