@@ -7,8 +7,8 @@ import {GridList} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import CircularProgress from 'material-ui/CircularProgress';
 
-import Account from './Account'
 import AccountEditor from '../containers/AccountEditor'
+import AccountList from './AccountList'
 
 export default class AccountsPage extends Component {
     componentDidMount() {
@@ -26,62 +26,19 @@ export default class AccountsPage extends Component {
     render() {
         var props = this.props;
 
-        var onSwitchFavoriteClick = function (account, value) {
-            account.attributes.favorite = value;
-            props.actions.updateAccount(account);
-        };
-
-        var onSwitchOperationalClick = function (account, value) {
-            account.attributes.operational = value;
-            props.actions.updateAccount(account);
-        };
-
-        var onSwitchHiddenClick = function (account, value) {
-            account.attributes.hidden = value;
-            props.actions.updateAccount(account);
-        };
-
-        var onEditAccountClick = function (account) {
-            props.actions.editAccount(account)
-        };
-
         var accounts;
         if (props.waiting) {
             accounts = <CircularProgress/>
         } else if (props.error) {
             accounts = <h1>Unable to load account list</h1>
         } else {
-            var asset = props.assetAccounts.map(function (item) {
-                return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies}
-                                                switchFavoriteFunc={onSwitchFavoriteClick}
-                                                switchOperationalFunc={onSwitchOperationalClick}
-                                                switchHiddenFunc={onSwitchHiddenClick}
-                                                editAccountFunc={onEditAccountClick}/></div>
-                )
-            });
-            var income = props.incomeAccounts.map(function (item) {
-                return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies}
-                                                switchHiddenFunc={onSwitchHiddenClick}
-                                                editAccountFunc={onEditAccountClick}/></div>
-                )
-            });
-            var expense = props.expenseAccounts.map(function (item) {
-                return (
-                    <div key={item.id}><Account account={item} currencies={props.currencies}
-                                                switchHiddenFunc={onSwitchHiddenClick}
-                                                editAccountFunc={onEditAccountClick}/></div>
-                )
-            });
-
             accounts = <div>
                 <h1>Asset accounts</h1>
-                {asset}
+                <AccountList actions={props.actions} currencies={props.currencies} accounts={props.assetAccounts}/>
                 <h1>Income accounts</h1>
-                {income}
+                <AccountList actions={props.actions} currencies={props.currencies} accounts={props.incomeAccounts}/>
                 <h1>Expense accounts</h1>
-                {expense}
+                <AccountList actions={props.actions} currencies={props.currencies} accounts={props.expenseAccounts}/>
             </div>
         }
 
@@ -120,7 +77,6 @@ export default class AccountsPage extends Component {
                         </Grid>
                     </CardHeader>
                     <CardText>
-
                         <GridList cellHeight={70} cols={1}>
                             {accounts}
                         </GridList>
