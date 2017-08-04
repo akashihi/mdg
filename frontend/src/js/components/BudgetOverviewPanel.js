@@ -62,7 +62,7 @@ export default class BudgetOverviewPanel extends Component {
                         <Row>
                             <Col xs={6} sm={6} md={6} lg={6}>
                                 <p><CircularProgress
-                                    mode="determinate"
+                                    mode='determinate'
                                     value={incomePercentage}
                                     size={80}
                                     thickness={5}
@@ -70,7 +70,7 @@ export default class BudgetOverviewPanel extends Component {
                             </Col>
                             <Col xs={6} sm={6} md={6} lg={6}>
                                 <p style={{'text-align': 'right'}}><CircularProgress
-                                    mode="determinate"
+                                    mode='determinate'
                                     value={expensePercentage}
                                     size={80}
                                     thickness={5}

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Card, CardHeader, CardText} from 'material-ui/Card';
+import {Card, CardActions} from 'material-ui/Card';
 import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
 import Divider from 'material-ui/Divider';
@@ -7,6 +7,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 
 import BudgetEntry from './BudgetEntry'
 import BudgetSelector from '../containers/BudgetSelector'
+import BudgetOverviewPanel from './BudgetOverviewPanel'
 
 export default class BudgetPage extends Component {
     onOpenBudgetListClick() {
@@ -34,7 +35,6 @@ export default class BudgetPage extends Component {
 
     render() {
         var props = this.props;
-        var attrs = props.budget.attributes;
 
         var entries;
         if (props.loading) {
@@ -51,23 +51,15 @@ export default class BudgetPage extends Component {
             <div>
                 <BudgetSelector/>
                 <Card>
-                    <CardHeader>
-                        Budget for: {attrs.term_beginning}&nbsp;-&nbsp;{attrs.term_end}
-                    </CardHeader>
-                    <CardText>
+                    <CardActions>
                         <IconButton onClick={this.onOpenBudgetListClick.bind(this)}><FontIcon
                             className='material-icons'>chevron_left</FontIcon></IconButton>
-                        <Divider/>
-                        <p>Assets at first budget day: {attrs.incoming_amount}</p>
-                        <p>Expected assets at last budget day: {attrs.outgoing_amount.expected}</p>
-                        <p>Actual assets at last budget day: {attrs.outgoing_amount.actual}</p>
-                        <p>Income: {attrs.state.income.actual} actual / {attrs.state.income.expected} expected</p>
-                        <p>Spendings: {attrs.state.expense.actual} actual / {attrs.state.expense.expected} expected</p>
-                        <p>Today's spending: {attrs.state.change.actual} actual/ {attrs.state.change.expected}
-                            allowed</p>
-                        <Divider/>
-                        {entries}
-                    </CardText>
+                    </CardActions>
+                    <BudgetOverviewPanel budget={props.budget}/>
+                </Card>
+                <Divider/>
+                <Card>
+                    {entries}
                 </Card>
             </div>
         )
