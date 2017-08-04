@@ -19,12 +19,12 @@ export default class FinanceOverviewPanel extends Component {
             var value = totals[currency_id];
             var name = props.currencies.filter((item) => item.id == currency_id).map((item) => item.attributes.name);
             return (
-                <Row>
+                <Row key={currency_id}>
                     <Col xs={2} sm={2} md={2} lg={2}>
                         <p>{name}:</p>
                     </Col>
                     <Col xs={2} sm={2} md={2} lg={2}>
-                        <p style={{'text-align': 'right'}}>{value}</p>
+                        <p style={{'textAlign': 'right'}}>{value}</p>
                     </Col>
                 </Row>
             )

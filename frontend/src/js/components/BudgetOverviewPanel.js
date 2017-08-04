@@ -30,7 +30,7 @@ export default class BudgetOverviewPanel extends Component {
 
         return (
             <div>
-                <CardHeader style={{'text-align': 'center'}}>
+                <CardHeader style={{'textAlign': 'center'}}>
                     Budget for: {attrs.term_beginning}&nbsp;-&nbsp;{attrs.term_end}
                 </CardHeader>
                 <CardText>
@@ -40,11 +40,11 @@ export default class BudgetOverviewPanel extends Component {
                                 <p>Assets first day: {attrs.incoming_amount}</p>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
-                                <p style={{'text-align': 'center'}}>Actual assets last
+                                <p style={{'textAlign': 'center'}}>Actual assets last
                                     day: {attrs.outgoing_amount.actual}</p>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
-                                <p style={{'text-align': 'right'}}>Expected assets last
+                                <p style={{'textAlign': 'right'}}>Expected assets last
                                     day: {attrs.outgoing_amount.expected}</p>
                             </Col>
                         </Row>
@@ -53,28 +53,28 @@ export default class BudgetOverviewPanel extends Component {
                                 <p>Income</p>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
-                                <p style={{'text-align': 'center'}}>Budget execution</p>
+                                <p style={{'textAlign': 'center'}}>Budget execution</p>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
-                                <p style={{'text-align': 'right'}}>Expenses</p>
+                                <p style={{'textAlign': 'right'}}>Expenses</p>
                             </Col>
                         </Row>
                         <Row>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <p><CircularProgress
+                                <CircularProgress
                                     mode='determinate'
                                     value={incomePercentage}
                                     size={80}
                                     thickness={5}
-                                /></p>
+                                />
                             </Col>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <p style={{'text-align': 'right'}}><CircularProgress
+                                <div style={{'textAlign': 'right'}}><CircularProgress
                                     mode='determinate'
                                     value={expensePercentage}
                                     size={80}
                                     thickness={5}
-                                /></p>
+                                /></div>
                             </Col>
                         </Row>
                         <Row>
@@ -82,7 +82,7 @@ export default class BudgetOverviewPanel extends Component {
                                 <p>{attrs.state.income.actual} of {attrs.state.income.expected}</p>
                             </Col>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <p style={{'text-align': 'right'}}>{attrs.state.expense.actual} of {attrs.state.expense.expected}</p>
+                                <p style={{'textAlign': 'right'}}>{attrs.state.expense.actual} of {attrs.state.expense.expected}</p>
                             </Col>
                         </Row>
                         <Row>
@@ -90,7 +90,7 @@ export default class BudgetOverviewPanel extends Component {
                                 Spent today: {attrs.state.change.actual}
                             </Col>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <p style={{'text-align': 'right'}}>Left today: {attrs.state.change.expected}</p>
+                                <p style={{'textAlign': 'right'}}>Left today: {attrs.state.change.expected}</p>
                             </Col>
                         </Row>
                         <Row>

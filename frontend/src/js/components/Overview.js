@@ -11,12 +11,12 @@ export default class Overview extends Component {
 
         var cardStyle = {
             height: 400,
-            'margin-top': 15
+            'marginTop': 15
         };
 
         return (
             <Grid fluid>
-                <Row st>
+                <Row>
                     <Col xs={12} sm={12} md={6} lg={6}>
                         <Card style={cardStyle}>
                             <AccountsOverview/>
