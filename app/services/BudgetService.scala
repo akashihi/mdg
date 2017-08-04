@@ -70,15 +70,12 @@ object BudgetService {
             val (income, expense) = spendings
             getTodaySpendings(expenseAccounts).flatMap { todaySpendings =>
               getAllowedSpendings(b).map{ todayChange =>
-                BudgetDTO(b.id,
-                  b.term_beginning,
-                  b.term_end,
-                  incoming,
-                  BudgetPairedAmount(incoming + expectedIncome - expectedExpense,
-                    incoming + income - expense),
-                  BudgetState(BudgetPairedAmount(expectedIncome,income),
-                    BudgetPairedAmount(expectedExpense,expense),
-                    BudgetPairedAmount(todayChange, todaySpendings)))
+                BudgetDTO.builder()
+                  .withBudget(b)
+                  .withIncoming(incoming)
+                  .withIncome(income).withExpense(expense)
+                  .withExpectedIncome(expectedIncome).withExpectedExpense(expectedExpense)
+                  .withStateChange(todayChange, todaySpendings).build()
               }
             }
           }
