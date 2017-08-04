@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import {Card, CardHeader, CardText} from 'material-ui/Card';
 
-import AccountsOverview from './AccountsOverview'
+import AccountsOverview from '../containers/AccountsOverview'
 
 export default class Overview extends Component {
     render() {

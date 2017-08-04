@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Card, CardHeader, CardText} from 'material-ui/Card';
-import RaisedButton from 'material-ui/RaisedButton';
+import IconButton from 'material-ui/IconButton';
+import FontIcon from 'material-ui/FontIcon';
 import FlatButton from 'material-ui/FlatButton';
 import {GridList} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
@@ -110,7 +111,7 @@ export default class AccountsPage extends Component {
                             </Row>
                             <Row>
                                 <Col xs={12} sm={12} md={3} lg={3}>
-                                    <RaisedButton label='Add new account' onClick={::this.onCreateAccountClick}/>
+                                    <IconButton onClick={::this.onCreateAccountClick}><FontIcon className='material-icons'>add_circle_outline</FontIcon></IconButton>
                                 </Col>
                                 <Col xs={12} sm={12} mdOffset={6} md={3} lgOffset={6} lg={3}>
                                     {hiddenButton}
