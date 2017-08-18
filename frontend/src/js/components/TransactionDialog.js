@@ -13,8 +13,21 @@ import {GridList, GridTile} from 'material-ui/GridList';
 import moment from 'moment';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
+import {Tabs, Tab} from 'material-ui/Tabs';
 
 export default class TransactionDialog extends React.Component {
+    constructor(props) {
+        super(props);
+        var tab = 'simple';
+        if (!this.validForSimpleEditing(this.props.transaction)) {
+            tab = 'multi'
+        }
+
+        this.state = {
+            tabValue: tab,
+        };
+    }
+
     onSaveClick() {
         this.props.actions.editTransactionSave();
     }
@@ -72,6 +85,50 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionChange(tx);
     }
 
+    onCombinedAmountChange(ev, value) {
+        var attr = {...this.props.transaction.attributes};
+        attr.operations[0].amount = -1 * value;
+        attr.operations[1].amount = value;
+        var account = {...this.props.transaction, attributes: attr};
+        this.props.actions.editTransactionChange(account);
+    }
+
+    validForSimpleEditing() {
+        var props = this.props;
+        var transaction = props.transaction;
+        var attributes = transaction.attributes;
+        if (attributes.operations.length>2) {
+            return false
+        }
+
+        var accounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
+        var leftCurrency = accounts.filter((item) => item.id == attributes.operations[0].account_id).map((item) => item.attributes.currency_id);
+        var rightCurrency = accounts.filter((item) => item.id == attributes.operations[1].account_id).map((item) => item.attributes.currency_id);
+        if (leftCurrency.length >0 && rightCurrency.length >0) {
+            return leftCurrency[0] == rightCurrency[0]
+        }
+        return true
+    }
+
+    switchTab(value) {
+        if (!this.validForSimpleEditing(this.props.transaction)) {
+            value = 'multi'
+        }
+        this.setState({
+            tabValue: value,
+        });
+    }
+
+    accountToMenuItem(item) {
+        var props = this.props;
+        var currencyIndex = props.currencies.map((c) => c.id).indexOf(item.attributes.currency_id);
+        var currencyName = '';
+        if (currencyIndex > -1) {
+            currencyName = '(' + props.currencies[currencyIndex].attributes.name + ')'
+        }
+        return (<MenuItem key={item.id} value={item.id} primaryText={item.attributes.name + currencyName}/>)
+        }
+
     render() {
         var props = this.props;
         var transaction = props.transaction;
@@ -87,7 +144,9 @@ export default class TransactionDialog extends React.Component {
             'transition': 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms'
         };
 
-        var onAmountChange=function(index, value) {
+        var enableSimpleEditor = this.validForSimpleEditing(transaction)
+
+        var onAmountChange = function (index, value) {
             attributes.operations[index].amount = value;
             var account = {...transaction, attributes: attributes};
             props.actions.editTransactionChange(account);
@@ -104,24 +163,35 @@ export default class TransactionDialog extends React.Component {
 
         var ts = moment(attributes.timestamp);
 
-        var accounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts).map((item) => {
-            var currencyIndex = props.currencies.map((c) => c.id).indexOf(item.attributes.currency_id);
-            var currencyName='';
-            if (currencyIndex > -1) {
-                currencyName='('+props.currencies[currencyIndex].attributes.name+')'
+        var combinedAccounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
+        var limitedAccounts = combinedAccounts;
+        if (attributes.operations[0].account_id) {
+            var leftAccountsIndex = combinedAccounts.map((c) => c.id).indexOf(attributes.operations[0].account_id);
+            if (leftAccountsIndex > -1) {
+                var leftAccount = combinedAccounts[leftAccountsIndex];
+                //Limit accounts of the second op, so they will always be of the same currency
+                limitedAccounts = combinedAccounts.filter((item) => {
+                    return item.attributes.currency_id == leftAccount.attributes.currency_id
+                })
             }
-            return (<MenuItem key={item.id} value={item.id} primaryText={item.attributes.name + currencyName} />)
-        });
+        }
 
-        var ops = attributes.operations.map(function(item, index) {
+        var accounts = combinedAccounts.map(::this.accountToMenuItem);
+        limitedAccounts = limitedAccounts.map(::this.accountToMenuItem);
+
+
+        var ops = attributes.operations.map(function (item, index) {
             return (<GridTile key={index}>
                 <Grid fluid>
                     <Row>
                         <Col xs={6} sm={6} md={6} lg={6}>
-                            <TextField hintText='Amount' errorText={errors.operations[index].amount} value={item.amount} onChange={(ev, value) => onAmountChange(index, value)}/>
+                            <TextField hintText='Amount' errorText={errors.operations[index].amount} value={item.amount}
+                                       onChange={(ev, value) => onAmountChange(index, value)}/>
                         </Col>
                         <Col xs={6} sm={6} md={6} lg={6}>
-                            <SelectField hintText='Account' errorText={errors.operations[index].account_id} value={item.account_id} onChange={(ev, key, value) => onAccountChange(index,value)}>
+                            <SelectField hintText='Account' errorText={errors.operations[index].account_id}
+                                         value={item.account_id}
+                                         onChange={(ev, key, value) => onAccountChange(index, value)}>
                                 {accounts}
                             </SelectField>
                         </Col>
@@ -134,10 +204,12 @@ export default class TransactionDialog extends React.Component {
             <Grid fluid>
                 <Row>
                     <Col xs={12} sm={12} md={6} lg={6}>
-                        <DatePicker hintText='Transaction date' container='inline' mode='landscape' value={ts.toDate()} onChange={::this.onDateChange}/>
-                        </Col>
+                        <DatePicker hintText='Transaction date' container='inline' mode='landscape' value={ts.toDate()}
+                                    onChange={::this.onDateChange}/>
+                    </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>
-                        <TimePicker format='24hr' hintText='Transaction time' value={ts.toDate()} onChange={::this.onTimeChange}/>
+                        <TimePicker format='24hr' hintText='Transaction time' value={ts.toDate()}
+                                    onChange={::this.onTimeChange}/>
                     </Col>
                 </Row>
                 <Row>
@@ -153,28 +225,62 @@ export default class TransactionDialog extends React.Component {
                 </Row>
                 <Row>
                     <Col xs={12} sm={12} md={12} lg={12}>
-                        <TextField hintText='Comment on transaction' fullWidth={true} multiLine={true} rows={4} value={attributes.comment} onChange={::this.onCommentChange}/>
+                        <TextField hintText='Comment on transaction' fullWidth={true} multiLine={true} rows={4}
+                                   value={attributes.comment} onChange={::this.onCommentChange}/>
                     </Col>
                 </Row>
             </Grid>
             <Divider/>
-            <GridList cellHeight={60} cols={1}>
-                {ops}
-                <GridTile>
+            <Tabs value={this.state.tabValue} onChange={::this.switchTab}>
+                <Tab label='Simple' value='simple' disabled={!enableSimpleEditor}>
                     <Grid fluid>
                         <Row>
-                            <Col xs={12} sm={12} md={12} lg={12}>
-                                <div style={validationErrorStyle}>{errors.transaction}</div>
+                            <Col xs={5} sm={5} md={5} lg={5}>
+                                <SelectField hintText='Source' errorText={errors.operations[0].account_id}
+                                             value={attributes.operations[0].account_id}
+                                             onChange={(ev, key, value) => onAccountChange(0, value)}>
+                                    {accounts}
+                                </SelectField>
                             </Col>
-                         </Row>
-                        <Row>
-                            <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1} lgOffset={5}>
-                                <IconButton onClick={::this.onOperationAdd}><FontIcon className='material-icons'>playlist_add</FontIcon></IconButton>
+                            <Col xs={2} sm={2} md={2} lg={2}>
+                                <TextField hintText='Amount' errorText={errors.operations[1].amount}
+                                           value={attributes.operations[1].amount}
+                                           onChange={::this.onCombinedAmountChange}/>
+                            </Col>
+                            <Col xs={5} sm={5} md={5} lg={5}>
+                                <SelectField hintText='Destination' errorText={errors.operations[1].account_id}
+                                             value={attributes.operations[1].account_id}
+                                             onChange={(ev, key, value) => onAccountChange(1, value)}>
+                                    {limitedAccounts}
+                                </SelectField>
                             </Col>
                         </Row>
                     </Grid>
-                </GridTile>
-            </GridList>
+                </Tab>
+                <Tab label='Multiple operations' value='multi'>
+                    <GridList cellHeight={60} cols={1}>
+                        {ops}
+                        <GridTile>
+                            <Grid fluid>
+                                <Row>
+                                    <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
+                                         lgOffset={5}>
+                                        <IconButton onClick={::this.onOperationAdd}><FontIcon
+                                            className='material-icons'>playlist_add</FontIcon></IconButton>
+                                    </Col>
+                                </Row>
+                            </Grid>
+                        </GridTile>
+                    </GridList>
+                </Tab>
+            </Tabs>
+            <Grid fluid>
+                <Row>
+                    <Col xs={12} sm={12} md={12} lg={12}>
+                        <div style={validationErrorStyle}>{errors.transaction}</div>
+                    </Col>
+                </Row>
+            </Grid>
             <FlatButton label='Save' primary={true} disabled={!props.valid} onClick={::this.onSaveClick}/>
             <FlatButton label='Cancel' secondary={true} onClick={::this.onCancelClick}/>
         </Dialog>)

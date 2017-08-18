@@ -27,9 +27,9 @@ const initialState = {
     },
     dialog: {
         open: false,
-        transaction: {attributes: {comment: '', operations: []}},
+        transaction: {attributes: {comment: '', tags: [], operations: [ {amount: 0}, {amount: 0}]}},
         valid: false,
-        errors: { }
+        errors: { operations: [{}, {}]}
     }
 };
 
