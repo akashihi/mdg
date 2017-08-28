@@ -37,7 +37,8 @@ object AccountService {
     * @param filter Filter to apply.
     * @return tuple of three sequences (income accounts, asset accounts, expense accounts)
     */
-  def listSeparate(filter: AccountFilter) : DBIO[(Seq[Account], Seq[Account], Seq[Account])] = {
+  def listSeparate(filter: AccountFilter)
+    : DBIO[(Seq[Account], Seq[Account], Seq[Account])] = {
     AccountDao.list(filter).map { a =>
       val incomeAccounts =
         a.filter(_.account_type == IncomeAccount)
@@ -49,6 +50,7 @@ object AccountService {
       (incomeAccounts, assetAccounts, expenseAccounts)
     }
   }
+
   /**
     * Retrieves account by id or returns error
     * @param id Account id to retrieve

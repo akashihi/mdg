@@ -25,9 +25,14 @@ object BudgetService {
     * @param b period first day.
     * @return actual remains delta during that period.
     */
-  private def getActualSpendings(b: Budget, incomeAccounts: Seq[Account], expenseAccounts: Seq[Account]): DBIO[(BigDecimal, BigDecimal)] = {
-    val getTotalsForBudget = TransactionService.getTotalsForDate(b.term_beginning, b.term_end) _
-    getTotalsForBudget(incomeAccounts).map(-_) zip getTotalsForBudget(expenseAccounts)
+  private def getActualSpendings(
+      b: Budget,
+      incomeAccounts: Seq[Account],
+      expenseAccounts: Seq[Account]): DBIO[(BigDecimal, BigDecimal)] = {
+    val getTotalsForBudget =
+      TransactionService.getTotalsForDate(b.term_beginning, b.term_end) _
+    getTotalsForBudget(incomeAccounts).map(-_) zip getTotalsForBudget(
+      expenseAccounts)
   }
 
   /**
@@ -41,7 +46,9 @@ object BudgetService {
   }
 
   private def getAllowedSpendings(b: Budget): DBIO[BigDecimal] = {
-    BudgetEntryService.list(b.id.get).map(_.flatMap(_.change_amount).foldLeft(BigDecimal(0))(_ + _))
+    BudgetEntryService
+      .list(b.id.get)
+      .map(_.flatMap(_.change_amount).foldLeft(BigDecimal(0))(_ + _))
   }
 
   /**
@@ -49,11 +56,18 @@ object BudgetService {
     * @param b budget to estimate.
     * @return expected change, actual change.
     */
-  def getExpectedChange(b: Budget, incomeAccounts: Seq[Long], expenseAccounts: Seq[Long]): DBIO[(BigDecimal, BigDecimal)] = {
+  def getExpectedChange(
+      b: Budget,
+      incomeAccounts: Seq[Long],
+      expenseAccounts: Seq[Long]): DBIO[(BigDecimal, BigDecimal)] = {
     b.id
-      .map(x => BudgetDao.getExpectedChange(x, incomeAccounts) zip BudgetDao.getExpectedChange(x, expenseAccounts))
+      .map(
+        x =>
+          BudgetDao.getExpectedChange(x, incomeAccounts) zip BudgetDao
+            .getExpectedChange(x, expenseAccounts))
       .getOrElse(DBIO.successful((BigDecimal(0), BigDecimal(0))))
   }
+
   /**
     * Converts Budget object to the DTO
     * @param b budget object to convert
@@ -64,21 +78,29 @@ object BudgetService {
       val (incomeAccounts, _, expenseAccounts) = a
 
       BudgetDao.getIncomingAmount(b.term_beginning).flatMap { incoming =>
-        getExpectedChange(b, incomeAccounts.flatMap(_.id), expenseAccounts.flatMap(_.id)).flatMap { expectedChange =>
-          val (expectedIncome, expectedExpense) = expectedChange
-          getActualSpendings(b, incomeAccounts, expenseAccounts).flatMap { spendings =>
-            val (income, expense) = spendings
-            getTodaySpendings(expenseAccounts).flatMap { todaySpendings =>
-              getAllowedSpendings(b).map{ todayChange =>
-                BudgetDTO.builder()
-                  .withBudget(b)
-                  .withIncoming(incoming)
-                  .withIncome(income).withExpense(expense)
-                  .withExpectedIncome(expectedIncome).withExpectedExpense(expectedExpense)
-                  .withStateChange(todayChange, todaySpendings).build()
-              }
+        getExpectedChange(b,
+                          incomeAccounts.flatMap(_.id),
+                          expenseAccounts.flatMap(_.id)).flatMap {
+          expectedChange =>
+            val (expectedIncome, expectedExpense) = expectedChange
+            getActualSpendings(b, incomeAccounts, expenseAccounts).flatMap {
+              spendings =>
+                val (income, expense) = spendings
+                getTodaySpendings(expenseAccounts).flatMap { todaySpendings =>
+                  getAllowedSpendings(b).map { todayChange =>
+                    BudgetDTO
+                      .builder()
+                      .withBudget(b)
+                      .withIncoming(incoming)
+                      .withIncome(income)
+                      .withExpense(expense)
+                      .withExpectedIncome(expectedIncome)
+                      .withExpectedExpense(expectedExpense)
+                      .withStateChange(todayChange, todaySpendings)
+                      .build()
+                  }
+                }
             }
-          }
         }
       }
     }

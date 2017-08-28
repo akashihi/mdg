@@ -11,6 +11,7 @@ import scala.reflect.ClassTag
   * Error passing helpers.
   */
 object ErrXor {
+
   /**
     * Reverse order of \/ and DBIO monads.
     * @param in DBIO inside of \/.
@@ -39,7 +40,9 @@ object ErrXor {
     * @tparam X unused. This parameter is needed to workaround type erasure.
     * @return \/ inside of DBIO.
     */
-  def invert[T, X: ClassTag](in: => \/[String, DBIO[\/[String, T]]]): DBIO[\/[String, T]] = pivot(in).map(_.flatMap(identity))
+  def invert[T, X: ClassTag](
+      in: => \/[String, DBIO[\/[String, T]]]): DBIO[\/[String, T]] =
+    pivot(in).map(_.flatMap(identity))
 
   /**
     * Reverse order of \/ and DBIO monads.
@@ -49,5 +52,9 @@ object ErrXor {
     * @tparam Y unused. This parameter is needed to workaround type erasure.
     * @return \/ inside of DBIO.
     */
-  def invert[T, X: ClassTag, Y: ClassTag](in: => DBIO[\/[String, DBIO[T]]]): DBIO[\/[String, T]] = in.map { e => pivot(e) } flatMap identity
+  def invert[T, X: ClassTag, Y: ClassTag](
+      in: => DBIO[\/[String, DBIO[T]]]): DBIO[\/[String, T]] =
+    in.map { e =>
+      pivot(e)
+    } flatMap identity
 }

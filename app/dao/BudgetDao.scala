@@ -33,7 +33,8 @@ object BudgetDao {
     * @param relatedAccounts limit budget changes to specified accounts ids list
     * @return estimated remains delta.
     */
-  def getExpectedChange(budget_id: Long, relatedAccounts: Seq[Long]): DBIO[BigDecimal] = {
+  def getExpectedChange(budget_id: Long,
+                        relatedAccounts: Seq[Long]): DBIO[BigDecimal] = {
     entries
       .filter(_.budget_id === budget_id)
       .filter(_.account_id inSet relatedAccounts)

@@ -24,11 +24,12 @@ object BudgetEntryService {
     * @param budget related Budget
     * @return tuple of actual spendings, allowed future spendings.
     */
-  private def getEntryAmounts(
-      b: BudgetEntry,
-      budget: Budget,
-      actual: BigDecimal): Option[BigDecimal] = {
-    if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate.now().isBefore(budget.term_end)) {
+  private def getEntryAmounts(b: BudgetEntry,
+                              budget: Budget,
+                              actual: BigDecimal): Option[BigDecimal] = {
+    if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate
+          .now()
+          .isBefore(budget.term_end)) {
       val budgetLength =
         ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
       val daysLeft =
@@ -44,7 +45,9 @@ object BudgetEntryService {
                 b.expected_amount - actual - (b.expected_amount / budgetLength) * daysLeft)
           }
       }
-      changeAmount.map(x => if (x < 0) BigDecimal(0) else x).map(_.setScale(0, RoundingMode.HALF_DOWN))
+      changeAmount
+        .map(x => if (x < 0) BigDecimal(0) else x)
+        .map(_.setScale(0, RoundingMode.HALF_DOWN))
     } else {
       None
     }
@@ -56,10 +59,15 @@ object BudgetEntryService {
     * @return Fully filled DTO object
     */
   def entryToDTO(b: BudgetEntry): DBIO[BudgetEntryDTO] = {
-    val amounts:DBIO[(BigDecimal, Option[BigDecimal])] = BudgetDao.find(b.budget_id).flatMap {
-      case None => DBIO.successful((BigDecimal(0), None))
-      case Some(budget) => BudgetEntryDao.getActualSpendings(b.account_id, budget).map { actual => (actual, getEntryAmounts(b, budget, actual)) }
-    }
+    val amounts: DBIO[(BigDecimal, Option[BigDecimal])] =
+      BudgetDao.find(b.budget_id).flatMap {
+        case None => DBIO.successful((BigDecimal(0), None))
+        case Some(budget) =>
+          BudgetEntryDao.getActualSpendings(b.account_id, budget).map {
+            actual =>
+              (actual, getEntryAmounts(b, budget, actual))
+          }
+      }
     amounts.map { p =>
       val (actual, normalizedChangeAmount) = p
       BudgetEntryDTO(b.id,

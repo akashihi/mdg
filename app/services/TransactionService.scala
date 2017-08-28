@@ -155,11 +155,14 @@ object TransactionService {
     * @param accounts list of accounts to operate on.
     * @return sum of all operation on specified account during specified period.
     */
-  def getTotalsForDate(from: LocalDate, till: LocalDate)(accounts: Seq[Account]): DBIO[BigDecimal] = {
+  def getTotalsForDate(from: LocalDate, till: LocalDate)(
+      accounts: Seq[Account]): DBIO[BigDecimal] = {
     TransactionDao.transactionsForPeriod(from, till).flatMap { txId =>
       val ops = TransactionDao.listOperations(txId)
 
-      ops.map (_.filter(x => accounts.flatMap(_.id).contains(x.account_id)).foldLeft(BigDecimal(0))(_ + _.amount))
+      ops.map(
+        _.filter(x => accounts.flatMap(_.id).contains(x.account_id))
+          .foldLeft(BigDecimal(0))(_ + _.amount))
     }
   }
 }

@@ -104,7 +104,6 @@ class TransactionController @Inject()(
       case None => Seq[SortBy]()
     }
 
-
     val result =
       TransactionService
         .list(filterObj, ordering, page)

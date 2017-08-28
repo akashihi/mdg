@@ -1,8 +1,8 @@
 package controllers.api
 
+import util.Default
 import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.{Account, Currency, Error, TxTag}
-import controllers.api.IdentifiableObject._
 import play.api.libs.json._
 
 /**
@@ -17,19 +17,22 @@ case class ErrorWrapper(errors: Seq[Error])
   * @param type object type name
   * @param attributes object data
   */
-case class JsonDataWrapper(id: Long,
-                           `type`: String,
-                           attributes: IdentifiableObject)
+case class JsonDataWrapper[T](id: T,
+                              `type`: String,
+                              attributes: IdentifiableObject[T])
 object JsonDataWrapper {
-  def apply(o: IdentifiableObject): JsonDataWrapper =
-    new JsonDataWrapper(o.id.getOrElse(-1), typeName(o), o)
+  def wrap[T](o: IdentifiableObject[T]): JsonDataWrapper[T] = {
+    new JsonDataWrapper[T](o.id.getOrElse(Default.value[T]), typeName(o), o)
+  }
+
+  def apply[T](o: IdentifiableObject[T]): JsonDataWrapper[T] = wrap(o)
 
   /**
     * Maps object class to type name
     * @param x object to match
     * @return class name
     */
-  def typeName(x: IdentifiableObject): String = x match {
+  def typeName[T >: ApiObject](x: T): String = x match {
     case _: Currency => "currency"
     case _: Account => "account"
     case _: TransactionDto => "transaction"
@@ -43,27 +46,52 @@ object JsonDataWrapper {
   * Single entry api object JSON wrapper
   * @param data api object
   */
-case class JsonWrapper(data: JsonDataWrapper)
+case class JsonWrapper[T](data: JsonDataWrapper[T])
 
 /**
   * Multiple entries api object json wrapper
   * @param data api objects
   */
-case class JsonWrapperSeq(data: Seq[JsonDataWrapper], count: Option[Int] = None)
+case class JsonWrapperSeq[T](data: Seq[JsonDataWrapper[T]],
+                             count: Option[Int] = None)
 
 object JsonWrapper {
 
   /**
     * Json helpers
     */
-  implicit val dataWrites = Json.writes[JsonDataWrapper]
-  implicit val wrapperWrites = Json.writes[JsonWrapper]
-  implicit val wrapperSeqWrites = Writes[JsonWrapperSeq] { wrapper =>
-    wrapper.count match {
-      case None => (JsPath \ "data").write[Seq[JsonDataWrapper]].writes(wrapper.data)
-      case Some(count) => (JsPath \ "data").write[Seq[JsonDataWrapper]].writes(wrapper.data) ++ (JsPath \ "count").write[Int].writes(count)
+  implicit def dataWrites[T]: Writes[JsonDataWrapper[T]] =
+    new Writes[JsonDataWrapper[T]] {
+      override def writes(o: JsonDataWrapper[T]): JsValue = {
+        val idWriter = o.id match {
+          case l: Long => (JsPath \ "id").write[Long].writes(l)
+        }
+        idWriter ++
+          (JsPath \ "type").write[String].writes(o.`type`) ++
+          (JsPath \ "attributes")
+            .write[IdentifiableObject[T]]
+            .writes(o.attributes)
+      }
     }
-  }
+  implicit def wrapperWrites[T]: Writes[JsonWrapper[T]] =
+    new Writes[JsonWrapper[T]] {
+      override def writes(o: JsonWrapper[T]): JsValue = {
+        (JsPath \ "data").write[JsonDataWrapper[T]].writes(o.data)
+      }
+    }
+  implicit def wrapperSeqWrites[T]: Writes[JsonWrapperSeq[T]] =
+    new Writes[JsonWrapperSeq[T]] {
+      override def writes(o: JsonWrapperSeq[T]): JsValue = {
+        o.count match {
+          case None =>
+            (JsPath \ "data").write[Seq[JsonDataWrapper[T]]].writes(o.data)
+          case Some(count) =>
+            (JsPath \ "data")
+              .write[Seq[JsonDataWrapper[T]]]
+              .writes(o.data) ++ (JsPath \ "count").write[Int].writes(count)
+        }
+      }
+    }
   implicit val errorWrapperWrites = Json.writes[ErrorWrapper]
 
   /**
@@ -71,7 +99,7 @@ object JsonWrapper {
     * @param x object to convert
     * @return JsValue
     */
-  def wrapJson(x: IdentifiableObject): JsValue = {
+  def wrapJson[T](x: IdentifiableObject[T]): JsValue = {
     Json.toJson(JsonWrapper(JsonDataWrapper(x)))
   }
 
@@ -80,8 +108,9 @@ object JsonWrapper {
     * * @param x objects to convert
     * @return JsValue
     */
-  def wrapJson(x: Seq[IdentifiableObject], count: Option[Int] = None): JsValue = {
-    Json.toJson(JsonWrapperSeq(x.map(JsonDataWrapper.apply), count))
+  def wrapJson[T](x: Seq[IdentifiableObject[T]],
+                  count: Option[Int] = None): JsValue = {
+    Json.toJson(JsonWrapperSeq(x.map(JsonDataWrapper.wrap), count))
   }
 
   /**

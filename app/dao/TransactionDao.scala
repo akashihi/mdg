@@ -81,7 +81,8 @@ object TransactionDao {
     * @param filter Filter to work on.
     * @return Slick query, configured to match supplied filter.
     */
-  private def makeCriteria(filter: TransactionFilter): DBIO[Query[Transactions, Transaction, Seq]] = {
+  private def makeCriteria(filter: TransactionFilter)
+    : DBIO[Query[Transactions, Transaction, Seq]] = {
     val preActions = TransactionDao.tagTxFilter(filter.tag) zip TransactionDao
       .accTxFilter(filter.account_id)
 
@@ -107,7 +108,7 @@ object TransactionDao {
             .reduceLeftOption(_ && _)
             .getOrElse(true: Rep[Boolean])
       }
-  })
+    })
   }
 
   /**
@@ -122,21 +123,21 @@ object TransactionDao {
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page]): DBIO[Seq[Transaction]] = {
-      makeCriteria(filter).flatMap { criteriaQuery =>
-        val sortedQuery =
-          sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
-            case SortBy("timestamp", Asc) =>
-              criteriaQuery.sortBy(_.timestamp.asc)
-            case _ => criteriaQuery.sortBy(_.timestamp.desc)
-          }
-
-        val pagedQuery = page match {
-          case Some(p) => sortedQuery.drop(p.size * (p.no - 1)).take(p.size)
-          case None => sortedQuery
+    makeCriteria(filter).flatMap { criteriaQuery =>
+      val sortedQuery =
+        sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
+          case SortBy("timestamp", Asc) =>
+            criteriaQuery.sortBy(_.timestamp.asc)
+          case _ => criteriaQuery.sortBy(_.timestamp.desc)
         }
 
-        pagedQuery.result
+      val pagedQuery = page match {
+        case Some(p) => sortedQuery.drop(p.size * (p.no - 1)).take(p.size)
+        case None => sortedQuery
       }
+
+      pagedQuery.result
+    }
   }
 
   /**
@@ -145,7 +146,8 @@ object TransactionDao {
     * @param filter Transaction filter description.
     * @return Number pof matched transactions.
     */
-  def count(filter: TransactionFilter): DBIO[Int] = makeCriteria(filter).flatMap(_.length.result)
+  def count(filter: TransactionFilter): DBIO[Int] =
+    makeCriteria(filter).flatMap(_.length.result)
 
   /**
     * Retrieves transaction by it's id.
@@ -174,14 +176,16 @@ object TransactionDao {
     * @param txId transaction id to work on
     * @return list of transaction's operations
     */
-  def listOperations(txId: Long): DBIO[Seq[Operation]] = operations.filter(_.tx_id === txId).result
+  def listOperations(txId: Long): DBIO[Seq[Operation]] =
+    operations.filter(_.tx_id === txId).result
 
   /**
     * Retrieves operations of specified transactions.
     * @param txId transactions ids to work on
     * @return list of operations
     */
-  def listOperations(txId: Seq[Long]): DBIO[Seq[Operation]] = operations.filter(_.tx_id inSet txId).result
+  def listOperations(txId: Seq[Long]): DBIO[Seq[Operation]] =
+    operations.filter(_.tx_id inSet txId).result
 
   /**
     * Retrieves ids of transactions, logged between specified dates.

@@ -44,7 +44,7 @@ object ErrorService {
     * @return Play Result object
     */
   def handleErrors[T](resultWrapper: => \/[String, T])(
-    op: T => Result): DBIO[Result] = {
+      op: T => Result): DBIO[Result] = {
     resultWrapper match {
       case \/-(x) => DBIO.successful(op(x))
       case -\/(e) => makeErrorResult(e)

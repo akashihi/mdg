@@ -1,6 +1,6 @@
 package models
 
-import controllers.api.IdentifiableObject
+import controllers.api.IdentifiableObject.LongIdentifiable
 import play.api.libs.json._
 
 /**
@@ -30,7 +30,7 @@ case class Account(id: Option[Long],
                    operational: Boolean,
                    favorite: Boolean,
                    hidden: Boolean)
-    extends IdentifiableObject
+    extends LongIdentifiable
 
 object AccountType {
   def apply(arg: String): AccountType = arg match {
