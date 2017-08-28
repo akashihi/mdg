@@ -27,6 +27,80 @@ A Error object has the following attributes:
 - title (string, required) - human readable summary of the error
 - detail (string, optional) - detailed description of the problem
 
+№ Group Settings
+
+Resources describing system configuration variables.
+
+## Settings collection [/setting]
+
+A Settings object has the following attributes:
+
+- value (required) - Value of a setting.
+
+Object id is a string, represetings setting name. At the moment following settings are supported:
+
+* currency.primary - ID of a system's primary currency. Value will be of numeric type.
+
+### List All Settings [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+  {
+    "data": [
+        {
+            "type": "setting",
+            "id": "currency.primary",
+            "attributes": {
+                "value": "840"
+            }
+        }
+    ]
+  }
+
+## Setting [/setting/{setting_id}]
+
++ parameters
+    + setting_id: (required, string) - Name of the configuration variable
+
+### View a setting [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "setting",
+            "id": "currency.primary",
+            "attributes": {
+                "value": "840"
+            }
+        }
+  }
+
+### Modify setting value [PUT]
+
+Settings may have different valid valid values for different names. Invalid named will not be accepted
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "setting",
+            "id": "currency.primary"
+            "attributes": {
+                "value": "978"
+            }
+        }
+  }
+
++ Response 202 (application/vnd.mdg+json)
+  + Body
+    {
+        "data": {
+            "type": "setting",
+            "id": "currency.primary"
+            "attributes": {
+                "value": "978"
+            }
+        }
+    }
+
 # Group Currencies
 
 Resources describing currencies
