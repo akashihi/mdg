@@ -28,5 +28,8 @@ GET     /budget/:budget_id/entry/:id controllers.BudgetEntryController.show(id:L
 PUT     /budget/:budget_id/entry/:id controllers.BudgetEntryController.edit(id:Long, budget_id: Long)
 
 GET     /tag                         controllers.TagController.index
+
+GET     /setting                    controllers.SettingController.index
+GET     /setting/:id                controllers.SettingController.show(id: String)
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

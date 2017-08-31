@@ -2,7 +2,7 @@ package controllers.api
 
 import util.Default
 import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
-import models.{Account, Currency, Error, TxTag}
+import models.{Account, Currency, Error, Setting, TxTag}
 import play.api.libs.json._
 
 /**
@@ -39,6 +39,7 @@ object JsonDataWrapper {
     case _: BudgetDTO => "budget"
     case _: BudgetEntryDTO => "budgetentry"
     case _: TxTag => "tag"
+    case _: Setting => "setting"
   }
 }
 
@@ -65,6 +66,7 @@ object JsonWrapper {
       override def writes(o: JsonDataWrapper[T]): JsValue = {
         val idWriter = o.id match {
           case l: Long => (JsPath \ "id").write[Long].writes(l)
+          case s: String => (JsPath \ "id").write[String].writes(s)
         }
         idWriter ++
           (JsPath \ "type").write[String].writes(o.`type`) ++

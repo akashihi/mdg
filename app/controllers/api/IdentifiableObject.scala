@@ -7,7 +7,8 @@ import controllers.dto.{BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.Account.accountWrites
 import models.Currency.currencyWrites
 import models.TxTag.txtagWrites
-import models.{Account, Currency, TxTag}
+import models.Setting.settingWrites
+import models.{Account, Currency, Setting, TxTag}
 import play.api.libs.json.Writes
 
 /**
@@ -21,6 +22,7 @@ trait IdentifiableObject[T] {
 
 object IdentifiableObject {
   type LongIdentifiable = IdentifiableObject[Long]
+  type StringIdentifiable = IdentifiableObject[String]
 
   implicit val apiObjectWrites = Writes[IdentifiableObject[_]] {
     case currency: Currency => currencyWrites.writes(currency)
@@ -29,5 +31,6 @@ object IdentifiableObject {
     case budget: BudgetDTO => budgetWrites.writes(budget)
     case budgetentry: BudgetEntryDTO => budgetEntryWrites.writes(budgetentry)
     case tag: TxTag => txtagWrites.writes(tag)
+    case setting: Setting => settingWrites.writes(setting)
   }
 }
