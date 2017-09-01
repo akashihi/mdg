@@ -45,4 +45,20 @@ class SettingController @Inject()(
         })
     db.run(result)
   }
+
+  /**
+    * currency.primary setting method.
+    *
+    * @return setting object.
+    */
+  def editCurrencyPrimary() = Action.async(parse.tolerantJson) { request =>
+    val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
+
+    val result = SettingService.setCurrencyPrimary(value).flatMap { x =>
+      handleErrors(x) { x =>
+        makeResult(x)(ACCEPTED)
+      }
+    }
+    db.run(result)
+  }
 }
