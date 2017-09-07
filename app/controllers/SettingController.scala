@@ -54,7 +54,7 @@ class SettingController @Inject()(
   def editCurrencyPrimary() = Action.async(parse.tolerantJson) { request =>
     val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
 
-    val result = SettingService.setCurrencyPrimary(value).flatMap { x =>
+    val result = SettingService.setCurrencyPrimary(value).run.flatMap { x =>
       handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }
