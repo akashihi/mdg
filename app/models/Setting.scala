@@ -8,7 +8,7 @@ import controllers.api.OWritesOps._
   * Currency entity
   */
 case class Setting(id: Option[String], value: String)
-  extends StringIdentifiable
+    extends StringIdentifiable
 
 object Setting {
   implicit val settingWrites = Json

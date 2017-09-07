@@ -11,11 +11,18 @@ import Scalaz._
   * Monad transformer for DBIO[\/[L, R]]
   */
 case class EitherD[L, R](run: DBIO[L \/ R]) {
-  def map[T](f: R => T): EitherD[L, T] = EitherD(run.map {either: \/[L,R] => either.map(f)})
-  def flatMap[T](f: R => \/[L, T]): EitherD[L, T] = EitherD(run.map { either: \/[L,R] => either.flatMap(f)})
+  def map[T](f: R => T): EitherD[L, T] =
+    EitherD(run.map { either: \/[L, R] =>
+      either.map(f)
+    })
+  def flatMap[T](f: R => \/[L, T]): EitherD[L, T] =
+    EitherD(run.map { either: \/[L, R] =>
+      either.flatMap(f)
+    })
 }
 
 object EitherD {
+
   /**
     * Reverse order of \/ and DBIO monads.
     * @param in DBIO inside of \/.
@@ -37,7 +44,7 @@ object EitherD {
     * @tparam R type of \/-
     * @return \/ inside of DBIO.
     */
-  def apply[L, R](in: => \/[L, DBIO[R]]): EitherD[L, R] =EitherD(pivot(in))
+  def apply[L, R](in: => \/[L, DBIO[R]]): EitherD[L, R] = EitherD(pivot(in))
 
   /**
     * Reverse order of \/ and DBIO monads.
@@ -48,7 +55,7 @@ object EitherD {
     * @return \/ inside of DBIO.
     */
   def apply[L, R, X: ClassTag](in: => \/[L, DBIO[\/[L, R]]]): EitherD[L, R] =
-  EitherD(pivot(in).map(_.flatMap(identity)))
+    EitherD(pivot(in).map(_.flatMap(identity)))
 
   /**
     * Reverse order of \/ and DBIO monads.
@@ -59,7 +66,8 @@ object EitherD {
     * @tparam Y unused. This parameter is needed to workaround type erasure.
     * @return \/ inside of DBIO.
     */
-  def apply[L, R, X: ClassTag, Y: ClassTag](in: => DBIO[\/[L, DBIO[R]]]): EitherD[L, R] = {
+  def apply[L, R, X: ClassTag, Y: ClassTag](
+      in: => DBIO[\/[L, DBIO[R]]]): EitherD[L, R] = {
     val pivoted = in.map { e =>
       pivot(e)
     } flatMap identity
@@ -70,8 +78,9 @@ object EitherD {
     * Converts different combination of \/ and DBIO to EitherD
     * @param o object to convert
     */
-  implicit class EitherDFlatten[L, R](val o: EitherD[L, EitherD[L, R]]) extends AnyVal {
-    def flatten(): EitherD[L, R] = {
+  implicit class EitherDFlatten[L, R](val o: EitherD[L, EitherD[L, R]])
+      extends AnyVal {
+    def flatten: EitherD[L, R] = {
       val result = o.run flatMap {
         case -\/(l) => DBIO.successful(l.left)
         case \/-(r) => r.run
@@ -85,20 +94,24 @@ object EitherD {
     * @param o object to convert
     */
   implicit class EitherDOps1[L, R](val o: \/[L, DBIO[R]]) extends AnyVal {
-    def transform(): EitherD[L, R] = EitherD(o)
+    def transform: EitherD[L, R] = EitherD(o)
   }
+
   /**
     * Converts different combination of \/ and DBIO to EitherD
     * @param o object to convert
     */
-  implicit class EitherDOps2[L, R](val o: \/[L, DBIO[\/[L, R]]]) extends AnyVal {
-    def transform(): EitherD[L, R] = EitherD(o)
+  implicit class EitherDOps2[L, R](val o: \/[L, DBIO[\/[L, R]]])
+      extends AnyVal {
+    def transform: EitherD[L, R] = EitherD(o)
   }
+
   /**
     * Converts different combination of \/ and DBIO to EitherD
     * @param o object to convert
     */
-  implicit class EitherDOps3[L, R](val o: DBIO[\/[L, DBIO[R]]]) extends AnyVal {
-    def transform(): EitherD[L, R] = EitherD(o)
+  implicit class EitherDOps3[L, R](val o: DBIO[\/[L, DBIO[R]]])
+      extends AnyVal {
+    def transform: EitherD[L, R] = EitherD(o)
   }
 }

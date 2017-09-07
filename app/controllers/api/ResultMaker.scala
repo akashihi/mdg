@@ -15,6 +15,6 @@ object ResultMaker {
       status: Int): Result =
     new Results.Status(status)(wrapJson(x, Some(count)))
   def makeResult(x: Error): Result =
-    new Results.Status(x.status.tryToInt().getOrElse(INTERNAL_SERVER_ERROR))(
+    new Results.Status(x.status.tryToInt.getOrElse(INTERNAL_SERVER_ERROR))(
       wrapJson(x))
 }

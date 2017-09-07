@@ -16,9 +16,9 @@ import scala.concurrent.ExecutionContext
   */
 @Singleton
 class SettingController @Inject()(
-                                    protected val dbConfigProvider: DatabaseConfigProvider)(
-                                    implicit ec: ExecutionContext)
-  extends Controller {
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
+    extends Controller {
   val db = dbConfigProvider.get[JdbcProfile].db
 
   /**
@@ -42,7 +42,7 @@ class SettingController @Inject()(
       .flatMap(x =>
         handleErrors(x) { x =>
           makeResult(x)(OK)
-        })
+      })
     db.run(result)
   }
 
