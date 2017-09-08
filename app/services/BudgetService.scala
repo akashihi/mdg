@@ -7,7 +7,7 @@ import dao.filters.EmptyAccountFilter
 import dao.BudgetDao
 import models.{Account, Budget}
 import slick.driver.PostgresDriver.api._
-import util.ErrXor._
+import util.XorOps._
 import util.Validator._
 
 import scalaz._

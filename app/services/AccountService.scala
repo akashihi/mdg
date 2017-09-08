@@ -5,7 +5,7 @@ import dao.filters.AccountFilter
 import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
-import util.ErrXor._
+import util.XorOps._
 import util.Validator._
 
 import scalaz._

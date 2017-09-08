@@ -9,7 +9,7 @@ import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
 import controllers.api.ResultMaker._
 import util.ApiOps._
-import util.ErrXor._
+import util.XorOps._
 import play.api.libs.json._
 import play.api.mvc._
 import services.TransactionService

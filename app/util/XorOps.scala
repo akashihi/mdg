@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 /**
   * Error passing helpers.
   */
-object ErrXor {
+object XorOps {
 
   /**
     * Reverse order of \/ and DBIO monads.
@@ -57,4 +57,12 @@ object ErrXor {
     in.map { e =>
       pivot(e)
     } flatMap identity
+
+  /**
+    * Converts different combination of \/ and DBIO to EitherD
+    * @param o object to convert
+    */
+  implicit class XorFromOptionOps[L, R](val o: Option[R]) extends AnyVal {
+    def fromOption(l: L): L \/ R = o.map(_.right).getOrElse(l.left)
+  }
 }
