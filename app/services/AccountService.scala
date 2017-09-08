@@ -22,10 +22,9 @@ object AccountService {
     * @return Xor with errors or newly created account.
     */
   def create(account: Option[Account]): DBIO[\/[String, Account]] = {
-    val a = (account match {
-      case None => "ACCOUNT_DATA_INVALID".left
-      case Some(x) => x.right
-    }).map(validate)
+
+    val a = account.fromOption("ACCOUNT_DATA_INVALID")
+      .map(validate)
       .flatMap(validationToXor)
       .map(AccountDao.insert)
     invert(a)
@@ -57,10 +56,7 @@ object AccountService {
     * @return Account XOR error
     */
   def get(id: Long): DBIO[\/[String, Account]] = {
-    AccountDao.findById(id).map {
-      case None => "ACCOUNT_NOT_FOUND".left
-      case Some(x) => x.right
-    }
+    AccountDao.findById(id).map(_.fromOption("ACCOUNT_NOT_FOUND"))
   }
 
   /**
@@ -111,9 +107,6 @@ object AccountService {
     * @return either error result, or resultHandler processing result.
     */
   def delete(id: Long): DBIO[\/[String, Int]] = {
-    AccountDao.delete(id).map {
-      case Some(_) => 1.right
-      case None => "ACCOUNT_NOT_FOUND".left
-    }
+    AccountDao.delete(id).map(_.fromOption("ACCOUNT_NOT_FOUND"))
   }
 }
