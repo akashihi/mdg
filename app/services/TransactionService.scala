@@ -9,6 +9,7 @@ import dao.{TagDao, TransactionDao}
 import models.{Account, Operation, Transaction}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
+import util.XorOps._
 import util.Validator._
 
 import scalaz._
@@ -42,22 +43,15 @@ object TransactionService {
     * Extracts Transaction (DTO) data from the
     * supplied wrapper and checks for data validity.
     * @param id Separately defined transaction id.
-    * @param wrapper TransactoinWrapperDto object.
+    * @param wrapper TransactionWrapperDto object.
     * @return Error XOR valid Transaction(DTO) object.
     */
   def prepareTransactionDto(
       id: Option[Long],
       wrapper: Option[TransactionWrapperDto]): \/[String, TransactionDto] = {
-    val d = wrapper match {
-      case None => "TRANSACTION_DATA_INVALID".left
-      case Some(x) => x.right
-    }
-    d.map { x =>
-        x.data.attributes
-      }
-      .map { x =>
-        x.copy(id = id)
-      }
+    wrapper.fromOption("TRANSACTION_DATA_INVALID")
+      .map(_.data.attributes)
+      .map(_.copy(id = id))
       .map { stripEmptyOps }
       .map { validate }
       .flatMap { validationToXor }

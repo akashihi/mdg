@@ -112,11 +112,7 @@ object BudgetService {
     * @return budget description object with id.
     */
   def add(budget: Option[Budget]): DBIO[\/[String, BudgetDTO]] = {
-    val b = budget match {
-      case Some(x) => x.right
-      case None => "BUDGET_DATA_INVALID".left
-    }
-    val v = b
+    val v = budget.fromOption("BUDGET_DATA_INVALID")
       .map { validate }
       .flatMap { validationToXor }
       .map(x =>
