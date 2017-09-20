@@ -32,5 +32,8 @@ GET     /tag                         controllers.TagController.index
 GET     /setting                    controllers.SettingController.index
 GET     /setting/:id                controllers.SettingController.show(id: String)
 PUT     /setting/currency.primary   controllers.SettingController.editCurrencyPrimary
+
+GET     /rate/:ts                   controllers.RateController.index(ts: String)
+GET     /rate/:ts/:from/:to         controllers.RateController.show(ts: String, from: Long, to: Long)
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

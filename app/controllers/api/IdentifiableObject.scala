@@ -8,7 +8,8 @@ import models.Account.accountWrites
 import models.Currency.currencyWrites
 import models.TxTag.txtagWrites
 import models.Setting.settingWrites
-import models.{Account, Currency, Setting, TxTag}
+import models.Rate.rateWrites
+import models._
 import play.api.libs.json.Writes
 
 /**
@@ -32,5 +33,6 @@ object IdentifiableObject {
     case budgetentry: BudgetEntryDTO => budgetEntryWrites.writes(budgetentry)
     case tag: TxTag => txtagWrites.writes(tag)
     case setting: Setting => settingWrites.writes(setting)
+    case rate: Rate => rateWrites.writes(rate)
   }
 }
