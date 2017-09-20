@@ -168,9 +168,9 @@ Resources describing currency exchange rates
 
 A Rate object has the following attributes.
 
-- from (string, required) - Currency ISO 4217 alfa-3 code
-- to (string, required) - Currency ISO 4217 alfa-3 code
-- rate (decimal, required) - Exchange rate, telling you hnow much 'from' currency should be spent, to by a single 'to' currency unit
+- from (string, required) - Currency ISO 4217 number-3 code
+- to (string, required) - Currency ISO 4217 number-3 code
+- rate (decimal, required) - Exchange rate, telling you how much 'from' currency should be spent, to by a single 'to' currency unit
 - beginning (timestamp, required) - Timestamp of the rate validity period beginning
 - end (timestamp, required) - Timestamp of the rate validity period end
 
@@ -183,8 +183,8 @@ A Rate object has the following attributes.
             "type": "rate",
             "id": 1,
             "attributes": {
-                "from": "EUR",
-                "to": "USD",
+                "from": 978,
+                "to": 840,
                 "rate": 1.19,
                 "beginning": "2017-09-18T17:00:00",
                 "end": "2017-09-18T18:00:00"
@@ -194,8 +194,8 @@ A Rate object has the following attributes.
             "type": "rate",
             "id": 1,
             "attributes": {
-                "from": "INR",
-                "to": "HUF",
+                "from": 356,
+                "to": 348,
                 "rate": 4.0396,
                 "beginning": "2017-09-18T17:00:00",
                 "end": "2017-09-18T18:00:00"
@@ -219,8 +219,8 @@ A Rate object has the following attributes.
             "type": "rate",
             "id": 1,
             "attributes": {
-                "from": "EUR",
-                "to": "USD",
+                "from": 978,
+                "to": 840,
                 "rate": 1.19,
                 "beginning": "2017-09-18T17:00:00",
                 "end": "2017-09-18T18:00:00"
