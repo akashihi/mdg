@@ -5,7 +5,7 @@ import slick.driver.PostgresDriver.api._
 import slick.lifted._
 
 /**
-  * Maps Currency entity to the SQL table.
+  * Maps Settings entity to the SQL table.
   */
 class Settings(tag: Tag) extends Table[Setting](tag, "setting") {
   def id = column[Option[String]]("name", O.PrimaryKey)

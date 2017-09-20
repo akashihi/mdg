@@ -4,12 +4,10 @@ import java.time.LocalDate
 
 import dao.filters.TransactionFilter
 import dao.ordering.{Asc, Desc, Page, SortBy}
-import dao.tables.Transactions._
-import dao.tables.{Operations, TagMap, Tags, Transactions}
+import dao.mappers.LocalDateMapper._
+import dao.tables.{Operations, TagMap, Transactions}
 import models.{Operation, Transaction, TxTag}
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.dbio.DBIOAction
-import slick.dbio.Effect.All
 import slick.driver.PostgresDriver.api._
 
 /**

@@ -3,7 +3,7 @@ package dao
 import java.sql.Date
 import java.time.LocalDate
 
-import dao.tables.Budgets.localDtoDate
+import dao.mappers.LocalDateMapper._
 import dao.BudgetEntryDao._
 import dao.tables._
 import models.Budget

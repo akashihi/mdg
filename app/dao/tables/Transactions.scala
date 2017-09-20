@@ -1,8 +1,8 @@
 package dao.tables
 
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
+import dao.mappers.LocalDateMapper._
 import models.Transaction
 import slick.driver.PostgresDriver.api._
 import slick.lifted._
@@ -11,20 +11,11 @@ import slick.lifted._
   * Maps Transaction entity to the SQL table.
   */
 class Transactions(tag: Tag) extends Table[Transaction](tag, "tx") {
-  implicit val localDTtoDate = Transactions.localDTtoDate
-
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def timestamp = column[LocalDateTime]("ts")
   def comment = column[Option[String]]("comment")
   def * =
     (id.?, timestamp, comment) <> ((Transaction.apply _).tupled, Transaction.unapply)
-}
-
-object Transactions {
-  implicit val localDTtoDate = MappedColumnType.base[LocalDateTime, Timestamp](
-    l => Timestamp.valueOf(l),
-    d => d.toLocalDateTime
-  )
 }
 
 class TagMap(tag: Tag) extends Table[(Long, Long)](tag, "tx_tags") {
