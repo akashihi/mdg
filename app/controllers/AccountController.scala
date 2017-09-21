@@ -62,6 +62,7 @@ class AccountController @Inject()(
 
     val result = AccountService
       .create(account)
+      .run
       .flatMap(x => handleErrors(x)(createResult))
     db.run(result)
   }

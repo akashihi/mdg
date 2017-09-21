@@ -2,12 +2,13 @@ package services
 
 import java.time.LocalDate
 
-import controllers.dto.{BudgetDTO, BudgetPairedAmount, BudgetState}
+import controllers.dto.BudgetDTO
 import dao.filters.EmptyAccountFilter
 import dao.BudgetDao
 import models.{Account, Budget}
 import slick.driver.PostgresDriver.api._
-import util.XorOps._
+import util.EitherD
+import util.EitherD._
 import util.Validator._
 
 import scalaz._
@@ -111,8 +112,9 @@ object BudgetService {
     * @param budget budget description object.
     * @return budget description object with id.
     */
-  def add(budget: Option[Budget]): DBIO[\/[String, BudgetDTO]] = {
-    val v = budget.fromOption("BUDGET_DATA_INVALID")
+  def add(budget: Option[Budget]): EitherD[String, BudgetDTO] = {
+    val v = budget
+      .fromOption("BUDGET_DATA_INVALID")
       .map { validate }
       .flatMap { validationToXor }
       .map(x =>
@@ -120,9 +122,9 @@ object BudgetService {
           case Some(_) => "BUDGET_OVERLAPPING".left
           case None => x.right
       })
+      .transform
 
-    val s = invert(v).map(_.map(BudgetDao.insert(_).flatMap(budgetToDTO)))
-    invert(s)
+    v.map(BudgetDao.insert(_).flatMap(budgetToDTO)).run.transform
   }
 
   def list(): DBIO[Seq[BudgetDTO]] =

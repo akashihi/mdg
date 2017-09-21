@@ -5,7 +5,8 @@ import dao.filters.AccountFilter
 import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
-import util.XorOps._
+import util.EitherD
+import util.EitherD._
 import util.Validator._
 
 import scalaz._
@@ -21,13 +22,14 @@ object AccountService {
     * @param account Account to create, if exists.
     * @return Xor with errors or newly created account.
     */
-  def create(account: Option[Account]): DBIO[\/[String, Account]] = {
+  def create(account: Option[Account]): EitherD[String, Account] = {
 
-    val a = account.fromOption("ACCOUNT_DATA_INVALID")
+    account
+      .fromOption("ACCOUNT_DATA_INVALID")
       .map(validate)
       .flatMap(validationToXor)
       .map(AccountDao.insert)
-    invert(a)
+      .transform
   }
 
   /**

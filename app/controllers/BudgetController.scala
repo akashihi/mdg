@@ -52,8 +52,8 @@ class BudgetController @Inject()(
       e <- (request.body \ "data" \ "attributes" \ "term_end").asOpt[LocalDate]
     } yield Budget(Some(b), b, e)
 
-    val b = BudgetService.add(budget)
-    val result = b.flatMap(x => handleErrors(x)(createResult))
+    val result =
+      BudgetService.add(budget).run.flatMap(x => handleErrors(x)(createResult))
     db.run(result)
   }
 

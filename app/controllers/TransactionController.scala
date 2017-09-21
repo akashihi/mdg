@@ -9,7 +9,7 @@ import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
 import controllers.api.ResultMaker._
 import util.ApiOps._
-import util.XorOps._
+import util.EitherD._
 import play.api.libs.json._
 import play.api.mvc._
 import services.TransactionService
@@ -68,8 +68,9 @@ class TransactionController @Inject()(
     val tx = TransactionService
       .prepareTransactionDto(None, parseDto(request.body))
       .map(TransactionService.add)
+      .transform
 
-    val result = invert(tx).flatMap(x => handleErrors(x)(createResult))
+    val result = tx.run.flatMap(x => handleErrors(x)(createResult))
     db.run(result)
   }
 

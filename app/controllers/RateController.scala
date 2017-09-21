@@ -46,7 +46,9 @@ class RateController @Inject()(
   def show(ts: String, from: Long, to: Long) = Action.async {
     db.run(
       RateService
-        .get(LocalDateTime.parse(ts, DateTimeFormatter.ISO_LOCAL_DATE_TIME), from, to)
+        .get(LocalDateTime.parse(ts, DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+             from,
+             to)
         .map(x => makeResult(x)(OK)))
   }
 }
