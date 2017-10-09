@@ -413,8 +413,21 @@ A Transaction object has the following attributes
 - tags[]: [string[], optional] - tags, associated with transaction
 - operations[] Each operation has the following attributes
   - account_id: (number, required) - Related account id
-  - amount: (decimap, required) - account balance change
+  - amount: (decimal, required) - account balance change
+  - rate: (decimal, optional) - exchange rate to be applied
 
+Transaction object have some limitations:
+  - Operations with amount equal to zero are ignored
+  - It should include at least on non-zero operation
+  - Sum of all operations must be zero (excluding ignored operations)
+  - Rate value may not be present only on accounts with same currency and only for one currency. So, if you have operations only on accounts with 'EUR' currency, 'rate' field can be omited. If you have several operations on 'EUR' accounts and 'USD' accounts, 'rate' field can be omited for all 'EUR' accounts or 'USD' accounts, but not for both.
+  - Same applies in opposite direction - in a multicurrency transaction operations on some curency rate must not be specified or specified it as 1.
+  - Rate may not be zero.
+  - Rate values may differ in each operation with exclusion: if some operation have no 'rate' field set or rate set to '1', all other operations on accounts with same currency must have same rate of 1 or no rate. You can mix operations with rate equal to 1 and operations with no rate on same currency.
+
+Multi currency support is implemented by checking, that all operations or all operations, excluding operations for some single currency, have a rate field. During transaction balance validation, amount of the
+operation will be multiplied to its rate and only after that it will be summarized. It is recommended to always fill 'rate' field, setting its value to 1 where currency conversion is not required, so currency operations with rate '1' will be used as base currency. It is also recommended to use system's default currency as a conversion base. 
+  
 ### List all Transactions [GET?filter={tags:[tag1,tag2]}&sort=timestamp,comment&page[number]=2&page[size]=10&timestamp[notEarlier]=value&timeStamp[notLater]=value]
 
 + Parameters
