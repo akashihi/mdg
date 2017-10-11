@@ -86,7 +86,7 @@ object TransactionService {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
     val tags = DBIO.sequence(tx.tags.map(TagDao.ensureIdByValue))
     val operations = tx.operations.map { x =>
-      Operation(-1, -1, x.account_id, x.amount)
+      Operation(-1, -1, x.account_id, x.amount, 1)
     }
     tags
       .flatMap { txTags =>
