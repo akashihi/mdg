@@ -67,7 +67,7 @@ object TransactionService {
     for {
       o <- TransactionDao
         .listOperations(tx.id.get)
-        .map(x => x.map(o => OperationDto(o.account_id, o.amount)))
+        .map(x => x.map(o => OperationDto(o.account_id, o.amount, o.rate.some)))
       t <- TransactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
     } yield
       TransactionDto(Some(tx.id.get),
@@ -86,7 +86,7 @@ object TransactionService {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
     val tags = DBIO.sequence(tx.tags.map(TagDao.ensureIdByValue))
     val operations = tx.operations.map { x =>
-      Operation(-1, -1, x.account_id, x.amount, 1)
+      Operation(-1, -1, x.account_id, x.amount, x.rate.getOrElse(1))
     }
     tags
       .flatMap { txTags =>
