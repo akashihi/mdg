@@ -53,8 +53,11 @@ object Validator {
     * @param tx list to process.
     * @return List of errors or tx object
     */
-  def validate(accounts: Seq[Account])(tx: TransactionDto): TransactionDTOValidation = {
-    val accountCurrency = Map(accounts.map { a => a.id.get -> a.currency_id}: _*)
+  def validate(accounts: Seq[Account])(
+      tx: TransactionDto): TransactionDTOValidation = {
+    val accountCurrency = Map(accounts.map { a =>
+      a.id.get -> a.currency_id
+    }: _*)
 
     def transactionBalanced(tx: TransactionDto): TransactionDTOValidation = {
       val ratedOps = tx.operations.map(o => o.amount * o.rate.getOrElse(1))
@@ -70,7 +73,8 @@ object Validator {
     }
 
     def transactionHaveRate(tx: TransactionDto): TransactionDTOValidation = {
-      val currencyRates = tx.operations.map(o => o.account_id -> o.rate)
+      val currencyRates = tx.operations
+        .map(o => o.account_id -> o.rate)
         .map(t => t.copy(_1 = accountCurrency(t._1)))
         .filter(t => t._2.isEmpty)
         .distinct
@@ -81,7 +85,8 @@ object Validator {
     }
 
     def transactioNoZeroRate(tx: TransactionDto): TransactionDTOValidation = {
-      val currencyRates = tx.operations.map(o => o.rate.getOrElse(1))
+      val currencyRates = tx.operations
+        .map(o => o.rate.getOrElse(1))
         .filter(_ == 0)
 
       if (currencyRates.nonEmpty) {
@@ -89,8 +94,10 @@ object Validator {
       } else { tx.success }
     }
 
-    def transactionWithoutDefaultRate(tx: TransactionDto): TransactionDTOValidation = {
-      val currencyRates = tx.operations.map(o => o.rate.getOrElse(1))
+    def transactionWithoutDefaultRate(
+        tx: TransactionDto): TransactionDTOValidation = {
+      val currencyRates = tx.operations
+        .map(o => o.rate.getOrElse(1))
         .filter(_ == 1)
 
       if (currencyRates.isEmpty) {
@@ -98,8 +105,10 @@ object Validator {
       } else { tx.success }
     }
 
-    def transactionWithDoubleDefaultRate(tx: TransactionDto): TransactionDTOValidation = {
-      val currencyRates = tx.operations.map(o => o.account_id -> o.rate.getOrElse(1))
+    def transactionWithDoubleDefaultRate(
+        tx: TransactionDto): TransactionDTOValidation = {
+      val currencyRates = tx.operations
+        .map(o => o.account_id -> o.rate.getOrElse(1))
         .map(t => t.copy(_1 = accountCurrency(t._1)))
         .filter(_._2 == 1)
         .map(_._1)
@@ -111,7 +120,9 @@ object Validator {
 
     }
 
-    (transactionNotEmpty(tx) |@| transactioNoZeroRate(tx) |@| transactionWithoutDefaultRate(tx) |@| transactionWithDoubleDefaultRate(tx) |@| transactionHaveRate(tx) |@| transactionBalanced(tx)) { case _ => tx }
+    (transactionNotEmpty(tx) |@| transactioNoZeroRate(tx) |@| transactionWithoutDefaultRate(
+      tx) |@| transactionWithDoubleDefaultRate(tx) |@| transactionHaveRate(tx) |@| transactionBalanced(
+      tx)) { case _ => tx }
   }
 
   /**

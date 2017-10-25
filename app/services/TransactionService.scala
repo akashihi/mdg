@@ -47,9 +47,9 @@ object TransactionService {
     * @param wrapper TransactionWrapperDto object.
     * @return Error XOR valid Transaction(DTO) object.
     */
-  def prepareTransactionDto(
-      id: Option[Long],
-      wrapper: Option[TransactionWrapperDto]): DBIO[\/[String, TransactionDto]] = {
+  def prepareTransactionDto(id: Option[Long],
+                            wrapper: Option[TransactionWrapperDto])
+    : DBIO[\/[String, TransactionDto]] = {
     AccountDao.listAll.map { accounts =>
       val validator = validate(accounts)(_)
       wrapper
@@ -71,7 +71,8 @@ object TransactionService {
     for {
       o <- TransactionDao
         .listOperations(tx.id.get)
-        .map(x => x.map(o => OperationDto(o.account_id, o.amount, o.rate.some)))
+        .map(x =>
+          x.map(o => OperationDto(o.account_id, o.amount, o.rate.some)))
       t <- TransactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
     } yield
       TransactionDto(Some(tx.id.get),
