@@ -53,7 +53,7 @@ object Validator {
     * @param tx list to process.
     * @return List of errors or tx object
     */
-  def validate(tx: TransactionDto): TransactionDTOValidation = {
+  def validate(accounts: Seq[Account])(tx: TransactionDto): TransactionDTOValidation = {
     def transactionBalanced(tx: TransactionDto): TransactionDTOValidation = {
       if (tx.operations.map(o => o.amount).sum != 0) {
         "TRANSACTION_NOT_BALANCED".failureNel

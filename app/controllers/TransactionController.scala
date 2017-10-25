@@ -67,7 +67,7 @@ class TransactionController @Inject()(
   def create = Action.async(parse.tolerantJson) { request =>
     val tx = TransactionService
       .prepareTransactionDto(None, parseDto(request.body))
-      .map(TransactionService.add)
+      .map(_.map(TransactionService.add))
       .transform
 
     val result = tx.run.flatMap(x => handleErrors(x)(createResult))
@@ -136,7 +136,7 @@ class TransactionController @Inject()(
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
     val tx = TransactionService.prepareTransactionDto(Some(id),
                                                       parseDto(request.body))
-    val result = tx match {
+    val result = tx.flatMap {
       case -\/(e) => makeErrorResult(e) //Fail fast
       case \/-(dto) =>
         TransactionService

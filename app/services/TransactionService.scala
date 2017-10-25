@@ -5,10 +5,11 @@ import java.time.LocalDate
 import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
-import dao.{TagDao, TransactionDao}
+import dao.{AccountDao, TagDao, TransactionDao}
 import models.{Account, Operation, Transaction}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
+import util.EitherD
 import util.EitherD._
 import util.Validator._
 
@@ -48,14 +49,17 @@ object TransactionService {
     */
   def prepareTransactionDto(
       id: Option[Long],
-      wrapper: Option[TransactionWrapperDto]): \/[String, TransactionDto] = {
-    wrapper
-      .fromOption("TRANSACTION_DATA_INVALID")
-      .map(_.data.attributes)
-      .map(_.copy(id = id))
-      .map { stripEmptyOps }
-      .map { validate }
-      .flatMap { validationToXor }
+      wrapper: Option[TransactionWrapperDto]): DBIO[\/[String, TransactionDto]] = {
+    AccountDao.listAll.map { accounts =>
+      val validator = validate(accounts)(_)
+      wrapper
+        .fromOption("TRANSACTION_DATA_INVALID")
+        .map(_.data.attributes)
+        .map(_.copy(id = id))
+        .map { stripEmptyOps }
+        .map { validator }
+        .flatMap { validationToXor }
+    }
   }
 
   /**
