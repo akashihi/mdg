@@ -54,6 +54,8 @@ object Validator {
     * @return List of errors or tx object
     */
   def validate(accounts: Seq[Account])(tx: TransactionDto): TransactionDTOValidation = {
+    val accountCurrency = Map(accounts.map { a => a.id.get -> a.currency_id}: _*)
+
     def transactionBalanced(tx: TransactionDto): TransactionDTOValidation = {
       if (tx.operations.map(o => o.amount).sum != 0) {
         "TRANSACTION_NOT_BALANCED".failureNel
@@ -63,6 +65,17 @@ object Validator {
     def transactionNotEmpty(tx: TransactionDto): TransactionDTOValidation = {
       if (!tx.operations.exists(o => o.amount != 0)) {
         "TRANSACTION_EMPTY".failureNel
+      } else { tx.success }
+    }
+
+    def transactionHaveRate(tx: TransactionDto): TransactionDTOValidation = {
+      val currencyRates = tx.operations.map(o => o.account_id -> o.rate)
+        .map(t => t.copy(_1 = accountCurrency(t._1)))
+        .filter(t => t._2.isEmpty)
+        .distinct
+
+      if (currencyRates.size > 1) {
+        "TRANSACTION_AMBIGUOUS_RATE".failureNel
       } else { tx.success }
     }
 
