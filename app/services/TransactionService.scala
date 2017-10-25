@@ -11,7 +11,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
 import util.EitherD
 import util.EitherD._
-import util.Validator._
+import validators.Validator._
 
 import scalaz._
 import Scalaz._
