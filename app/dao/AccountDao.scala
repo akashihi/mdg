@@ -14,6 +14,8 @@ object AccountDao {
       .map(_.id) into ((item, id) => item.copy(id = id)) += a
   }
 
+  def listAll: DBIO[Seq[Account]] = accounts.result
+
   def list(filter: AccountFilter): DBIO[Seq[Account]] = {
     accounts
       .filter { a =>
