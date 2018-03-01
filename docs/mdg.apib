@@ -27,7 +27,7 @@ A Error object has the following attributes:
 - title (string, required) - human readable summary of the error
 - detail (string, optional) - detailed description of the problem
 
-№ Group Settings
+# Group Settings
 
 Resources describing system configuration variables.
 
@@ -245,6 +245,7 @@ An Account object has the following attributes
 - currency_id: (integer, required) - account's currency id
 - name: (string, required) - Account name
 - balance: (decimal, readonly) - Account balance. Initial value could be set during account creation
+- primary_balance: (decimal, readonly) - Account balance in primary currency. Automatically converted from the 'balance' field by applying correspondent rate.
 - hidden: (boolean, optional) - Marks deleted accounts
 - favorite: (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
 - operational: (boolean, optional) - Marks account as operational. Applicable only to the 'asset' accounts
@@ -267,6 +268,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "currency_id": 840,
                 "name": "Current USD",
                 "balance": 100500,
+                "primary_balance": 100500,
                 "operational": true,
                 "favorite": true
             }
@@ -278,6 +280,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "account_type": "asset",
                 "currency_id": 978,
                 "name": "Savings EUR",
+                "primary_balance": 10100,
                 "balance": 9000
             }
         }
@@ -288,7 +291,8 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "account_type": "expense",
                 "currency_id": 978,
                 "name": "Household expenses",
-                "balance": 9000
+                "balance": 9000,
+                "primary_balance": 10100
             }
         }
         {
@@ -299,6 +303,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "currency_id": 978,
                 "name": "Rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -332,7 +337,8 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "account_type": "expense",
                 "currency_id": 978,
                 "name": "Rent",
-                "balance": 9000,
+                "balance": 0,
+                "primary_balance": 0,
                 "parent_id": 3
             }
         }
@@ -355,6 +361,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "currency_id": 978,
                 "name": "Rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -374,6 +381,7 @@ Only `hidden`, `name`, `favorite` and `operational` fields could be changed. Val
                 "currency_id": 978,
                 "name": "Montlhy rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -389,6 +397,7 @@ Only `hidden`, `name`, `favorite` and `operational` fields could be changed. Val
                 "currency_id": 978,
                 "name": "Montlhy rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -639,20 +648,20 @@ A budget object has the following attributes
 
 - term_beginning: (required, timestamp) - Budget is not effective before specified point in time
 - term_end: (required, timestamp) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
-- incoming_amount: (required, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled.
+- incoming_amount: (required, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
 - outgoing_amount: (required, json object, readonly) 
-  - expected: (required, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified.
-  - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution.
+  - expected: (required, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency.
+  - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
 - state: (required, json object, readonly)
   - income (required, json object, readonly)
-    - actual(required, decimal, readonly) - Actual income, received during budget validity period. Calculated as a sum of income account operations, happened during transaction validity period
-    - expected(required, decimal, readonly) - Income expected to be received during budget validity period. Calculated as a sum of expected values on budget entries related to income accounts
+    - actual(required, decimal, readonly) - Actual income, received during budget validity period. Calculated as a sum of income account operations, happened during transaction validity period. Exposed in primary currency.
+    - expected(required, decimal, readonly) - Income expected to be received during budget validity period. Calculated as a sum of expected values on budget entries related to income accounts. Exposed in primary currency.
   - expense (required, json object, readonly)
-    - actual(required, decimal, readonly) - Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period
-    - expected(required, decimal, readonly) - Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts    
+    - actual(required, decimal, readonly) - Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period. Exposed in primary currency.
+    - expected(required, decimal, readonly) - Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts. Exposed in primary currency.
   - change (required, json object, readonly)
-    - actual(required, decimal, readonly) - Actual change on expense accounts amounts, happened today. Calculated as a sum of expense account operations, happened today. For non-current account will be zero.
-    - expected(required, decimal, readonly) - Expected change on expense accounts amounts for today. Calculated as a sum of change values on budget entries related to expense accounts. For non-current account will be zero.    
+    - actual(required, decimal, readonly) - Actual change on expense accounts amounts, happened today. Calculated as a sum of expense account operations, happened today. For non-current account will be zero. Exposed in primary currency.
+    - expected(required, decimal, readonly) - Expected change on expense accounts amounts for today. Calculated as a sum of change values on budget entries related to expense accounts. For non-current account will be zero. Exposed in primary currency.
 
 ### Create a new budget [POST]
 
