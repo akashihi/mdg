@@ -16,6 +16,8 @@ import scalaz._
   */
 object SettingService {
 
+  val PrimaryCurrency = "currency.primary"
+
   val settingLoader = new CacheLoader[String, DBIO[\/[String, Setting]]] {
     override def load(key: String): DBIO[\/[String, Setting]] =
       SettingDao.findById(key).map(_.fromOption("SETTING_NOT_FOUND"))
@@ -46,7 +48,7 @@ object SettingService {
     val setting = haveCurrency.map(
       _ =>
         SettingDao
-          .findById("currency.primary")
+          .findById(PrimaryCurrency)
           .map(_.fromOption("SETTING_NOT_FOUND")))
 
     val savedSetting = setting
@@ -55,7 +57,7 @@ object SettingService {
       .map(s => s.copy(value = value.getOrElse(s.value)))
       .map(s => SettingDao.update(s))
 
-    settingsCache.invalidate("currency.primary")
+    settingsCache.invalidate(PrimaryCurrency)
 
     savedSetting
       .map(_.map(_.fromOption("SETTING_NOT_UPDATED")))
