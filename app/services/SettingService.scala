@@ -18,9 +18,9 @@ object SettingService {
 
   val PrimaryCurrency = "currency.primary"
 
-  val settingLoader = new CacheLoader[String, DBIO[\/[String, Setting]]] {
-    override def load(key: String): DBIO[\/[String, Setting]] =
-      SettingDao.findById(key).map(_.fromOption("SETTING_NOT_FOUND"))
+  val settingLoader = new CacheLoader[String, EitherD[String, Setting]] {
+    override def load(key: String): EitherD[String, Setting] =
+      EitherD(SettingDao.findById(key).map(_.fromOption("SETTING_NOT_FOUND")))
   }
   implicit val settingsCache = CacheBuilder.newBuilder().build(settingLoader)
 
@@ -35,7 +35,7 @@ object SettingService {
     * @param id Setting name
     * @return Setting XOR error
     */
-  def get(id: String): DBIO[\/[String, Setting]] = settingsCache.get(id)
+  def get(id: String): EitherD[String, Setting] = settingsCache.get(id)
 
   def setCurrencyPrimary(value: Option[String]): EitherD[String, Setting] = {
     val curOption = value

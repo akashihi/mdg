@@ -39,6 +39,7 @@ class SettingController @Inject()(
   def show(id: String) = Action.async {
     val result = SettingService
       .get(id)
+      .run
       .flatMap(x =>
         handleErrors(x) { x =>
           makeResult(x)(OK)
