@@ -1,9 +1,8 @@
 package controllers
 
 import javax.inject._
-
 import controllers.api.ResultMaker._
-import dao.AccountDao
+import controllers.dto.AccountDTO
 import dao.filters.AccountFilter
 import models.{Account, AccountType}
 import play.api.db.slick.DatabaseConfigProvider
@@ -32,7 +31,7 @@ class AccountController @Inject()(
     * @param acc account data
     * @return Wrapped to json data of created account.
     */
-  def createResult(acc: Account): Result =
+  def createResult(acc: AccountDTO): Result =
     makeResult(acc)(CREATED)
       .withHeaders("Location" -> s"/api/account/${acc.id}")
 
@@ -78,7 +77,7 @@ class AccountController @Inject()(
         Json.parse(x).validate[AccountFilter].asOpt
       }
       .getOrElse(AccountFilter(None, None, None))
-    val result = AccountDao.list(accountFilter).map(x => makeResult(x)(OK))
+    val result = AccountService.list(accountFilter).map(x => makeResult(x)(OK))
     db.run(result)
   }
 
@@ -91,6 +90,7 @@ class AccountController @Inject()(
   def show(id: Long) = Action.async {
     val result = AccountService
       .get(id)
+        .run
       .flatMap(x =>
         handleErrors(x) { x =>
           makeResult(x)(OK)
@@ -112,7 +112,7 @@ class AccountController @Inject()(
     val o = (request.body \ "data" \ "attributes" \ "operational")
       .asOpt[Boolean]
 
-    val result = AccountService.edit(id, n, o, f, h).flatMap { x =>
+    val result = AccountService.edit(id, n, o, f, h).run.flatMap { x =>
       handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }

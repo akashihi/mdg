@@ -7,7 +7,7 @@ CREATE TABLE SETTING (
   VALUE VARCHAR(255) NOT NULL
 );
 
-INSERT INTO SETTING VALUES ('currency.primary', '978');
+INSERT INTO SETTING VALUES ('currency.primary', '840');
 
 INSERT INTO ERROR VALUES('SETTING_NOT_FOUND', '404', 'Requested setting could not be found', 'We can not find specified setting in the database, check it''s name please.');
 INSERT INTO ERROR VALUES('SETTING_DATA_INVALID', '422', 'Setting value is invalid', 'Setting value is invalid an cannot be accepted.');
