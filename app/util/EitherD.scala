@@ -89,6 +89,11 @@ object EitherD {
     }
   }
 
+  implicit class EitherDFlatten1[L, R](val o: EitherD[L, DBIO[R]])
+      extends AnyVal {
+    def flatten: EitherD[L, R] = EitherD(o.run)
+  }
+
   /**
     * Converts different combination of \/ and DBIO to EitherD
     * @param o object to convert
