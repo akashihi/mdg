@@ -6,6 +6,7 @@ import dao.RateDao
 import models.Rate
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
+import util.EitherD
 
 /**
   * Rate operations service.
@@ -30,4 +31,13 @@ object RateService {
     RateDao
       .findByPair(ts, from, to)
       .map(_.getOrElse(Rate(Some(-1), ts, ts, from, to, 1)))
+
+  def getCurrentRateToPrimary(from: Long): EitherD[String, Rate] = {
+    SettingService.get(SettingService.PrimaryCurrency)
+    .map { pc =>
+      RateService.get(LocalDateTime.now(),
+        from,
+        pc.value.toLong)
+    } flatten
+  }
 }

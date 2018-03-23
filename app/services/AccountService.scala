@@ -19,14 +19,8 @@ import controllers.dto.AccountDTO
 object AccountService {
 
   def accountToDto(account: Account): EitherD[String, AccountDTO] = {
-    val primaryCurrency = SettingService.get(SettingService.PrimaryCurrency)
-    val rate = primaryCurrency.map { pc =>
-      RateService.get(LocalDateTime.now(),
-                      account.currency_id,
-                      pc.value.toLong)
-    }
-    val flatRate = rate.flatten
-    flatRate.map { r =>
+    RateService.getCurrentRateToPrimary(account.currency_id)
+      .map { r =>
       AccountDTO(
         account.id,
         account.account_type,
