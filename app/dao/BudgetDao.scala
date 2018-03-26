@@ -6,9 +6,8 @@ import java.time.LocalDate
 import dao.mappers.LocalDateMapper._
 import dao.BudgetEntryDao._
 import dao.tables._
-import models.Budget
+import models.{Budget, BudgetEntry}
 import slick.driver.PostgresDriver.api._
-
 import play.api.libs.concurrent.Execution.Implicits._
 
 object BudgetDao {
@@ -21,7 +20,7 @@ object BudgetDao {
     */
   def getIncomingAmount(term_beginning: LocalDate): DBIO[BigDecimal] = {
     val dt = Date.valueOf(term_beginning)
-    sql"select sum(o.amount) from operation as o, account as a, tx where o.account_id=a.id and o.tx_id=tx.id and a.account_type='asset' and a.hidden='f' and tx.ts < ${dt}"
+    sql"select sum(o.amount*coalesce(r.rate,1)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value::bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type='asset' and a.hidden='f' and tx.ts <  ${dt}"
       .as[Option[BigDecimal]]
       .map(_.head)
       .map(_.getOrElse(BigDecimal(0)))
@@ -34,14 +33,11 @@ object BudgetDao {
     * @return estimated remains delta.
     */
   def getExpectedChange(budget_id: Long,
-                        relatedAccounts: Seq[Long]): DBIO[BigDecimal] = {
+                        relatedAccounts: Seq[Long]): DBIO[Seq[BudgetEntry]] = {
     entries
       .filter(_.budget_id === budget_id)
       .filter(_.account_id inSet relatedAccounts)
-      .map(_.expected_amount)
-      .sum
       .result
-      .map(_.getOrElse(BigDecimal(0)))
   }
 
   /**

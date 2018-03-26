@@ -159,10 +159,13 @@ object TransactionService {
       accounts: Seq[Account]): DBIO[BigDecimal] = {
     TransactionDao.transactionsForPeriod(from, till).flatMap { txId =>
       val ops = TransactionDao.listOperations(txId)
-
-      ops.map(
-        _.filter(x => accounts.flatMap(_.id).contains(x.account_id))
-          .foldLeft(BigDecimal(0))(_ + _.amount))
+      ops.map(s => s.map({o =>
+        val account = accounts.find(_.id.get == o.account_id)
+        account.map(a => RateService.getCurrentRateToPrimary(a.currency_id).map(_.rate * o.amount).run.map(_.getOrElse(BigDecimal(0))))
+          .getOrElse(DBIO.successful(BigDecimal(0)))
+      }))
+        .flatMap(DBIO.sequence(_))
+        .map(_.foldLeft(BigDecimal(0))(_ + _))
     }
   }
 }

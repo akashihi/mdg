@@ -5,12 +5,11 @@ import java.time.LocalDate
 import controllers.dto.BudgetDTO
 import dao.filters.EmptyAccountFilter
 import dao.BudgetDao
-import models.{Account, Budget}
+import models.{Account, Budget, BudgetEntry}
 import slick.driver.PostgresDriver.api._
 import util.EitherD
 import util.EitherD._
 import validators.Validator._
-
 import scalaz._
 import Scalaz._
 import play.api.libs.concurrent.Execution.Implicits._
@@ -53,19 +52,42 @@ object BudgetService {
   }
 
   /**
+    * Gets an budget entry and returns it's expected_amount value in primary currency with current rate.
+    * @param entry Entry to process
+    * @param relatedAccounts Accounts sequence to extract currency ids
+    * @return Value of expected_amount exposed in primary currency
+    */
+  private def entryApplyPrimaryRateToExpected(entry: BudgetEntry, relatedAccounts: Seq[Account]): DBIO[BigDecimal] = {
+    val currency_id = relatedAccounts.filter(a => a.id.get == entry.account_id).map(_.currency_id).head
+    val rate = RateService.getCurrentRateToPrimary(currency_id).map( r => r.rate * entry.expected_amount)
+    rate.run.map(_.getOrElse(BigDecimal(0)))
+  }
+
+  /**
+    * Calculates expected change for specified account on specified budget in primary currency.
+    * @param budget_id Budget to work on
+    * @param relatedAccounts Accounts of interest
+    * @return Total of expected_changes on accounts of interest exposed in primary currency
+    */
+  private def getExpectedChangedInPrimaryRate(budget_id: Long, relatedAccounts: Seq[Account]): DBIO[BigDecimal] = {
+    BudgetDao.getExpectedChange(budget_id, relatedAccounts.flatMap(_.id))
+      .flatMap(s => DBIO.sequence(s.map({ entry => entryApplyPrimaryRateToExpected(entry, relatedAccounts)})))
+      .map(_.foldLeft(BigDecimal(0))(_ + _))
+  }
+
+  /**
     * Calculates budget estimated remains change.
     * @param b budget to estimate.
     * @return expected change, actual change.
     */
   def getExpectedChange(
       b: Budget,
-      incomeAccounts: Seq[Long],
-      expenseAccounts: Seq[Long]): DBIO[(BigDecimal, BigDecimal)] = {
+      incomeAccounts: Seq[Account],
+      expenseAccounts: Seq[Account]): DBIO[(BigDecimal, BigDecimal)] = {
     b.id
       .map(
         x =>
-          BudgetDao.getExpectedChange(x, incomeAccounts) zip BudgetDao
-            .getExpectedChange(x, expenseAccounts))
+          getExpectedChangedInPrimaryRate(x, incomeAccounts) zip getExpectedChangedInPrimaryRate(x, expenseAccounts))
       .getOrElse(DBIO.successful((BigDecimal(0), BigDecimal(0))))
   }
 
@@ -79,9 +101,7 @@ object BudgetService {
       val (incomeAccounts, _, expenseAccounts) = a
 
       BudgetDao.getIncomingAmount(b.term_beginning).flatMap { incoming =>
-        getExpectedChange(b,
-                          incomeAccounts.flatMap(_.id),
-                          expenseAccounts.flatMap(_.id)).flatMap {
+        getExpectedChange(b, incomeAccounts, expenseAccounts).flatMap {
           expectedChange =>
             val (expectedIncome, expectedExpense) = expectedChange
             getActualSpendings(b, incomeAccounts, expenseAccounts).flatMap {
