@@ -3,20 +3,38 @@ package controllers
 import java.time._
 import javax.inject.Inject
 
-import controllers.api.JsonWrapper._
+import controllers.api.ResultMaker._
 import models.Budget
 import play.api.mvc._
-import services.{BudgetService, ErrorService}
+import services.BudgetService
+import services.ErrorService._
+import play.api.db.slick.DatabaseConfigProvider
+import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
+import _root_.util.ApiOps._
+import controllers.dto.BudgetDTO
 
 /**
   * Budget REST resource controller.
   */
 class BudgetController @Inject()(
-    protected val budgetService: BudgetService,
-    errors: ErrorService)(implicit ec: ExecutionContext)
+    protected val dbConfigProvider: DatabaseConfigProvider)(
+    implicit ec: ExecutionContext)
     extends Controller {
+
+  val db = dbConfigProvider.get[JdbcProfile].db
+
+  /**
+    * Makes Play result form Budget(DTO)
+    *
+    * @param b budget data
+    * @return Wrapped to json data of created budget.
+    */
+  def createResult(b: BudgetDTO): Result =
+    makeResult(b)(CREATED)
+      .withHeaders("Location" -> s"/api/budget/${b.id.get}")
 
   /**
     * Adds new budget to the system.
@@ -34,18 +52,14 @@ class BudgetController @Inject()(
       e <- (request.body \ "data" \ "attributes" \ "term_end").asOpt[LocalDate]
     } yield Budget(Some(b), b, e)
 
-    budgetService.add(budget) match {
-      case Left(b) =>
-        b map { x =>
-          Created(wrapJson(x))
-            .withHeaders("Location" -> s"/api/budget/${x.id.get}")
-        }
-      case Right(msg) => errors.errorFor(msg)
-    }
+    val result =
+      BudgetService.add(budget).run.flatMap(x => handleErrors(x)(createResult))
+    db.run(result)
   }
 
   def index = Action.async {
-    budgetService.list().map(x => Ok(wrapJson(x)))
+    val result = BudgetService.list().map(x => makeResult(x)(OK))
+    db.run(result)
   }
 
   /**
@@ -54,10 +68,11 @@ class BudgetController @Inject()(
     * @return budget wrapper object.
     */
   def show(id: Long) = Action.async {
-    budgetService.find(id).flatMap {
-      case None => errors.errorFor("BUDGET_NOT_FOUND")
-      case Some(x) => Future(Ok(wrapJson(x)))
+    val result = BudgetService.get(id).flatMap {
+      case None => makeErrorResult("BUDGET_NOT_FOUND")
+      case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
+    db.run(result)
   }
 
   /**
@@ -67,9 +82,12 @@ class BudgetController @Inject()(
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    budgetService.delete(id).flatMap {
-      case Some(_) => Future(NoContent)
-      case None => errors.errorFor("BUDGET_NOT_FOUND")
-    }
+    val result = BudgetService
+      .delete(id)
+      .flatMap(x =>
+        handleErrors(x) { _ =>
+          NoContent
+      })
+    db.run(result)
   }
 }

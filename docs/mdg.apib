@@ -27,6 +27,80 @@ A Error object has the following attributes:
 - title (string, required) - human readable summary of the error
 - detail (string, optional) - detailed description of the problem
 
+# Group Settings
+
+Resources describing system configuration variables.
+
+## Settings collection [/setting]
+
+A Settings object has the following attributes:
+
+- value (required) - Value of a setting.
+
+Object id is a string, represetings setting name. At the moment following settings are supported:
+
+* currency.primary - ID of a system's primary currency. Value will be of numeric type.
+
+### List All Settings [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+  {
+    "data": [
+        {
+            "type": "setting",
+            "id": "currency.primary",
+            "attributes": {
+                "value": "840"
+            }
+        }
+    ]
+  }
+
+## Setting [/setting/{setting_id}]
+
++ parameters
+    + setting_id: (required, string) - Name of the configuration variable
+
+### View a setting [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "setting",
+            "id": "currency.primary",
+            "attributes": {
+                "value": "840"
+            }
+        }
+  }
+
+### Modify setting value [PUT]
+
+Settings may have different valid valid values for different names. Invalid named will not be accepted
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "setting",
+            "id": "currency.primary"
+            "attributes": {
+                "value": "978"
+            }
+        }
+  }
+
++ Response 202 (application/vnd.mdg+json)
+  + Body
+    {
+        "data": {
+            "type": "setting",
+            "id": "currency.primary"
+            "attributes": {
+                "value": "978"
+            }
+        }
+    }
+
 # Group Currencies
 
 Resources describing currencies
@@ -83,6 +157,78 @@ Object id should be currency ISO 4217 number-3 code
         }
   }
 
+# Group Rates
+
+Resources describing currency exchange rates
+
+## Currency collection [/rate/{timestamp}]
+
++ parameters
+    + timestamp: (required, timestamp) - Point in time in format YYYY-MM-DDTHH:MM:SS for which exchange rates should be valid
+
+A Rate object has the following attributes.
+
+- from (string, required) - Currency ISO 4217 number-3 code
+- to (string, required) - Currency ISO 4217 number-3 code
+- rate (decimal, required) - Exchange rate, telling you how much 'from' currency should be spent, to by a single 'to' currency unit
+- beginning (timestamp, required) - Timestamp of the rate validity period beginning
+- end (timestamp, required) - Timestamp of the rate validity period end
+
+### List All Rates [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+  {
+    "data": [
+        {
+            "type": "rate",
+            "id": 1,
+            "attributes": {
+                "from": 978,
+                "to": 840,
+                "rate": 1.19,
+                "beginning": "2017-09-18T17:00:00",
+                "end": "2017-09-18T18:00:00"
+            }
+        },
+        {
+            "type": "rate",
+            "id": 1,
+            "attributes": {
+                "from": 356,
+                "to": 348,
+                "rate": 4.0396,
+                "beginning": "2017-09-18T17:00:00",
+                "end": "2017-09-18T18:00:00"
+            }
+        },
+    ]
+  }
+
+## Rate [/rate/{timestamp}/{from}/{to}]
+
++ parameters
+    + timestamp: (required, timestamp) - Point in time in format YYYY-MM-DDTHH:MM:SS for which exchange rates should be valid
+    + from: ID of a "sell" currency in form of ISO 4217 number-3 code
+    + from: ID of a "buy" currency in form of ISO 4217 number-3 code
+    
+### View a rate detail [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "rate",
+            "id": 1,
+            "attributes": {
+                "from": 978,
+                "to": 840,
+                "rate": 1.19,
+                "beginning": "2017-09-18T17:00:00",
+                "end": "2017-09-18T18:00:00"
+            }
+        }
+        }
+  }
+
 # Group Accounts
 
 Resources related to account management
@@ -99,6 +245,7 @@ An Account object has the following attributes
 - currency_id: (integer, required) - account's currency id
 - name: (string, required) - Account name
 - balance: (decimal, readonly) - Account balance. Initial value could be set during account creation
+- primary_balance: (decimal, readonly) - Account balance in primary currency. Automatically converted from the 'balance' field by applying correspondent rate.
 - hidden: (boolean, optional) - Marks deleted accounts
 - favorite: (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
 - operational: (boolean, optional) - Marks account as operational. Applicable only to the 'asset' accounts
@@ -121,6 +268,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "currency_id": 840,
                 "name": "Current USD",
                 "balance": 100500,
+                "primary_balance": 100500,
                 "operational": true,
                 "favorite": true
             }
@@ -132,6 +280,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "account_type": "asset",
                 "currency_id": 978,
                 "name": "Savings EUR",
+                "primary_balance": 10100,
                 "balance": 9000
             }
         }
@@ -142,7 +291,8 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "account_type": "expense",
                 "currency_id": 978,
                 "name": "Household expenses",
-                "balance": 9000
+                "balance": 9000,
+                "primary_balance": 10100
             }
         }
         {
@@ -153,6 +303,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "currency_id": 978,
                 "name": "Rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -186,7 +337,8 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "account_type": "expense",
                 "currency_id": 978,
                 "name": "Rent",
-                "balance": 9000,
+                "balance": 0,
+                "primary_balance": 0,
                 "parent_id": 3
             }
         }
@@ -209,6 +361,7 @@ Accounts with attribute 'hidden' equal to 'true' are not shown by default.
                 "currency_id": 978,
                 "name": "Rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -228,6 +381,7 @@ Only `hidden`, `name`, `favorite` and `operational` fields could be changed. Val
                 "currency_id": 978,
                 "name": "Montlhy rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -243,6 +397,7 @@ Only `hidden`, `name`, `favorite` and `operational` fields could be changed. Val
                 "currency_id": 978,
                 "name": "Montlhy rent",
                 "balance": 9000,
+                "primary_balance": 10100,
                 "parent_id": 3
             }
         }
@@ -267,8 +422,21 @@ A Transaction object has the following attributes
 - tags[]: [string[], optional] - tags, associated with transaction
 - operations[] Each operation has the following attributes
   - account_id: (number, required) - Related account id
-  - amount: (decimap, required) - account balance change
+  - amount: (decimal, required) - account balance change
+  - rate: (decimal, optional) - exchange rate to be applied
 
+Transaction object have some limitations:
+  - Operations with amount equal to zero are ignored
+  - It should include at least on non-zero operation
+  - Sum of all operations must be zero (excluding ignored operations)
+  - Rate value may not be present only on accounts with same currency and only for one currency. So, if you have operations only on accounts with 'EUR' currency, 'rate' field can be omited. If you have several operations on 'EUR' accounts and 'USD' accounts, 'rate' field can be omited for all 'EUR' accounts or 'USD' accounts, but not for both.
+  - Same applies in opposite direction - in a multicurrency transaction operations on some curency rate must not be specified or specified it as 1.
+  - Rate may not be zero.
+  - Rate values may differ in each operation with exclusion: if some operation have no 'rate' field set or rate set to '1', all other operations on accounts with same currency must have same rate of 1 or no rate. You can mix operations with rate equal to 1 and operations with no rate on same currency.
+
+Multi currency support is implemented by checking, that all operations or all operations, excluding operations for some single currency, have a rate field. During transaction balance validation, amount of the
+operation will be multiplied to its rate and only after that it will be summarized. It is recommended to always fill 'rate' field, setting its value to 1 where currency conversion is not required, so currency operations with rate '1' will be used as base currency. It is also recommended to use system's default currency as a conversion base. 
+  
 ### List all Transactions [GET?filter={tags:[tag1,tag2]}&sort=timestamp,comment&page[number]=2&page[size]=10&timestamp[notEarlier]=value&timeStamp[notLater]=value]
 
 + Parameters
@@ -480,10 +648,20 @@ A budget object has the following attributes
 
 - term_beginning: (required, timestamp) - Budget is not effective before specified point in time
 - term_end: (required, timestamp) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
-- incoming_amount: (optional, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled.
-- outgoing_amount: (optional, json object, readonly) 
-  - expected: (optional, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified.
-  - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution.
+- incoming_amount: (required, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
+- outgoing_amount: (required, json object, readonly) 
+  - expected: (required, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency.
+  - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
+- state: (required, json object, readonly)
+  - income (required, json object, readonly)
+    - actual(required, decimal, readonly) - Actual income, received during budget validity period. Calculated as a sum of income account operations, happened during transaction validity period. Exposed in primary currency.
+    - expected(required, decimal, readonly) - Income expected to be received during budget validity period. Calculated as a sum of expected values on budget entries related to income accounts. Exposed in primary currency.
+  - expense (required, json object, readonly)
+    - actual(required, decimal, readonly) - Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period. Exposed in primary currency.
+    - expected(required, decimal, readonly) - Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts. Exposed in primary currency.
+  - change (required, json object, readonly)
+    - actual(required, decimal, readonly) - Actual change on expense accounts amounts, happened today. Calculated as a sum of expense account operations, happened today. For non-current account will be zero. Exposed in primary currency.
+    - expected(required, decimal, readonly) - Expected change on expense accounts amounts for today. Calculated as a sum of change values on budget entries related to expense accounts. For non-current account will be zero. Exposed in primary currency.
 
 ### Create a new budget [POST]
 

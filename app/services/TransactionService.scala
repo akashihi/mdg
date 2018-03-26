@@ -1,14 +1,17 @@
 package services
 
+import java.time.LocalDate
+
 import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
-import dao.{TagDao, TransactionDao}
-import models.{Operation, Transaction}
+import dao.{AccountDao, TagDao, TransactionDao}
+import models.{Account, Operation, Transaction}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
-
-import util.Validator._
+import util.EitherD
+import util.EitherD._
+import validators.Validator._
 
 import scalaz._
 import Scalaz._
@@ -41,25 +44,22 @@ object TransactionService {
     * Extracts Transaction (DTO) data from the
     * supplied wrapper and checks for data validity.
     * @param id Separately defined transaction id.
-    * @param wrapper TransactoinWrapperDto object.
+    * @param wrapper TransactionWrapperDto object.
     * @return Error XOR valid Transaction(DTO) object.
     */
-  def prepareTransactionDto(
-      id: Option[Long],
-      wrapper: Option[TransactionWrapperDto]): \/[String, TransactionDto] = {
-    val d = wrapper match {
-      case None => "TRANSACTION_DATA_INVALID".left
-      case Some(x) => x.right
+  def prepareTransactionDto(id: Option[Long],
+                            wrapper: Option[TransactionWrapperDto])
+    : DBIO[\/[String, TransactionDto]] = {
+    AccountDao.listAll.map { accounts =>
+      val validator = validate(accounts)(_)
+      wrapper
+        .fromOption("TRANSACTION_DATA_INVALID")
+        .map(_.data.attributes)
+        .map(_.copy(id = id))
+        .map { stripEmptyOps }
+        .map { validator }
+        .flatMap { validationToXor }
     }
-    d.map { x =>
-        x.data.attributes
-      }
-      .map { x =>
-        x.copy(id = id)
-      }
-      .map { stripEmptyOps }
-      .map { validate }
-      .flatMap { validationToXor }
   }
 
   /**
@@ -71,7 +71,8 @@ object TransactionService {
     for {
       o <- TransactionDao
         .listOperations(tx.id.get)
-        .map(x => x.map(o => OperationDto(o.account_id, o.amount)))
+        .map(x =>
+          x.map(o => OperationDto(o.account_id, o.amount, o.rate.some)))
       t <- TransactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
     } yield
       TransactionDto(Some(tx.id.get),
@@ -90,7 +91,7 @@ object TransactionService {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
     val tags = DBIO.sequence(tx.tags.map(TagDao.ensureIdByValue))
     val operations = tx.operations.map { x =>
-      Operation(-1, -1, x.account_id, x.amount)
+      Operation(-1, -1, x.account_id, x.amount, x.rate.getOrElse(1))
     }
     tags
       .flatMap { txTags =>
@@ -105,10 +106,14 @@ object TransactionService {
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
-           page: Option[Page]): DBIO[Seq[TransactionDto]] =
-    TransactionDao
+           page: Option[Page]): DBIO[(Seq[TransactionDto], Int)] = {
+    val list = TransactionDao
       .list(filter, sort, page)
       .flatMap(s => DBIO.sequence(s.map(t => txToDto(t))))
+    val count = TransactionDao.count(filter)
+
+    list zip count
+  }
 
   /**
     * Retrieves specific Transaction.
@@ -140,6 +145,27 @@ object TransactionService {
     TransactionDao.delete(id).map {
       case 1 => 1.right
       case _ => "TRANSACTION_NOT_FOUND".left
+    }
+  }
+
+  /**
+    * Calculates total of operations on specified accounts during specified period.
+    * @param from period first day.
+    * @param till period last day.
+    * @param accounts list of accounts to operate on.
+    * @return sum of all operation on specified account during specified period.
+    */
+  def getTotalsForDate(from: LocalDate, till: LocalDate)(
+      accounts: Seq[Account]): DBIO[BigDecimal] = {
+    TransactionDao.transactionsForPeriod(from, till).flatMap { txId =>
+      val ops = TransactionDao.listOperations(txId)
+      ops.map(s => s.map({o =>
+        val account = accounts.find(_.id.get == o.account_id)
+        account.map(a => RateService.getCurrentRateToPrimary(a.currency_id).map(_.rate * o.amount).run.map(_.getOrElse(BigDecimal(0))))
+          .getOrElse(DBIO.successful(BigDecimal(0)))
+      }))
+        .flatMap(DBIO.sequence(_))
+        .map(_.foldLeft(BigDecimal(0))(_ + _))
     }
   }
 }

@@ -6,34 +6,15 @@ import play.api.http.Status._
 import play.api.mvc.{Result, Results}
 import util.OptionConverters._
 
-trait ResultMakeable[T] {
-  def makeResult(x: Seq[T])(status: Int): Result
-
-  def makeResult(x: T)(status: Int): Result
-}
-
-object ResultMakeable {
-  implicit val makeIdentifiable = new ResultMakeable[IdentifiableObject] {
-    override def makeResult(x: IdentifiableObject)(status: Int): Result =
-      new Results.Status(status)(wrapJson(x))
-
-    override def makeResult(x: Seq[IdentifiableObject])(status: Int): Result =
-      new Results.Status(status)(wrapJson(x))
-  }
-  implicit val makeError = new ResultMakeable[Error] {
-    override def makeResult(x: Error)(status: Int): Result =
-      new Results.Status(status)(wrapJson(x))
-
-    override def makeResult(x: Seq[Error])(status: Int): Result =
-      makeResult(x.head)(status)
-  }
-}
-
 object ResultMaker {
-  def makeResult[T >: IdentifiableObject](x: T)(status: Int)(
-      implicit ev: ResultMakeable[T]): Result = ev.makeResult(x)(status)
-  def makeResult[T >: IdentifiableObject](x: Seq[T])(status: Int)(
-      implicit ev: ResultMakeable[T]): Result = ev.makeResult(x)(status)
-  def makeResult(x: Error)(implicit ev: ResultMakeable[Error]): Result =
-    ev.makeResult(x)(x.status.tryToInt().getOrElse(INTERNAL_SERVER_ERROR))
+  def makeResult[T](x: IdentifiableObject[T])(status: Int): Result =
+    new Results.Status(status)(wrapJson(x))
+  def makeResult[T](x: Seq[IdentifiableObject[T]])(status: Int): Result =
+    new Results.Status(status)(wrapJson(x))
+  def makeResult[T](x: Seq[IdentifiableObject[T]], count: Int)(
+      status: Int): Result =
+    new Results.Status(status)(wrapJson(x, Some(count)))
+  def makeResult(x: Error): Result =
+    new Results.Status(x.status.tryToInt.getOrElse(INTERNAL_SERVER_ERROR))(
+      wrapJson(x))
 }

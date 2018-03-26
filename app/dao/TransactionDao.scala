@@ -4,8 +4,8 @@ import java.time.LocalDate
 
 import dao.filters.TransactionFilter
 import dao.ordering.{Asc, Desc, Page, SortBy}
-import dao.tables.Transactions._
-import dao.tables.{Operations, TagMap, Tags, Transactions}
+import dao.mappers.LocalDateMapper._
+import dao.tables.{Operations, TagMap, Transactions}
 import models.{Operation, Transaction, TxTag}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.PostgresDriver.api._
@@ -16,8 +16,8 @@ import slick.driver.PostgresDriver.api._
 object TransactionDao {
   val transactions = TableQuery[Transactions]
   val operations = TableQuery[Operations]
-  val tags = TableQuery[Tags]
   val tagMaps = TableQuery[TagMap]
+  val tags = TagDao.tags
 
   /**
     * Filtering helper. Retrieves list of transactions ids,
@@ -33,7 +33,7 @@ object TransactionDao {
           .map(_.id)
           .result
           .flatMap(tag_ids => {
-            tagMaps.filter(_.tag_id inSet tag_ids).map(_.tx_id).result
+            tagMaps.filter(_.tag_id inSet tag_ids.flatten).map(_.tx_id).result
           })
       }
       .getOrElse(DBIO.successful(Seq.empty[Long]))
@@ -70,8 +70,43 @@ object TransactionDao {
           transactions returning transactions.map(_.id) forceInsert tx
       }
       _ <- operations ++= ops.map(x => x.copy(txId = txId))
-      _ <- tagMaps ++= txtags.map(x => (x.id, txId))
+      _ <- tagMaps ++= txtags.map(x => (x.id.get, txId))
     } yield tx.copy(id = Some(txId))).transactionally
+  }
+
+  /**
+    * Converts a Transaction filter specification to the Slick query definition.
+    * @param filter Filter to work on.
+    * @return Slick query, configured to match supplied filter.
+    */
+  private def makeCriteria(filter: TransactionFilter)
+    : DBIO[Query[Transactions, Transaction, Seq]] = {
+    val preActions = TransactionDao.tagTxFilter(filter.tag) zip TransactionDao
+      .accTxFilter(filter.account_id)
+
+    preActions.map(tx_id_s => {
+      val (tag_tx_s, acc_tx_s) = tx_id_s
+
+      //We need tag_tx_s and acc_tx_s lists
+      //to be applied conditionally, depending
+      //on presence of list contents
+
+      val tag_tx = Option(tag_tx_s).filter(_.nonEmpty)
+      val acc_tx = Option(acc_tx_s).filter(_.nonEmpty)
+
+      transactions.filter {
+        t =>
+          List(
+            filter.comment.map(t.comment.getOrElse("") === _),
+            filter.notEarlier.map(t.timestamp >= _),
+            filter.notLater.map(t.timestamp <= _),
+            tag_tx.map(t.id inSet _),
+            acc_tx.map(t.id inSet _)
+          ).collect({ case Some(x) => x })
+            .reduceLeftOption(_ && _)
+            .getOrElse(true: Rep[Boolean])
+      }
+    })
   }
 
   /**
@@ -86,32 +121,7 @@ object TransactionDao {
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page]): DBIO[Seq[Transaction]] = {
-    val preActions = TransactionDao.tagTxFilter(filter.tag) zip TransactionDao
-      .accTxFilter(filter.account_id)
-
-    val query = preActions.flatMap(tx_id_s => {
-      val (tag_tx_s, acc_tx_s) = tx_id_s
-
-      //We need tag_tx_s and acc_tx_s lists
-      //to be applied conditionally, depending
-      //on presence of list contents
-
-      val tag_tx = Option(tag_tx_s).filter(_.nonEmpty)
-      val acc_tx = Option(acc_tx_s).filter(_.nonEmpty)
-
-      val criteriaQuery = transactions.filter {
-        t =>
-          List(
-            filter.comment.map(t.comment.getOrElse("") === _),
-            filter.notEarlier.map(t.timestamp >= _),
-            filter.notLater.map(t.timestamp <= _),
-            tag_tx.map(t.id inSet _),
-            acc_tx.map(t.id inSet _)
-          ).collect({ case Some(x) => x })
-            .reduceLeftOption(_ && _)
-            .getOrElse(true: Rep[Boolean])
-      }
-
+    makeCriteria(filter).flatMap { criteriaQuery =>
       val sortedQuery =
         sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
           case SortBy("timestamp", Asc) =>
@@ -125,10 +135,17 @@ object TransactionDao {
       }
 
       pagedQuery.result
-    })
-
-    query
+    }
   }
+
+  /**
+    * Counts number of transactions, matching
+    * specified filter.
+    * @param filter Transaction filter description.
+    * @return Number pof matched transactions.
+    */
+  def count(filter: TransactionFilter): DBIO[Int] =
+    makeCriteria(filter).flatMap(_.length.result)
 
   /**
     * Retrieves transaction by it's id.
@@ -157,9 +174,16 @@ object TransactionDao {
     * @param txId transaction id to work on
     * @return list of transaction's operations
     */
-  def listOperations(txId: Long): DBIO[Seq[Operation]] = {
+  def listOperations(txId: Long): DBIO[Seq[Operation]] =
     operations.filter(_.tx_id === txId).result
-  }
+
+  /**
+    * Retrieves operations of specified transactions.
+    * @param txId transactions ids to work on
+    * @return list of operations
+    */
+  def listOperations(txId: Seq[Long]): DBIO[Seq[Operation]] =
+    operations.filter(_.tx_id inSet txId).result
 
   /**
     * Retrieves ids of transactions, logged between specified dates.

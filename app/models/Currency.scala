@@ -1,6 +1,6 @@
 package models
 
-import controllers.api.IdentifiableObject
+import controllers.api.IdentifiableObject.LongIdentifiable
 import play.api.libs.json._
 import controllers.api.OWritesOps._
 
@@ -8,7 +8,7 @@ import controllers.api.OWritesOps._
   * Currency entity
   */
 case class Currency(id: Option[Long], code: String, name: String)
-    extends IdentifiableObject
+    extends LongIdentifiable
 
 object Currency {
   implicit val currencyWrites = Json

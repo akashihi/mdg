@@ -1,6 +1,6 @@
 package models
 
-import controllers.api.IdentifiableObject
+import controllers.api.IdentifiableObject.LongIdentifiable
 import play.api.libs.json._
 
 /**
@@ -30,7 +30,7 @@ case class Account(id: Option[Long],
                    operational: Boolean,
                    favorite: Boolean,
                    hidden: Boolean)
-    extends IdentifiableObject
+    extends LongIdentifiable
 
 object AccountType {
   def apply(arg: String): AccountType = arg match {
@@ -40,20 +40,4 @@ object AccountType {
   }
 
   def unapply(arg: AccountType): Option[String] = Some(arg.value)
-}
-
-object Account {
-  implicit val accountWrites = new Writes[Account] {
-    override def writes(o: Account): JsValue = {
-      Json.obj(
-        "name" -> o.name,
-        "currency_id" -> o.currency_id,
-        "balance" -> o.balance,
-        "hidden" -> o.hidden,
-        "account_type" -> o.account_type.value,
-        "operational" -> o.operational,
-        "favorite" -> o.favorite
-      )
-    }
-  }
 }

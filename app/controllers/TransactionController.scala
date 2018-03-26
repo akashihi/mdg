@@ -7,12 +7,13 @@ import dao.filters.TransactionFilter
 import dao.filters.TransactionFilter._
 import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
-import api.ErrorHandler._
 import controllers.api.ResultMaker._
 import util.ApiOps._
+import util.EitherD._
 import play.api.libs.json._
 import play.api.mvc._
 import services.TransactionService
+import services.ErrorService._
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
@@ -66,8 +67,10 @@ class TransactionController @Inject()(
   def create = Action.async(parse.tolerantJson) { request =>
     val tx = TransactionService
       .prepareTransactionDto(None, parseDto(request.body))
-      .map(TransactionService.add)
-    val result = handleErrors(tx, createResult)
+      .map(_.map(TransactionService.add))
+      .transform
+
+    val result = tx.run.flatMap(x => handleErrors(x)(createResult))
     db.run(result)
   }
 
@@ -81,6 +84,9 @@ class TransactionController @Inject()(
             notLater: Option[String],
             pageSize: Option[Int],
             pageNumber: Option[Int]) = Action.async {
+    val filterComment = Lens.lensu[TransactionFilter, Option[String]](
+      (a, value) => a.copy(comment = value),
+      _.comment)
     val f = filter
       .flatMap { x =>
         Json.parse(x).validate[TransactionFilter].asOpt
@@ -88,7 +94,11 @@ class TransactionController @Inject()(
       .getOrElse(TransactionFilter())
       .copy(notEarlier = notEarlier, notLater = notLater)
 
-    val page = pageNumber.flatMap { no => Some(Page(no, pageSize.getOrElse(DEFAULT_PAGE_SIZE).toLong))}
+    val filterObj = filterComment.mod(_.filter(!_.trim.isEmpty), f)
+
+    val page = pageNumber.flatMap { no =>
+      Some(Page(no, pageSize.getOrElse(DEFAULT_PAGE_SIZE).toLong))
+    }
 
     val ordering: Seq[SortBy] = sort match {
       case Some(x) => x
@@ -96,7 +106,12 @@ class TransactionController @Inject()(
     }
 
     val result =
-      TransactionService.list(f, ordering, page).map(x => makeResult(x)(OK))
+      TransactionService
+        .list(filterObj, ordering, page)
+        .map { x =>
+          val (transactions, count) = x
+          makeResult(transactions, count)(OK)
+        }
     db.run(result)
   }
 
@@ -121,7 +136,7 @@ class TransactionController @Inject()(
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
     val tx = TransactionService.prepareTransactionDto(Some(id),
                                                       parseDto(request.body))
-    val result = tx match {
+    val result = tx.flatMap {
       case -\/(e) => makeErrorResult(e) //Fail fast
       case \/-(dto) =>
         TransactionService

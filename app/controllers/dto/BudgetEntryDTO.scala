@@ -1,6 +1,6 @@
 package controllers.dto
 
-import controllers.api.IdentifiableObject
+import controllers.api.IdentifiableObject.LongIdentifiable
 import play.api.libs.json._
 import controllers.api.OWritesOps._
 
@@ -14,7 +14,7 @@ case class BudgetEntryDTO(id: Option[Long],
                           expected_amount: BigDecimal,
                           actual_amount: BigDecimal,
                           change_amount: Option[BigDecimal])
-    extends IdentifiableObject
+    extends LongIdentifiable
 
 object BudgetEntryDTO {
   implicit val budgetEntryWrites = Json

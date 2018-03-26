@@ -27,5 +27,13 @@ GET     /budget/:budget_id/entry     controllers.BudgetEntryController.index(bud
 GET     /budget/:budget_id/entry/:id controllers.BudgetEntryController.show(id:Long, budget_id: Long)
 PUT     /budget/:budget_id/entry/:id controllers.BudgetEntryController.edit(id:Long, budget_id: Long)
 
+GET     /tag                         controllers.TagController.index
+
+GET     /setting                    controllers.SettingController.index
+GET     /setting/:id                controllers.SettingController.show(id: String)
+PUT     /setting/currency.primary   controllers.SettingController.editCurrencyPrimary
+
+GET     /rate/:ts                   controllers.RateController.index(ts: String)
+GET     /rate/:ts/:from/:to         controllers.RateController.show(ts: String, from: Long, to: Long)
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
