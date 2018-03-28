@@ -5,6 +5,7 @@ import Overview from './Overview';
 import BudgetViewer from '../containers/BudgetViewer'
 import AccountsViewer from '../containers/AccountsViewer'
 import TransactionsViewer from '../containers/TransactionsViewer'
+import SettingsViewer from '../containers/SettingsViewer'
 
 
 export default class MainTabs extends Component {
@@ -21,6 +22,9 @@ export default class MainTabs extends Component {
             </Tab>
             <Tab label='Accounts'>
                 <AccountsViewer/>
+            </Tab>
+            <Tab label='Settings'>
+              <SettingsViewer/>
             </Tab>
         </Tabs>)
     }

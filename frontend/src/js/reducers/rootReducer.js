@@ -6,6 +6,7 @@ import TransactionReducer from './TransactionReducer'
 import TransactionViewReducer from './TransactionViewReducer'
 import TagReducer from './TagReducer'
 import BudgetEntryReducer from './BudgetEntryReducer'
+import SettingReducer from './SettingReducer'
 
 export default combineReducers({
     budget: BudgetSelectorReducer,
@@ -14,5 +15,6 @@ export default combineReducers({
     transaction: TransactionReducer,
     transactionview: TransactionViewReducer,
     tag: TagReducer,
-    budgetentry: BudgetEntryReducer
+    budgetentry: BudgetEntryReducer,
+    setting: SettingReducer
 })

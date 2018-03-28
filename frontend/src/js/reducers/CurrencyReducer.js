@@ -5,13 +5,14 @@ const initialState = {
 };
 
 export default function currencyReducer(state = initialState, action) {
+    var index = 0;
     switch(action.type) {
         case GET_CURRENCYLIST_REQUEST:
-            return {...state, currencyList: Array(1000).fill('Currency loading')};
+            return {...state, currencyList: Array(1000).fill({id: index++, attributes: {name: 'Loading currencies'}})};
         case GET_CURRENCYLIST_SUCCESS:
             return {...state, currencyList: action.payload};
         case GET_CURRENCYLIST_FAILURE:
-            return {...state, currencyList: Array(1000).fill('Error loading currency')};
+            return {...state, currencyList: Array(1000).fill({id: index++, attributes: {name: 'Error loading currencies'}})};
         default:
             return state;
     }
