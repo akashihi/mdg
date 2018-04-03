@@ -6,10 +6,6 @@ import MenuItem from 'material-ui/MenuItem';
 import CircularProgress from 'material-ui/CircularProgress';
 
 export default class SettingsPage extends Component {
-  componentDidMount() {
-      this.props.actions.loadSettingList()
-  }
-
   onPrimaryCurrencyChange(value) {
       this.props.actions.setPrimaryCurrency(value);
   }

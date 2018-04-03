@@ -9,10 +9,6 @@ import CircularProgress from 'material-ui/CircularProgress';
 import Budget from './Budget'
 
 export default class BudgetList extends Component {
-    componentDidMount() {
-        this.props.actions.loadBudgetList()
-    }
-
     onCloseBudgetListClick() {
         this.props.actions.toggleBudgetSelector(false)
     }

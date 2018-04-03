@@ -11,10 +11,6 @@ import AccountEditor from '../containers/AccountEditor'
 import AccountList from './AccountList'
 
 export default class AccountsPage extends Component {
-    componentDidMount() {
-        this.props.currencyActions.loadCurrencyList()
-    }
-
     onHiddenAccountsClick() {
         this.props.actions.toggleHiddenAccounts(!this.props.hiddenVisible)
     }

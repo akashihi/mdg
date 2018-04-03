@@ -5,6 +5,13 @@ import FlatButton from 'material-ui/FlatButton';
 import { push } from 'react-router-redux'
 
 export default class TopBar extends Component {
+  componentDidMount() {
+    this.props.currencyActions.loadCurrencyList()
+    this.props.settingActions.loadSettingList()
+    this.props.budgetActions.loadBudgetList()
+    this.props.tagActions.loadTagList()
+  }
+
     setPath = function(path) {
       this.props.store.dispatch(push(path))
     }

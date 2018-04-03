@@ -12,9 +12,6 @@ import TransactionDeleteDialog from '../containers/TransactionDeleteDialog'
 import TransactionEditor from '../containers/TransactionEditor'
 
 export default class TransactionsPage extends Component {
-    componentDidMount() {
-        this.props.tagActions.loadTagList()
-    }
 
     makeAccountsList(props) {
         return props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts)
