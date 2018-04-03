@@ -9,9 +9,7 @@ export default function currencyReducer(state = initialState, action) {
         case GET_SETTING_REQUEST:
             return {...state, primaryCurrency: {id: -1, attributes: {value: 'Loading'}}};
         case GET_SETTING_SUCCESS:
-            console.log(action.payload)
             var primaryCurrencyObject = action.payload.filter((item) => item.id == 'currency.primary')[0]
-            console.log(primaryCurrencyObject)
             var primaryCurrency = Number(primaryCurrencyObject.attributes.value)
             return {...state, primaryCurrency: primaryCurrency};
         case GET_SETTING_FAILURE:
