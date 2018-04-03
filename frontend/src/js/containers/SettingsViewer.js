@@ -9,6 +9,8 @@ const mapStateToProps = (state) => {
     return {
         primaryCurrency: state.setting.primaryCurrency,
         currencies: state.currency.currencyList,
+        waiting: state.settingView.ui.settingListLoading,
+        error: state.settingView.ui.settingListError
     }
 };
 

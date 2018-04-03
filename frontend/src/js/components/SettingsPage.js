@@ -3,6 +3,7 @@ import {Card, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
+import CircularProgress from 'material-ui/CircularProgress';
 
 export default class SettingsPage extends Component {
   componentDidMount() {
@@ -15,7 +16,14 @@ export default class SettingsPage extends Component {
 
   render() {
     var props = this.props;
-    console.log(props)
+
+    if (props.waiting) {
+      return (<CircularProgress/>)
+    }
+    if (props.error) {
+      return (<h1>Unable to load settings</h1>)
+    }
+
     var currencies = props.currencies.map(function (item) {
         return (
             <MenuItem value={item.id} key={item.id} primaryText={item.attributes.name}/>
