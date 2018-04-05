@@ -9,6 +9,7 @@ import TagReducer from './TagReducer'
 import BudgetEntryReducer from './BudgetEntryReducer'
 import SettingReducer from './SettingReducer'
 import SettingViewReducer from './SettingViewReducer'
+import RateReducer from './RateReducer'
 
 export default combineReducers({
     router,
@@ -20,5 +21,6 @@ export default combineReducers({
     tag: TagReducer,
     budgetentry: BudgetEntryReducer,
     setting: SettingReducer,
-    settingView: SettingViewReducer
+    settingView: SettingViewReducer,
+    rate: RateReducer
 })

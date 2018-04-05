@@ -10,6 +10,7 @@ export default class TopBar extends Component {
     this.props.settingActions.loadSettingList()
     this.props.budgetActions.loadBudgetList()
     this.props.tagActions.loadTagList()
+    this.props.rateActions.loadRatesList()
   }
 
     setPath = function(path) {
