@@ -12,6 +12,7 @@ import AccountsViewer from '../containers/AccountsViewer'
 import TransactionsViewer from '../containers/TransactionsViewer'
 import SettingsViewer from '../containers/SettingsViewer'
 import RateViewer from '../containers/RateViewer'
+import TransactionEditor from '../containers/TransactionEditor'
 
 export default class Main extends Component {
     render() {
@@ -33,6 +34,7 @@ export default class Main extends Component {
               </Row>
             </Grid>
             <TransactionCreate/>
+            <TransactionEditor/>
             <Notification/>
         </div>
       )

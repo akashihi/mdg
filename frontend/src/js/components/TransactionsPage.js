@@ -9,7 +9,6 @@ import Transaction from './Transaction';
 import TransactionPager from '../containers/TransactionsPager'
 import TransactionFilter from '../containers/TransactionsFilter'
 import TransactionDeleteDialog from '../containers/TransactionDeleteDialog'
-import TransactionEditor from '../containers/TransactionEditor'
 
 export default class TransactionsPage extends Component {
 
@@ -39,7 +38,6 @@ export default class TransactionsPage extends Component {
 
         return <div>
             <TransactionDeleteDialog/>
-            <TransactionEditor/>
             <Card>
                 <CardHeader
                     title={title}

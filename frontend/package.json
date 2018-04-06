@@ -38,7 +38,7 @@
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
     "react-flexbox-grid": "^1.0.2",
-    "react-materialui-notifications": "^0.4.1",
+    "react-materialui-notifications": "^0.5.1",
     "react-redux": "^5.0.4",
     "react-router-redux": "^5.0.0-alpha.9",
     "react-tap-event-plugin": "^2.0.1",
