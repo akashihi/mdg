@@ -159,6 +159,54 @@ export default class TransactionDialog extends React.Component {
             props.actions.editTransactionChange(account);
         };
 
+        var checkRateDisabled = function(operation) {
+          // First check - if we only have ops in same currency, rate should be definitely disabled.
+          var accounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
+          var currencies = transaction.attributes.operations
+          .map((item) => item.account_id)
+          .filter((item) => !(item === undefined))
+          .map((acc_id) => accounts.filter((item) => item.id == acc_id)[0])
+          .map((item) => item.attributes.currency_id)
+          .filter((value, index, self) => self.indexOf(value) == index)
+          if (currencies.length <= 1) {
+            return true
+          }
+
+          //Second check - in case our currency is the primary currency
+          var myAccount = accounts.filter((item) => item.id == operation.account_id)
+          if (myAccount.length > 0) {
+            var myCurrency = myAccount[0].attributes.currency_id
+          }
+          if (myCurrency == props.primaryCurrency) {
+            return true
+          }
+
+          //Second check - in case we don't have any op with primary currency
+          //we should disable rate for all ops, having same currency as the first
+          //op of the transaction
+          var txCurrencies = transaction.attributes.operations
+          .map((item) => item.account_id)
+          .filter((item) => !(item === undefined))
+          .map((acc_id) => accounts.filter((item) => item.id == acc_id)[0])
+          .map((item) => item.attributes.currency_id)
+          .filter((value, index, self) => self.indexOf(value) == index)
+          .filter((item) => item == props.primaryCurrency)
+          if (txCurrencies.length == 0) {
+            //Ok, we do not have primary currency at the transaction
+            if (transaction.attributes.operations.length > 0) {
+              var firstAccount = accounts.filter((item) => item.id == transaction.attributes.operations[0].account_id)
+              if (firstAccount.length > 0) {
+                var firstCurrency = firstAccount[0].attributes.currency_id
+                if (firstCurrency == myCurrency) {
+                  return true
+                }
+              }
+            }
+          }
+
+          return false
+        }
+
         var tags = props.tags.map((item) => item.attributes.txtag);
 
         var ts = moment(attributes.timestamp);
@@ -184,11 +232,16 @@ export default class TransactionDialog extends React.Component {
             return (<GridTile key={index}>
                 <Grid fluid>
                     <Row>
-                        <Col xs={6} sm={6} md={6} lg={6}>
+                        <Col xs={4} sm={4} md={4} lg={4}>
                             <TextField hintText='Amount' errorText={errors.operations[index].amount} value={item.amount}
                                        onChange={(ev, value) => onAmountChange(index, value)}/>
                         </Col>
-                        <Col xs={6} sm={6} md={6} lg={6}>
+                        <Col xs={4} sm={4} md={4} lg={4}>
+                            <TextField hintText='Rate' errorText={errors.operations[index].rate} value={item.rate}
+                                       onChange={(ev, value) => onAmountChange(index, value)}
+                                       disabled={checkRateDisabled(item)}/>
+                        </Col>
+                        <Col xs={4} sm={4} md={4} lg={4}>
                             <SelectField hintText='Account' errorText={errors.operations[index].account_id}
                                          value={item.account_id}
                                          onChange={(ev, key, value) => onAccountChange(index, value)}>
