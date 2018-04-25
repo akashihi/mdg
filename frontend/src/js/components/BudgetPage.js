@@ -27,8 +27,11 @@ export default class BudgetPage extends Component {
                 account = props.expenseAccounts[accountIndex]
             }
         }
+
+        var currency = props.currencies.filter((item) => item.id == account.attributes.currency_id)[0]
+
         return (
-            <BudgetEntry entry={item} key={item.id} account={account}
+            <BudgetEntry entry={item} key={item.id} account={account} currency={currency}
                          saveBudgetEntryChange={props.entryActions.updateBudgetEntry}/>
         )
     }

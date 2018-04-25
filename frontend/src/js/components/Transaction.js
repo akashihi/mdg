@@ -55,7 +55,6 @@ export default class Transaction extends Component {
             return {amount: op.amount, rate: op.rate, type: opAccount.attributes.account_type}
         }).reduce((acc, item) => {
           var amount = item.amount
-          console.log(item)
           if (item.rate) {
             amount = amount * item.rate
           }
@@ -86,8 +85,7 @@ export default class Transaction extends Component {
               }
               acc[item.type] += amount; return acc
             }, {asset: 0, income: 0, expense: 0});
-
-        console.log(positives)
+        
         if (positives['asset'] != 0) {
             return {color: 'yellow', total: positives['asset'].toFixed(2)};
         }

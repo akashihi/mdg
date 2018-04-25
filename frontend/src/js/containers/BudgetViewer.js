@@ -14,7 +14,8 @@ const mapStateToProps = (state) => {
         error: state.budgetentry.ui.entryListError,
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
-        expenseAccounts: state.account.expenseAccountList
+        expenseAccounts: state.account.expenseAccountList,
+        currencies: state.currency.currencyList
     }
 };
 

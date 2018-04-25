@@ -45,10 +45,9 @@ export default class BudgetEntry extends Component {
         }
 
         var change=<p/>;
-        var editable = false;
-        if (props.account.attributes.account_type == 'expense' && attr.change_amount) {
+        var editable = props.account.attributes.account_type == 'expense'
+        if (editable && attr.change_amount) {
             change = <p>{attr.change_amount} allowed</p>;
-            editable = true;
         }
 
         return (
@@ -57,7 +56,7 @@ export default class BudgetEntry extends Component {
                     <Grid fluid>
                         <Row>
                             <Col xs={6} sm={6} md={3} lg={3}>
-                                <p>{props.account.attributes.name}</p>
+                                <p>{props.account.attributes.name}&nbsp;({props.currency.attributes.name})</p>
                             </Col>
                             <Col xs={6} sm={6} md={3} lg={3}>
                                 {change}
@@ -66,7 +65,7 @@ export default class BudgetEntry extends Component {
                                 <CircularProgress mode='determinate' size={20} value={progress}/>
                             </Col>
                             <Col xs={4} sm={4} md={2} lg={2}>
-                                <TextField defaultValue={attr.expected_amount} onBlur={::this.onExpectedApply} onChange={::this.onExpectedEdit}/>
+                                <TextField id={'budgetentry'+this.entry.id} defaultValue={attr.expected_amount} onBlur={::this.onExpectedApply} onChange={::this.onExpectedEdit}/>
                             </Col>
                             <Col xs={6} sm={6} md={3} lg={3}>
                                 <p>{attr.actual_amount}</p>
