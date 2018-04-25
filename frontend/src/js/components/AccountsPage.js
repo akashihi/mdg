@@ -45,6 +45,8 @@ export default class AccountsPage extends Component {
             hiddenButton = <FlatButton label='Show hidden accounts' onClick={this.onHiddenAccountsClick.bind(this)}/>
         }
 
+        var primaryCurrencyName = props.currencies.filter((item) => item.id == props.primaryCurrency).map((item) => item.attributes.name)[0]
+
         return (
             <div>
                 <AccountEditor/>
@@ -53,13 +55,13 @@ export default class AccountsPage extends Component {
                         <Grid fluid>
                             <Row>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <p>Total: {props.totals.total}</p>
+                                    <p>Total: {props.totals.total} {primaryCurrencyName}</p>
                                 </Col>
                                 <Col xs={6} sm={6} md={4} lg={4}>
-                                    <p>Favorite: {props.totals.favorite}</p>
+                                    <p>Favorite: {props.totals.favorite} {primaryCurrencyName}</p>
                                 </Col>
                                 <Col xs={6} sm={6} md={4} lg={4}>
-                                    <p>Operational: {props.totals.operational}</p>
+                                    <p>Operational: {props.totals.operational} {primaryCurrencyName}</p>
                                 </Col>
                             </Row>
                             <Row>

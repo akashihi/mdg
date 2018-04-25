@@ -15,7 +15,8 @@ const mapStateToProps = (state) => {
         hiddenVisible: state.account.ui.hiddenAccountsVisible,
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
-        expenseAccounts: state.account.expenseAccountList
+        expenseAccounts: state.account.expenseAccountList,
+        primaryCurrency: state.setting.primaryCurrency
     }
 };
 
