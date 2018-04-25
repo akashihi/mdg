@@ -74,9 +74,9 @@ export default class Transaction extends Component {
             return {color: 'red', total: summary['expense'].toFixed(2)};
         }
 
-        var positives = tx.attributes.operations.map((item) => {
-            var opAccount = accounts.filter((item) => item.id == item.account_id)[0];
-            return {amount: item.amount, rate: item.rate, type: opAccount.attributes.account_type}
+        var positives = tx.attributes.operations.map((op) => {
+            var opAccount = accounts.filter((item) => item.id == op.account_id)[0];
+            return {amount: op.amount, rate: op.rate, type: opAccount.attributes.account_type}
         }).filter((item) => item.amount > 0)
             .reduce((acc, item) => {
               var amount = item.amount
@@ -85,7 +85,7 @@ export default class Transaction extends Component {
               }
               acc[item.type] += amount; return acc
             }, {asset: 0, income: 0, expense: 0});
-        
+
         if (positives['asset'] != 0) {
             return {color: 'yellow', total: positives['asset'].toFixed(2)};
         }
