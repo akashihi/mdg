@@ -15,8 +15,9 @@ class TransactionValidator(accounts: Seq[Account]) {
   }: _*)
 
   def transactionBalanced(tx: TransactionDto): TransactionDTOValidation = {
-    val ratedOps = tx.operations.map(o => o.amount * o.rate.getOrElse(1))
-    if (ratedOps.sum != 0) {
+    val haveRates = tx.operations.map(_.rate).exists(_.isDefined)
+    val ratedOps = tx.operations.map(o => o.amount * o.rate.getOrElse(1)).sum
+    if ((ratedOps != 0 && !haveRates) || !(-1 < ratedOps && ratedOps < 1)) {
       "TRANSACTION_NOT_BALANCED".failureNel
     } else { tx.success }
   }

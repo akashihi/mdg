@@ -210,7 +210,7 @@ A Rate object has the following attributes.
     + timestamp: (required, timestamp) - Point in time in format YYYY-MM-DDTHH:MM:SS for which exchange rates should be valid
     + from: ID of a "sell" currency in form of ISO 4217 number-3 code
     + from: ID of a "buy" currency in form of ISO 4217 number-3 code
-    
+
 ### View a rate detail [GET]
 
 + Respone 200 (application/vnd.mdg+json)
@@ -255,7 +255,7 @@ An Account object has the following attributes
 Accounts with attribute 'hidden' equal to 'true' are not shown by default.
 
 + Parameters
-  + filter: (optional, json object) - dictionary of fields and their values, to be applied as a filter to accounts list.  
+  + filter: (optional, json object) - dictionary of fields and their values, to be applied as a filter to accounts list.
 
 + Response 200 (application/vnd.mdg+json)
   {
@@ -435,8 +435,8 @@ Transaction object have some limitations:
   - Rate values may differ in each operation with exclusion: if some operation have no 'rate' field set or rate set to '1', all other operations on accounts with same currency must have same rate of 1 or no rate. You can mix operations with rate equal to 1 and operations with no rate on same currency.
 
 Multi currency support is implemented by checking, that all operations or all operations, excluding operations for some single currency, have a rate field. During transaction balance validation, amount of the
-operation will be multiplied to its rate and only after that it will be summarized. It is recommended to always fill 'rate' field, setting its value to 1 where currency conversion is not required, so currency operations with rate '1' will be used as base currency. It is also recommended to use system's default currency as a conversion base. 
-  
+operation will be multiplied to its rate and only after that it will be summarized. It is recommended to always fill 'rate' field, setting its value to 1 where currency conversion is not required, so currency operations with rate '1' will be used as base currency. It is also recommended to use system's default currency as a conversion base.
+
 ### List all Transactions [GET?filter={tags:[tag1,tag2]}&sort=timestamp,comment&page[number]=2&page[size]=10&timestamp[notEarlier]=value&timeStamp[notLater]=value]
 
 + Parameters
@@ -637,7 +637,7 @@ operation will be multiplied to its rate and only after that it will be summariz
 ### Delete an transaction [DELETE]
 
 + Response 204
- 
+
 # Group Budget
 
 Resources related to budget management
@@ -649,7 +649,7 @@ A budget object has the following attributes
 - term_beginning: (required, timestamp) - Budget is not effective before specified point in time
 - term_end: (required, timestamp) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
 - incoming_amount: (required, decimal, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
-- outgoing_amount: (required, json object, readonly) 
+- outgoing_amount: (required, json object, readonly)
   - expected: (required, decimal, readonly) - Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency.
   - actual - Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
 - state: (required, json object, readonly)
@@ -755,9 +755,9 @@ A BudgetEntry object has the following attributes
   - Default: `True`
 - proration: (optional, boolean) - affects of 'change_amount' calculation. Only valid when `even_distribution` is `True`
   - Default: `True`
-- expected_amount (required, decimal) - your expected change on account_id amount during Budget effective period. 
+- expected_amount (required, decimal) - your expected change on account_id amount during Budget effective period.
 - actual_amount (required, decimal, readonly) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
-- change_amount (optional, decimal, readonly) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `True` it will recalculate with each submited budget related transaction as `(expected_amount-actual_amount)/number of days *left* in Budget term`, negative value will be cut to zero. If `BudgetEntry.proration` is set to False it will recalculate with each submited budget related transaction as 
+- change_amount (optional, decimal, readonly) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `True` it will recalculate with each submited budget related transaction as `(expected_amount-actual_amount)/number of days *left* in Budget term`, negative value will be cut to zero. If `BudgetEntry.proration` is set to False it will recalculate with each submited budget related transaction as
 `expected_amount-actual_amount-(expected_amount/number of days in Budget term)*number of days *left* in Budget term`, negative value will be cut to zero.
 
 BudgetEntry lifecycle is managed automatically. It will be created with budget and deleted with budget. During creation of new non-"asset" account, corresponding budget entries should be automatically provided to all existing budgets.
