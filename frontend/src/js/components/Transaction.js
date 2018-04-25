@@ -52,37 +52,52 @@ export default class Transaction extends Component {
 
         var summary = tx.attributes.operations.map((op) => {
             var opAccount = accounts.filter((item) => item.id == op.account_id)[0];
-            return {amount: op.amount, type: opAccount.attributes.account_type}
-        }).reduce((acc, item) => {acc[item.type] += item.amount; return acc}, {asset: 0, income: 0, expense: 0});
+            return {amount: op.amount, rate: op.rate, type: opAccount.attributes.account_type}
+        }).reduce((acc, item) => {
+          var amount = item.amount
+          console.log(item)
+          if (item.rate) {
+            amount = amount * item.rate
+          }
+          acc[item.type] += amount;
+          return acc
+        }, {asset: 0, income: 0, expense: 0});
 
         if (summary['asset'] > 0 && (summary['income'] != 0 || summary['expense'] != 0)) {
-            return {color: 'green', total: summary['asset']};
+            return {color: 'green', total: summary['asset'].toFixed(2)};
         }
 
         if (summary['asset'] < 0) {
-            return {color: 'red', total: summary['asset']};
+            return {color: 'red', total: summary['asset'].toFixed(2)};
         }
 
         if (summary['asset'] == 0 && summary['expense'] > 0) {
-            return {color: 'red', total: summary['expense']};
+            return {color: 'red', total: summary['expense'].toFixed(2)};
         }
 
         var positives = tx.attributes.operations.map((item) => {
             var opAccount = accounts.filter((item) => item.id == item.account_id)[0];
-            return {amount: item.amount, type: opAccount.attributes.account_type}
+            return {amount: item.amount, rate: item.rate, type: opAccount.attributes.account_type}
         }).filter((item) => item.amount > 0)
-            .reduce((acc, item) => {acc[item.type] += item.amount; return acc}, {asset: 0, income: 0, expense: 0});
+            .reduce((acc, item) => {
+              var amount = item.amount
+              if (item.rate) {
+                amount = amount * item.rate
+              }
+              acc[item.type] += amount; return acc
+            }, {asset: 0, income: 0, expense: 0});
 
+        console.log(positives)
         if (positives['asset'] != 0) {
-            return {color: 'yellow', total: positives['asset']};
+            return {color: 'yellow', total: positives['asset'].toFixed(2)};
         }
 
         if (positives['income'] != 0) {
-            return {color: 'yellow', total: positives['income']};
+            return {color: 'yellow', total: positives['income'].toFixed(2)};
         }
 
         if (positives['income'] != 0) {
-            return {color: 'yellow', total: positives['income']};
+            return {color: 'yellow', total: positives['income'].toFixed(2)};
         }
 
         return {color: 'black', total: 0}

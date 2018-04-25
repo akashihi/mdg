@@ -38,6 +38,8 @@ function validateTransactionForm(tx) {
     var errors = {};
     var operationErrors = [];
 
+    var easeForMultiCurrency = false;
+
     var valid = true;
 
     attributes.operations.forEach((item) => {
@@ -64,13 +66,14 @@ function validateTransactionForm(tx) {
         valid = false;
     }
     var sum = ops.reduce((acc, item) => {
-      var amount = parseInt(item.amount)
+      var amount = parseFloat(item.amount)
       if (item.rate) {
-        amount = amount * parseInt(item.rate)
+        easeForMultiCurrency = true
+        amount = amount * parseFloat(item.rate)
       }
       return acc+amount
     }, 0);
-    if (sum != 0) {
+    if ( !(-1 < sum && sum < 1) || ( sum!= 0 && !easeForMultiCurrency)) {
         errors.transaction = 'Transaction not balanced';
         valid = false;
     }
