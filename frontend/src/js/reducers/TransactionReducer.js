@@ -63,7 +63,13 @@ function validateTransactionForm(tx) {
         errors.transaction = 'Empty transaction';
         valid = false;
     }
-    var sum = ops.reduce((acc, item) => acc+parseInt(item.amount), 0);
+    var sum = ops.reduce((acc, item) => {
+      var amount = parseInt(item.amount)
+      if (item.rate) {
+        amount = amount * parseInt(item.rate)
+      }
+      return acc+amount
+    }, 0);
     if (sum != 0) {
         errors.transaction = 'Transaction not balanced';
         valid = false;

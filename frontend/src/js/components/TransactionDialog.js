@@ -152,6 +152,11 @@ export default class TransactionDialog extends React.Component {
             props.actions.editTransactionChange(account);
         };
 
+        var onRateChange = function (index, value) {
+            attributes.operations[index].rate = value;
+            var account = {...transaction, attributes: attributes};
+            props.actions.editTransactionChange(account);
+        };
 
         var onAccountChange = function (index, value) {
             attributes.operations[index].account_id = value;
@@ -181,7 +186,7 @@ export default class TransactionDialog extends React.Component {
             return true
           }
 
-          //Second check - in case we don't have any op with primary currency
+          //Third check - in case we don't have any op with primary currency
           //we should disable rate for all ops, having same currency as the first
           //op of the transaction
           var txCurrencies = transaction.attributes.operations
@@ -238,7 +243,7 @@ export default class TransactionDialog extends React.Component {
                         </Col>
                         <Col xs={4} sm={4} md={4} lg={4}>
                             <TextField hintText='Rate' errorText={errors.operations[index].rate} value={item.rate}
-                                       onChange={(ev, value) => onAmountChange(index, value)}
+                                       onChange={(ev, value) => onRateChange(index, value)}
                                        disabled={checkRateDisabled(item)}/>
                         </Col>
                         <Col xs={4} sm={4} md={4} lg={4}>
