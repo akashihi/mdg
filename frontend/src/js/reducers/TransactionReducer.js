@@ -60,7 +60,7 @@ function validateTransactionForm(tx) {
     errors.operations = operationErrors;
 
 
-    var ops = attributes.operations.filter((item) => parseInt(item.amount) !=0);
+    var ops = attributes.operations.filter((item) => parseFloat(item.amount) !=0);
     if (ops.length == 0 ) {
         errors.transaction = 'Empty transaction';
         valid = false;
@@ -72,7 +72,7 @@ function validateTransactionForm(tx) {
         amount = amount * parseFloat(item.rate)
       }
       return acc+amount
-    }, 0);
+    }, 0);    
     if ( !(-1 < sum && sum < 1) || ( sum!= 0 && !easeForMultiCurrency)) {
         errors.transaction = 'Transaction not balanced';
         valid = false;
