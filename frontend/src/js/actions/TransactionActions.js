@@ -3,6 +3,8 @@ import moment from 'moment';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
+import {loadAccountList} from './AccountViewerActions'
+
 import {
     GET_TRANSACTIONLIST_REQUEST,
     GET_TRANSACTIONLIST_SUCCESS,
@@ -229,6 +231,7 @@ export function deleteTransaction(tx) {
             })
             .then(parseJSON)
             .then(checkApiError)
+            .then(()=>dispatch(loadAccountList())) //Reloading accounts will trigger transactions reload
             .catch(function (response) {
                 dispatch({
                     type: DELETE_TRANSACTION_FAILURE,
@@ -302,7 +305,7 @@ export function updateTransaction(tx) {
         })
             .then(parseJSON)
             .then(checkApiError)
-            .then(()=>dispatch(loadTransactionList()))
+            .then(()=>dispatch(loadAccountList())) //Reloading accounts will trigger transactions reload
             .catch(()=>dispatch(loadTransactionList()))
     }
 }

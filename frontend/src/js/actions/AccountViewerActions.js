@@ -13,7 +13,7 @@ import {
     ACCOUNT_DIALOG_CHANGE
 } from '../constants/Account'
 
-export function loadAccountList() {
+export function loadAccountList() {    
     return (dispatch, getState) => {
         dispatch({
             type: GET_ACCOUNTLIST_REQUEST,
