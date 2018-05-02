@@ -4,6 +4,7 @@ import moment from 'moment';
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
 import {loadAccountList} from './AccountViewerActions'
+import {loadBudgetInfoById} from './BudgetEntryActions';
 
 import {
     GET_TRANSACTIONLIST_REQUEST,
@@ -283,11 +284,14 @@ export function editTransactionSave() {
 }
 
 export function updateTransaction(tx) {
-    return (dispatch) => {
+    return (dispatch, getState) => {
         dispatch({
             type: GET_TRANSACTIONLIST_REQUEST,
             payload: true
         });
+
+        var state=getState();
+        var selectedBudgetId = state.budgetentry.currentBudget.id;
 
         var url = '/api/transaction';
         var method = 'POST';
@@ -306,6 +310,7 @@ export function updateTransaction(tx) {
             .then(parseJSON)
             .then(checkApiError)
             .then(()=>dispatch(loadAccountList())) //Reloading accounts will trigger transactions reload
+            .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetInfoById(selectedBudgetId))}})
             .catch(()=>dispatch(loadTransactionList()))
     }
 }
