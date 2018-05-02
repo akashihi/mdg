@@ -81,9 +81,9 @@ export default function accountViewReducer(state = initialState, action) {
             var expenseList = action.payload.filter((item) => item.attributes.account_type == 'expense');
             ui = {...ui, accountListLoading: false, accountListError: false};
             var totals = {
-                total: assetList.reduce((prev, item) => prev + item.attributes.primary_balance, 0),
-                favorite: assetList.filter((item) => item.attributes.favorite).reduce((prev, item) => prev + item.attributes.primary_balance, 0),
-                operational: assetList.filter((item) => item.attributes.operational).reduce((prev, item) => prev + item.attributes.primary_balance, 0)
+                total: assetList.reduce((prev, item) => prev + item.attributes.primary_balance*100, 0)/100,
+                favorite: assetList.filter((item) => item.attributes.favorite).reduce((prev, item) => prev + item.attributes.primary_balance*100, 0)/100,
+                operational: assetList.filter((item) => item.attributes.operational).reduce((prev, item) => prev + item.attributes.primary_balance*100, 0)/100
             };
             return {
                 ...state,
