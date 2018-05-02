@@ -2,6 +2,7 @@ import jQuery from 'jquery';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 import {loadTransactionList} from './TransactionActions';
+import {loadBudgetEntryList} from './BudgetEntryActions';
 
 import {
     GET_ACCOUNTLIST_REQUEST,
@@ -13,7 +14,7 @@ import {
     ACCOUNT_DIALOG_CHANGE
 } from '../constants/Account'
 
-export function loadAccountList() {    
+export function loadAccountList() {
     return (dispatch, getState) => {
         dispatch({
             type: GET_ACCOUNTLIST_REQUEST,
@@ -60,11 +61,14 @@ export function toggleHiddenAccounts(visible) {
 }
 
 export function updateAccount(account) {
-    return (dispatch) => {
+    return (dispatch, getState) => {
         dispatch({
             type: GET_ACCOUNTLIST_REQUEST,
             payload: true
         });
+
+        var state=getState();
+        var selectedBudgetId = state.budgetentry.currentBudget.id;
 
         var url = '/api/account';
         var method = 'POST';
@@ -83,6 +87,7 @@ export function updateAccount(account) {
             .then(parseJSON)
             .then(checkApiError)
             .then(()=>dispatch(loadAccountList()))
+            .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId))}})
             .catch(()=>dispatch(loadAccountList()))
     }
 }
