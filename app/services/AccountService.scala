@@ -1,6 +1,6 @@
 package services
 
-import java.time.LocalDateTime
+import BigDecimal.RoundingMode.HALF_EVEN
 
 import dao.AccountDao
 import dao.filters.AccountFilter
@@ -20,14 +20,16 @@ object AccountService {
 
   def accountToDto(account: Account): EitherD[String, AccountDTO] = {
     RateService.getCurrentRateToPrimary(account.currency_id)
-      .map { r =>
+        .map(_.rate * account.balance)
+        .map(_.setScale(2, HALF_EVEN))
+        .map { primary_balance =>
       AccountDTO(
         account.id,
         account.account_type,
         account.currency_id,
         account.name,
         account.balance,
-        account.balance * r.rate,
+        primary_balance,
         account.operational,
         account.favorite,
         account.hidden
