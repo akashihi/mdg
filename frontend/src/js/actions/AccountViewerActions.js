@@ -93,13 +93,17 @@ export function updateAccount(account) {
 }
 
 export function createAccount() {
-    return {
-        type: ACCOUNT_DIALOG_OPEN,
-        payload: {
-            full: true,
-            account: { attributes: {balance: 0} }
-        }
-    }
+  return(dispatch, getState) => {
+    var state = getState();
+
+    dispatch({
+      type: ACCOUNT_DIALOG_OPEN,
+      payload: {
+        full: true,
+        account: { attributes: {balance: 0, currency_id: state.setting.primaryCurrency} }
+      }
+    })
+  }
 }
 
 export function editAccount(account) {
