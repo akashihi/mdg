@@ -6,35 +6,23 @@ packageName in Universal := "mdg"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.6"
 
 libraryDependencies += filters
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
-libraryDependencies += "com.typesafe.play" %% "play-slick" % "2.0.2"
-libraryDependencies += "org.postgresql" % "postgresql" % "9.4.1212.jre7"
+libraryDependencies += "com.typesafe.play" %% "play-slick" % "3.0.3"
+libraryDependencies += "org.postgresql" % "postgresql" % "42.2.2"
 libraryDependencies += "com.ticketfly" %% "play-liquibase" % "1.4"
-libraryDependencies += "com.github.cb372" %% "scalacache-guava" % "0.9.4"
+libraryDependencies += "com.github.cb372" %% "scalacache-guava" % "0.24.1"
 
-val scalazVersion = "7.1.0"
+val scalazVersion = "7.2.22"
 
 libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % scalazVersion,
-  "org.scalaz" %% "scalaz-effect" % scalazVersion,
-  "org.scalaz" %% "scalaz-typelevel" % scalazVersion,
-  "org.scalaz" %% "scalaz-scalacheck-binding" % scalazVersion % "test"
+  "org.scalaz" %% "scalaz-effect" % scalazVersion
 )
 
 // Static analysis
-enablePlugins(CopyPasteDetector)
 compile in Compile := (compile in Compile).dependsOn(cpd).value
-lazy val testScalastyle = taskKey[Unit]("testScalastyle")
-testScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle
-  .in(Test)
-  .toTask("")
-  .value
-compile in Compile := (compile in Compile).dependsOn(testScalastyle).value
-// Adds additional packages into Twirl
-//TwirlKeys.templateImports += "org.akashihi.controllers._"
-
-// Adds additional packages into conf/routes
-// play.sbt.routes.RoutesKeys.routesImport += "org.akashihi.binders._"
+lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+compileScalastyle := scalastyle.in(Compile).toTask("").value
+compile in Compile := (compile in Compile).dependsOn(compileScalastyle).value
