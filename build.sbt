@@ -1,7 +1,7 @@
 name := """mdg"""
 organization := "org.akashihi"
 
-version := "1.0-SNAPSHOT"
+version := "0.0.1"
 packageName in Universal := "mdg"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
@@ -26,13 +26,13 @@ libraryDependencies ++= Seq(
 
 // Static analysis
 enablePlugins(CopyPasteDetector)
-compile in Compile <<= (compile in Compile) dependsOn cpd
+compile in Compile := (compile in Compile).dependsOn(cpd).value
 lazy val testScalastyle = taskKey[Unit]("testScalastyle")
 testScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle
   .in(Test)
   .toTask("")
   .value
-compile in Compile <<= (compile in Compile) dependsOn testScalastyle
+compile in Compile := (compile in Compile).dependsOn(testScalastyle).value
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "org.akashihi.controllers._"
 
