@@ -7,14 +7,15 @@ addons:
   postgresql: "9.2"
 services:
   - postgresql
+  - docker
 before_script:
   - psql -f docs/createdb.sql -U postgres
   - git clone https://github.com/akashihi/mdg-api-test
 script:
   # Build it
-  - sbt dist
+  - sbt universal:packageZipTarball
   - cd target/universal
-  - unzip mdg.zip
+  - tar zxvf mdg.tgz
   - cd mdg  
   # Run the server
   - |    
@@ -30,4 +31,14 @@ script:
 after_script:
   # Stop server
   - kill $SERVER_PID  
+before_deploy:
+  - cd ../
+  - cp target/universal/mdg.tgz docker/
+  - cd docker
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: bash docker_build.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST_BRANCH $TRAVIS_TAG
+  on:
+    all_branches: true
 
