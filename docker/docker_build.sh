@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 BRANCH=$1
 PR=$2
 TAG=$3
@@ -17,8 +19,16 @@ else
 	echo Don\'t know, how to build for branch $BRANCH
 fi
 
-docker build -t mdg:$IMAGEVERSION .
+docker build -t akashihi/mdg:$IMAGEVERSION .
 
 if [ x"" != x$TAG ]; then
-	docker tag mdg$IMAGEVERSION mdg:$TAG
+	docker tag akashihi/mdg$IMAGEVERSION akashihi/mdg:$TAG
+fi
+
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+docker push akashihi/mdg:$IMAGEVERSION
+
+if [ x"" != x$TAG ]; then
+	docker push akashihi/mdg:$TAG
 fi
