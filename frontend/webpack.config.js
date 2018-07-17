@@ -3,6 +3,8 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const ArchivePlugin = require('webpack-archive-plugin');
 const merge = require('webpack-merge');
 
 var build = {
@@ -15,7 +17,8 @@ var build = {
     new HtmlWebpackPlugin({
      template: 'index.html'
    }),
-   new webpack.HotModuleReplacementPlugin()
+   new webpack.HotModuleReplacementPlugin(),
+   new CopyWebpackPlugin([{ from: 'css', to: 'css' }], {})
  ],
   output: {
       path: path.resolve(__dirname, 'dist'), // `dist` is the destination
@@ -66,7 +69,8 @@ var production = {
     plugins: [
      new UglifyJSPlugin({
        sourceMap: true
-     })
+     }),
+     new ArchivePlugin()
     ]
 }
 if (process.env.NODE_ENV === "production") {
