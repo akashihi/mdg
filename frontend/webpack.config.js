@@ -12,14 +12,14 @@ var build = {
   },
   plugins: [
     new CleanWebpackPlugin(['dist']),
-    /*new HtmlWebpackPlugin({
-     title: 'Moi.Den.Gi'
-   }),*/
+    new HtmlWebpackPlugin({
+     template: 'index.html'
+   }),
    new webpack.HotModuleReplacementPlugin()
  ],
   output: {
       path: path.resolve(__dirname, 'dist'), // `dist` is the destination
-      filename: 'bundle.js'
+      filename: 'bundle.[hash].js'
   },
   module: {
       rules: [
