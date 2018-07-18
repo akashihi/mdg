@@ -10,7 +10,7 @@ const merge = require('webpack-merge');
 var build = {
   context: path.resolve(__dirname, 'src'), // `__dirname` is root of project and `src` is source
   entry: {
-      app: ['babel-polyfill', './js/app.js']
+      app: ['./js/app.js']
   },
   plugins: [
     new CleanWebpackPlugin(['dist']),
