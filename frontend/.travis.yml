@@ -1,0 +1,22 @@
+dist: trusty
+sudo: required
+language: node_js
+node_js:
+- node
+services:
+- docker
+script:
+- npm install
+- npm run build
+- cp dist.tar.gz docker/
+- cd docker
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: bash docker_build.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST_BRANCH $TRAVIS_TAG
+  on:
+    all_branches: true
+env:
+  global:
+  - DOCKER_USERNAME=akashihi
+  - secure: hyav05eSTTgw+RFMvMl+OK3rLbEsaDyHnRhvVa7FxmWCzsFnW6IJPnyQTEUmhDbYkUsAE1MfpEqqsk15IfJwK5/l1/XOdwiZ5GGhR+kzB8kLED2Lf1i7moCUx2igFhGI2CBApwhgg3i2Go4KB7xDpc4w953mqcSihZw+HL/vy9K/dR1bNhheSmSZhWb0TWiQPrccjToljse0BmvhZntLmGURGccoDE3nH4ENsvf3N0ak2yH9BBAj1C4ZTjittG0qAEZ1TLH0l81D/UufYX4MdnrDNFKBJz1cq3OcuYR+GmP9ZQ+Q7JFHLI+9ir7yfPVYJNdTSv25oXx97d+Xw0L0jjcZyAUoFtCkMM+mhPTrZ/pXCj0Hwn4mOmJmjcQkYg5GMahebdXV4SwN97aCYtlGldqibbe1NNzkmuf6bSLAxTVHUIAclHMjrGAvjNBM+rhz6/pDpaZ/zT4jA9kM90wSP4+dSzJZ0R2oCmB3n/++FNoFDUWazSpWf5wCacyEIZNbv/Ff+dA7cuFScipBuMBHu+mZoR+cycxcbYWynA1M3VgM6olppgwOLvHs2cKL/LsVAmHgNvDsA315AR06S3mVG5erMODRrEvr+Cb6kqSuzS7pOrIHS8EumOA7Kp8o08oZwgJ+kzY1y86pecVmyzWRpJIukcPzgMC0U/+d0FV9B1U=
