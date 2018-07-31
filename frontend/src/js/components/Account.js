@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {Card, CardText} from 'material-ui/Card';
 import IconButton from 'material-ui/IconButton';
 import {GridTile} from 'material-ui/GridList';
 import FontIcon from 'material-ui/FontIcon';
@@ -50,8 +49,6 @@ export default class Account extends Component {
 
         return (
             <GridTile>
-                <Card>
-                    <CardText>
                         <Grid fluid>
                             <Row>
                                 <Col xs={12} sm={12} md={4} lg={4}>
@@ -70,8 +67,6 @@ export default class Account extends Component {
                                 </Col>
                             </Row>
                         </Grid>
-                    </CardText>
-                </Card>
             </GridTile>
         )
     }
