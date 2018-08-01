@@ -19,14 +19,14 @@ export default class Account extends Component {
 
         var balance_style = {
             'color': 'black',
-            'fonr-weight': 'normal'
+            'fontWeight': 'normal'
         };
 
         if (attr.account_type == 'asset') {
             if (attr.balance <0 ) {
                 balance_style = {
                     'color': 'red',
-                    'font-weight': 'bold'
+                    'fontWeight': 'bold'
                 };
             }
             if (attr.favorite) {

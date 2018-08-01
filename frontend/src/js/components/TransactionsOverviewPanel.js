@@ -8,8 +8,8 @@ export default class TransactionsOverviewPanel extends Component {
     render() {
 
         var textStyle = {
-            'overflow-x': 'hidden',
-            'overflow-y': 'auto',
+            'overflowX': 'hidden',
+            'overflowY': 'auto',
         };
 
         var panelStyle = {
