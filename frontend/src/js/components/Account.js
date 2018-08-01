@@ -16,7 +16,19 @@ export default class Account extends Component {
         var attr = this.props.account.attributes;
         var favIcon;
         var opIcon;
+
+        var balance_style = {
+            'color': 'black',
+            'fonr-weight': 'normal'
+        };
+
         if (attr.account_type == 'asset') {
+            if (attr.balance <0 ) {
+                balance_style = {
+                    'color': 'red',
+                    'font-weight': 'bold'
+                };
+            }
             if (attr.favorite) {
                 favIcon = <IconButton onClick={()=>this.props.switchFavoriteFunc(this.props.account, !attr.favorite)}>
                     <FontIcon className='material-icons'>favorite</FontIcon>
@@ -55,7 +67,7 @@ export default class Account extends Component {
                                     <p>{attr.name}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <p>{attr.balance} {currency}</p>
+                                    <div style={balance_style}>{attr.balance} {currency}</div>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
                                     {favIcon}
