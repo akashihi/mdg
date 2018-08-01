@@ -67,7 +67,7 @@ export default class Account extends Component {
                                     <p>{attr.name}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <div style={balance_style}>{attr.balance} {currency}</div>
+                                    <p style={balance_style}>{attr.balance} {currency}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
                                     {favIcon}
