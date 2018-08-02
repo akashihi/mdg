@@ -7,7 +7,8 @@ import {
     GET_BUDGETLIST_SUCCESS,
     GET_BUDGETLIST_FAILURE,
     SET_NEWBUDGET_BEGIN,
-    SET_NEWBUDGET_END
+    SET_NEWBUDGET_END,
+    TOGGLE_HIDDEN_ENTRIES
 } from '../constants/Budget'
 
 import {loadBudgetInfoById} from './BudgetEntryActions'
@@ -17,6 +18,17 @@ export function toggleBudgetSelector(visible) {
         type: TOGGLE_BUDGET_SELECTOR,
         payload: visible
     }
+}
+
+export function toggleHiddenEntries(visible) {
+    return (dispatch) => {
+        dispatch({
+            type: TOGGLE_HIDDEN_ENTRIES,
+            payload: visible
+        });
+
+        //dispatch(()=>dispatch(getCurrentBudget()))
+    };
 }
 
 export function loadBudgetList() {
