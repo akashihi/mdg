@@ -63,7 +63,7 @@ export default class Transaction extends Component {
         }, {asset: 0, income: 0, expense: 0});
 
         if (summary['asset'] > 0 && (summary['income'] != 0 || summary['expense'] != 0)) {
-            return {color: 'green', total: summary['asset'].toFixed(2)};
+            return {color: 'lime', total: summary['asset'].toFixed(2)};
         }
 
         if (summary['asset'] < 0) {
@@ -87,15 +87,15 @@ export default class Transaction extends Component {
             }, {asset: 0, income: 0, expense: 0});
 
         if (positives['asset'] != 0) {
-            return {color: 'yellow', total: positives['asset'].toFixed(2)};
+            return {color: 'orange', total: positives['asset'].toFixed(2)};
         }
 
         if (positives['income'] != 0) {
-            return {color: 'yellow', total: positives['income'].toFixed(2)};
+            return {color: 'orange', total: positives['income'].toFixed(2)};
         }
 
         if (positives['income'] != 0) {
-            return {color: 'yellow', total: positives['income'].toFixed(2)};
+            return {color: 'orange', total: positives['income'].toFixed(2)};
         }
 
         return {color: 'black', total: 0}

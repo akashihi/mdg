@@ -5,6 +5,10 @@ import {
     GET_BUDGETENTRYLIST_FAILURE
 } from '../constants/BudgetEntry'
 
+import {
+    TOGGLE_HIDDEN_ENTRIES,
+} from '../constants/Budget'
+
 const initialState = {
     currentBudget: {
         attributes: {
@@ -31,7 +35,7 @@ const initialState = {
     },
     entryList: [],
     ui: {
-        hiddenAccountsVisible: false,
+        hiddenEntriesVisible: false,
         entryListLoading: true,
         entryListError: false
     },
@@ -51,6 +55,9 @@ export default function budgetEntryReducer(state = initialState, action) {
             return {...state, entryList: [], ui: ui};
         case SET_CURRENT_BUDGET:
             return {...state, currentBudget: action.payload};
+        case TOGGLE_HIDDEN_ENTRIES:
+            ui = {...ui, hiddenEntriesVisible: action.payload};
+            return {...state, ui: ui};
         default:
             return state
     }
