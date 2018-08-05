@@ -36,7 +36,7 @@ export default class BudgetPage extends Component {
         var currency = props.currencies.filter((item) => item.id == account.attributes.currency_id)[0]
 
         return (
-            <BudgetEntry entry={item} key={item.id} account={account} currency={currency}
+            <BudgetEntry entry={item} key={item.id} currency={currency}
                          saveBudgetEntryChange={props.entryActions.updateBudgetEntry}/>
         )
     }
