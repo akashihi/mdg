@@ -4,13 +4,13 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 import controllers.dto.BudgetEntryDTO
-import dao.{BudgetDao, BudgetEntryDao}
-import models.{Budget, BudgetEntry}
+import dao.{AccountDao, BudgetDao, BudgetEntryDao}
+import models.{Account, Budget, BudgetEntry, ExpenseAccount}
 import slick.driver.PostgresDriver.api._
 import play.api.libs.concurrent.Execution.Implicits._
-
 import scalaz._
 import Scalaz._
+
 import scala.math.BigDecimal.RoundingMode
 
 /**
@@ -20,7 +20,8 @@ object BudgetEntryService {
 
   /**
     * Calculates allowed future spendings.
-    * @param b BudgetEntry
+    *
+    * @param b      BudgetEntry
     * @param budget related Budget
     * @return tuple of actual spendings, allowed future spendings.
     */
@@ -28,8 +29,8 @@ object BudgetEntryService {
                               budget: Budget,
                               actual: BigDecimal): Option[BigDecimal] = {
     if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate
-          .now()
-          .isBefore(budget.term_end)) {
+      .now()
+      .isBefore(budget.term_end)) {
       val budgetLength =
         ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
       val daysLeft =
@@ -55,6 +56,7 @@ object BudgetEntryService {
 
   /**
     * Converts BudgetEntry object to the DTO
+    *
     * @param b budget entry object to convert
     * @return Fully filled DTO object
     */
@@ -68,20 +70,27 @@ object BudgetEntryService {
               (actual, getEntryAmounts(b, budget, actual))
           }
       }
-    amounts.map { p =>
+    amounts.flatMap { p =>
       val (actual, normalizedChangeAmount) = p
-      BudgetEntryDTO(b.id,
-                     b.account_id,
-                     b.even_distribution,
-                     b.proration,
-                     b.expected_amount,
-                     actual,
-                     normalizedChangeAmount)
+      val defaultAccount = Account(None, ExpenseAccount, 0, "No account found", 0, false, false, false)
+      val account = AccountDao.findById(b.account_id).map(_.getOrElse(defaultAccount))
+      account.map { a =>
+        BudgetEntryDTO(b.id,
+          b.account_id,
+          a.account_type.value,
+          a.name,
+          b.even_distribution,
+          b.proration,
+          b.expected_amount,
+          actual,
+          normalizedChangeAmount)
+      }
     }
   }
 
   /**
     * Lists entries for specified budget.
+    *
     * @param budget_id Identity of a budget.
     * @return Sequence of BudgetEntry DTOs.
     */
@@ -101,11 +110,12 @@ object BudgetEntryService {
 
   /**
     * Replaces values in a specified budget entry.
-    * @param id Identity of a budget entry.
+    *
+    * @param id        Identity of a budget entry.
     * @param budget_id Identity of owning budget.
-    * @param ed New value of even_distribution property.
-    * @param p New value of proration property.
-    * @param ea New value of expected_amount property
+    * @param ed        New value of even_distribution property.
+    * @param p         New value of proration property.
+    * @param ea        New value of expected_amount property
     * @return Error code or updated BudgetEntry(DTO).
     */
   def edit(id: Long,
@@ -121,9 +131,9 @@ object BudgetEntryService {
       case None => DBIO.successful("BUDGETENTRY_NOT_FOUND".left)
       case Some(x) =>
         val updated = x.copy(even_distribution =
-                               ed.getOrElse(x.even_distribution),
-                             proration = proration,
-                             expected_amount = ea.getOrElse(x.expected_amount))
+          ed.getOrElse(x.even_distribution),
+          proration = proration,
+          expected_amount = ea.getOrElse(x.expected_amount))
         BudgetEntryDao.update(updated).flatMap {
           case 1 => entryToDTO(updated).map(_.right)
           case _ => DBIO.successful("BUDGETENTRY_BOT_UPDATED".left)

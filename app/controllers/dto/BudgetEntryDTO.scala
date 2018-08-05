@@ -9,6 +9,8 @@ import controllers.api.OWritesOps._
   */
 case class BudgetEntryDTO(id: Option[Long],
                           account_id: Long,
+                          account_type: String,
+                          account_name: String,
                           even_distribution: Boolean,
                           proration: Option[Boolean],
                           expected_amount: BigDecimal,
