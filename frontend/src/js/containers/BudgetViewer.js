@@ -12,6 +12,7 @@ const mapStateToProps = (state) => {
         entries: state.budgetentry.entryList,
         loading: state.budgetentry.ui.entryListLoading,
         error: state.budgetentry.ui.entryListError,
+        emptyVisible: state.budgetentry.ui.hiddenEntriesVisible,
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,

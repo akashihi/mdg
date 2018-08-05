@@ -14,10 +14,10 @@ export default class Operation extends Component {
         var color = 'black';
         switch(opAccount.attributes.account_type) {
             case 'income':
-                color = 'green';
+                color = 'lime';
                 break;
             case 'asset':
-                color = 'yellow';
+                color = 'orange';
                 break;
             case 'expense':
                 color = 'red';

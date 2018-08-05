@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
-import {Card, CardHeader, CardText} from 'material-ui/Card';
+import {Card, CardText} from 'material-ui/Card';
 import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
 import FlatButton from 'material-ui/FlatButton';
-import {GridList} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import CircularProgress from 'material-ui/CircularProgress';
+import Tabs from 'material-ui/Tabs/Tabs';
+import Tab from 'material-ui/Tabs/Tab';
 
 import AccountEditor from '../containers/AccountEditor'
 import AccountList from './AccountList'
@@ -22,20 +23,28 @@ export default class AccountsPage extends Component {
     render() {
         var props = this.props;
 
+        var cardStyle = {
+            'marginTop': 15,
+            'height': 120
+        };
+
         var accounts;
         if (props.waiting) {
             accounts = <CircularProgress/>
         } else if (props.error) {
             accounts = <h1>Unable to load account list</h1>
         } else {
-            accounts = <div>
-                <h1>Asset accounts</h1>
-                <AccountList actions={props.actions} currencies={props.currencies} accounts={props.assetAccounts}/>
-                <h1>Income accounts</h1>
-                <AccountList actions={props.actions} currencies={props.currencies} accounts={props.incomeAccounts}/>
-                <h1>Expense accounts</h1>
-                <AccountList actions={props.actions} currencies={props.currencies} accounts={props.expenseAccounts}/>
-            </div>
+            accounts = <Tabs>
+                <Tab label='Asset accounts'>
+                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.assetAccounts}/>
+                </Tab>
+                <Tab label='Income accounts'>
+                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.incomeAccounts}/>
+                </Tab>
+                <Tab label='Expense accounts'>
+                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.expenseAccounts}/>
+                </Tab>
+            </Tabs>
         }
 
         var hiddenButton;
@@ -50,8 +59,8 @@ export default class AccountsPage extends Component {
         return (
             <div>
                 <AccountEditor/>
-                <Card>
-                    <CardHeader>
+                <Card style={cardStyle}>
+                    <CardText>
                         <Grid fluid>
                             <Row>
                                 <Col xs={12} sm={12} md={4} lg={4}>
@@ -73,13 +82,9 @@ export default class AccountsPage extends Component {
                                 </Col>
                             </Row>
                         </Grid>
-                    </CardHeader>
-                    <CardText>
-                        <GridList cellHeight={70} cols={1}>
-                            {accounts}
-                        </GridList>
                     </CardText>
                 </Card>
+                {accounts}
             </div>
         )
     }

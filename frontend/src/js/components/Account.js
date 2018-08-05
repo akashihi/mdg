@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {Card, CardText} from 'material-ui/Card';
 import IconButton from 'material-ui/IconButton';
 import {GridTile} from 'material-ui/GridList';
 import FontIcon from 'material-ui/FontIcon';
@@ -17,7 +16,19 @@ export default class Account extends Component {
         var attr = this.props.account.attributes;
         var favIcon;
         var opIcon;
+
+        var balance_style = {
+            'color': 'black',
+            'fontWeight': 'normal'
+        };
+
         if (attr.account_type == 'asset') {
+            if (attr.balance <0 ) {
+                balance_style = {
+                    'color': 'red',
+                    'fontWeight': 'bold'
+                };
+            }
             if (attr.favorite) {
                 favIcon = <IconButton onClick={()=>this.props.switchFavoriteFunc(this.props.account, !attr.favorite)}>
                     <FontIcon className='material-icons'>favorite</FontIcon>
@@ -50,15 +61,13 @@ export default class Account extends Component {
 
         return (
             <GridTile>
-                <Card>
-                    <CardText>
                         <Grid fluid>
                             <Row>
                                 <Col xs={12} sm={12} md={4} lg={4}>
                                     <p>{attr.name}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <p>{attr.balance} {currency}</p>
+                                    <p style={balance_style}>{attr.balance} {currency}</p>
                                 </Col>
                                 <Col xs={12} sm={12} md={4} lg={4}>
                                     {favIcon}
@@ -70,8 +79,6 @@ export default class Account extends Component {
                                 </Col>
                             </Row>
                         </Grid>
-                    </CardText>
-                </Card>
             </GridTile>
         )
     }

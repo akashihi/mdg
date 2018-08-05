@@ -6,6 +6,16 @@ import Transaction from './Transaction';
 
 export default class TransactionsOverviewPanel extends Component {
     render() {
+
+        var textStyle = {
+            'overflowX': 'hidden',
+            'overflowY': 'auto',
+        };
+
+        var panelStyle = {
+            height: 300
+        };
+
         var props = this.props;
 
         var transactions = props.transactions.map((item) => {
@@ -17,8 +27,8 @@ export default class TransactionsOverviewPanel extends Component {
         return (
             <div>
                 <CardHeader title='Last transactions'/>
-                <CardText>
-                    <GridList cellHeight={70} cols={1}>
+                <CardText style={textStyle}>
+                    <GridList cellHeight={70} cols={1} style={panelStyle}>
                         {transactions}
                     </GridList>
                 </CardText>
