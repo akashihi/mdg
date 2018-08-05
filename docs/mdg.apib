@@ -759,6 +759,8 @@ A BudgetEntry object has the following attributes
 - actual_amount (required, decimal, readonly) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
 - change_amount (optional, decimal, readonly) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `True` it will recalculate with each submited budget related transaction as `(expected_amount-actual_amount)/number of days *left* in Budget term`, negative value will be cut to zero. If `BudgetEntry.proration` is set to False it will recalculate with each submited budget related transaction as
 `expected_amount-actual_amount-(expected_amount/number of days in Budget term)*number of days *left* in Budget term`, negative value will be cut to zero.
+- account_name: (requires, string) - Name of an account, linked to that BudgetEntry.
+- account_type: (enum[string], required) - Name of an account, linked to that BudgetEntry.
 
 BudgetEntry lifecycle is managed automatically. It will be created with budget and deleted with budget. During creation of new non-"asset" account, corresponding budget entries should be automatically provided to all existing budgets.
 
@@ -770,6 +772,8 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
             "id": 1,
             "attributes": {
                 "account_id": 1,
+                "account_name": "Income",
+                "account_type": "income",
                 "even_distribution": false,
                 "expected_amount": 100500,
                 "actual_amount": 100501
@@ -780,6 +784,8 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
             "id": 2,
             "attributes": {
                 "account_id": 2,
+                "account_name": "Expense",
+                "account_type": "expense",
                 "even_distribution": True,
                 "proration": True,
                 "expected_amount": 9000,
@@ -792,6 +798,8 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
             "id": 3,
             "attributes": {
                 "account_id": 3,
+                "account_name": "Rent",
+                "account_type": "expense",
                 "even_distribution": True,
                 "proration": False,
                 "expected_amount": 9000,
@@ -818,6 +826,8 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
             "id": 1,
             "attributes": {
                 "account_id": 1,
+                "account_name": "Income",
+                "account_type": "income",
                 "even_distribution": false,
                 "expected_amount": 100500,
                 "actual_amount": 100501
