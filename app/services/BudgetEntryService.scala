@@ -8,6 +8,7 @@ import dao.{AccountDao, BudgetDao, BudgetEntryDao}
 import models.{Account, Budget, BudgetEntry, ExpenseAccount}
 import slick.driver.PostgresDriver.api._
 import play.api.libs.concurrent.Execution.Implicits._
+import scala.math.Ordering
 import scalaz._
 import Scalaz._
 
@@ -98,6 +99,7 @@ object BudgetEntryService {
     BudgetEntryDao
       .list(budget_id: Long)
       .flatMap(x => DBIO.sequence(x.map(entryToDTO)))
+    .map(_.sortBy(r => (r.account_type, r.account_name))(Ordering.Tuple2(Ordering.String.reverse, Ordering.String)))
 
   def find(id: Long, budget_id: Long): DBIO[Option[BudgetEntryDTO]] = {
     BudgetEntryDao.find(id, budget_id).flatMap { x =>
