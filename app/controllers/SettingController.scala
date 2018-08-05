@@ -7,7 +7,7 @@ import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 import services.SettingService
 import services.ErrorService._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 
 import scala.concurrent.ExecutionContext
 

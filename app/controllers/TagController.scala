@@ -6,7 +6,7 @@ import controllers.api.ResultMaker._
 import dao._
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 
 import scala.concurrent.ExecutionContext
 

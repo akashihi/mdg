@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import dao.RateDao
 import models.Rate
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import util.EitherD
 
 /**

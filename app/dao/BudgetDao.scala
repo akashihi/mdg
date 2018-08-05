@@ -7,7 +7,7 @@ import dao.mappers.LocalDateMapper._
 import dao.BudgetEntryDao._
 import dao.tables._
 import models.{Budget, BudgetEntry}
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import play.api.libs.concurrent.Execution.Implicits._
 
 object BudgetDao {

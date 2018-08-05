@@ -3,7 +3,7 @@ package dao
 import dao.tables.Settings
 import models.Setting
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 object SettingDao {
   val settings = TableQuery[Settings]

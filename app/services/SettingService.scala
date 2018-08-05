@@ -4,7 +4,7 @@ import com.google.common.cache.{CacheBuilder, CacheLoader}
 import dao.{CurrencyDao, SettingDao}
 import models.Setting
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import util.OptionConverters._
 import util.EitherD._
 import util.EitherD

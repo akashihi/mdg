@@ -3,7 +3,7 @@ package dao
 import dao.TransactionDao._
 import dao.tables.BudgetEntries
 import models.{Budget, BudgetEntry, IncomeAccount}
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 import play.api.libs.concurrent.Execution.Implicits._
 

@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import dao.mappers.LocalDateMapper._
 import models.Budget
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted._
 
 /**

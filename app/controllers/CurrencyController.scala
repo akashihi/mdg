@@ -7,8 +7,8 @@ import dao._
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 import util.ApiOps._
-import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.JdbcProfile
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext
 

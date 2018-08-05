@@ -8,7 +8,7 @@ import dao.ordering.{Page, SortBy}
 import dao.{AccountDao, TagDao, TransactionDao}
 import models.{Account, Operation, Transaction}
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import util.EitherD
 import util.EitherD._
 import validators.Validator._

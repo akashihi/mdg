@@ -8,7 +8,7 @@ import dao.mappers.LocalDateMapper._
 import dao.tables.{Operations, TagMap, Transactions}
 import models.{Operation, Transaction, TxTag}
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 /**
   * Database actions for Transactions.

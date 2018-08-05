@@ -6,7 +6,7 @@ import java.time.temporal.ChronoUnit
 import controllers.dto.BudgetEntryDTO
 import dao.{AccountDao, BudgetDao, BudgetEntryDao}
 import models.{Account, Budget, BudgetEntry, ExpenseAccount}
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.math.Ordering
 import scalaz._
