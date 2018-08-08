@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import Notification from './Notification'
 import { Route } from 'react-router'
 
 import TopBar from '../containers/TopBar'
@@ -35,7 +34,6 @@ export default class Main extends Component {
             </Grid>
             <TransactionCreate/>
             <TransactionEditor/>
-            <Notification/>
         </div>
       )
     }
