@@ -12,8 +12,16 @@ export function checkApiError(json) {
         return json
     }
     if (json.hasOwnProperty('errors')) {
-        json.errors.forEach((/*e*/)=>{
-
+        json.errors.forEach((e)=>{
+          window.notifications.addNotification(
+            {
+                  title: e.title + '(' + e.code + ')',
+                  message: e.detail,
+                  level: 'error',
+                  position: 'bl',
+                  autoDismiss: 10
+            }
+          )
         });
         throw new Error(json.errors[0].code)
     } else {
