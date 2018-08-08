@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import Notification from './Notification'
 import { Route } from 'react-router'
+import NotificationSystem from 'react-notification-system'
 
 import TopBar from '../containers/TopBar'
 import TransactionCreate from '../containers/TransactionCreate'
@@ -35,7 +35,7 @@ export default class Main extends Component {
             </Grid>
             <TransactionCreate/>
             <TransactionEditor/>
-            <Notification/>
+            <NotificationSystem ref={(notifications) => {window.notifications = notifications}} />
         </div>
       )
     }
