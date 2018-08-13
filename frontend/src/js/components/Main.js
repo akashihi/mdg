@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import { Route } from 'react-router'
-//import NotificationSystem from 'react-notification-system'
+import NotificationSystem from 'react-notification-system'
 
 import TopBar from '../containers/TopBar'
 //import TransactionCreate from '../containers/TransactionCreate'
@@ -13,6 +13,8 @@ import TransactionsViewer from '../containers/TransactionsViewer'
 import SettingsViewer from '../containers/SettingsViewer'
 import RateViewer from '../containers/RateViewer'
 import TransactionEditor from '../containers/TransactionEditor'
+
+window.notifications = React.createRef();
 
 export default class Main extends Component {
     render() {
@@ -35,7 +37,7 @@ export default class Main extends Component {
             </Grid>
             {/*<TransactionCreate/>*/}
             <TransactionEditor/>
-            {/*<NotificationSystem ref={(notifications) => {window.notifications = notifications}} />*/}
+            <NotificationSystem ref={e => (window.notification = e)} />
         </div>
       )
     }
