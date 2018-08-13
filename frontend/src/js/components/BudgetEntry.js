@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Card, CardActions, CardText} from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-//import CircularProgress from 'material-ui/CircularProgress';
+import SegmentedProgressbar from '../widgets/SegmentedProgressbar'
 //import Checkbox from 'material-ui/Checkbox';
 
 export default class BudgetEntry extends Component {
@@ -36,7 +36,7 @@ export default class BudgetEntry extends Component {
 
         var progress=0;
         if (attr.expected_amount != 0 ) {
-            progress = attr.actual_amount/attr.expected_amount*100;
+            progress = Math.round(attr.actual_amount/attr.expected_amount*100);
             if (progress > 100) {
                 progress = 100
             }
@@ -62,7 +62,9 @@ export default class BudgetEntry extends Component {
                                 {change}
                             </Col>
                             <Col xs={2} sm={2} md={1} lg={1}>
-                                {/*<CircularProgress mode='determinate' size={20} value={progress}/>*/}
+                              <div style={{ width: '60px', height: '60px' }}>
+                                <SegmentedProgressbar percentage={progress}/>
+                              </div>
                             </Col>
                             <Col xs={4} sm={4} md={2} lg={2}>
                                 <TextField id={'budgetentry'+this.entry.id} defaultValue={attr.expected_amount} onBlur={::this.onExpectedApply} onChange={::this.onExpectedEdit}/>
