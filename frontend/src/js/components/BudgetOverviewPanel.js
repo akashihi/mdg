@@ -2,17 +2,17 @@ import React, {Component} from 'react';
 import {CardHeader, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import SegmentedProgressbar from '../widgets/SegmentedProgressbar'
-//import LinearProgress from 'material-ui/LinearProgress';
+import { Progress } from 'react-sweet-progress';
 
 export default class BudgetOverviewPanel extends Component {
     render() {
         var props = this.props;
         var attrs = props.budget.attributes;
 
-        /*var totalChange = attrs.state.change.actual + attrs.state.change.expected;
+        var totalChange = attrs.state.change.actual + attrs.state.change.expected;
         if (totalChange > 0) {
-            var percentActualChange = attrs.state.change.actual / totalChange;
-        }*/
+            var percentActualChange = Math.round(attrs.state.change.actual / totalChange);
+        }
 
         if (attrs.state.income.expected) {
             var incomePercentage = Math.round(attrs.state.income.actual/attrs.state.income.expected*100);
@@ -89,7 +89,7 @@ export default class BudgetOverviewPanel extends Component {
                         </Row>
                         <Row>
                             <Col xsOffset={1} xs={10} sm={10} smOffset={1} md={10} mdOffset={1} lg={10} lgOffset={1}>
-                                {/*<LinearProgress mode='determinate' value={percentActualChange}/>*/}
+                              <Progress percent={percentActualChange}/>
                             </Col>
                         </Row>
                     </Grid>
