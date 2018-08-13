@@ -2,8 +2,8 @@ import React, {Component} from 'react';
 import {Card, CardActions, CardText} from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import CircularProgress from 'material-ui/CircularProgress';
-import Checkbox from 'material-ui/Checkbox';
+//import CircularProgress from 'material-ui/CircularProgress';
+//import Checkbox from 'material-ui/Checkbox';
 
 export default class BudgetEntry extends Component {
     onExpectedApply() {
@@ -62,7 +62,7 @@ export default class BudgetEntry extends Component {
                                 {change}
                             </Col>
                             <Col xs={2} sm={2} md={1} lg={1}>
-                                <CircularProgress mode='determinate' size={20} value={progress}/>
+                                {/*<CircularProgress mode='determinate' size={20} value={progress}/>*/}
                             </Col>
                             <Col xs={4} sm={4} md={2} lg={2}>
                                 <TextField id={'budgetentry'+this.entry.id} defaultValue={attr.expected_amount} onBlur={::this.onExpectedApply} onChange={::this.onExpectedEdit}/>
@@ -77,10 +77,10 @@ export default class BudgetEntry extends Component {
                     <Grid fluid>
                         <Row>
                             <Col xs={12} sm={12} md={6} lg={6}>
-                                <Checkbox label='Evenly distributed' checked={attr.even_distribution} onCheck={::this.onEvenEdit}/>
+                                {/*<Checkbox label='Evenly distributed' checked={attr.even_distribution} onCheck={::this.onEvenEdit}/>*/}
                             </Col>
                             <Col xs={12} sm={12} md={6} lg={6}>
-                                <Checkbox label='Prorate spendings' checked={attr.proration} onCheck={::this.onProratedEdit} disabled={!attr.even_distribution}/>
+                                {/*<Checkbox label='Prorate spendings' checked={attr.proration} onCheck={::this.onProratedEdit} disabled={!attr.even_distribution}/>*/}
                             </Col>
                         </Row>
                     </Grid>

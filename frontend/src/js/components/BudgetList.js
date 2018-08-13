@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
-import IconButton from 'material-ui/IconButton';
+/*import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
 import Divider from 'material-ui/Divider';
 import Drawer from 'material-ui/Drawer';
 import DatePicker from 'material-ui/DatePicker';
-import CircularProgress from 'material-ui/CircularProgress';
+import CircularProgress from 'material-ui/CircularProgress';*/
 
-import Budget from './Budget'
+//import Budget from './Budget'
 
 export default class BudgetList extends Component {
     onCloseBudgetListClick() {
@@ -26,15 +26,15 @@ export default class BudgetList extends Component {
     }
 
     render() {
-        var props = this.props;
-        var onSelectBudgetClick = function (budget) {
+        //var props = this.props;
+        /*var onSelectBudgetClick = function (budget) {
             props.actions.selectBudget(budget)
         };
         var onDeleteBudgetClick = function (id) {
             props.actions.deleteBudget(id)
-        };
+        };*/
 
-        var budgets;
+        /*var budgets;
         if (props.waiting) {
             budgets = <CircularProgress/>
         } else if (props.error) {
@@ -45,9 +45,9 @@ export default class BudgetList extends Component {
                     <Budget budget={item} key={item.id} deleteFunc={onDeleteBudgetClick} selectFunc={onSelectBudgetClick}/>
                 )
             });
-        }
-
-        return (
+        }*/
+        return <div/>
+        /*return (
             <Drawer open={props.visible} width='25%'>
                 <IconButton style={{float: 'right'}} onClick={::this.onCloseBudgetListClick}><FontIcon
                     className='material-icons'>backspace</FontIcon></IconButton>
@@ -59,6 +59,6 @@ export default class BudgetList extends Component {
                 <Divider/>
                 {budgets}
             </Drawer>
-        )
+        )*/
     }
 }

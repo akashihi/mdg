@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import { Route } from 'react-router'
-import NotificationSystem from 'react-notification-system'
+//import NotificationSystem from 'react-notification-system'
 
 import TopBar from '../containers/TopBar'
-import TransactionCreate from '../containers/TransactionCreate'
+//import TransactionCreate from '../containers/TransactionCreate'
 import Overview from './Overview';
 import BudgetViewer from '../containers/BudgetViewer'
 import AccountsViewer from '../containers/AccountsViewer'
@@ -33,9 +33,9 @@ export default class Main extends Component {
                 </Col>
               </Row>
             </Grid>
-            <TransactionCreate/>
+            {/*<TransactionCreate/>*/}
             <TransactionEditor/>
-            <NotificationSystem ref={(notifications) => {window.notifications = notifications}} />
+            {/*<NotificationSystem ref={(notifications) => {window.notifications = notifications}} />*/}
         </div>
       )
     }

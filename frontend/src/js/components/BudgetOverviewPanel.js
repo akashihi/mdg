@@ -1,18 +1,18 @@
 import React, {Component} from 'react';
 import {CardHeader, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import LinearProgress from 'material-ui/LinearProgress';
-import CircularProgress from 'material-ui/CircularProgress';
+//import LinearProgress from 'material-ui/LinearProgress';
+//import CircularProgress from 'material-ui/CircularProgress';
 
 export default class BudgetOverviewPanel extends Component {
     render() {
         var props = this.props;
         var attrs = props.budget.attributes;
 
-        var totalChange = attrs.state.change.actual + attrs.state.change.expected;
-        if (totalChange > 0) {
+        //var totalChange = attrs.state.change.actual + attrs.state.change.expected;
+        /*if (totalChange > 0) {
             var percentActualChange = attrs.state.change.actual / totalChange;
-        }
+        }*/
 
         if (attrs.state.income.expected) {
             var incomePercentage = attrs.state.income.actual/attrs.state.income.expected*100;
@@ -61,20 +61,20 @@ export default class BudgetOverviewPanel extends Component {
                         </Row>
                         <Row>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <CircularProgress
+                                {/*<CircularProgress
                                     mode='determinate'
                                     value={incomePercentage}
                                     size={80}
                                     thickness={5}
-                                />
+                                />*/}
                             </Col>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <div style={{'textAlign': 'right'}}><CircularProgress
+                                {/*<div style={{'textAlign': 'right'}}><CircularProgress
                                     mode='determinate'
                                     value={expensePercentage}
                                     size={80}
                                     thickness={5}
-                                /></div>
+                                /></div>*/}
                             </Col>
                         </Row>
                         <Row>
@@ -95,7 +95,7 @@ export default class BudgetOverviewPanel extends Component {
                         </Row>
                         <Row>
                             <Col xsOffset={1} xs={10} sm={10} smOffset={1} md={10} mdOffset={1} lg={10} lgOffset={1}>
-                                <LinearProgress mode='determinate' value={percentActualChange}/>
+                                {/*<LinearProgress mode='determinate' value={percentActualChange}/>*/}
                             </Col>
                         </Row>
                     </Grid>
