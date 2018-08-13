@@ -4,7 +4,7 @@ import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
 import FlatButton from 'material-ui/FlatButton';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import CircularProgress from 'material-ui/CircularProgress';
+import ClipLoader from 'react-spinners/ClipLoader';
 import Tabs from 'material-ui/Tabs/Tabs';
 import Tab from 'material-ui/Tabs/Tab';
 
@@ -30,7 +30,7 @@ export default class AccountsPage extends Component {
 
         var accounts;
         if (props.waiting) {
-            accounts = <CircularProgress/>
+            accounts = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
         } else if (props.error) {
             accounts = <h1>Unable to load account list</h1>
         } else {

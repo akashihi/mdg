@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
-import CircularProgress from 'material-ui/CircularProgress';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class TransactionDeleteConfirmation extends Component {
     render() {
         var props = this.props;
         var actions;
         if (props.loading) {
-            actions = <CircularProgress/>
+            actions = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
         } else {
             actions = [
                 <FlatButton

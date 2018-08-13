@@ -4,7 +4,7 @@ import FontIcon from 'material-ui/FontIcon';
 import Divider from 'material-ui/Divider';
 import Drawer from 'material-ui/Drawer';
 import DatePicker from 'material-ui/DatePicker';
-import CircularProgress from 'material-ui/CircularProgress';*/
+import ClipLoader from 'react-spinners/ClipLoader';*/
 
 //import Budget from './Budget'
 
@@ -36,7 +36,7 @@ export default class BudgetList extends Component {
 
         /*var budgets;
         if (props.waiting) {
-            budgets = <CircularProgress/>
+            budgets = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
         } else if (props.error) {
             budgets = <h1>Unable to load budget list</h1>
         } else {

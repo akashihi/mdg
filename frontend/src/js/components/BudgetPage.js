@@ -3,8 +3,8 @@ import {Card, CardActions} from 'material-ui/Card';
 import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
 import Divider from 'material-ui/Divider';
-//import CircularProgress from 'material-ui/CircularProgress';
 import FlatButton from 'material-ui/FlatButton';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 import BudgetEntry from './BudgetEntry'
 import BudgetSelector from '../containers/BudgetSelector'
@@ -58,7 +58,7 @@ export default class BudgetPage extends Component {
 
         var entries;
         if (props.loading) {
-            //entries = <CircularProgress/>
+            entries = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
         } else if (props.error) {
             entries = <h1>Unable to load budget entries</h1>
         } else {
