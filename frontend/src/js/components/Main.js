@@ -5,7 +5,7 @@ import { Route } from 'react-router'
 import NotificationSystem from 'react-notification-system'
 
 import TopBar from '../containers/TopBar'
-//import TransactionCreate from '../containers/TransactionCreate'
+import TransactionCreate from '../containers/TransactionCreate'
 import Overview from './Overview';
 import BudgetViewer from '../containers/BudgetViewer'
 import AccountsViewer from '../containers/AccountsViewer'
@@ -35,7 +35,7 @@ export default class Main extends Component {
                 </Col>
               </Row>
             </Grid>
-            {/*<TransactionCreate/>*/}
+            <TransactionCreate/>
             <TransactionEditor/>
             <NotificationSystem ref={e => (window.notification = e)} />
         </div>

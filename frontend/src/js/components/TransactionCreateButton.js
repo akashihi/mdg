@@ -1,24 +1,26 @@
 import React, {Component} from 'react';
-import FloatingActionButton from 'material-ui/FloatingActionButton';
-import ContentAdd from 'material-ui/svg-icons/content/add';
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import AddCirce from '@material-ui/icons/AddCircleOutline';
 
-const floatingButtonStyle = {
+const styles = {
+  button: {
     marginRight: 40,
     marginBottom: 40,
     position: 'fixed',
     right: 0,
     bottom: 0
+  }
 };
 
-export default class TransactionCreateButton extends Component {
+class TransactionCreateButton extends Component {
     onCreate() {
         this.props.actions.createTransaction();
     }
 
     render() {
-        return (<FloatingActionButton secondary={true} style={floatingButtonStyle} onClick={::this.onCreate}>
-                <ContentAdd />
-            </FloatingActionButton>
-        )
+      return (<Button variant='fab' color='secondary' aria-label='Add transaction' className={this.props.classes.button} onClick={::this.onCreate}><AddCirce/></Button>)
     }
 }
+
+export default withStyles(styles)(TransactionCreateButton)
