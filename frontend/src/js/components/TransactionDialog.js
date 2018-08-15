@@ -1,8 +1,6 @@
 import React from 'react';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
-import DatePicker from 'material-ui/DatePicker';
-import TimePicker from 'material-ui/TimePicker';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import ChipInput from 'material-ui-chip-input'
 import TextField from 'material-ui/TextField';
@@ -14,6 +12,8 @@ import moment from 'moment';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import {Tabs, Tab} from 'material-ui/Tabs';
+import DatePicker from 'react-date-picker'
+import TimePicker from 'react-time-picker';
 
 export default class TransactionDialog extends React.Component {
     constructor(props) {
@@ -57,7 +57,7 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionChange(tx);
     }
 
-    onDateChange(ev, date) {
+    onDateChange(date) {
         var attr = {...this.props.transaction.attributes};
         var newDate = moment(date);
         var dt = moment(attr.timestamp);
@@ -71,7 +71,7 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionChange(tx);
     }
 
-    onTimeChange(ev, date) {
+    onTimeChange(date) {
         var attr = {...this.props.transaction.attributes};
         attr.timestamp = moment(date).format('YYYY-MM-DDTHH:mm:ss');
         var tx = {...this.props.transaction, attributes: attr};
@@ -262,12 +262,10 @@ export default class TransactionDialog extends React.Component {
             <Grid fluid>
                 <Row>
                     <Col xs={12} sm={12} md={6} lg={6}>
-                        <DatePicker hintText='Transaction date' container='inline' mode='landscape' value={ts.toDate()}
-                                    onChange={::this.onDateChange}/>
+                        <DatePicker value={ts.toDate()} onChange={::this.onDateChange}/>
                     </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>
-                        <TimePicker format='24hr' hintText='Transaction time' value={ts.toDate()}
-                                    onChange={::this.onTimeChange}/>
+                        <TimePicker value={ts.toDate()} onChange={::this.onTimeChange}/>
                     </Col>
                 </Row>
                 <Row>
