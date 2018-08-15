@@ -39,9 +39,9 @@ var build = {
               }]
           },
           {
-              test: /\.css$/,
-              loader: 'style-loader!css-loader?modules',
-              include: /flexboxgrid/
+            test: /\.css$/,
+            include: /node_modules/,
+            loaders: ['style-loader', 'css-loader'],
           }
       ]
   }

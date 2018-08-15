@@ -1,24 +1,39 @@
 import React, {Component} from 'react';
+import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import Backspace from '@material-ui/icons/Backspace';
 import Divider from '@material-ui/core/Divider';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-/*import DatePicker from 'material-ui/DatePicker';*/
+import DatePicker from 'react-date-picker'
 
 import Budget from './Budget'
+
+const styles = {
+  closeButton: {
+    float: 'right'
+  }
+};
+
+class BudgetCloseButtonStyle extends Component {
+  render() {
+    return (<IconButton className={this.props.classes.closeButton} onClick={this.props.closeFunc}><Backspace/></IconButton>)
+  }
+}
+
+var BudgetCloseButton = withStyles(styles)(BudgetCloseButtonStyle)
 
 export default class BudgetList extends Component {
     onCloseBudgetListClick() {
         this.props.actions.toggleBudgetSelector(false)
     }
 
-    onAcceptPeriodBegin(e, dt) {
+    onAcceptPeriodBegin(dt) {
         this.props.actions.budgetSetNewBegin(dt)
     }
 
-    onAcceptPeriodEnd(e, dt) {
+    onAcceptPeriodEnd(dt) {
         this.props.actions.budgetSetNewEnd(dt)
     }
 
@@ -47,17 +62,18 @@ export default class BudgetList extends Component {
                 )
             });
         }
-
+        console.log(this.props)
         return (
             <Drawer open={props.visible}>
-              <IconButton onClick={::this.onCloseBudgetListClick}><Backspace/></IconButton>
-                {/*<IconButton style={{float: 'right'}}></IconButton>
-                <DatePicker hintText='Budget beginning' container='inline' onChange={::this.onAcceptPeriodBegin}/>
-                <DatePicker hintText='Budget end' container='inline' onChange={::this.onAcceptPeriodEnd}/>*/}
+              <div>
+                <BudgetCloseButton closeFunc={::this.onCloseBudgetListClick}/>
+                <DatePicker onChange={::this.onAcceptPeriodBegin} value={props.begin}/>
+                <DatePicker onChange={::this.onAcceptPeriodEnd} value={props.end}/>
                 <IconButton disabled={!props.valid} onClick={::this.onCreateBudgetClick}><AddCircleOutline/></IconButton>
-                {props.formError}
-                <Divider/>
-                {budgets}
+              </div>
+              {props.formError}
+              <Divider/>
+              {budgets}
             </Drawer>
         )
     }
