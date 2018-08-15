@@ -62,7 +62,7 @@ export default class BudgetList extends Component {
                 )
             });
         }
-        console.log(this.props)
+
         return (
             <Drawer open={props.visible}>
               <div>
