@@ -65,10 +65,10 @@ export default class BudgetEntry extends Component {
             editors = (
                 <Fragment>
                     <Col xs={12} sm={12} md={6} lg={1}>
-                        <FormControlLabel control={<Checkbox color="primary" checked={attr.even_distribution} onChange={::this.onEvenEdit}/>} label={'Evenly distributed'}/>
+                        <FormControlLabel control={<Checkbox color='primary' checked={attr.even_distribution} onChange={::this.onEvenEdit}/>} label={'Evenly distributed'}/>
                     </Col>
                     <Col xs={12} sm={12} md={6} lg={1}>
-                        <FormControlLabel control={<Checkbox color="primary" checked={attr.proration} onChange={::this.onProratedEdit} disabled={!attr.even_distribution}/>} label={'Prorate spendings'}/>
+                        <FormControlLabel control={<Checkbox color='primary' checked={attr.proration} onChange={::this.onProratedEdit} disabled={!attr.even_distribution}/>} label={'Prorate spendings'}/>
                     </Col>
                 </Fragment>
             );
