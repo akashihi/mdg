@@ -1,5 +1,4 @@
 import React from 'react';
-//import { render } from 'react-dom';
 import _ from 'lodash';
 import CircularProgressbar from 'react-circular-progressbar';
 
@@ -63,17 +62,22 @@ function getRadialSeparators(numSeparators) {
 }
 
 function SegmentedProgressbar(props) {
+    var color = props.color;
+    if (!color) {
+        color = '#3e98c7'
+    }
   return (
     <LayeredProgressbar
       percentage={props.percentage}
       styles={{
         path: {
           strokeLinecap: 'butt',
+            stroke: color
         },
       }}
       renderOverlays={() =>
         getRadialSeparators(20).concat(
-          <div style={{ fontSize: 20, color: '#3e98c7' }}>
+          <div style={{ fontSize: 20, color: color }}>
             {props.percentage}%
           </div>,
         )
