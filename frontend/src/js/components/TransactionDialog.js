@@ -20,48 +20,51 @@ import Tab from '@material-ui/core/Tab';
 import DatePicker from 'react-date-picker'
 import TimePicker from 'react-time-picker';
 
-class OperationsEditor extends React.Component {
-  //props.currencies
-  //props.assetAccounts
-  //props.expenseAccounts
-  //props.incomeAccounts
-
-  accountToMenuItem(item) {
-      const props = this.props;
-      const currencyIndex = props.currencies.map((c) => c.id).indexOf(item.attributes.currency_id);
-      var currencyName = '';
-      if (currencyIndex > -1) {
-          currencyName = '(' + props.currencies[currencyIndex].attributes.name + ')'
-      }
-      return (<MenuItem key={item.id} value={item.id}>{item.attributes.name + currencyName}</MenuItem>)
-  }
-
-  combineAccounts() {
-    const props = this.props;
-    return props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
-  }
-
-  getAccounts() {
-    const combinedAccounts = ::this.combineAccounts()
-
-    return combinedAccounts.map(::this.accountToMenuItem);
-  }
-
-  getLimitedAccounts(operation) {
-    //operation = attributes.operations[0]
-    var limitedAccounts = ::this.combineAccounts();
-    if (operation.account_id) {
-        var leftAccountsIndex = limitedAccounts.map((c) => c.id).indexOf(operation.account_id);
-        if (leftAccountsIndex > -1) {
-            var leftAccount = limitedAccounts[leftAccountsIndex];
-            //Limit accounts of the second op, so they will always be of the same currency
-            limitedAccounts = limitedAccounts.filter((item) => {
-                return item.attributes.currency_id === leftAccount.attributes.currency_id
-            })
-        }
+class AccountMapper {
+    constructor(currencies, assetAccounts, expenseAccounts, incomeAccounts) {
+        this.currencies = currencies;
+        this.assetAccounts = assetAccounts;
+        this.expenseAccounts = expenseAccounts;
+        this.incomeAccounts = incomeAccounts;
     }
-    return limitedAccounts.map(::this.accountToMenuItem);
-  }
+
+    accountToMenuItem(item) {
+        const currencyIndex = this.currencies.map((c) => c.id).indexOf(item.attributes.currency_id);
+        var currencyName = '';
+        if (currencyIndex > -1) {
+            currencyName = '(' + this.currencies[currencyIndex].attributes.name + ')'
+        }
+        return (<MenuItem key={item.id} value={item.id}>{item.attributes.name + currencyName}</MenuItem>)
+    }
+
+    combineAccounts() {
+        return this.assetAccounts.concat(this.expenseAccounts, this.incomeAccounts);
+    }
+
+    getAccounts() {
+        const combinedAccounts = ::this.combineAccounts();
+
+        return combinedAccounts.map(::this.accountToMenuItem);
+    }
+
+    getLimitedAccounts(operation) {
+        //operation = attributes.operations[0]
+        var limitedAccounts = ::this.combineAccounts();
+        if (operation.account_id) {
+            var leftAccountsIndex = limitedAccounts.map((c) => c.id).indexOf(operation.account_id);
+            if (leftAccountsIndex > -1) {
+                var leftAccount = limitedAccounts[leftAccountsIndex];
+                //Limit accounts of the second op, so they will always be of the same currency
+                limitedAccounts = limitedAccounts.filter((item) => {
+                    return item.attributes.currency_id === leftAccount.attributes.currency_id
+                })
+            }
+        }
+        return limitedAccounts.map(::this.accountToMenuItem);
+    }
+}
+
+class OperationsEditor extends React.Component {
 }
 
 class SimpleOperationsEditor extends OperationsEditor {
@@ -101,7 +104,7 @@ class SimpleOperationsEditor extends OperationsEditor {
                             <Select value={operations[0].account_id}
                                     onChange={(ev) => props.onAccountFunc(0, ev.target.value)}
                                     inputProps={{id: 'source-simple'}}>
-                                {::this.getAccounts()}
+                                {props.accounts.getAccounts()}
                             </Select>
                         </FormControl>
                     </Col>
@@ -113,8 +116,9 @@ class SimpleOperationsEditor extends OperationsEditor {
                         <FormControl error={textRightError} fullWidth={true}>
                             <InputLabel htmlFor={'destination-simple'}>{textRightLabel}</InputLabel>
                             <Select value={operations[1].account_id}
-                                    onChange={(ev) => props.onAccountFunc(1, ev.target.value)} inputProps={{id: 'destination-simple'}}>
-                                {::this.getLimitedAccounts(operations[0])}
+                                    onChange={(ev) => props.onAccountFunc(1, ev.target.value)}
+                                    inputProps={{id: 'destination-simple'}}>
+                                {props.accounts.getLimitedAccounts(operations[0])}
                             </Select>
                         </FormControl>
                     </Col>
@@ -125,76 +129,125 @@ class SimpleOperationsEditor extends OperationsEditor {
 }
 
 class FullOperationsEditor extends OperationsEditor {
-  render() {
-    const props = this.props;
-    const errors = props.errors;
+    checkRateDisabled(operation) {
+        const props = this.props;
+        // First check - if we only have ops in same currency, rate should be definitely disabled.
+        var accounts = props.accounts.combineAccounts();
+        var currencies = props.operations
+            .map((item) => item.account_id)
+            .filter((item) => !(item === undefined))
+            .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
+            .map((item) => item.attributes.currency_id)
+            .filter((value, index, self) => self.indexOf(value) === index);
+        if (currencies.length <= 1) {
+            return true
+        }
 
-    const parent = this;
+        //Second check - in case our currency is the primary currency
+        var myAccount = accounts.filter((item) => item.id === operation.account_id);
+        if (myAccount.length > 0) {
+            var myCurrency = myAccount[0].attributes.currency_id
+        }
+        if (myCurrency === props.primaryCurrency) {
+            return true
+        }
 
-    var ops = this.props.operations.map(function (item, index) {
-      var textLabel = 'Amount';
-      var textError = false;
-      if (errors.operations[index].amount) {
-          textLabel = errors.operations[index].amount;
-          textError = true
-      }
+        //Third check - in case we don't have any op with primary currency
+        //we should disable rate for all ops, having same currency as the first
+        //op of the transaction
+        var txCurrencies = props.operations
+            .map((item) => item.account_id)
+            .filter((item) => !(item === undefined))
+            .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
+            .map((item) => item.attributes.currency_id)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .filter((item) => item === props.primaryCurrency);
+        if (txCurrencies.length === 0) {
+            //Ok, we do not have primary currency at the transaction
+            if (props.operations.length > 0) {
+                var firstAccount = accounts.filter((item) => item.id === props.operations[0].account_id);
+                if (firstAccount.length > 0) {
+                    var firstCurrency = firstAccount[0].attributes.currency_id;
+                    if (firstCurrency === myCurrency) {
+                        return true
+                    }
+                }
+            }
+        }
 
-      var textRateLabel = 'Rate';
-      var textRateError = false;
-      if (errors.operations[index].rate) {
-          textRateLabel = errors.operations[index].rate
-          textRateError = true
-      }
+        return false;
+    }
 
-      var textAccountLabel = 'Account';
-      var textAccountError = false;
-      if (errors.operations[index].account_id) {
-          textAccountLabel = errors.operations[index].account_id;
-          textAccountError = true
-      }
+    render() {
+        const parent = this;
+        const props = this.props;
+        const errors = props.errors;
 
-        return (<GridTile key={index}>
-            <Grid fluid>
-                <Row>
-                    <Col xs={4} sm={4} md={4} lg={4}>
-                        <TextField label={textLabel} error={textError} value={item.amount}
-                                   onChange={(ev) => props.onAmountFunc(index, ev.target.value)}/>
-                    </Col>
-                    <Col xs={4} sm={4} md={4} lg={4}>
-                        <TextField label={textRateLabel} error={textRateError} value={item.rate}
-                                   onChange={(ev) => props.onRateFunc(index, ev.target.value)}
-                                   disabled={props.checkRateFunc(item)}/>
-                    </Col>
-                    <Col xs={4} sm={4} md={4} lg={4}>
-                      <FormControl error={textAccountError} fullWidth={true}>
-                          <InputLabel htmlFor={'destination-simple'}>{textAccountLabel}</InputLabel>
-                          <Select value={item.account_id}
-                                  onChange={(ev) => props.onAccountFunc(index, ev.target.value)} inputProps={{id: 'destination-simple'}}>
-                              {parent.getAccounts()}
-                          </Select>
-                      </FormControl>
-                    </Col>
-                </Row>
-            </Grid>
-        </GridTile>)
-    });
+        var ops = this.props.operations.map(function (item, index) {
+            var textLabel = 'Amount';
+            var textError = false;
+            if (errors.operations[index].amount) {
+                textLabel = errors.operations[index].amount;
+                textError = true
+            }
 
-    return (
-        <GridList cellHeight={60} cols={1}>
-            {ops}
-            <GridTile>
+            var textRateLabel = 'Rate';
+            var textRateError = false;
+            if (errors.operations[index].rate) {
+                textRateLabel = errors.operations[index].rate;
+                textRateError = true
+            }
+
+            var textAccountLabel = 'Account';
+            var textAccountError = false;
+            if (errors.operations[index].account_id) {
+                textAccountLabel = errors.operations[index].account_id;
+                textAccountError = true
+            }
+
+            return (<GridTile key={index}>
                 <Grid fluid>
                     <Row>
-                        <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
-                             lgOffset={5}>
-                            <IconButton onClick={props.operationAddFunc}><PlaylistAdd/></IconButton>
+                        <Col xs={4} sm={4} md={4} lg={4}>
+                            <TextField label={textLabel} error={textError} value={item.amount}
+                                       onChange={(ev) => props.onAmountFunc(index, ev.target.value)}/>
+                        </Col>
+                        <Col xs={4} sm={4} md={4} lg={4}>
+                            <TextField label={textRateLabel} error={textRateError} value={item.rate}
+                                       onChange={(ev) => props.onRateFunc(index, ev.target.value)}
+                                       disabled={parent.checkRateDisabled(item)}/>
+                        </Col>
+                        <Col xs={4} sm={4} md={4} lg={4}>
+                            <FormControl error={textAccountError} fullWidth={true}>
+                                <InputLabel htmlFor={'destination-simple'}>{textAccountLabel}</InputLabel>
+                                <Select value={item.account_id}
+                                        onChange={(ev) => props.onAccountFunc(index, ev.target.value)}
+                                        inputProps={{id: 'destination-simple'}}>
+                                    {props.accounts.getAccounts()}
+                                </Select>
+                            </FormControl>
                         </Col>
                     </Row>
                 </Grid>
-            </GridTile>
-        </GridList>
-    );
-  }
+            </GridTile>)
+        });
+
+        return (
+            <GridList cellHeight={60} cols={1}>
+                {ops}
+                <GridTile>
+                    <Grid fluid>
+                        <Row>
+                            <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
+                                 lgOffset={5}>
+                                <IconButton onClick={props.operationAddFunc}><PlaylistAdd/></IconButton>
+                            </Col>
+                        </Row>
+                    </Grid>
+                </GridTile>
+            </GridList>
+        );
+    }
 }
 
 export default class TransactionDialog extends React.Component {
@@ -337,57 +390,11 @@ export default class TransactionDialog extends React.Component {
             props.actions.editTransactionChange(account);
         };
 
-        var checkRateDisabled = function (operation) {
-            // First check - if we only have ops in same currency, rate should be definitely disabled.
-            var accounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
-            var currencies = transaction.attributes.operations
-                .map((item) => item.account_id)
-                .filter((item) => !(item === undefined))
-                .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
-                .map((item) => item.attributes.currency_id)
-                .filter((value, index, self) => self.indexOf(value) === index)
-            if (currencies.length <= 1) {
-                return true
-            }
-
-            //Second check - in case our currency is the primary currency
-            var myAccount = accounts.filter((item) => item.id === operation.account_id)
-            if (myAccount.length > 0) {
-                var myCurrency = myAccount[0].attributes.currency_id
-            }
-            if (myCurrency === props.primaryCurrency) {
-                return true
-            }
-
-            //Third check - in case we don't have any op with primary currency
-            //we should disable rate for all ops, having same currency as the first
-            //op of the transaction
-            var txCurrencies = transaction.attributes.operations
-                .map((item) => item.account_id)
-                .filter((item) => !(item === undefined))
-                .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
-                .map((item) => item.attributes.currency_id)
-                .filter((value, index, self) => self.indexOf(value) === index)
-                .filter((item) => item === props.primaryCurrency)
-            if (txCurrencies.length === 0) {
-                //Ok, we do not have primary currency at the transaction
-                if (transaction.attributes.operations.length > 0) {
-                    var firstAccount = accounts.filter((item) => item.id === transaction.attributes.operations[0].account_id)
-                    if (firstAccount.length > 0) {
-                        var firstCurrency = firstAccount[0].attributes.currency_id
-                        if (firstCurrency === myCurrency) {
-                            return true
-                        }
-                    }
-                }
-            }
-
-            return false
-        };
-
         var tags = props.tags.map((item) => item.attributes.txtag);
 
         var ts = moment(attributes.timestamp);
+
+        var accounts = new AccountMapper(props.currencies, props.assetAccounts, props.expenseAccounts, props.incomeAccounts);
 
         return (<Dialog title='Transaction editing' open={props.open} scroll={'paper'} maxWidth={'md'} fullWidth={true}>
             <DialogContent>
@@ -402,13 +409,13 @@ export default class TransactionDialog extends React.Component {
                     </Row>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
-                              <ChipInput
-                              value={attributes.tags}
-                              dataSource={tags}
-                              onAdd={::this.onTagAdd}
-                              onDelete={::this.onTagDelete}
-                              label={<InputLabel>Tags</InputLabel>}
-                          />
+                            <ChipInput
+                                value={attributes.tags}
+                                dataSource={tags}
+                                onAdd={::this.onTagAdd}
+                                onDelete={::this.onTagDelete}
+                                label={<InputLabel>Tags</InputLabel>}
+                            />
                         </Col>
                     </Row>
                     <Row>
@@ -425,16 +432,17 @@ export default class TransactionDialog extends React.Component {
                 </Tabs>
                 {this.state.tabValue === 'simple' &&
                 <SimpleOperationsEditor errors={errors}
-                                        operations={attributes.operations} onAmountFunc={::this.onCombinedAmountChange}
+                                        operations={attributes.operations}
+                                        onAmountFunc={::this.onCombinedAmountChange}
                                         onAccountFunc={onAccountChange}
-                                        assetAccounts={props.assetAccounts} expenseAccounts={props.expenseAccounts} incomeAccounts={props.incomeAccounts}
-                                        currencies={props.currencies}/>}
+                                        accounts={accounts}/>}
                 {this.state.tabValue === 'multi' && <FullOperationsEditor errors={errors}
-                                        operations={attributes.operations} onAmountFunc={onAmountChange}
-                                        onAccountFunc={onAccountChange} onRateFunc={onRateChange} checkRateFunc={checkRateDisabled}
-                                        operationAddFunc={::this.onOperationAdd}
-                                        assetAccounts={props.assetAccounts} expenseAccounts={props.expenseAccounts} incomeAccounts={props.incomeAccounts}
-                                        currencies={props.currencies}/>}
+                                                                          operations={attributes.operations}
+                                                                          onAmountFunc={onAmountChange}
+                                                                          onAccountFunc={onAccountChange}
+                                                                          onRateFunc={onRateChange}
+                                                                          operationAddFunc={::this.onOperationAdd}
+                                                                          accounts={accounts}/>}
                 <Grid fluid>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
