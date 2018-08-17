@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-import DatePicker from 'material-ui/DatePicker';
+import DatePicker from 'react-date-picker'
 import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
 import IconButton from 'material-ui/IconButton';
@@ -21,11 +21,11 @@ export default class TransactionsPageFilter extends Component {
         this.props.actions.setTransactionViewPeriod(days)
     }
 
-    setBeginning(ev, value) {
+    setBeginning(value) {
         this.props.actions.setTransactionViewBeginning(value)
     }
 
-    setEnd(ev, value) {
+    setEnd(value) {
         this.props.actions.setTransactionViewEnd(value)
     }
 
@@ -102,16 +102,16 @@ export default class TransactionsPageFilter extends Component {
             </Row>
             <Row>
                 <Col xs={6} sm={6} md={2} lg={2}>
-                    <DatePicker container='inline' hintText='Period beginning' value={props.periodBeginning.toDate()}
-                                onChange={::this.setBeginning}/>
-                    <DatePicker container='inline' hintText='Period end' value={props.periodEnd.toDate()}
-                                onChange={::this.setEnd}/>
+                    Period beginning
                 </Col>
-                <Col xs={2} sm={2} md={3} lg={3}>
+                <Col xs={6} sm={6} md={1} lg={1}>
+                  <DatePicker value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
+                </Col>
+                <Col xsOffset={1} xs={2} sm={2} md={3} lg={2}>
                     <TextField hintText='Comment contains...' onChange={::this.setFilterComment}
                                value={props.commentFilter}/>
                 </Col>
-                <Col xs={2} sm={2} md={3} lg={3}>
+                <Col xs={2} sm={2} md={3} lg={2}>
                     <SelectField
                         multiple={true}
                         hintText='Select accounts'
@@ -121,7 +121,7 @@ export default class TransactionsPageFilter extends Component {
                         {accountItems}
                     </SelectField>
                 </Col>
-                <Col xs={2} sm={2} md={3} lg={3}>
+                <Col xs={2} sm={2} md={3} lg={2}>
                     <SelectField
                         multiple={true}
                         hintText='Select tags'
@@ -135,6 +135,14 @@ export default class TransactionsPageFilter extends Component {
                     <IconButton><FontIcon className='material-icons' onClick={::this.applyFilter}>done</FontIcon></IconButton>
                     <IconButton><FontIcon className='material-icons' onClick={::this.clearFilter}>clear</FontIcon></IconButton>
                 </Col>
+            </Row>
+            <Row>
+              <Col xs={6} sm={6} md={2} lg={2}>
+                  Period end
+              </Col>
+              <Col xs={6} sm={6} md={1} lg={1}>
+                <DatePicker value={props.periodEnd.toDate()} onChange={::this.setEnd}/>
+              </Col>
             </Row>
         </Grid>;
     }

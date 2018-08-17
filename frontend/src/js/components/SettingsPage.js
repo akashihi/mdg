@@ -3,7 +3,7 @@ import {Card, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-import CircularProgress from 'material-ui/CircularProgress';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class SettingsPage extends Component {
   onPrimaryCurrencyChange(value) {
@@ -14,7 +14,7 @@ export default class SettingsPage extends Component {
     var props = this.props;
 
     if (props.waiting) {
-      return (<CircularProgress/>)
+      return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
     }
     if (props.error) {
       return (<h1>Unable to load settings</h1>)

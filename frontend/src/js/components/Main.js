@@ -14,6 +14,8 @@ import SettingsViewer from '../containers/SettingsViewer'
 import RateViewer from '../containers/RateViewer'
 import TransactionEditor from '../containers/TransactionEditor'
 
+window.notifications = React.createRef();
+
 export default class Main extends Component {
     render() {
       return (
@@ -35,7 +37,7 @@ export default class Main extends Component {
             </Grid>
             <TransactionCreate/>
             <TransactionEditor/>
-            <NotificationSystem ref={(notifications) => {window.notifications = notifications}} />
+            <NotificationSystem ref={e => (window.notification = e)} />
         </div>
       )
     }
