@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{Fragment} from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -9,7 +9,6 @@ import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import PlaylistAdd from '@material-ui/icons/PlaylistAdd';
-import {GridList, GridTile} from 'material-ui/GridList';
 import moment from 'moment';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -229,7 +228,7 @@ class FullOperationsEditor extends OperationsEditor {
                 textAccountError = true
             }
 
-            return (<GridTile key={index}>
+            return (
                 <Grid fluid>
                     <Row>
                         <Col xs={4} sm={4} md={4} lg={4}>
@@ -252,14 +251,12 @@ class FullOperationsEditor extends OperationsEditor {
                             </FormControl>
                         </Col>
                     </Row>
-                </Grid>
-            </GridTile>)
+                </Grid>)
         });
 
         return (
-            <GridList cellHeight={60} cols={1}>
+            <Fragment>
                 {ops}
-                <GridTile>
                     <Grid fluid>
                         <Row>
                             <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
@@ -268,8 +265,7 @@ class FullOperationsEditor extends OperationsEditor {
                             </Col>
                         </Row>
                     </Grid>
-                </GridTile>
-            </GridList>
+            </Fragment>
         );
     }
 }
