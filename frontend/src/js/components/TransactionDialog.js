@@ -20,13 +20,54 @@ import Tab from '@material-ui/core/Tab';
 import DatePicker from 'react-date-picker'
 import TimePicker from 'react-time-picker';
 
+class OperationsEditor extends React.Component {
+  //props.currencies
+  //props.assetAccounts
+  //props.expenseAccounts
+  //props.incomeAccounts
 
-class SimpleOperationsEditor extends React.Component {
+  accountToMenuItem(item) {
+      const props = this.props;
+      const currencyIndex = props.currencies.map((c) => c.id).indexOf(item.attributes.currency_id);
+      var currencyName = '';
+      if (currencyIndex > -1) {
+          currencyName = '(' + props.currencies[currencyIndex].attributes.name + ')'
+      }
+      return (<MenuItem key={item.id} value={item.id}>{item.attributes.name + currencyName}</MenuItem>)
+  }
+
+  combineAccounts() {
+    const props = this.props;
+    return props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
+  }
+
+  getAccounts() {
+    const combinedAccounts = ::this.combineAccounts()
+
+    return combinedAccounts.map(::this.accountToMenuItem);
+  }
+
+  getLimitedAccounts(operation) {
+    //operation = attributes.operations[0]
+    var limitedAccounts = ::this.combineAccounts();
+    if (operation.account_id) {
+        var leftAccountsIndex = limitedAccounts.map((c) => c.id).indexOf(operation.account_id);
+        if (leftAccountsIndex > -1) {
+            var leftAccount = limitedAccounts[leftAccountsIndex];
+            //Limit accounts of the second op, so they will always be of the same currency
+            limitedAccounts = limitedAccounts.filter((item) => {
+                return item.attributes.currency_id === leftAccount.attributes.currency_id
+            })
+        }
+    }
+    return limitedAccounts.map(::this.accountToMenuItem);
+  }
+}
+
+class SimpleOperationsEditor extends OperationsEditor {
     render() {
         const props = this.props;
 
-        const accounts = props.accounts;
-        const limitedAccounts = props.limitedAccounts;
         const errors = props.errors;
         const operations = props.operations;
 
@@ -60,7 +101,7 @@ class SimpleOperationsEditor extends React.Component {
                             <Select value={operations[0].account_id}
                                     onChange={(ev) => props.onAccountFunc(0, ev.target.value)}
                                     inputProps={{id: 'source-simple'}}>
-                                {accounts}
+                                {::this.getAccounts()}
                             </Select>
                         </FormControl>
                     </Col>
@@ -73,7 +114,7 @@ class SimpleOperationsEditor extends React.Component {
                             <InputLabel htmlFor={'destination-simple'}>{textRightLabel}</InputLabel>
                             <Select value={operations[1].account_id}
                                     onChange={(ev) => props.onAccountFunc(1, ev.target.value)} inputProps={{id: 'destination-simple'}}>
-                                {limitedAccounts}
+                                {::this.getLimitedAccounts(operations[0])}
                             </Select>
                         </FormControl>
                     </Col>
@@ -83,12 +124,12 @@ class SimpleOperationsEditor extends React.Component {
     }
 }
 
-class FullOperationsEditor extends React.Component {
+class FullOperationsEditor extends OperationsEditor {
   render() {
     const props = this.props;
-
-    const accounts = props.accounts;
     const errors = props.errors;
+
+    const parent = this;
 
     var ops = this.props.operations.map(function (item, index) {
       var textLabel = 'Amount';
@@ -129,7 +170,7 @@ class FullOperationsEditor extends React.Component {
                           <InputLabel htmlFor={'destination-simple'}>{textAccountLabel}</InputLabel>
                           <Select value={item.account_id}
                                   onChange={(ev) => props.onAccountFunc(index, ev.target.value)} inputProps={{id: 'destination-simple'}}>
-                              {accounts}
+                              {parent.getAccounts()}
                           </Select>
                       </FormControl>
                     </Col>
@@ -261,16 +302,6 @@ export default class TransactionDialog extends React.Component {
         });
     }
 
-    accountToMenuItem(item) {
-        var props = this.props;
-        var currencyIndex = props.currencies.map((c) => c.id).indexOf(item.attributes.currency_id);
-        var currencyName = '';
-        if (currencyIndex > -1) {
-            currencyName = '(' + props.currencies[currencyIndex].attributes.name + ')'
-        }
-        return (<MenuItem key={item.id} value={item.id}>{item.attributes.name + currencyName}</MenuItem>)
-    }
-
     render() {
         var props = this.props;
         var transaction = props.transaction;
@@ -358,22 +389,6 @@ export default class TransactionDialog extends React.Component {
 
         var ts = moment(attributes.timestamp);
 
-        var combinedAccounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
-        var limitedAccounts = combinedAccounts;
-        if (attributes.operations[0].account_id) {
-            var leftAccountsIndex = combinedAccounts.map((c) => c.id).indexOf(attributes.operations[0].account_id);
-            if (leftAccountsIndex > -1) {
-                var leftAccount = combinedAccounts[leftAccountsIndex];
-                //Limit accounts of the second op, so they will always be of the same currency
-                limitedAccounts = combinedAccounts.filter((item) => {
-                    return item.attributes.currency_id === leftAccount.attributes.currency_id
-                })
-            }
-        }
-
-        var accounts = combinedAccounts.map(::this.accountToMenuItem);
-        limitedAccounts = limitedAccounts.map(::this.accountToMenuItem);
-
         return (<Dialog title='Transaction editing' open={props.open} scroll={'paper'} maxWidth={'md'} fullWidth={true}>
             <DialogContent>
                 <Grid fluid>
@@ -387,13 +402,13 @@ export default class TransactionDialog extends React.Component {
                     </Row>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
-                            <ChipInput
-                            value={attributes.tags}
-                            dataSource={tags}
-                            hintText='Tags'
-                            onRequestAdd={::this.onTagAdd}
-                            onRequestDelete={::this.onTagDelete}
-                        />
+                              <ChipInput
+                              value={attributes.tags}
+                              dataSource={tags}
+                              onAdd={::this.onTagAdd}
+                              onDelete={::this.onTagDelete}
+                              label={<InputLabel>Tags</InputLabel>}
+                          />
                         </Col>
                     </Row>
                     <Row>
@@ -409,13 +424,17 @@ export default class TransactionDialog extends React.Component {
                     <Tab label='Multiple operations' value='multi'/>
                 </Tabs>
                 {this.state.tabValue === 'simple' &&
-                <SimpleOperationsEditor accounts={accounts} limitedAccounts={limitedAccounts} errors={errors}
+                <SimpleOperationsEditor errors={errors}
                                         operations={attributes.operations} onAmountFunc={::this.onCombinedAmountChange}
-                                        onAccountFunc={onAccountChange}/>}
-                {this.state.tabValue === 'multi' && <FullOperationsEditor accounts={accounts} errors={errors}
+                                        onAccountFunc={onAccountChange}
+                                        assetAccounts={props.assetAccounts} expenseAccounts={props.expenseAccounts} incomeAccounts={props.incomeAccounts}
+                                        currencies={props.currencies}/>}
+                {this.state.tabValue === 'multi' && <FullOperationsEditor errors={errors}
                                         operations={attributes.operations} onAmountFunc={onAmountChange}
                                         onAccountFunc={onAccountChange} onRateFunc={onRateChange} checkRateFunc={checkRateDisabled}
-                                        operationAddFunc={::this.onOperationAdd}/>}
+                                        operationAddFunc={::this.onOperationAdd}
+                                        assetAccounts={props.assetAccounts} expenseAccounts={props.expenseAccounts} incomeAccounts={props.incomeAccounts}
+                                        currencies={props.currencies}/>}
                 <Grid fluid>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
