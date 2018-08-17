@@ -4,7 +4,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-//import ChipInput from 'material-ui-chip-input'
+import ChipInput from 'material-ui-chip-input'
 import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
@@ -81,6 +81,79 @@ class SimpleOperationsEditor extends React.Component {
             </Grid>
         );
     }
+}
+
+class FullOperationsEditor extends React.Component {
+  render() {
+    const props = this.props;
+
+    const accounts = props.accounts;
+    const errors = props.errors;
+
+    var ops = this.props.operations.map(function (item, index) {
+      var textLabel = 'Amount';
+      var textError = false;
+      if (errors.operations[index].amount) {
+          textLabel = errors.operations[index].amount;
+          textError = true
+      }
+
+      var textRateLabel = 'Rate';
+      var textRateError = false;
+      if (errors.operations[index].rate) {
+          textRateLabel = errors.operations[index].rate
+          textRateError = true
+      }
+
+      var textAccountLabel = 'Account';
+      var textAccountError = false;
+      if (errors.operations[index].account_id) {
+          textAccountLabel = errors.operations[index].account_id;
+          textAccountError = true
+      }
+
+        return (<GridTile key={index}>
+            <Grid fluid>
+                <Row>
+                    <Col xs={4} sm={4} md={4} lg={4}>
+                        <TextField label={textLabel} error={textError} value={item.amount}
+                                   onChange={(ev) => props.onAmountFunc(index, ev.target.value)}/>
+                    </Col>
+                    <Col xs={4} sm={4} md={4} lg={4}>
+                        <TextField label={textRateLabel} error={textRateError} value={item.rate}
+                                   onChange={(ev) => props.onRateFunc(index, ev.target.value)}
+                                   disabled={props.checkRateFunc(item)}/>
+                    </Col>
+                    <Col xs={4} sm={4} md={4} lg={4}>
+                      <FormControl error={textAccountError} fullWidth={true}>
+                          <InputLabel htmlFor={'destination-simple'}>{textAccountLabel}</InputLabel>
+                          <Select value={item.account_id}
+                                  onChange={(ev) => props.onAccountFunc(index, ev.target.value)} inputProps={{id: 'destination-simple'}}>
+                              {accounts}
+                          </Select>
+                      </FormControl>
+                    </Col>
+                </Row>
+            </Grid>
+        </GridTile>)
+    });
+
+    return (
+        <GridList cellHeight={60} cols={1}>
+            {ops}
+            <GridTile>
+                <Grid fluid>
+                    <Row>
+                        <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
+                             lgOffset={5}>
+                            <IconButton onClick={props.operationAddFunc}><PlaylistAdd/></IconButton>
+                        </Col>
+                    </Row>
+                </Grid>
+            </GridTile>
+        </GridList>
+    );
+  }
 }
 
 export default class TransactionDialog extends React.Component {
@@ -281,7 +354,7 @@ export default class TransactionDialog extends React.Component {
             return false
         };
 
-        //var tags = props.tags.map((item) => item.attributes.txtag);
+        var tags = props.tags.map((item) => item.attributes.txtag);
 
         var ts = moment(attributes.timestamp);
 
@@ -301,48 +374,6 @@ export default class TransactionDialog extends React.Component {
         var accounts = combinedAccounts.map(::this.accountToMenuItem);
         limitedAccounts = limitedAccounts.map(::this.accountToMenuItem);
 
-
-        var ops = attributes.operations.map(function (item, index) {
-            return (<GridTile key={index}>
-                <Grid fluid>
-                    <Row>
-                        <Col xs={4} sm={4} md={4} lg={4}>
-                            <TextField label='Amount' errorText={errors.operations[index].amount} value={item.amount}
-                                       onChange={(ev, value) => onAmountChange(index, value)}/>
-                        </Col>
-                        <Col xs={4} sm={4} md={4} lg={4}>
-                            <TextField label='Rate' errorText={errors.operations[index].rate} value={item.rate}
-                                       onChange={(ev, value) => onRateChange(index, value)}
-                                       disabled={checkRateDisabled(item)}/>
-                        </Col>
-                        <Col xs={4} sm={4} md={4} lg={4}>
-                            <Select hintText='Account' errorText={errors.operations[index].account_id}
-                                    value={item.account_id}
-                                    onChange={(ev, key, value) => onAccountChange(index, value)}>
-                                {accounts}
-                            </Select>
-                        </Col>
-                    </Row>
-                </Grid>
-            </GridTile>)
-        });
-
-        var fullEditor = (
-            <GridList cellHeight={60} cols={1}>
-                {ops}
-                <GridTile>
-                    <Grid fluid>
-                        <Row>
-                            <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
-                                 lgOffset={5}>
-                                <IconButton onClick={::this.onOperationAdd}><PlaylistAdd/></IconButton>
-                            </Col>
-                        </Row>
-                    </Grid>
-                </GridTile>
-            </GridList>
-        );
-
         return (<Dialog title='Transaction editing' open={props.open} scroll={'paper'} maxWidth={'md'} fullWidth={true}>
             <DialogContent>
                 <Grid fluid>
@@ -356,13 +387,13 @@ export default class TransactionDialog extends React.Component {
                     </Row>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
-                            {/*<ChipInput
+                            <ChipInput
                             value={attributes.tags}
                             dataSource={tags}
                             hintText='Tags'
                             onRequestAdd={::this.onTagAdd}
                             onRequestDelete={::this.onTagDelete}
-                        />*/}
+                        />
                         </Col>
                     </Row>
                     <Row>
@@ -381,7 +412,10 @@ export default class TransactionDialog extends React.Component {
                 <SimpleOperationsEditor accounts={accounts} limitedAccounts={limitedAccounts} errors={errors}
                                         operations={attributes.operations} onAmountFunc={::this.onCombinedAmountChange}
                                         onAccountFunc={onAccountChange}/>}
-                {this.state.tabValue === 'multi' && fullEditor}
+                {this.state.tabValue === 'multi' && <FullOperationsEditor accounts={accounts} errors={errors}
+                                        operations={attributes.operations} onAmountFunc={onAmountChange}
+                                        onAccountFunc={onAccountChange} onRateFunc={onRateChange} checkRateFunc={checkRateDisabled}
+                                        operationAddFunc={::this.onOperationAdd}/>}
                 <Grid fluid>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
