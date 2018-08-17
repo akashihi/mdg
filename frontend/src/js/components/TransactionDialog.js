@@ -37,8 +37,32 @@ class AccountMapper {
         return (<MenuItem key={item.id} value={item.id}>{item.attributes.name + currencyName}</MenuItem>)
     }
 
+    sortAssets() {
+        return this.assetAccounts.sort((l,r) => {
+            if (l.attributes.operational) {
+                if (r.attributes.operational) {
+                    return l.attributes.name-r.attributes.name;
+                }
+                return -1;
+            }
+            if (r.attributes.operational) {
+                return 1;
+            }
+
+            if (l.attributes.favorite) {
+                if (r.attributes.favorite) {
+                    return l.attributes.name-r.attributes.name;
+                }
+                return -1;
+            }
+            if (r.attributes.favorite) {
+                return 1;
+            }
+        })
+    }
+
     combineAccounts() {
-        return this.assetAccounts.concat(this.expenseAccounts, this.incomeAccounts);
+        return this.sortAssets().concat(this.expenseAccounts, this.incomeAccounts);
     }
 
     getAccounts() {
