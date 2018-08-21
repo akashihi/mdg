@@ -17,8 +17,9 @@ import scalaz._
 object SettingService {
 
   val PrimaryCurrency = "currency.primary"
+  val UiTransactionCloseDialog = "ui.transaction.closedialog"
 
-  val settingLoader = new CacheLoader[String, EitherD[String, Setting]] {
+  private val settingLoader = new CacheLoader[String, EitherD[String, Setting]] {
     override def load(key: String): EitherD[String, Setting] =
       EitherD(SettingDao.findById(key).map(_.fromOption("SETTING_NOT_FOUND")))
   }
@@ -58,6 +59,34 @@ object SettingService {
       .map(s => SettingDao.update(s))
 
     settingsCache.invalidate(PrimaryCurrency)
+
+    savedSetting
+      .map(_.map(_.fromOption("SETTING_NOT_UPDATED")))
+      .map(o => EitherD(o))
+      .flatten
+  }
+
+  def setUiTransactionCloseDialog(value: Option[String]): EitherD[String, Setting] = {
+    val curOption = value
+      .flatMap(_.tryToBool)
+      .fromOption("SETTING_DATA_INVALID")
+      .map(o => DBIO.successful(o))
+
+    val option = EitherD(curOption) //Only to make it compatible with upcoming DBIO
+
+    val setting = option.map(
+      _ =>
+        SettingDao
+          .findById(UiTransactionCloseDialog)
+          .map(_.fromOption("SETTING_NOT_FOUND")))
+
+    val savedSetting = setting
+      .map(o => EitherD(o))
+        .flatten
+      .map(s => s.copy(value = value.getOrElse(s.value)))
+      .map(s => SettingDao.update(s))
+
+    settingsCache.invalidate(UiTransactionCloseDialog)
 
     savedSetting
       .map(_.map(_.fromOption("SETTING_NOT_UPDATED")))

@@ -62,4 +62,20 @@ class SettingController @Inject()(
     }
     db.run(result)
   }
+
+  /**
+    * ui.transaction.closedialog setting method.
+    *
+    * @return setting object.
+    */
+  def editUiTransactionCloseDialog() = Action.async(parse.tolerantJson) { request =>
+    val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
+
+    val result = SettingService.setUiTransactionCloseDialog(value).run.flatMap { x =>
+      handleErrors(x) { x =>
+        makeResult(x)(ACCEPTED)
+      }
+    }
+    db.run(result)
+  }
 }

@@ -12,7 +12,8 @@ object OptionConverters {
     * @param s string to convert
     */
   implicit class StringOptionInt(val s: String) extends AnyVal {
-    def tryToInt = Try(s.toInt) toOption
-    def tryToLong = Try(s.toLong) toOption
+    def tryToInt: Option[Int] = Try(s.toInt) toOption
+    def tryToLong: Option[Long] = Try(s.toLong) toOption
+    def tryToBool: Option[Boolean] = Try(s.toBoolean) toOption
   }
 }
