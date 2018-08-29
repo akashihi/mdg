@@ -2,7 +2,7 @@ package services
 
 import dao.tables.Errors
 import models.Error
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc.Result
 import util.ApiOps._

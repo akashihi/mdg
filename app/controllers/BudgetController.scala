@@ -10,7 +10,7 @@ import services.BudgetService
 import services.ErrorService._
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent._
 import _root_.util.ApiOps._

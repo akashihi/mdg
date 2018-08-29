@@ -4,7 +4,7 @@ import dao.filters.AccountFilter
 import dao.tables.Accounts
 import models.Account
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 object AccountDao {
   val accounts = TableQuery[Accounts]

@@ -1,7 +1,7 @@
 package dao.tables
 
 import models.{Account, AccountType}
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted._
 
 /**

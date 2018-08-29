@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import dao.tables.Rates
 import models.Rate
 import dao.mappers.LocalDateMapper._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 object RateDao {
   val rates = TableQuery[Rates]

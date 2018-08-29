@@ -10,7 +10,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import services.AccountService
 import services.ErrorService._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 
 import scala.concurrent._
 

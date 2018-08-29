@@ -3,7 +3,7 @@ package dao
 import dao.tables.Tags
 import models.TxTag
 import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 object TagDao {
   val tags = TableQuery[Tags]

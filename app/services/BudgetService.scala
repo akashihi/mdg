@@ -6,7 +6,7 @@ import controllers.dto.BudgetDTO
 import dao.filters.EmptyAccountFilter
 import dao.BudgetDao
 import models.{Account, Budget, BudgetEntry}
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 import util.EitherD
 import util.EitherD._
 import validators.Validator._

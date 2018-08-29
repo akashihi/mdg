@@ -3,7 +3,7 @@ package dao.mappers
 import java.sql.{Date, Timestamp}
 import java.time.{LocalDate, LocalDateTime}
 
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
 /**
   * Created by dchaplyg on 9/20/17.
