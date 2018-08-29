@@ -3,7 +3,7 @@ import {Card, CardHeader, CardActions} from 'material-ui/Card';
 import Divider from 'material-ui/Divider';
 import {GridList, GridTile} from 'material-ui/GridList';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import CircularProgress from 'material-ui/CircularProgress';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 import Transaction from './Transaction';
 import TransactionPager from '../containers/TransactionsPager'
@@ -25,7 +25,7 @@ export default class TransactionsPage extends Component {
 
         var transactions;
         if (props.waiting) {
-            transactions = <CircularProgress/>;
+            transactions = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
         } else if (props.error) {
             transactions = <h1>Unable to load transactions list</h1>
         } else {

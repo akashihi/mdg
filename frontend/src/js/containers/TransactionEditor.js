@@ -14,6 +14,7 @@ const mapStateToProps = (state) => {
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
         open: state.transaction.dialog.open,
+        closeOnSave: state.transaction.dialog.closeOnSave,
         transaction: state.transaction.dialog.transaction,
         valid: state.transaction.dialog.valid,
         errors: state.transaction.dialog.errors

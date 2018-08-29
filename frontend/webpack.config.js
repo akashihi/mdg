@@ -17,7 +17,6 @@ var build = {
     new HtmlWebpackPlugin({
      template: 'index.html'
    }),
-   new webpack.HotModuleReplacementPlugin(),
    new CopyWebpackPlugin([{ from: 'css', to: 'css' }], {})
  ],
   output: {
@@ -40,9 +39,9 @@ var build = {
               }]
           },
           {
-              test: /\.css$/,
-              loader: 'style-loader!css-loader?modules',
-              include: /flexboxgrid/
+            test: /\.css$/,
+            include: /node_modules/,
+            loaders: ['style-loader', 'css-loader'],
           }
       ]
   }
@@ -53,10 +52,10 @@ var development = {
     devtool: "eval-source-map",
     devServer: {
         contentBase: path.resolve(__dirname, 'src'), // `__dirname` is root of the project
-        hot: true,
+        watchContentBase: true,
         proxy: {
             '/api': {
-                target: 'http://localhost:9000/api',
+                target: 'http://127.0.0.1/api',
                 pathRewrite: {'^/api' : ''}
             }
         }

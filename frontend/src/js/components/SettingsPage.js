@@ -1,20 +1,24 @@
 import React, {Component} from 'react';
-import {Card, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
-import CircularProgress from 'material-ui/CircularProgress';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import ClipLoader from 'react-spinners/ClipLoader';
+import Checkbox from '@material-ui/core/Checkbox';
 
 export default class SettingsPage extends Component {
   onPrimaryCurrencyChange(value) {
       this.props.actions.setPrimaryCurrency(value);
   }
 
+  onCloseTransactionDialogChange(value) {
+    this.props.actions.setCloseTransactionDialog(value);
+  }
+
   render() {
     var props = this.props;
 
     if (props.waiting) {
-      return (<CircularProgress/>)
+      return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
     }
     if (props.error) {
       return (<h1>Unable to load settings</h1>)
@@ -22,30 +26,34 @@ export default class SettingsPage extends Component {
 
     var currencies = props.currencies.map(function (item) {
         return (
-            <MenuItem value={item.id} key={item.id} primaryText={item.attributes.name}/>
+            <MenuItem value={item.id} key={item.id}>{item.attributes.name}</MenuItem>
         )
     });
 
     return (
-      <Card>
-        <CardText>
           <Grid fluid>
             <Row>
               <Col xs={6} sm={6} md={4} lg={4}>
                 <p>Primary currency:</p>
               </Col>
               <Col xs={6} sm={6} md={4} lg={4}>
-                <SelectField hintText='Select currency'
+                <Select
                            value={props.primaryCurrency}
-                           onChange={(ev, key, value) => ::this.onPrimaryCurrencyChange(value)}
+                           onChange={(ev) => ::this.onPrimaryCurrencyChange(ev.target.value)}
                            >
                            {currencies}
-                  </SelectField>
+                  </Select>
+              </Col>
+            </Row>
+            <Row>
+              <Col xs={6} sm={6} md={4} lg={4}>
+                <p>By default close transaction dialog:</p>
+              </Col>
+              <Col xs={6} sm={6} md={4} lg={4}>
+                <Checkbox checked={this.props.closeTransactionDialog} onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
               </Col>
             </Row>
         </Grid>
-      </CardText>
-    </Card>
   )
   }
 }

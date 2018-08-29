@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {Card, CardHeader, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import Checkbox from 'material-ui/Checkbox';
+//import Checkbox from 'material-ui/Checkbox';
 import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
 
@@ -114,7 +114,7 @@ export default class Transaction extends Component {
                 showExpandableButton={true}>
                 <Grid>
                     <Row>
-                        <Col xs={1}><Checkbox/></Col>
+                        {/*<Col xs={1}><Checkbox/></Col>*/}
                         <Col xs={1}>{timestampToFormattedDate(attributes.timestamp)}</Col>
                         <Col xs={3}>{attributes.comment}</Col>
                         <Col xs={2}>

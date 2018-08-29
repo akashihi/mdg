@@ -1,7 +1,3 @@
-import React from 'react'
-import ReactMaterialUiNotifications from 'react-materialui-notifications'
-import Message from 'material-ui/svg-icons/communication/message'
-
 export function parseJSON(response) {
     try {
         return response.json()
@@ -17,13 +13,15 @@ export function checkApiError(json) {
     }
     if (json.hasOwnProperty('errors')) {
         json.errors.forEach((e)=>{
-            ReactMaterialUiNotifications.showNotification({
-                title: e.title,
-                additionalText: e.detail,
-                icon: <Message />,
-                overflowText: e.code,
-                autoHide: 0
-            });
+          window.notifications.addNotification(
+            {
+                  title: e.title + '(' + e.code + ')',
+                  message: e.detail,
+                  level: 'error',
+                  position: 'bl',
+                  autoDismiss: 10
+            }
+          )
         });
         throw new Error(json.errors[0].code)
     } else {

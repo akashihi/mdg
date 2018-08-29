@@ -12,7 +12,9 @@ const mapStateToProps = (state) => {
         error: state.budget.ui.budgetListError,
         budgets: state.budget.budgetList,
         valid: state.budget.newBudgetValid,
-        formError: state.budget.newBudgetError
+        formError: state.budget.newBudgetError,
+        begin: state.budget.newBudgetBegin,
+        end:state.budget.newBudgetEnd,
     }
 };
 

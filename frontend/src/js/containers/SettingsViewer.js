@@ -8,6 +8,7 @@ import * as SettingActions from '../actions/SettingActions'
 const mapStateToProps = (state) => {
     return {
         primaryCurrency: state.setting.primaryCurrency,
+        closeTransactionDialog: state.setting.closeTransactionDialog,
         currencies: state.currency.currencyList,
         waiting: state.settingView.ui.settingListLoading,
         error: state.settingView.ui.settingListError

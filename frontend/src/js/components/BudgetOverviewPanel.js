@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import {CardHeader, CardText} from 'material-ui/Card';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import LinearProgress from 'material-ui/LinearProgress';
-import CircularProgress from 'material-ui/CircularProgress';
+import SegmentedProgressbar from '../widgets/SegmentedProgressbar'
+import { Progress } from 'react-sweet-progress';
 
 export default class BudgetOverviewPanel extends Component {
     render() {
@@ -11,18 +11,18 @@ export default class BudgetOverviewPanel extends Component {
 
         var totalChange = attrs.state.change.actual + attrs.state.change.expected;
         if (totalChange > 0) {
-            var percentActualChange = attrs.state.change.actual / totalChange;
+            var percentActualChange = Math.round(attrs.state.change.actual / totalChange);
         }
 
         if (attrs.state.income.expected) {
-            var incomePercentage = attrs.state.income.actual/attrs.state.income.expected*100;
+            var incomePercentage = Math.round(attrs.state.income.actual/attrs.state.income.expected*100);
             if (incomePercentage>100) {
                 incomePercentage = 100;
             }
         }
 
         if (attrs.state.expense.expected) {
-            var expensePercentage = attrs.state.expense.actual/attrs.state.expense.expected*100;
+            var expensePercentage = Math.round(attrs.state.expense.actual/attrs.state.expense.expected*100);
             if (expensePercentage>100) {
                 expensePercentage = 100;
             }
@@ -60,21 +60,15 @@ export default class BudgetOverviewPanel extends Component {
                             </Col>
                         </Row>
                         <Row>
-                            <Col xs={6} sm={6} md={6} lg={6}>
-                                <CircularProgress
-                                    mode='determinate'
-                                    value={incomePercentage}
-                                    size={80}
-                                    thickness={5}
-                                />
+                            <Col xs={1}>
+                              <div style={{ width: '80px', height: '80px' }}>
+                                <SegmentedProgressbar percentage={incomePercentage}/>
+                              </div>
                             </Col>
-                            <Col xs={6} sm={6} md={6} lg={6}>
-                                <div style={{'textAlign': 'right'}}><CircularProgress
-                                    mode='determinate'
-                                    value={expensePercentage}
-                                    size={80}
-                                    thickness={5}
-                                /></div>
+                            <Col xsOffset={10} xs={1}>
+                              <div style={{ width: '80px', height: '80px', textAlign: 'right' }}>
+                                <SegmentedProgressbar percentage={expensePercentage}/>
+                              </div>
                             </Col>
                         </Row>
                         <Row>
@@ -95,7 +89,7 @@ export default class BudgetOverviewPanel extends Component {
                         </Row>
                         <Row>
                             <Col xsOffset={1} xs={10} sm={10} smOffset={1} md={10} mdOffset={1} lg={10} lgOffset={1}>
-                                <LinearProgress mode='determinate' value={percentActualChange}/>
+                              <Progress percent={percentActualChange}/>
                             </Col>
                         </Row>
                     </Grid>
