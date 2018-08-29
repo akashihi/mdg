@@ -280,14 +280,18 @@ export function editTransactionChange(tx) {
 
 export function editTransactionSave() {
     return (dispatch, getState) => {
+      var state = getState();
+      if (state.transaction.dialog.closeOnSave) {
         dispatch({
             type: TRANSACTION_DIALOG_CLOSE,
             payload: true
         });
-
-        var state = getState();
+      }
         var transaction = state.transaction.dialog.transaction;
         dispatch(updateTransaction(transaction));
+        if (!state.transaction.dialog.closeOnSave) {
+          dispatch(createTransaction())
+        }
     }
 }
 
