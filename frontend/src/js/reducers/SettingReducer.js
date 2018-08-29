@@ -1,7 +1,8 @@
 import {GET_SETTING_REQUEST, GET_SETTING_SUCCESS, GET_SETTING_FAILURE} from '../constants/Setting'
 
 const initialState = {
-    primaryCurrency: ''
+    primaryCurrency: '',
+    closeTransactionDialog: true
 };
 
 export default function currencyReducer(state = initialState, action) {
@@ -11,7 +12,11 @@ export default function currencyReducer(state = initialState, action) {
         case GET_SETTING_SUCCESS:
             var primaryCurrencyObject = action.payload.filter((item) => item.id == 'currency.primary')[0]
             var primaryCurrency = Number(primaryCurrencyObject.attributes.value)
-            return {...state, primaryCurrency: primaryCurrency};
+
+            var closeTransactionDialogObject = action.payload.filter((item) => item.id == 'ui.transaction.closedialog')[0]
+            var closeTransactionDialog = closeTransactionDialogObject.attributes.value === 'true'
+
+            return {...state, primaryCurrency: primaryCurrency, closeTransactionDialog: closeTransactionDialog};
         case GET_SETTING_FAILURE:
             return {...state, primaryCurrency: {id: -1, attributes: {value: 'Failed to load'}}};
         default:

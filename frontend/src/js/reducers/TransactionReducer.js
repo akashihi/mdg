@@ -10,8 +10,10 @@ import {
     TRANSACTION_DIALOG_OPEN,
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
+    TRANSACTION_DIALOG_CLOSESAVE_SET,
     GET_LASTTRANSACTION_SUCCESS
 } from '../constants/Transaction'
+import {GET_SETTING_SUCCESS} from '../constants/Setting'
 
 const initialState = {
     transactionList: [],
@@ -27,6 +29,7 @@ const initialState = {
     },
     dialog: {
         open: false,
+        closeOnSave: false,
         transaction: {attributes: {comment: '', tags: [], operations: [ {amount: 0}, {amount: 0}]}},
         valid: false,
         errors: { operations: [{}, {}]}
@@ -72,7 +75,7 @@ function validateTransactionForm(tx) {
         amount = amount * parseFloat(item.rate)
       }
       return acc+amount
-    }, 0);    
+    }, 0);
     if ( !(-1 < sum && sum < 1) || ( sum!= 0 && !easeForMultiCurrency)) {
         errors.transaction = 'Transaction not balanced';
         valid = false;
@@ -99,6 +102,15 @@ export default function transactionReducer(state = initialState, action) {
             var validInitial = validateTransactionForm(action.payload);
             dialog = {...dialog, open: true, transaction: action.payload, valid: validInitial.valid, errors: validInitial.errors};
             dialog = {...dialog, open: true, transaction: action.payload};
+            return {...state, dialog: dialog};
+        case TRANSACTION_DIALOG_CLOSESAVE_SET:
+            dialog = {...dialog, closeOnSave: action.payload};
+            return {...state, dialog: dialog};
+       case GET_SETTING_SUCCESS:
+            var closeTransactionDialogObject = action.payload.filter((item) => item.id == 'ui.transaction.closedialog')[0]
+            var closeTransactionDialog = closeTransactionDialogObject.attributes.value === 'true'
+
+            dialog = {...dialog, closeOnSave: closeTransactionDialog};
             return {...state, dialog: dialog};
         case DELETE_TRANSACTION_REQUEST:
             deleteUi = {...deleteUi, approvementDialogVisible: true, transaction: action.payload};

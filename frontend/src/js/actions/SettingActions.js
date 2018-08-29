@@ -59,3 +59,33 @@ export function setPrimaryCurrency(currency_id) {
           })
   }
 }
+
+export function setCloseTransactionDialog(value) {
+  return (dispatch) => {
+      dispatch({
+          type: GET_SETTING_REQUEST,
+          payload: true
+      });
+
+      var url = '/api/setting/ui.transaction.closedialog';
+      var method = 'PUT';
+      var setting = { 'type': 'setting', 'id': 'ui.transaction.closedialog', 'attributes': {'value': value.toString() }}
+
+      fetch(url, {
+          method: method,
+          headers: {
+              'Content-Type': 'application/vnd.mdg+json'
+          },
+          body: JSON.stringify({data: setting})
+      })
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(()=>dispatch(loadSettingList()))
+          .catch(function (response) {
+              dispatch({
+                  type: GET_SETTING_FAILURE,
+                  payload: response.json
+              })
+          })
+  }
+}

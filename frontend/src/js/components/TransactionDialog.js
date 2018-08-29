@@ -18,6 +18,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import DatePicker from 'react-date-picker'
 import TimePicker from 'react-time-picker';
+import Checkbox from '@material-ui/core/Checkbox';
 
 class AccountMapper {
     constructor(currencies, assetAccounts, expenseAccounts, incomeAccounts) {
@@ -283,6 +284,10 @@ export default class TransactionDialog extends React.Component {
         };
     }
 
+    onSaveCloseOnSave(value) {
+      this.props.actions.setCloseOnSave(value)
+    }
+
     onSaveClick() {
         this.props.actions.editTransactionSave();
     }
@@ -472,6 +477,8 @@ export default class TransactionDialog extends React.Component {
                 </Grid>
             </DialogContent>
             <DialogActions>
+                  <InputLabel htmlFor={'close-dialog'}>Close dialog on save</InputLabel>
+                  <Checkbox checked={props.closeOnSave} inputProps={{id: 'close-dialog'}} onChange={(ev, value) => ::this.onSaveCloseOnSave(value)}/>
                 <Button color='primary' disabled={!props.valid} onClick={::this.onSaveClick}>Save</Button>
                 <Button color='secondary' onClick={::this.onCancelClick}>Cancel</Button>
             </DialogActions>

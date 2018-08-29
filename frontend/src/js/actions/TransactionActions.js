@@ -28,6 +28,7 @@ import {
     TRANSACTION_DIALOG_OPEN,
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
+    TRANSACTION_DIALOG_CLOSESAVE_SET,
     GET_LASTTRANSACTION_SUCCESS
 } from '../constants/Transaction'
 
@@ -242,6 +243,13 @@ export function deleteTransaction(tx) {
     }
 }
 
+export function setCloseOnSave(value) {
+  return {
+    type: TRANSACTION_DIALOG_CLOSESAVE_SET,
+    payload: value
+  }
+}
+
 export function createTransaction() {
     return {
         type: TRANSACTION_DIALOG_OPEN,
@@ -272,14 +280,18 @@ export function editTransactionChange(tx) {
 
 export function editTransactionSave() {
     return (dispatch, getState) => {
+      var state = getState();
+      if (state.transaction.dialog.closeOnSave) {
         dispatch({
             type: TRANSACTION_DIALOG_CLOSE,
             payload: true
         });
-
-        var state = getState();
+      }
         var transaction = state.transaction.dialog.transaction;
         dispatch(updateTransaction(transaction));
+        if (!state.transaction.dialog.closeOnSave) {
+          dispatch(createTransaction())
+        }
     }
 }
 
