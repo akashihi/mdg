@@ -14,7 +14,7 @@ export default function currencyReducer(state = initialState, action) {
             var primaryCurrency = Number(primaryCurrencyObject.attributes.value)
 
             var closeTransactionDialogObject = action.payload.filter((item) => item.id == 'ui.transaction.closedialog')[0]
-            var closeTransactionDialog = Number(closeTransactionDialogObject.attributes.value)
+            var closeTransactionDialog = closeTransactionDialogObject.attributes.value === 'true'
 
             return {...state, primaryCurrency: primaryCurrency, closeTransactionDialog: closeTransactionDialog};
         case GET_SETTING_FAILURE:

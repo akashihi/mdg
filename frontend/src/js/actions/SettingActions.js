@@ -69,7 +69,7 @@ export function setCloseTransactionDialog(value) {
 
       var url = '/api/setting/ui.transaction.closedialog';
       var method = 'PUT';
-      var setting = { 'type': 'setting', 'id': 'ui.transaction.closedialog', 'attributes': {'value': value }}
+      var setting = { 'type': 'setting', 'id': 'ui.transaction.closedialog', 'attributes': {'value': value.toString() }}
 
       fetch(url, {
           method: method,

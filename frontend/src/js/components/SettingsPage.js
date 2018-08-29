@@ -50,7 +50,7 @@ export default class SettingsPage extends Component {
                 <p>By default close transaction dialog:</p>
               </Col>
               <Col xs={6} sm={6} md={4} lg={4}>
-                <Checkbox value={this.props.closeTransactionDialog} onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
+                <Checkbox checked={this.props.closeTransactionDialog} onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
               </Col>
             </Row>
         </Grid>
