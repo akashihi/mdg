@@ -4,10 +4,15 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import ClipLoader from 'react-spinners/ClipLoader';
+import Checkbox from '@material-ui/core/Checkbox';
 
 export default class SettingsPage extends Component {
   onPrimaryCurrencyChange(value) {
       this.props.actions.setPrimaryCurrency(value);
+  }
+
+  onCloseTransactionDialogChange(value) {
+    this.props.actions.setCloseTransactionDialog(value);
   }
 
   render() {
@@ -41,6 +46,14 @@ export default class SettingsPage extends Component {
                            >
                            {currencies}
                   </SelectField>
+              </Col>
+            </Row>
+            <Row>
+              <Col xs={6} sm={6} md={4} lg={4}>
+                <p>By default close transaction dialog:</p>
+              </Col>
+              <Col xs={6} sm={6} md={4} lg={4}>
+                <Checkbox value={this.props.closeTransactionDialog} onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
               </Col>
             </Row>
         </Grid>
