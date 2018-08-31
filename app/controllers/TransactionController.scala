@@ -27,7 +27,7 @@ import scalaz._
 class TransactionController @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext)
-    extends Controller {
+    extends InjectedController {
 
   val db = dbConfigProvider.get[JdbcProfile].db
 

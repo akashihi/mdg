@@ -22,7 +22,7 @@ import controllers.dto.BudgetDTO
 class BudgetController @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext)
-    extends Controller {
+    extends InjectedController {
 
   val db = dbConfigProvider.get[JdbcProfile].db
 
