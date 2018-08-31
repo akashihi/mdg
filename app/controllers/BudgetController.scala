@@ -9,7 +9,7 @@ import play.api.mvc._
 import services.BudgetService
 import services.ErrorService._
 import play.api.db.slick.DatabaseConfigProvider
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent._
