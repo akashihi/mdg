@@ -296,7 +296,8 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionCancel();
     }
 
-    onCommentChange(event, value) {
+    onCommentChange(event) {
+        var value = event.target.value
         var attr = {...this.props.transaction.attributes};
         attr.comment = value;
         var tx = {...this.props.transaction, attributes: attr};
