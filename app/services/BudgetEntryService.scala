@@ -24,27 +24,28 @@ object BudgetEntryService {
     *
     * @param b      BudgetEntry
     * @param budget related Budget
-    * @return tuple of actual spendings, allowed future spendings.
+    * @return allowed future spendings.
     */
-  private def getEntryAmounts(b: BudgetEntry,
+  def getEntryAmounts(b: BudgetEntry,
+                              forDay: LocalDate,
                               budget: Budget,
                               actual: BigDecimal): Option[BigDecimal] = {
-    if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate
-      .now()
-      .isBefore(budget.term_end)) {
+    if (forDay.plusDays(1).isAfter(budget.term_beginning) && forDay.minusDays(1).isBefore(budget.term_end)) { //We need to check equality condition too
       val budgetLength =
-        ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
+        ChronoUnit.DAYS.between(budget.term_beginning.minusDays(1), budget.term_end) //We need to include first day
       val daysLeft =
-        ChronoUnit.DAYS.between(LocalDate.now(), budget.term_end)
+        ChronoUnit.DAYS.between(forDay.minusDays(1), budget.term_end) //We need to include specified day
+      val daysPassed =
+        ChronoUnit.DAYS.between(budget.term_beginning.minusDays(1), forDay) //We need to include first day
       val changeAmount = b.even_distribution match {
         case false => None
         case true =>
           b.proration match {
-            case Some(true) =>
-              Some((b.expected_amount - actual) / daysLeft)
             case Some(false) | None =>
+              Some((b.expected_amount - actual) / daysLeft)
+            case Some(true) =>
               Some(
-                b.expected_amount - actual - (b.expected_amount / budgetLength) * daysLeft)
+                (b.expected_amount / budgetLength) * daysPassed - actual)
           }
       }
       changeAmount
@@ -68,7 +69,7 @@ object BudgetEntryService {
         case Some(budget) =>
           BudgetEntryDao.getActualSpendings(b.account_id, budget).map {
             actual =>
-              (actual, getEntryAmounts(b, budget, actual))
+              (actual, getEntryAmounts(b, LocalDate.now(), budget, actual))
           }
       }
     amounts.flatMap { p =>

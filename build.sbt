@@ -14,6 +14,7 @@ libraryDependencies += "com.typesafe.play" %% "play-slick" % "3.0.3"
 libraryDependencies += "org.postgresql" % "postgresql" % "42.2.2"
 libraryDependencies += "com.ticketfly" %% "play-liquibase" % "1.4"
 libraryDependencies += "com.github.cb372" %% "scalacache-guava" % "0.24.1"
+libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.5" % "test"
 
 val scalazVersion = "7.2.22"
 
