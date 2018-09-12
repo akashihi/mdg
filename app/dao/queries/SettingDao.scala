@@ -1,4 +1,4 @@
-package dao
+package dao.queries
 
 import dao.tables.Settings
 import models.Setting

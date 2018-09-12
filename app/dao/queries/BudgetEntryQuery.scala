@@ -1,13 +1,12 @@
-package dao
+package dao.queries
 
-import dao.TransactionDao._
+import dao.queries.TransactionQuery._
 import dao.tables.BudgetEntries
 import models.{Budget, BudgetEntry, IncomeAccount}
+import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
 
-import play.api.libs.concurrent.Execution.Implicits._
-
-object BudgetEntryDao {
+object BudgetEntryQuery {
   val entries = TableQuery[BudgetEntries]
 
   /**
@@ -52,7 +51,7 @@ object BudgetEntryDao {
           .sum
           .result
 
-        AccountDao.findById(account_id).flatMap { acc =>
+        AccountQuery.findById(account_id).flatMap { acc =>
           value.map { a =>
             val amount = a.getOrElse(BigDecimal(0))
             acc match {

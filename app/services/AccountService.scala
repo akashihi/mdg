@@ -1,8 +1,6 @@
 package services
 
 import BigDecimal.RoundingMode.HALF_EVEN
-
-import dao.AccountDao
 import dao.filters.AccountFilter
 import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
 import play.api.libs.concurrent.Execution.Implicits._
@@ -12,6 +10,7 @@ import util.EitherD._
 import validators.Validator._
 import scalaz._
 import controllers.dto.AccountDTO
+import dao.queries.AccountQuery
 
 /**
   * Account operations service.
@@ -47,13 +46,13 @@ object AccountService {
       .fromOption("ACCOUNT_DATA_INVALID")
       .map(validate)
       .flatMap(validationToXor)
-      .map(AccountDao.insert)
+      .map(AccountQuery.insert)
       .transform
       .map(accountToDto)
       .flatten
 
   def list(filter: AccountFilter): DBIO[Seq[AccountDTO]] =
-    AccountDao.list(filter)
+    AccountQuery.list(filter)
       .flatMap(s => DBIO.sequence(s.map(a => accountToDto(a).run.filter(_.isRight).map{case \/-(r) => r})))
 
   /**
@@ -64,7 +63,7 @@ object AccountService {
     */
   def listSeparate(filter: AccountFilter)
     : DBIO[(Seq[Account], Seq[Account], Seq[Account])] = {
-    AccountDao.list(filter).map { a =>
+    AccountQuery.list(filter).map { a =>
       val incomeAccounts =
         a.filter(_.account_type == IncomeAccount)
       val assetAccounts =
@@ -82,7 +81,7 @@ object AccountService {
     * @return Account XOR error
     */
   def getAccount(id: Long): EitherD[String, Account] =
-    EitherD(AccountDao.findById(id).map(_.fromOption("ACCOUNT_NOT_FOUND")))
+    EitherD(AccountQuery.findById(id).map(_.fromOption("ACCOUNT_NOT_FOUND")))
 
   /**
     * Retrieves account by id or returns error
@@ -121,7 +120,7 @@ object AccountService {
 
     newAcc
       .map(acc =>
-        AccountDao.update(acc).map(_.fromOption("ACCOUNT_NOT_UPDATED")))
+        AccountQuery.update(acc).map(_.fromOption("ACCOUNT_NOT_UPDATED")))
       .map(x => EitherD(x))
       .flatten
       .map(accountToDto)
@@ -135,6 +134,6 @@ object AccountService {
     * @return either error result, or resultHandler processing result.
     */
   def delete(id: Long): DBIO[\/[String, Int]] = {
-    AccountDao.delete(id).map(_.fromOption("ACCOUNT_NOT_FOUND"))
+    AccountQuery.delete(id).map(_.fromOption("ACCOUNT_NOT_FOUND"))
   }
 }

@@ -3,6 +3,7 @@ package controllers
 import javax.inject._
 import controllers.api.ResultMaker._
 import dao._
+import dao.queries.CurrencyQuery
 import play.api.db.slick._
 import play.api.mvc._
 import util.ApiOps._
@@ -26,7 +27,7 @@ class CurrencyController @Inject()(
     * @return list of currencies on system, wrapped to json.
     */
   def index = Action.async {
-    db.run(CurrencyDao.list().map(x => makeResult(x)(OK)))
+    db.run(CurrencyQuery.list().map(x => makeResult(x)(OK)))
   }
 
   /**
@@ -36,7 +37,7 @@ class CurrencyController @Inject()(
     * @return currency object.
     */
   def show(id: Long) = Action.async {
-    val result = CurrencyDao.findById(id).flatMap {
+    val result = CurrencyQuery.findById(id).flatMap {
       case Some(x) => DBIO.successful(makeResult(x)(OK))
       case None => makeErrorResult("CURRENCY_NOT_FOUND")
     }

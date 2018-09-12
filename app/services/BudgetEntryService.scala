@@ -4,13 +4,14 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 import controllers.dto.BudgetEntryDTO
-import dao.{AccountDao, BudgetDao, BudgetEntryDao}
 import models.{Account, Budget, BudgetEntry, ExpenseAccount}
 import slick.jdbc.PostgresProfile.api._
 import play.api.libs.concurrent.Execution.Implicits._
+
 import scala.math.Ordering
 import scalaz._
 import Scalaz._
+import dao.queries.{AccountQuery, BudgetQuery, BudgetEntryQuery}
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -64,10 +65,10 @@ object BudgetEntryService {
     */
   def entryToDTO(b: BudgetEntry): DBIO[BudgetEntryDTO] = {
     val amounts: DBIO[(BigDecimal, Option[BigDecimal])] =
-      BudgetDao.find(b.budget_id).flatMap {
+      BudgetQuery.find(b.budget_id).flatMap {
         case None => DBIO.successful((BigDecimal(0), None))
         case Some(budget) =>
-          BudgetEntryDao.getActualSpendings(b.account_id, budget).map {
+          BudgetEntryQuery.getActualSpendings(b.account_id, budget).map {
             actual =>
               (actual, getEntryAmounts(b, LocalDate.now(), budget, actual))
           }
@@ -75,7 +76,7 @@ object BudgetEntryService {
     amounts.flatMap { p =>
       val (actual, normalizedChangeAmount) = p
       val defaultAccount = Account(None, ExpenseAccount, 0, "No account found", 0, false, false, false)
-      val account = AccountDao.findById(b.account_id).map(_.getOrElse(defaultAccount))
+      val account = AccountQuery.findById(b.account_id).map(_.getOrElse(defaultAccount))
       account.map { a =>
         BudgetEntryDTO(b.id,
           b.account_id,
@@ -97,13 +98,13 @@ object BudgetEntryService {
     * @return Sequence of BudgetEntry DTOs.
     */
   def list(budget_id: Long): DBIO[Seq[BudgetEntryDTO]] =
-    BudgetEntryDao
+    BudgetEntryQuery
       .list(budget_id: Long)
       .flatMap(x => DBIO.sequence(x.map(entryToDTO)))
     .map(_.sortBy(r => (r.account_type, r.account_name))(Ordering.Tuple2(Ordering.String.reverse, Ordering.String)))
 
   def find(id: Long, budget_id: Long): DBIO[Option[BudgetEntryDTO]] = {
-    BudgetEntryDao.find(id, budget_id).flatMap { x =>
+    BudgetEntryQuery.find(id, budget_id).flatMap { x =>
       x.map(entryToDTO) match {
         case Some(f) => f.map(Some(_))
         case None => DBIO.successful(None)
@@ -130,14 +131,14 @@ object BudgetEntryService {
       case Some(true) => p
       case _ => Some(false)
     }
-    BudgetEntryDao.find(id, budget_id).flatMap {
+    BudgetEntryQuery.find(id, budget_id).flatMap {
       case None => DBIO.successful("BUDGETENTRY_NOT_FOUND".left)
       case Some(x) =>
         val updated = x.copy(even_distribution =
           ed.getOrElse(x.even_distribution),
           proration = proration,
           expected_amount = ea.getOrElse(x.expected_amount))
-        BudgetEntryDao.update(updated).flatMap {
+        BudgetEntryQuery.update(updated).flatMap {
           case 1 => entryToDTO(updated).map(_.right)
           case _ => DBIO.successful("BUDGETENTRY_BOT_UPDATED".left)
         }

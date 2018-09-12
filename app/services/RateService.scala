@@ -2,7 +2,7 @@ package services
 
 import java.time.LocalDateTime
 
-import dao.RateDao
+import dao.queries.RateQuery
 import models.Rate
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
@@ -18,7 +18,7 @@ object RateService {
     * * @param ts Rate validity timestamp.
     * @return Sequence of rates for specified ts.
     */
-  def list(ts: LocalDateTime): DBIO[Seq[Rate]] = RateDao.list(ts)
+  def list(ts: LocalDateTime): DBIO[Seq[Rate]] = RateQuery.list(ts)
 
   /**
     * Retrieves rate for currencies pair at specified point in time.
@@ -28,7 +28,7 @@ object RateService {
     * @return Rate. If rate value is missing, it will return default rate of '1'.
     */
   def get(ts: LocalDateTime, from: Long, to: Long): DBIO[Rate] =
-    RateDao
+    RateQuery
       .findByPair(ts, from, to)
       .map(_.getOrElse(Rate(Some(-1), ts, ts, from, to, 1)))
 

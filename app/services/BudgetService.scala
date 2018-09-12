@@ -4,7 +4,6 @@ import java.time.LocalDate
 
 import controllers.dto.BudgetDTO
 import dao.filters.EmptyAccountFilter
-import dao.BudgetDao
 import models.{Account, Budget, BudgetEntry}
 import slick.jdbc.PostgresProfile.api._
 import util.EitherD
@@ -12,6 +11,7 @@ import util.EitherD._
 import validators.Validator._
 import scalaz._
 import Scalaz._
+import dao.queries.BudgetQuery
 import play.api.libs.concurrent.Execution.Implicits._
 
 /**
@@ -70,7 +70,7 @@ object BudgetService {
     * @return Total of expected_changes on accounts of interest exposed in primary currency
     */
   private def getExpectedChangedInPrimaryRate(budget_id: Long, relatedAccounts: Seq[Account]): DBIO[BigDecimal] = {
-    BudgetDao.getExpectedChange(budget_id, relatedAccounts.flatMap(_.id))
+    BudgetQuery.getExpectedChange(budget_id, relatedAccounts.flatMap(_.id))
       .flatMap(s => DBIO.sequence(s.map({ entry => entryApplyPrimaryRateToExpected(entry, relatedAccounts)})))
       .map(_.foldLeft(BigDecimal(0))(_ + _))
   }
@@ -100,7 +100,7 @@ object BudgetService {
     AccountService.listSeparate(EmptyAccountFilter).flatMap { a =>
       val (incomeAccounts, _, expenseAccounts) = a
 
-      BudgetDao.getIncomingAmount(b.term_beginning).flatMap { incoming =>
+      BudgetQuery.getIncomingAmount(b.term_beginning).flatMap { incoming =>
         getExpectedChange(b, incomeAccounts, expenseAccounts).flatMap {
           expectedChange =>
             val (expectedIncome, expectedExpense) = expectedChange
@@ -138,17 +138,17 @@ object BudgetService {
       .map { validate }
       .flatMap { validationToXor }
       .map(x =>
-        BudgetDao.findOverlapping(x.term_beginning, x.term_end).map {
+        BudgetQuery.findOverlapping(x.term_beginning, x.term_end).map {
           case Some(_) => "BUDGET_OVERLAPPING".left
           case None => x.right
       })
       .transform
 
-    v.map(BudgetDao.insert(_).flatMap(budgetToDTO)).run.transform
+    v.map(BudgetQuery.insert(_).flatMap(budgetToDTO)).run.transform
   }
 
   def list(): DBIO[Seq[BudgetDTO]] =
-    BudgetDao.list().flatMap(x => DBIO.sequence(x.map(budgetToDTO)))
+    BudgetQuery.list().flatMap(x => DBIO.sequence(x.map(budgetToDTO)))
 
   /**
     * Retrieves specific Budget.
@@ -156,7 +156,7 @@ object BudgetService {
     * @return DTO object.
     */
   def get(id: Long): DBIO[Option[BudgetDTO]] = {
-    BudgetDao.find(id).flatMap { x =>
+    BudgetQuery.find(id).flatMap { x =>
       x.map(budgetToDTO) match {
         case Some(f) => f.map(Some(_))
         case None => DBIO.successful(None)
@@ -171,7 +171,7 @@ object BudgetService {
     * @return either error result, or resultHandler processing result.
     */
   def delete(id: Long): DBIO[\/[String, Int]] = {
-    BudgetDao.delete(id).map {
+    BudgetQuery.delete(id).map {
       case 1 => 1.right
       case _ => "BUDGET_NOT_FOUND".left
     }

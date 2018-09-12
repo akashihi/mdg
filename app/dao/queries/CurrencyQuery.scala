@@ -1,10 +1,10 @@
-package dao
+package dao.queries
 
 import dao.tables.Currencies
 import models.Currency
 import slick.jdbc.PostgresProfile.api._
 
-object CurrencyDao {
+object CurrencyQuery {
   val currencies = TableQuery[Currencies]
 
   def list(): DBIO[Seq[Currency]] =

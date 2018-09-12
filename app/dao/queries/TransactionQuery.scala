@@ -1,10 +1,10 @@
-package dao
+package dao.queries
 
 import java.time.LocalDate
 
 import dao.filters.TransactionFilter
-import dao.ordering.{Asc, Desc, Page, SortBy}
 import dao.mappers.LocalDateMapper._
+import dao.ordering.{Asc, Desc, Page, SortBy}
 import dao.tables.{Operations, TagMap, Transactions}
 import models.{Operation, Transaction, TxTag}
 import play.api.libs.concurrent.Execution.Implicits._
@@ -13,11 +13,11 @@ import slick.jdbc.PostgresProfile.api._
 /**
   * Database actions for Transactions.
   */
-object TransactionDao {
+object TransactionQuery {
   val transactions = TableQuery[Transactions]
   val operations = TableQuery[Operations]
   val tagMaps = TableQuery[TagMap]
-  val tags = TagDao.tags
+  val tags = TagQuery.tags
 
   /**
     * Filtering helper. Retrieves list of transactions ids,
@@ -81,7 +81,7 @@ object TransactionDao {
     */
   private def makeCriteria(filter: TransactionFilter)
     : DBIO[Query[Transactions, Transaction, Seq]] = {
-    val preActions = TransactionDao.tagTxFilter(filter.tag) zip TransactionDao
+    val preActions = TransactionQuery.tagTxFilter(filter.tag) zip TransactionQuery
       .accTxFilter(filter.account_id)
 
     preActions.map(tx_id_s => {

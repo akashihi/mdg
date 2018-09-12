@@ -5,16 +5,15 @@ import java.time.LocalDate
 import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
-import dao.{AccountDao, TagDao, TransactionDao}
 import models.{Account, Operation, Transaction}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
 import util.EitherD
 import util.EitherD._
 import validators.Validator._
-
 import scalaz._
 import Scalaz._
+import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
 
 /**
   * Transaction operations service.
@@ -50,7 +49,7 @@ object TransactionService {
   def prepareTransactionDto(id: Option[Long],
                             wrapper: Option[TransactionWrapperDto])
     : DBIO[\/[String, TransactionDto]] = {
-    AccountDao.listAll.map { accounts =>
+    AccountQuery.listAll.map { accounts =>
       val validator = validate(accounts)(_)
       wrapper
         .fromOption("TRANSACTION_DATA_INVALID")
@@ -69,11 +68,11 @@ object TransactionService {
     */
   def txToDto(tx: Transaction): DBIO[TransactionDto] = {
     for {
-      o <- TransactionDao
+      o <- TransactionQuery
         .listOperations(tx.id.get)
         .map(x =>
           x.map(o => OperationDto(o.account_id, o.amount, o.rate.some)))
-      t <- TransactionDao.listTags(tx.id.get).map(x => x.map(_.txtag))
+      t <- TransactionQuery.listTags(tx.id.get).map(x => x.map(_.txtag))
     } yield
       TransactionDto(Some(tx.id.get),
                      tx.timestamp,
@@ -89,13 +88,13 @@ object TransactionService {
     */
   def add(tx: TransactionDto): DBIO[TransactionDto] = {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
-    val tags = DBIO.sequence(tx.tags.map(TagDao.ensureIdByValue))
+    val tags = DBIO.sequence(tx.tags.map(TagQuery.ensureIdByValue))
     val operations = tx.operations.map { x =>
       Operation(-1, -1, x.account_id, x.amount, x.rate.getOrElse(1))
     }
     tags
       .flatMap { txTags =>
-        TransactionDao.insert(transaction, operations, txTags)
+        TransactionQuery.insert(transaction, operations, txTags)
       }
       .flatMap(txToDto)
   }
@@ -107,10 +106,10 @@ object TransactionService {
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page]): DBIO[(Seq[TransactionDto], Int)] = {
-    val list = TransactionDao
+    val list = TransactionQuery
       .list(filter, sort, page)
       .flatMap(s => DBIO.sequence(s.map(t => txToDto(t))))
-    val count = TransactionDao.count(filter)
+    val count = TransactionQuery.count(filter)
 
     list zip count
   }
@@ -121,7 +120,7 @@ object TransactionService {
     * @return DTO object.
     */
   def get(id: Long): DBIO[Option[TransactionDto]] = {
-    val tx = TransactionDao.findById(id)
+    val tx = TransactionQuery.findById(id)
     tx.flatMap {
       case Some(x) => txToDto(x).map(t => Some(t))
       case None => DBIO.successful(None)
@@ -129,7 +128,7 @@ object TransactionService {
   }
 
   def replace(id: Long, tx: TransactionDto): DBIO[\/[String, TransactionDto]] = {
-    TransactionDao.delete(id).flatMap {
+    TransactionQuery.delete(id).flatMap {
       case 1 => add(tx) map (_.right)
       case _ => DBIO.successful("TRANSACTION_NOT_FOUND".left)
     }
@@ -142,7 +141,7 @@ object TransactionService {
     * @return either error result, or resultHandler processing result.
     */
   def delete(id: Long): DBIO[\/[String, Int]] = {
-    TransactionDao.delete(id).map {
+    TransactionQuery.delete(id).map {
       case 1 => 1.right
       case _ => "TRANSACTION_NOT_FOUND".left
     }
@@ -157,8 +156,8 @@ object TransactionService {
     */
   def getTotalsForDate(from: LocalDate, till: LocalDate)(
       accounts: Seq[Account]): DBIO[BigDecimal] = {
-    TransactionDao.transactionsForPeriod(from, till).flatMap { txId =>
-      val ops = TransactionDao.listOperations(txId)
+    TransactionQuery.transactionsForPeriod(from, till).flatMap { txId =>
+      val ops = TransactionQuery.listOperations(txId)
       ops.map(s => s.map({o =>
         val account = accounts.find(_.id.get == o.account_id)
         account.map(a => RateService.getCurrentRateToPrimary(a.currency_id).map(_.rate * o.amount).run.map(_.getOrElse(BigDecimal(0))))

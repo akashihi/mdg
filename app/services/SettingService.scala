@@ -1,14 +1,13 @@
 package services
 
 import com.google.common.cache.{CacheBuilder, CacheLoader}
-import dao.{CurrencyDao, SettingDao}
+import dao.queries.{CurrencyQuery, SettingDao}
 import models.Setting
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
 import util.OptionConverters._
 import util.EitherD._
 import util.EitherD
-
 import scalaz._
 
 /**
@@ -42,7 +41,7 @@ object SettingService {
     val curOption = value
       .flatMap(_.tryToLong)
       .fromOption("SETTING_DATA_INVALID")
-      .map(CurrencyDao.findById)
+      .map(CurrencyQuery.findById)
     val haveCurrency =
       curOption.transform.flatMap(_.fromOption("SETTING_DATA_INVALID"))
 
