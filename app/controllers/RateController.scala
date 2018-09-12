@@ -2,10 +2,10 @@ package controllers
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import javax.inject.{Inject, Singleton}
 
+import javax.inject.{Inject, Singleton}
 import controllers.api.ResultMaker._
-import play.api.db.slick.DatabaseConfigProvider
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.mvc._
 import services.RateService
 import slick.jdbc.JdbcProfile
@@ -19,8 +19,7 @@ import scala.concurrent.ExecutionContext
 class RateController @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext)
-    extends InjectedController {
-  val db = dbConfigProvider.get[JdbcProfile].db
+    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
 
   /**
     * Rate list access method.

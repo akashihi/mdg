@@ -1,10 +1,9 @@
 package controllers
 
 import javax.inject._
-
 import controllers.api.ResultMaker._
 import dao._
-import play.api.db.slick.DatabaseConfigProvider
+import play.api.db.slick._
 import play.api.mvc._
 import slick.jdbc.JdbcProfile
 
@@ -17,8 +16,7 @@ import scala.concurrent.ExecutionContext
 class TagController @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext)
-    extends InjectedController {
-  val db = dbConfigProvider.get[JdbcProfile].db
+    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
 
   /**
     * Tag list access method

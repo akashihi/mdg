@@ -1,14 +1,13 @@
 package controllers
 
 import javax.inject.Inject
-
 import controllers.api.JsonWrapper._
 import controllers.api.ResultMaker._
 import play.api.mvc._
 import services.BudgetEntryService
 import services.ErrorService._
 import util.ApiOps._
-import play.api.db.slick.DatabaseConfigProvider
+import play.api.db.slick._
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
 
@@ -20,8 +19,7 @@ import scala.concurrent.ExecutionContext
 class BudgetEntryController @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext)
-    extends InjectedController {
-  val db = dbConfigProvider.get[JdbcProfile].db
+    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
 
   def index(budget_id: Long) = Action.async {
     val result = BudgetEntryService.list(budget_id).map(x => Ok(wrapJson(x)))

@@ -1,14 +1,14 @@
 package controllers
 
 import java.time._
-import javax.inject.Inject
 
+import javax.inject.Inject
 import controllers.api.ResultMaker._
 import models.Budget
 import play.api.mvc._
 import services.BudgetService
 import services.ErrorService._
-import play.api.db.slick.DatabaseConfigProvider
+import play.api.db.slick._
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
 
@@ -22,9 +22,7 @@ import controllers.dto.BudgetDTO
 class BudgetController @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext)
-    extends InjectedController {
-
-  val db = dbConfigProvider.get[JdbcProfile].db
+    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
 
   /**
     * Makes Play result form Budget(DTO)
