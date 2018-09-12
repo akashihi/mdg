@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject._
 import controllers.api.ResultMaker._
+import dao.{SqlDatabase, SqlExecutionContext}
 import play.api.db.slick._
 import play.api.mvc._
 import services.SettingService
@@ -14,10 +15,8 @@ import scala.concurrent.ExecutionContext
   * Setting resource REST controller
   */
 @Singleton
-class SettingController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
+class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   /**
     * Setting list access method
@@ -25,7 +24,7 @@ class SettingController @Inject()(
     * @return list of settings on system, wrapped to json.
     */
   def index = Action.async {
-    db.run(SettingService.list().map(x => makeResult(x)(OK)))
+    sql.query(SettingService.list().map(x => makeResult(x)(OK)))
   }
 
   /**
@@ -42,7 +41,7 @@ class SettingController @Inject()(
         handleErrors(x) { x =>
           makeResult(x)(OK)
       })
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -58,7 +57,7 @@ class SettingController @Inject()(
         makeResult(x)(ACCEPTED)
       }
     }
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -74,6 +73,6 @@ class SettingController @Inject()(
         makeResult(x)(ACCEPTED)
       }
     }
-    db.run(result)
+    sql.query(result)
   }
 }

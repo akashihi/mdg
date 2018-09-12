@@ -3,25 +3,20 @@ package controllers
 import javax.inject._
 import controllers.api.ResultMaker._
 import controllers.dto.AccountDTO
+import dao.{SqlDatabase, SqlExecutionContext}
 import dao.filters.AccountFilter
 import models.{Account, AccountType}
-import play.api.db.slick._
 import play.api.libs.json._
 import play.api.mvc._
 import services.AccountService
 import services.ErrorService._
-import slick.jdbc.JdbcProfile
-
-import scala.concurrent._
 
 /**
   * Account Resource REST controller.
   */
 @Singleton
-class AccountController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
+class AccountController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   /**
     * Makes Play result form Account
@@ -61,7 +56,7 @@ class AccountController @Inject()(
       .create(account)
       .run
       .flatMap(x => handleErrors(x)(createResult))
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -76,7 +71,7 @@ class AccountController @Inject()(
       }
       .getOrElse(AccountFilter(None, None, None))
     val result = AccountService.list(accountFilter).map(x => makeResult(x)(OK))
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -93,7 +88,7 @@ class AccountController @Inject()(
         handleErrors(x) { x =>
           makeResult(x)(OK)
       })
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -116,7 +111,7 @@ class AccountController @Inject()(
       }
     }
 
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -132,6 +127,6 @@ class AccountController @Inject()(
         handleErrors(x) { _ =>
           NoContent
       })
-    db.run(result)
+    sql.query(result)
   }
 }

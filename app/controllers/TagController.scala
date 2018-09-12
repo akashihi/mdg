@@ -14,10 +14,8 @@ import scala.concurrent.ExecutionContext
   * Tag resource REST controller
   */
 @Singleton
-class TagController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
+class TagController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   /**
     * Tag list access method
@@ -25,6 +23,6 @@ class TagController @Inject()(
     * @return list of tags on system, wrapped to json.
     */
   def index = Action.async {
-    db.run(TagQuery.list().map(x => makeResult(x)(OK)))
+    sql.query(TagQuery.list().map(x => makeResult(x)(OK)))
   }
 }

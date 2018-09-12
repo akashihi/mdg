@@ -8,21 +8,16 @@ import models.Budget
 import play.api.mvc._
 import services.BudgetService
 import services.ErrorService._
-import play.api.db.slick._
-import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
-
-import scala.concurrent._
 import _root_.util.ApiOps._
 import controllers.dto.BudgetDTO
+import dao.{SqlDatabase, SqlExecutionContext}
 
 /**
   * Budget REST resource controller.
   */
-class BudgetController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
+class BudgetController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   /**
     * Makes Play result form Budget(DTO)
@@ -52,12 +47,12 @@ class BudgetController @Inject()(
 
     val result =
       BudgetService.add(budget).run.flatMap(x => handleErrors(x)(createResult))
-    db.run(result)
+    sql.query(result)
   }
 
   def index = Action.async {
     val result = BudgetService.list().map(x => makeResult(x)(OK))
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -70,7 +65,7 @@ class BudgetController @Inject()(
       case None => makeErrorResult("BUDGET_NOT_FOUND")
       case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -86,6 +81,6 @@ class BudgetController @Inject()(
         handleErrors(x) { _ =>
           NoContent
       })
-    db.run(result)
+    sql.query(result)
   }
 }

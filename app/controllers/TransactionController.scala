@@ -7,6 +7,7 @@ import dao.filters.TransactionFilter._
 import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
 import controllers.api.ResultMaker._
+import dao.{SqlDatabase, SqlExecutionContext}
 import util.ApiOps._
 import util.EitherD._
 import play.api.libs.json._
@@ -23,10 +24,8 @@ import scalaz._
 /**
   * Transaction REST resource controller
   */
-class TransactionController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
+class TransactionController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   val DEFAULT_PAGE_SIZE = 10
 
@@ -68,7 +67,7 @@ class TransactionController @Inject()(
       .transform
 
     val result = tx.run.flatMap(x => handleErrors(x)(createResult))
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -109,7 +108,7 @@ class TransactionController @Inject()(
           val (transactions, count) = x
           makeResult(transactions, count)(OK)
         }
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -122,7 +121,7 @@ class TransactionController @Inject()(
       case None => makeErrorResult("TRANSACTION_NOT_FOUND")
       case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -143,7 +142,7 @@ class TransactionController @Inject()(
               makeResult(tx)(ACCEPTED)
           });
     }
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -159,6 +158,6 @@ class TransactionController @Inject()(
         handleErrors(x) { _ =>
           NoContent
       })
-    db.run(result)
+    sql.query(result)
   }
 }

@@ -3,27 +3,22 @@ package controllers
 import javax.inject.Inject
 import controllers.api.JsonWrapper._
 import controllers.api.ResultMaker._
+import dao.{SqlDatabase, SqlExecutionContext}
 import play.api.mvc._
 import services.BudgetEntryService
 import services.ErrorService._
 import util.ApiOps._
-import play.api.db.slick._
-import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
-
-import scala.concurrent.ExecutionContext
 
 /**
   * Budget REST resource controller.
   */
-class BudgetEntryController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
+class BudgetEntryController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   def index(budget_id: Long) = Action.async {
     val result = BudgetEntryService.list(budget_id).map(x => Ok(wrapJson(x)))
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -36,7 +31,7 @@ class BudgetEntryController @Inject()(
       case None => makeErrorResult("BUDGETENTRY_NOT_FOUND")
       case Some(x) => DBIO.successful(Ok(wrapJson(x)))
     }
-    db.run(result)
+    sql.query(result)
   }
 
   /**
@@ -60,7 +55,6 @@ class BudgetEntryController @Inject()(
             makeResult(x)(ACCEPTED)
           }
       }
-
-      db.run(result)
+      sql.query(result)
   }
 }

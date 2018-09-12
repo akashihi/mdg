@@ -2,18 +2,19 @@ package controllers
 
 import javax.inject._
 import controllers.api.ResultMaker._
-import dao.SqlDatabase
+import dao.{SqlDatabase, SqlExecutionContext}
 import dao.queries.CurrencyQuery
 import play.api.mvc._
 import util.ApiOps._
 import slick.jdbc.PostgresProfile.api._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Currency resource REST controller
   */
 @Singleton
-class CurrencyController @Inject() (protected val sql: SqlDatabase)
+class CurrencyController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
     extends InjectedController {
 
   /**
