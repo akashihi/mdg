@@ -2,24 +2,19 @@ package controllers
 
 import javax.inject._
 import controllers.api.ResultMaker._
-import dao._
+import dao.SqlDatabase
 import dao.queries.CurrencyQuery
-import play.api.db.slick._
 import play.api.mvc._
 import util.ApiOps._
-import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
-
-import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Currency resource REST controller
   */
 @Singleton
-class CurrencyController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController with HasDatabaseConfigProvider[JdbcProfile] {
+class CurrencyController @Inject() (protected val sql: SqlDatabase)
+    extends InjectedController {
 
   /**
     * Currency list access method
@@ -27,7 +22,7 @@ class CurrencyController @Inject()(
     * @return list of currencies on system, wrapped to json.
     */
   def index = Action.async {
-    db.run(CurrencyQuery.list().map(x => makeResult(x)(OK)))
+    sql.query(CurrencyQuery.list().map(x => makeResult(x)(OK)))
   }
 
   /**
@@ -41,6 +36,6 @@ class CurrencyController @Inject()(
       case Some(x) => DBIO.successful(makeResult(x)(OK))
       case None => makeErrorResult("CURRENCY_NOT_FOUND")
     }
-    db.run(result)
+    sql.query(result)
   }
 }
