@@ -8,12 +8,12 @@ import play.api.Configuration
 class ElasticSearch @Inject() (protected val config: Configuration) {
   import com.sksamuel.elastic4s.http.ElasticDsl._
 
-  def saveComment(comment: String): Boolean = {
+  def saveComment(id: Long, comment: String): Boolean = {
     val url = config.getOptional[String]("elasticsearch.url").getOrElse("http://localhost:9200")
     val client = ElasticClient(ElasticProperties(url))
 
     val response = client.execute {
-      indexInto("mdg" / "tx").fields("comment" -> comment).refresh(RefreshPolicy.Immediate)
+      indexInto("mdg" / "tx").id(id.toString).fields("comment" -> comment).refresh(RefreshPolicy.Immediate)
     }.await
 
     response.isSuccess

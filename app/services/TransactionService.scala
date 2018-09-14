@@ -96,7 +96,10 @@ class TransactionService @Inject() (protected val es: ElasticSearch)(implicit ec
     tags
       .flatMap { txTags =>
         TransactionQuery.insert(transaction, operations, txTags)
-      }
+      }.map(tx => {
+        es.saveComment(tx.id.get, tx.comment.getOrElse(""))
+      tx
+    })
       .flatMap(txToDto)
   }
 
