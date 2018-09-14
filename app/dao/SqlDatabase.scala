@@ -10,7 +10,7 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent._
 
 class SqlExecutionContext @Inject()(actorSystem: ActorSystem)
-  extends CustomExecutionContext(actorSystem, "mdg.sql.dispatcher")
+  extends CustomExecutionContext(actorSystem, "mdg-sql-dispatcher")
 
 class SqlDatabase @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: SqlExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
