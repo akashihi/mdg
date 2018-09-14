@@ -1,24 +1,25 @@
 package services
 
+import javax.inject.Inject
 import java.time.LocalDate
 
 import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
 import models.{Account, Operation, Transaction}
-import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
 import util.EitherD
 import util.EitherD._
 import validators.Validator._
 import scalaz._
 import Scalaz._
+import dao.{ElasticSearch, SqlExecutionContext}
 import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
 
 /**
   * Transaction operations service.
   */
-object TransactionService {
+class TransactionService @Inject() (protected val es: ElasticSearch)(implicit ec: SqlExecutionContext) {
 
   /**
     * Clears transaction of empty operations.

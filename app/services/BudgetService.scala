@@ -1,5 +1,6 @@
 package services
 
+import javax.inject.Inject
 import java.time.LocalDate
 
 import controllers.dto.BudgetDTO
@@ -11,13 +12,13 @@ import util.EitherD._
 import validators.Validator._
 import scalaz._
 import Scalaz._
+import dao.SqlExecutionContext
 import dao.queries.BudgetQuery
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Budget operations service.
   */
-object BudgetService {
+class BudgetService @Inject() (protected val ts: TransactionService)(implicit ec: SqlExecutionContext) {
 
   /**
     * Calculates actual change of remains on asset account during
@@ -30,7 +31,7 @@ object BudgetService {
       incomeAccounts: Seq[Account],
       expenseAccounts: Seq[Account]): DBIO[(BigDecimal, BigDecimal)] = {
     val getTotalsForBudget =
-      TransactionService.getTotalsForDate(b.term_beginning, b.term_end) _
+      ts.getTotalsForDate(b.term_beginning, b.term_end) _
     getTotalsForBudget(incomeAccounts).map(-_) zip getTotalsForBudget(
       expenseAccounts)
   }
@@ -42,7 +43,7 @@ object BudgetService {
     */
   private def getTodaySpendings(accounts: Seq[Account]): DBIO[BigDecimal] = {
     val today = LocalDate.now()
-    TransactionService.getTotalsForDate(today, today)(accounts)
+    ts.getTotalsForDate(today, today)(accounts)
   }
 
   private def getAllowedSpendings(b: Budget): DBIO[BigDecimal] = {

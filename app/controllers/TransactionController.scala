@@ -14,17 +14,14 @@ import play.api.libs.json._
 import play.api.mvc._
 import services.TransactionService
 import services.ErrorService._
-import play.api.db.slick._
-import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
 
-import scala.concurrent._
 import scalaz._
 
 /**
   * Transaction REST resource controller
   */
-class TransactionController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+class TransactionController @Inject() (protected val sql: SqlDatabase, protected val ts: TransactionService)(implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   val DEFAULT_PAGE_SIZE = 10
@@ -61,9 +58,9 @@ class TransactionController @Inject() (protected val sql: SqlDatabase)(implicit 
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    val tx = TransactionService
+    val tx = ts
       .prepareTransactionDto(None, parseDto(request.body))
-      .map(_.map(TransactionService.add))
+      .map(_.map(ts.add))
       .transform
 
     val result = tx.run.flatMap(x => handleErrors(x)(createResult))
@@ -102,7 +99,7 @@ class TransactionController @Inject() (protected val sql: SqlDatabase)(implicit 
     }
 
     val result =
-      TransactionService
+      ts
         .list(filterObj, ordering, page)
         .map { x =>
           val (transactions, count) = x
@@ -117,7 +114,7 @@ class TransactionController @Inject() (protected val sql: SqlDatabase)(implicit 
     * @return transaction object.
     */
   def show(id: Long) = Action.async {
-    val result = TransactionService.get(id).flatMap {
+    val result = ts.get(id).flatMap {
       case None => makeErrorResult("TRANSACTION_NOT_FOUND")
       case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
@@ -130,12 +127,12 @@ class TransactionController @Inject() (protected val sql: SqlDatabase)(implicit 
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    val tx = TransactionService.prepareTransactionDto(Some(id),
+    val tx = ts.prepareTransactionDto(Some(id),
                                                       parseDto(request.body))
     val result = tx.flatMap {
       case -\/(e) => makeErrorResult(e) //Fail fast
       case \/-(dto) =>
-        TransactionService
+        ts
           .replace(id, dto)
           .flatMap(x =>
             handleErrors(x) { tx =>
@@ -152,7 +149,7 @@ class TransactionController @Inject() (protected val sql: SqlDatabase)(implicit 
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    val result = TransactionService
+    val result = ts
       .delete(id)
       .flatMap(x =>
         handleErrors(x) { _ =>
