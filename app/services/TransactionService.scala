@@ -16,6 +16,9 @@ import Scalaz._
 import dao.{ElasticSearch, SqlExecutionContext}
 import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
 /**
   * Transaction operations service.
   */
@@ -97,7 +100,7 @@ class TransactionService @Inject() (protected val es: ElasticSearch)(implicit ec
       .flatMap { txTags =>
         TransactionQuery.insert(transaction, operations, txTags)
       }.map(tx => {
-        es.saveComment(tx.id.get, tx.comment.getOrElse(""))
+        Await.ready(es.saveComment(tx.id.get, tx.comment.getOrElse("")), Duration.Inf)
       tx
     })
       .flatMap(txToDto)
@@ -110,7 +113,7 @@ class TransactionService @Inject() (protected val es: ElasticSearch)(implicit ec
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page]): DBIO[(Seq[TransactionDto], Int)] = {
-    val commentsIds = filter.comment.map(es.lookupComment).getOrElse(Array[Long]())
+    val commentsIds = filter.comment.map(c => Await.result(es.lookupComment(c), Duration.Inf)).getOrElse(Array[Long]())
     val list = TransactionQuery
       .list(filter, sort, page, commentsIds)
       .flatMap(s => DBIO.sequence(s.map(t => txToDto(t))))

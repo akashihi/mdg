@@ -7,7 +7,9 @@ import javax.inject.Inject
 import play.api.Configuration
 import util.OptionConverters._
 
-class ElasticSearch @Inject() (protected val config: Configuration) {
+import scala.concurrent._
+
+class ElasticSearch @Inject() (protected val config: Configuration)(implicit val ec: SqlExecutionContext) {
   import com.sksamuel.elastic4s.http.ElasticDsl._
 
   protected def getEsClient: ElasticClient = {
@@ -21,13 +23,13 @@ class ElasticSearch @Inject() (protected val config: Configuration) {
     * @param comment Value of the comment.
     * @return True in case of success.
     */
-  def saveComment(id: Long, comment: String): Boolean = {
+  def saveComment(id: Long, comment: String): Future[Boolean] = {
 
     val response = getEsClient.execute {
       indexInto("mdg" / "tx").id(id.toString).fields("comment" -> comment).refresh(RefreshPolicy.Immediate)
-    }.await
+    }
 
-    response.isSuccess
+    response.map(_.isSuccess)
   }
 
   /**
@@ -35,15 +37,17 @@ class ElasticSearch @Inject() (protected val config: Configuration) {
     * @param query Text to look for.
     * @return Array of matching SQL transaction ids.
     */
-  def lookupComment(query: String): Array[Long] = {
+  def lookupComment(query: String): Future[Array[Long]] = {
     val response = getEsClient.execute {
       search("mdg").query(MatchQuery(field = "comment", value = query, fuzziness = Some("1.0")))
-    }.await
+    }
 
-    if (response.isSuccess) {
-      response.result.hits.hits.map(_.id).flatMap(_.tryToLong)
-    } else {
-      Array[Long]()
+    response.map { r =>
+      if (r.isSuccess) {
+        r.result.hits.hits.map(_.id).flatMap(_.tryToLong)
+      } else {
+        Array[Long]()
+      }
     }
   }
 }
