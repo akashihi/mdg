@@ -77,9 +77,10 @@ object TransactionQuery {
   /**
     * Converts a Transaction filter specification to the Slick query definition.
     * @param filter Filter to work on.
+    * @param fulltextIds: List of matching transaction ids, returned by fulltext search.
     * @return Slick query, configured to match supplied filter.
     */
-  private def makeCriteria(filter: TransactionFilter)
+  private def makeCriteria(filter: TransactionFilter, fulltextIds: Array[Long])
     : DBIO[Query[Transactions, Transaction, Seq]] = {
     val preActions = TransactionQuery.tagTxFilter(filter.tag) zip TransactionQuery
       .accTxFilter(filter.account_id)
@@ -94,10 +95,14 @@ object TransactionQuery {
       val tag_tx = Option(tag_tx_s).filter(_.nonEmpty)
       val acc_tx = Option(acc_tx_s).filter(_.nonEmpty)
 
+      //Same conditional application is valid for
+      //full text search list
+      val ft_tx = Option(fulltextIds).filter(_.nonEmpty)
+
       transactions.filter {
         t =>
           List(
-            filter.comment.map(t.comment.getOrElse("") === _),
+            ft_tx.map(t.id inSet _),
             filter.notEarlier.map(t.timestamp >= _),
             filter.notLater.map(t.timestamp <= _),
             tag_tx.map(t.id inSet _),
@@ -116,12 +121,14 @@ object TransactionQuery {
     * @param filter Transaction filter description.
     * @param sort Ordering destription.
     * @param page Pagination specification.
+    * @param fulltextIds: List of matching transaction ids, returned by fulltext search.
     * @return List of mathed transactions.
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
-           page: Option[Page]): DBIO[Seq[Transaction]] = {
-    makeCriteria(filter).flatMap { criteriaQuery =>
+           page: Option[Page],
+           fulltextIds: Array[Long]): DBIO[Seq[Transaction]] = {
+    makeCriteria(filter, fulltextIds).flatMap { criteriaQuery =>
       val sortedQuery =
         sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
           case SortBy("timestamp", Asc) =>
@@ -142,10 +149,11 @@ object TransactionQuery {
     * Counts number of transactions, matching
     * specified filter.
     * @param filter Transaction filter description.
+    * @param fulltextIds: List of matching transaction ids, returned by fulltext search.
     * @return Number pof matched transactions.
     */
-  def count(filter: TransactionFilter): DBIO[Int] =
-    makeCriteria(filter).flatMap(_.length.result)
+  def count(filter: TransactionFilter, fulltextIds: Array[Long]): DBIO[Int] =
+    makeCriteria(filter, fulltextIds).flatMap(_.length.result)
 
   /**
     * Retrieves transaction by it's id.

@@ -110,10 +110,11 @@ class TransactionService @Inject() (protected val es: ElasticSearch)(implicit ec
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page]): DBIO[(Seq[TransactionDto], Int)] = {
+    val commentsIds = filter.comment.map(es.lookupComment).getOrElse(Array[Long]())
     val list = TransactionQuery
-      .list(filter, sort, page)
+      .list(filter, sort, page, commentsIds)
       .flatMap(s => DBIO.sequence(s.map(t => txToDto(t))))
-    val count = TransactionQuery.count(filter)
+    val count = TransactionQuery.count(filter, commentsIds)
 
     list zip count
   }
