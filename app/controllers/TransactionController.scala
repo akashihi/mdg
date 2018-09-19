@@ -8,6 +8,7 @@ import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
 import controllers.api.ResultMaker._
 import dao.{SqlDatabase, SqlExecutionContext}
+import models.Setting
 import util.ApiOps._
 import util.EitherD._
 import play.api.libs.json._
@@ -15,7 +16,6 @@ import play.api.mvc._
 import services.TransactionService
 import services.ErrorService._
 import slick.jdbc.PostgresProfile.api._
-
 import scalaz._
 
 /**
@@ -156,5 +156,17 @@ class TransactionController @Inject() (protected val sql: SqlDatabase, protected
           NoContent
       })
     sql.query(result)
+  }
+
+  /**
+    * mnt.transaction.reindex setting method.
+    *
+    * Not really a setting, triggers transaction fulltext search reindex.
+    *
+    * @return setting object.
+    */
+  def reindexTransactions() = Action.async {
+    val result = ts.reindexTransactions().map {s => Setting(id = Some("mnt.transaction.reindex"), value = s.toString )}
+    result.map(x => makeResult(x)(ACCEPTED))
   }
 }
