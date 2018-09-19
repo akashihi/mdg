@@ -8,7 +8,6 @@ import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
 import models.{Account, Operation, Transaction}
 import slick.jdbc.PostgresProfile.api._
-import util.EitherD
 import util.EitherD._
 import validators.Validator._
 import scalaz._
@@ -17,7 +16,6 @@ import dao.{ElasticSearch, SqlDatabase, SqlExecutionContext}
 import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
 
 import scala.concurrent._
-import scala.concurrent.duration.Duration
 
 /**
   * Transaction operations service.
@@ -52,8 +50,8 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     */
   def prepareTransactionDto(id: Option[Long],
                             wrapper: Option[TransactionWrapperDto])
-    : DBIO[\/[String, TransactionDto]] = {
-    AccountQuery.listAll.map { accounts =>
+    : EitherT[Future, String, TransactionDto] = {
+    val dto = AccountQuery.listAll.map { accounts =>
       val validator = validate(accounts)(_)
       wrapper
         .fromOption("TRANSACTION_DATA_INVALID")
@@ -63,6 +61,7 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
         .map { validator }
         .flatMap { validationToXor }
     }
+    EitherT(sql.query(dto))
   }
 
   /**
@@ -70,19 +69,15 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     * @param tx Transaction to convert.
     * @return Fully filled DTO object.
     */
-  def txToDto(tx: Transaction): DBIO[TransactionDto] = {
-    for {
+  def txToDto(tx: Transaction): Future[TransactionDto] = {
+    val dto = for {
       o <- TransactionQuery
         .listOperations(tx.id.get)
         .map(x =>
           x.map(o => OperationDto(o.account_id, o.amount, o.rate.some)))
       t <- TransactionQuery.listTags(tx.id.get).map(x => x.map(_.txtag))
-    } yield
-      TransactionDto(Some(tx.id.get),
-                     tx.timestamp,
-                     tx.comment,
-                     operations = o,
-                     tags = t)
+    } yield TransactionDto(Some(tx.id.get), tx.timestamp, tx.comment, operations = o, tags = t)
+    sql.query(dto)
   }
 
   /**
@@ -90,19 +85,14 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     * @param tx transaction description object.
     * @return transaction description object with id.
     */
-  def add(tx: TransactionDto): DBIO[TransactionDto] = {
+  def add(tx: TransactionDto): Future[TransactionDto] = {
     val transaction = Transaction(tx.id, tx.timestamp, tx.comment)
     val tags = DBIO.sequence(tx.tags.map(TagQuery.ensureIdByValue))
     val operations = tx.operations.map { x =>
-      Operation(-1, -1, x.account_id, x.amount, x.rate.getOrElse(1))
+      Operation(-1, -1, x.account_id, x.amount, x.rate.getOrElse(BigDecimal(1)))
     }
-    tags
-      .flatMap { txTags =>
-        TransactionQuery.insert(transaction, operations, txTags)
-      }.map(tx => {
-        Await.ready(es.saveComment(tx.id.get, tx.comment.getOrElse("")), Duration.Inf)
-      tx
-    })
+    val txWithId = sql.query(tags.flatMap(TransactionQuery.insert(transaction, operations, _)))
+    txWithId.flatMap { t => es.saveComment(t.id.get, t.comment.getOrElse("")); txWithId}
       .flatMap(txToDto)
   }
 
@@ -112,12 +102,12 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
-           page: Option[Page]): DBIO[(Seq[TransactionDto], Int)] = {
-    val commentsIds = filter.comment.map(c => Await.result(es.lookupComment(c), Duration.Inf)).getOrElse(Array[Long]())
-    val list = TransactionQuery
-      .list(filter, sort, page, commentsIds)
-      .flatMap(s => DBIO.sequence(s.map(t => txToDto(t))))
-    val count = TransactionQuery.count(filter, commentsIds)
+           page: Option[Page]): Future[(Seq[TransactionDto], Int)] = {
+    val commentsIds = filter.comment.map(es.lookupComment).getOrElse(Future.successful(Array[Long]()))
+    val list = commentsIds.map(TransactionQuery.list(filter, sort, page, _))
+      .flatMap(sql.query)
+      .map(_.map(txToDto)).flatMap(Future.sequence(_))
+    val count = commentsIds.map(TransactionQuery.count(filter,_)).flatMap(sql.query)
 
     list zip count
   }
@@ -127,18 +117,21 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     * @param id transaction unique id.
     * @return DTO object.
     */
-  def get(id: Long): DBIO[Option[TransactionDto]] = {
-    val tx = TransactionQuery.findById(id)
-    tx.flatMap {
-      case Some(x) => txToDto(x).map(t => Some(t))
-      case None => DBIO.successful(None)
-    }
+  def get(id: Long): OptionT[Future,TransactionDto] = {
+    val query = TransactionQuery.findById(id)
+    OptionT(sql.query(query)).flatMapF(txToDto)
   }
 
-  def replace(id: Long, tx: TransactionDto): DBIO[\/[String, TransactionDto]] = {
-    TransactionQuery.delete(id).flatMap {
+  /**
+    * Replaces specified transaction with new one
+    * @param id Transaction to replace
+    * @param tx New transaction data
+    * @return either error result or replaced transaction
+    */
+  def replace(id: Long, tx: TransactionDto): Future[\/[String, TransactionDto]] = {
+    sql.query(TransactionQuery.delete(id)).flatMap {
       case 1 => add(tx) map (_.right)
-      case _ => DBIO.successful("TRANSACTION_NOT_FOUND".left)
+      case _ => Future.successful("TRANSACTION_NOT_FOUND".left)
     }
   }
 
@@ -148,11 +141,12 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     * @param id identificator of transaction to remove.
     * @return either error result, or resultHandler processing result.
     */
-  def delete(id: Long): DBIO[\/[String, Int]] = {
-    TransactionQuery.delete(id).map {
+  def delete(id: Long): Future[\/[String, Int]] = {
+    val query = TransactionQuery.delete(id).map {
       case 1 => 1.right
       case _ => "TRANSACTION_NOT_FOUND".left
     }
+    sql.query(query)
   }
 
   /**
