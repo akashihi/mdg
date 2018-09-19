@@ -13,16 +13,16 @@ import util.EitherD._
 import validators.Validator._
 import scalaz._
 import Scalaz._
-import dao.{ElasticSearch, SqlExecutionContext}
+import dao.{ElasticSearch, SqlDatabase, SqlExecutionContext}
 import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
 
-import scala.concurrent.Await
+import scala.concurrent._
 import scala.concurrent.duration.Duration
 
 /**
   * Transaction operations service.
   */
-class TransactionService @Inject() (protected val es: ElasticSearch)(implicit ec: SqlExecutionContext) {
+class TransactionService @Inject() (protected val es: ElasticSearch, protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext) {
 
   /**
     * Clears transaction of empty operations.
@@ -174,5 +174,20 @@ class TransactionService @Inject() (protected val es: ElasticSearch)(implicit ec
         .flatMap(DBIO.sequence(_))
         .map(_.foldLeft(BigDecimal(0))(_ + _))
     }
+  }
+
+  /**
+    * Recreates transaction index from scratch.
+    * @return True in case of success
+    */
+  def reindexTransactions(): Future[Boolean] = {
+    def create = OptionT(es.createMdgIndex().map(_.option(1)))
+    def drop = OptionT(es.dropMdgIndex().map(_.option(1)))
+    def save = sql.query(TransactionQuery.listAll)
+    def index(transactions: Seq[Transaction]) = transactions.map(tx => es.saveComment(tx.id.get, tx.comment.getOrElse("")))
+
+    val result = drop.map(_ => create).flatMapF(_ => save).map(index).flatMapF(Future.sequence(_)).map(_.exists(!_)).map(!_)
+
+    result.getOrElse(false)
   }
 }

@@ -33,6 +33,7 @@ GET     /setting                                controllers.SettingController.in
 GET     /setting/:id                            controllers.SettingController.show(id: String)
 PUT     /setting/currency.primary               controllers.SettingController.editCurrencyPrimary
 PUT     /setting/ui.transaction.closedialog     controllers.SettingController.editUiTransactionCloseDialog
+PUT     /setting/mnt.transaction.reindex        controllers.SettingController.reindexTransactions
 
 GET     /rate/:ts                               controllers.RateController.index(ts: String)
 GET     /rate/:ts/:from/:to                     controllers.RateController.show(ts: String, from: Long, to: Long)

@@ -115,6 +115,12 @@ object TransactionQuery {
   }
 
   /**
+    * Returns all transactions, used in reindexing.
+    * @return List of all database transactions.
+    */
+  def listAll: DBIO[Seq[Transaction]] = transactions.result
+
+  /**
     * Retrieves list of transaction, according to the
     * specified filter and ordering. List of transaction could be
     * paginated.

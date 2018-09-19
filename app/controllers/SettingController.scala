@@ -3,9 +3,10 @@ package controllers
 import javax.inject._
 import controllers.api.ResultMaker._
 import dao.{SqlDatabase, SqlExecutionContext}
+import models.Setting
 import play.api.db.slick._
 import play.api.mvc._
-import services.SettingService
+import services.{SettingService, TransactionService}
 import services.ErrorService._
 import slick.jdbc.JdbcProfile
 
@@ -15,7 +16,7 @@ import scala.concurrent.ExecutionContext
   * Setting resource REST controller
   */
 @Singleton
-class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+class SettingController @Inject() (protected val sql: SqlDatabase, protected val ts: TransactionService)(implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   /**
@@ -74,5 +75,17 @@ class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
       }
     }
     sql.query(result)
+  }
+
+  /**
+    * mnt.transaction.reindex setting method.
+    *
+    * Not really a setting, triggers transaction fulltext search reindex.
+    *
+    * @return setting object.
+    */
+  def reindexTransactions() = Action.async {
+    val result = ts.reindexTransactions().map {s => Setting(id = Some("mnt.transaction.reindex"), value = s.toString )}
+    result.map(x => makeResult(x)(ACCEPTED))
   }
 }
