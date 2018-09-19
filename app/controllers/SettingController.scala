@@ -3,13 +3,9 @@ package controllers
 import javax.inject._
 import controllers.api.ResultMaker._
 import dao.{SqlDatabase, SqlExecutionContext}
-import play.api.db.slick._
 import play.api.mvc._
 import services.SettingService
 import services.ErrorService._
-import slick.jdbc.JdbcProfile
-
-import scala.concurrent.ExecutionContext
 
 /**
   * Setting resource REST controller

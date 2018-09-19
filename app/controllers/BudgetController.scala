@@ -16,7 +16,7 @@ import dao.{SqlDatabase, SqlExecutionContext}
 /**
   * Budget REST resource controller.
   */
-class BudgetController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+class BudgetController @Inject() (protected val sql: SqlDatabase, protected val bs: BudgetService)(implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   /**
@@ -46,12 +46,12 @@ class BudgetController @Inject() (protected val sql: SqlDatabase)(implicit ec: S
     } yield Budget(Some(b), b, e)
 
     val result =
-      BudgetService.add(budget).run.flatMap(x => handleErrors(x)(createResult))
+      bs.add(budget).run.flatMap(x => handleErrors(x)(createResult))
     sql.query(result)
   }
 
   def index = Action.async {
-    val result = BudgetService.list().map(x => makeResult(x)(OK))
+    val result = bs.list().map(x => makeResult(x)(OK))
     sql.query(result)
   }
 
@@ -61,7 +61,7 @@ class BudgetController @Inject() (protected val sql: SqlDatabase)(implicit ec: S
     * @return budget wrapper object.
     */
   def show(id: Long) = Action.async {
-    val result = BudgetService.get(id).flatMap {
+    val result = bs.get(id).flatMap {
       case None => makeErrorResult("BUDGET_NOT_FOUND")
       case Some(x) => DBIO.successful(makeResult(x)(OK))
     }
@@ -75,7 +75,7 @@ class BudgetController @Inject() (protected val sql: SqlDatabase)(implicit ec: S
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    val result = BudgetService
+    val result = bs
       .delete(id)
       .flatMap(x =>
         handleErrors(x) { _ =>
