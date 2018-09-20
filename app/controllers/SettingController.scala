@@ -2,16 +2,16 @@ package controllers
 
 import javax.inject._
 import controllers.api.ResultMaker._
-import dao.{SqlDatabase, SqlExecutionContext}
+import dao.SqlExecutionContext
 import play.api.mvc._
-import services.SettingService
-import services.ErrorService._
+import services.{ErrorService, SettingService}
 
 /**
   * Setting resource REST controller
   */
 @Singleton
-class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+class SettingController @Inject() (protected val ss: SettingService, protected val es: ErrorService)
+                                  (implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   /**
@@ -20,7 +20,7 @@ class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
     * @return list of settings on system, wrapped to json.
     */
   def index = Action.async {
-    sql.query(SettingService.list().map(x => makeResult(x)(OK)))
+    ss.list().map(x => makeResult(x)(OK))
   }
 
   /**
@@ -30,14 +30,13 @@ class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
     * @return setting object.
     */
   def show(id: String) = Action.async {
-    val result = SettingService
+    ss
       .get(id)
       .run
       .flatMap(x =>
-        handleErrors(x) { x =>
+        es.handleErrors(x) { x =>
           makeResult(x)(OK)
       })
-    sql.query(result)
   }
 
   /**
@@ -48,12 +47,11 @@ class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
   def editCurrencyPrimary() = Action.async(parse.tolerantJson) { request =>
     val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
 
-    val result = SettingService.setCurrencyPrimary(value).run.flatMap { x =>
-      handleErrors(x) { x =>
+    ss.setCurrencyPrimary(value).run.flatMap { x =>
+      es.handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }
     }
-    sql.query(result)
   }
 
   /**
@@ -64,11 +62,10 @@ class SettingController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
   def editUiTransactionCloseDialog() = Action.async(parse.tolerantJson) { request =>
     val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
 
-    val result = SettingService.setUiTransactionCloseDialog(value).run.flatMap { x =>
-      handleErrors(x) { x =>
+    ss.setUiTransactionCloseDialog(value).run.flatMap { x =>
+      es.handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }
     }
-    sql.query(result)
   }
 }
