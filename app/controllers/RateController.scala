@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 
 import javax.inject.{Inject, Singleton}
 import controllers.api.ResultMaker._
-import dao.{SqlDatabase, SqlExecutionContext}
+import dao.SqlExecutionContext
 import play.api.mvc._
 import services.RateService
 
@@ -13,7 +13,7 @@ import services.RateService
   * Rate resource REST controller
   */
 @Singleton
-class RateController @Inject() (protected val sql: SqlDatabase, protected val rs: RateService)(implicit ec: SqlExecutionContext)
+class RateController @Inject() (protected val rs: RateService)(implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   /**

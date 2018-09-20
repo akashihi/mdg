@@ -3,19 +3,19 @@ package controllers
 import javax.inject._
 import controllers.api.ResultMaker._
 import controllers.dto.AccountDTO
-import dao.{SqlDatabase, SqlExecutionContext}
+import dao.SqlExecutionContext
 import dao.filters.AccountFilter
 import models.{Account, AccountType}
 import play.api.libs.json._
 import play.api.mvc._
-import services.AccountService
-import services.ErrorService._
+import services.{AccountService, ErrorService}
 
 /**
   * Account Resource REST controller.
   */
 @Singleton
-class AccountController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+class AccountController @Inject()(protected val as: AccountService, protected val es: ErrorService)
+                                 (implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   /**
@@ -52,11 +52,9 @@ class AccountController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
         .getOrElse(false)
     } yield Account(Some(0), AccountType(t), c, n, b, f, o, hidden = false)
 
-    val result = AccountService
-      .create(account)
+    as.create(account)
       .run
-      .flatMap(x => handleErrors(x)(createResult))
-    sql.query(result)
+      .flatMap(x => es.handleErrors(x)(createResult))
   }
 
   /**
@@ -70,8 +68,7 @@ class AccountController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
         Json.parse(x).validate[AccountFilter].asOpt
       }
       .getOrElse(AccountFilter(None, None, None))
-    val result = AccountService.list(accountFilter).map(x => makeResult(x)(OK))
-    sql.query(result)
+    as.list(accountFilter).map(x => makeResult(x)(OK))
   }
 
   /**
@@ -81,14 +78,10 @@ class AccountController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
     * @return account object.
     */
   def show(id: Long) = Action.async {
-    val result = AccountService
-      .get(id)
-        .run
+    as.get(id)
+      .run
       .flatMap(x =>
-        handleErrors(x) { x =>
-          makeResult(x)(OK)
-      })
-    sql.query(result)
+        es.handleErrors(x) { x => makeResult(x)(OK) })
   }
 
   /**
@@ -105,13 +98,11 @@ class AccountController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
     val o = (request.body \ "data" \ "attributes" \ "operational")
       .asOpt[Boolean]
 
-    val result = AccountService.edit(id, n, o, f, h).run.flatMap { x =>
-      handleErrors(x) { x =>
+    as.edit(id, n, o, f, h).run.flatMap { x =>
+      es.handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }
     }
-
-    sql.query(result)
   }
 
   /**
@@ -121,12 +112,9 @@ class AccountController @Inject() (protected val sql: SqlDatabase)(implicit ec: 
     * @return HTTP 204 in case of sucess, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    val result = AccountService
-      .delete(id)
+    as.delete(id)
+      .run
       .flatMap(x =>
-        handleErrors(x) { _ =>
-          NoContent
-      })
-    sql.query(result)
+        es.handleErrors(x) { _ => NoContent })
   }
 }

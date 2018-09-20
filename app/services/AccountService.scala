@@ -3,22 +3,24 @@ package services
 import BigDecimal.RoundingMode.HALF_EVEN
 import dao.filters.AccountFilter
 import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.jdbc.PostgresProfile.api._
-import util.EitherD
 import util.EitherD._
 import validators.Validator._
 import scalaz._
 import controllers.dto.AccountDTO
+import dao.{SqlDatabase, SqlExecutionContext}
 import dao.queries.AccountQuery
+import javax.inject.Inject
+
+import scala.concurrent._
 
 /**
   * Account operations service.
   */
-object AccountService {
+class AccountService @Inject() (protected val rs: RateService, protected val sql: SqlDatabase)
+                                   (implicit ec: SqlExecutionContext) {
 
-  def accountToDto(account: Account): EitherD[String, AccountDTO] = {
-    RateService.getCurrentRateToPrimary(account.currency_id)
+  def accountToDto(account: Account): ErrorF[AccountDTO] = {
+    rs.getCurrentRateToPrimary(account.currency_id)
         .map(_.rate * account.balance)
         .map(_.setScale(2, HALF_EVEN))
         .map { primary_balance =>
@@ -41,29 +43,29 @@ object AccountService {
     * @param account Account to create, if exists.
     * @return Xor with errors or newly created account.
     */
-  def create(account: Option[Account]): EitherD[String, AccountDTO] =
+  def create(account: Option[Account]): ErrorF[AccountDTO] =
     account
       .fromOption("ACCOUNT_DATA_INVALID")
       .map(validate)
       .flatMap(validationToXor)
       .map(AccountQuery.insert)
+      .map(sql.query)
       .transform
-      .map(accountToDto)
-      .flatten
+      .flatMap(accountToDto)
 
-  def list(filter: AccountFilter): DBIO[Seq[AccountDTO]] =
-    AccountQuery.list(filter)
-      .flatMap(s => DBIO.sequence(s.map(a => accountToDto(a).run.filter(_.isRight).map{case \/-(r) => r})))
+  def list(filter: AccountFilter): Future[Seq[AccountDTO]] =
+    sql.query(AccountQuery.list(filter))
+      .flatMap(s => Future.sequence(s.map(a => accountToDto(a).run.filter(_.isRight).map{case \/-(r) => r})))
 
   /**
-    * Retrieves acocunts matching filter and returns them
+    * Retrieves accounts matching filter and returns them
     * separated on account type.
     * @param filter Filter to apply.
     * @return tuple of three sequences (income accounts, asset accounts, expense accounts)
     */
   def listSeparate(filter: AccountFilter)
-    : DBIO[(Seq[Account], Seq[Account], Seq[Account])] = {
-    AccountQuery.list(filter).map { a =>
+    : Future[(Seq[Account], Seq[Account], Seq[Account])] = {
+    val query = AccountQuery.list(filter).map { a =>
       val incomeAccounts =
         a.filter(_.account_type == IncomeAccount)
       val assetAccounts =
@@ -73,6 +75,7 @@ object AccountService {
 
       (incomeAccounts, assetAccounts, expenseAccounts)
     }
+    sql.query(query)
   }
 
   /**
@@ -80,16 +83,16 @@ object AccountService {
     * @param id Account id to retrieve
     * @return Account XOR error
     */
-  def getAccount(id: Long): EitherD[String, Account] =
-    EitherD(AccountQuery.findById(id).map(_.fromOption("ACCOUNT_NOT_FOUND")))
+  def getAccount(id: Long): ErrorF[Account] =
+    EitherT(sql.query(AccountQuery.findById(id)).map(_.fromOption("ACCOUNT_NOT_FOUND")))
 
   /**
     * Retrieves account by id or returns error
     * @param id Account id to retrieve
     * @return AccountDTO XOR error
     */
-  def get(id: Long): EitherD[String, AccountDTO] =
-    getAccount(id).map(accountToDto).flatten
+  def get(id: Long): ErrorF[AccountDTO] =
+    getAccount(id).flatMap(accountToDto)
 
   /**
     * Changes values of specified account.
@@ -104,8 +107,8 @@ object AccountService {
            name: Option[String],
            operational: Option[Boolean],
            favorite: Option[Boolean],
-           hidden: Option[Boolean]): EitherD[String, AccountDTO] = {
-    val newAcc = AccountService
+           hidden: Option[Boolean]): ErrorF[AccountDTO] = {
+    val newAcc = this
       .getAccount(id)
       .map(acc =>
         acc.copy(
@@ -116,15 +119,13 @@ object AccountService {
       ))
       .map(validate)
       .map(validationToXor)
-      .flatMap(identity)
+      .flatMapF(Future.successful)
 
     newAcc
       .map(acc =>
         AccountQuery.update(acc).map(_.fromOption("ACCOUNT_NOT_UPDATED")))
-      .map(x => EitherD(x))
-      .flatten
-      .map(accountToDto)
-      .flatten
+      .flatMapF(sql.query)
+      .flatMap(accountToDto)
   }
 
   /**
@@ -133,7 +134,7 @@ object AccountService {
     * @param id identificator of account to remove.
     * @return either error result, or resultHandler processing result.
     */
-  def delete(id: Long): DBIO[\/[String, Int]] = {
-    AccountQuery.delete(id).map(_.fromOption("ACCOUNT_NOT_FOUND"))
+  def delete(id: Long): ErrorF[Int] = {
+    EitherT(sql.query(AccountQuery.delete(id).map(_.fromOption("ACCOUNT_NOT_FOUND"))))
   }
 }
