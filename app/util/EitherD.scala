@@ -168,11 +168,11 @@ object EitherD {
   }
 
   /**
-    * Converts different combination of \/ and Future to EitherT
+    * Converts different combination of \/ and Future to EitherF
     *
     * @param o object to convert
     */
-  implicit class EitherTOps1[R](val o: \/[String, Future[R]]) extends AnyVal {
+  implicit class EitherFOps1[R](val o: \/[String, Future[R]]) extends AnyVal {
     def transform: ErrorF[R] = {
       val r = o match {
         case -\/(e) => Future.successful(e.left)
@@ -183,13 +183,22 @@ object EitherD {
   }
 
   /**
-    * Converts different combination of \/ and DBIO to EitherD
+    * Converts different combination of \/ and DBIO to EitherF
     *
     * @param o object to convert
     */
-  implicit class EitherTOps2[R](val o: Future[\/[String, R]])
+  implicit class EitherFOps2[R](val o: Future[\/[String, R]])
     extends AnyVal {
     def transform: ErrorF[R] = EitherT(o)
+  }
+
+  /**
+    * Flattens internal Future
+    * @param o ErrorF with value wrapped to Future
+    */
+  implicit class EitherFFlatten1[R](val o: ErrorF[Future[R]])
+    extends AnyVal {
+    def flatten: ErrorF[R] = EitherT(o.run.map(_.transform).flatMap(_.run))
   }
 
 }

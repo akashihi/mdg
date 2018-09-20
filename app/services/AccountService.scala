@@ -5,12 +5,12 @@ import dao.filters.AccountFilter
 import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
 import util.EitherD._
 import validators.Validator._
-import scalaz._
 import controllers.dto.AccountDTO
 import dao.{SqlDatabase, SqlExecutionContext}
 import dao.queries.AccountQuery
 import javax.inject.Inject
-
+import scalaz._
+import Scalaz._
 import scala.concurrent._
 
 /**

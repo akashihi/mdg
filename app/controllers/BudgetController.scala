@@ -6,17 +6,19 @@ import javax.inject.Inject
 import controllers.api.ResultMaker._
 import models.Budget
 import play.api.mvc._
-import services.BudgetService
-import services.ErrorService._
+import services.{BudgetService, ErrorService}
 import slick.jdbc.PostgresProfile.api._
 import _root_.util.ApiOps._
 import controllers.dto.BudgetDTO
-import dao.{SqlDatabase, SqlExecutionContext}
+import dao.SqlExecutionContext
+
+import scala.concurrent._
 
 /**
   * Budget REST resource controller.
   */
-class BudgetController @Inject() (protected val sql: SqlDatabase, protected val bs: BudgetService)(implicit ec: SqlExecutionContext)
+class BudgetController @Inject()(protected val bs: BudgetService, protected val es: ErrorService)
+                                (implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   /**
@@ -45,14 +47,11 @@ class BudgetController @Inject() (protected val sql: SqlDatabase, protected val 
       e <- (request.body \ "data" \ "attributes" \ "term_end").asOpt[LocalDate]
     } yield Budget(Some(b), b, e)
 
-    val result =
-      bs.add(budget).run.flatMap(x => handleErrors(x)(createResult))
-    sql.query(result)
+    bs.add(budget).run.flatMap(x => es.handleErrors(x)(createResult))
   }
 
   def index = Action.async {
-    val result = bs.list().map(x => makeResult(x)(OK))
-    sql.query(result)
+    bs.list().map(x => makeResult(x)(OK))
   }
 
   /**
@@ -61,11 +60,10 @@ class BudgetController @Inject() (protected val sql: SqlDatabase, protected val 
     * @return budget wrapper object.
     */
   def show(id: Long) = Action.async {
-    val result = bs.get(id).flatMap {
-      case None => makeErrorResult("BUDGET_NOT_FOUND")
-      case Some(x) => DBIO.successful(makeResult(x)(OK))
+    bs.get(id).run.flatMap {
+      case None => es.makeErrorResult("BUDGET_NOT_FOUND")
+      case Some(x) => Future.successful(makeResult(x)(OK))
     }
-    sql.query(result)
   }
 
   /**
@@ -75,12 +73,8 @@ class BudgetController @Inject() (protected val sql: SqlDatabase, protected val 
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    val result = bs
-      .delete(id)
+    bs.delete(id).run
       .flatMap(x =>
-        handleErrors(x) { _ =>
-          NoContent
-      })
-    sql.query(result)
+        es.handleErrors(x) { _ => NoContent })
   }
 }
