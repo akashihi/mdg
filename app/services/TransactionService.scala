@@ -50,7 +50,7 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     */
   def prepareTransactionDto(id: Option[Long],
                             wrapper: Option[TransactionWrapperDto])
-    : EitherT[Future, String, TransactionDto] = {
+    : EitherF[String, TransactionDto] = {
     val dto = AccountQuery.listAll.map { accounts =>
       val validator = validate(accounts)(_)
       wrapper
@@ -117,7 +117,7 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     * @param id transaction unique id.
     * @return DTO object.
     */
-  def get(id: Long): OptionT[Future,TransactionDto] = {
+  def get(id: Long): OptionF[TransactionDto] = {
     val query = TransactionQuery.findById(id)
     OptionT(sql.query(query)).flatMapF(txToDto)
   }

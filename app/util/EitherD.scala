@@ -157,7 +157,7 @@ object EitherD {
     *
     * @param o object to convert
     */
-  implicit class XorFromOptionTOps[L, R](val o: OptionT[Future, R]) extends AnyVal {
+  implicit class XorFromOptionTOps[L, R](val o: OptionF[R]) extends AnyVal {
     def fromOption(l: L): Future[L \/ R]= o.run.map(_.map(_.right).getOrElse(l.left))
   }
 
@@ -167,7 +167,7 @@ object EitherD {
     * @param o object to convert
     */
   implicit class EitherTOps1[L, R](val o: \/[L, Future[R]]) extends AnyVal {
-    def transform: EitherT[Future, L, R] = {
+    def transform: EitherF[L, R] = {
       val r = o match {
         case -\/(e) => Future.successful(e.left)
         case \/-(e) => e.map(_.right)
@@ -183,7 +183,7 @@ object EitherD {
     */
   implicit class EitherTOps2[L, R](val o: Future[\/[L, R]])
     extends AnyVal {
-    def transform: EitherT[Future, L, R] = EitherT(o)
+    def transform: EitherF[L, R] = EitherT(o)
   }
 
 }
