@@ -6,18 +6,14 @@ import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import controllers.api.ResultMaker._
 import dao.{SqlDatabase, SqlExecutionContext}
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.mvc._
 import services.RateService
-import slick.jdbc.JdbcProfile
-
-import scala.concurrent.ExecutionContext
 
 /**
   * Rate resource REST controller
   */
 @Singleton
-class RateController @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext)
+class RateController @Inject() (protected val sql: SqlDatabase, protected val rs: RateService)(implicit ec: SqlExecutionContext)
   extends InjectedController {
 
   /**
@@ -27,10 +23,8 @@ class RateController @Inject() (protected val sql: SqlDatabase)(implicit ec: Sql
     * @return list of currency rates valid at ts, wrapped to json.
     */
   def index(ts: String) = Action.async {
-    sql.query(
-      RateService
-        .list(LocalDateTime.parse(ts, DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-        .map(x => makeResult(x)(OK)))
+      rs.list(LocalDateTime.parse(ts, DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+        .map(x => makeResult(x)(OK))
   }
 
   /**
@@ -42,11 +36,9 @@ class RateController @Inject() (protected val sql: SqlDatabase)(implicit ec: Sql
     * @return setting object.
     */
   def show(ts: String, from: Long, to: Long) = Action.async {
-    sql.query(
-      RateService
-        .get(LocalDateTime.parse(ts, DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+      rs.get(LocalDateTime.parse(ts, DateTimeFormatter.ISO_LOCAL_DATE_TIME),
              from,
              to)
-        .map(x => makeResult(x)(OK)))
+        .map(x => makeResult(x)(OK))
   }
 }

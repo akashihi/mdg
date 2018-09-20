@@ -20,7 +20,8 @@ import scala.concurrent._
 /**
   * Transaction operations service.
   */
-class TransactionService @Inject() (protected val es: ElasticSearch, protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext) {
+class TransactionService @Inject() (protected val rs: RateService, protected val es: ElasticSearch, protected val sql: SqlDatabase)
+                                   (implicit ec: SqlExecutionContext) {
 
   /**
     * Clears transaction of empty operations.
@@ -50,7 +51,7 @@ class TransactionService @Inject() (protected val es: ElasticSearch, protected v
     */
   def prepareTransactionDto(id: Option[Long],
                             wrapper: Option[TransactionWrapperDto])
-    : EitherF[String, TransactionDto] = {
+    : ErrorF[TransactionDto] = {
     val dto = AccountQuery.listAll.map { accounts =>
       val validator = validate(accounts)(_)
       wrapper

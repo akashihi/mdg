@@ -33,6 +33,12 @@ object EitherD {
   type EitherF[L, R] = EitherT[Future, L ,R]
 
   /**
+    * String error specialization of EitherF
+    * @tparam R type of \/-
+    */
+  type ErrorF[R] = EitherF[String, R]
+
+  /**
     * Future specific OptionT type for convenience
     * @tparam L type of value
     */
@@ -166,8 +172,8 @@ object EitherD {
     *
     * @param o object to convert
     */
-  implicit class EitherTOps1[L, R](val o: \/[L, Future[R]]) extends AnyVal {
-    def transform: EitherF[L, R] = {
+  implicit class EitherTOps1[R](val o: \/[String, Future[R]]) extends AnyVal {
+    def transform: ErrorF[R] = {
       val r = o match {
         case -\/(e) => Future.successful(e.left)
         case \/-(e) => e.map(_.right)
@@ -181,9 +187,9 @@ object EitherD {
     *
     * @param o object to convert
     */
-  implicit class EitherTOps2[L, R](val o: Future[\/[L, R]])
+  implicit class EitherTOps2[R](val o: Future[\/[String, R]])
     extends AnyVal {
-    def transform: EitherF[L, R] = EitherT(o)
+    def transform: ErrorF[R] = EitherT(o)
   }
 
 }

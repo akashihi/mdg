@@ -20,8 +20,8 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
   val PrimaryCurrency = "currency.primary"
   val UiTransactionCloseDialog = "ui.transaction.closedialog"
 
-  private val settingLoader = new CacheLoader[String, EitherT[Future, String, Setting]] {
-    override def load(key: String): EitherT[Future, String, Setting] =
+  private val settingLoader = new CacheLoader[String, ErrorF[Setting]] {
+    override def load(key: String): ErrorF[Setting] =
       EitherT(sql.query(SettingDao.findById(key)).map(_.fromOption("SETTING_NOT_FOUND")))
   }
   implicit val settingsCache = CacheBuilder.newBuilder().build(settingLoader)
@@ -39,9 +39,9 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
     * @param id Setting name
     * @return Setting XOR error
     */
-  def get(id: String): EitherF[String, Setting] = settingsCache.get(id)
+  def get(id: String): ErrorF[Setting] = settingsCache.get(id)
 
-  def setCurrencyPrimary(value: Option[String]): EitherF[String, Setting] = {
+  def setCurrencyPrimary(value: Option[String]): ErrorF[Setting] = {
     val curOption = value
       .flatMap(_.tryToLong)
       .fromOption("SETTING_DATA_INVALID")
@@ -59,7 +59,7 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
 
     updateSetting(setting, PrimaryCurrency, value)  }
 
-  def setUiTransactionCloseDialog(value: Option[String]): EitherF[String, Setting] = {
+  def setUiTransactionCloseDialog(value: Option[String]): ErrorF[Setting] = {
     val option = value
       .flatMap(_.tryToBool)
       .fromOption("SETTING_DATA_INVALID")
@@ -73,7 +73,7 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
     updateSetting(setting, UiTransactionCloseDialog, value)
   }
 
-  protected def updateSetting(setting: EitherF[String, Setting], name: String, value: Option[String]): EitherF[String, Setting] = {
+  protected def updateSetting(setting: ErrorF[Setting], name: String, value: Option[String]): ErrorF[Setting] = {
     val savedSetting = setting.map(s => s.copy(value = value.getOrElse(s.value)))
       .map(SettingDao.update)
       .map(sql.query)
