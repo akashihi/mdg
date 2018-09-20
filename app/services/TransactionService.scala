@@ -14,6 +14,7 @@ import scalaz._
 import Scalaz._
 import dao.{ElasticSearch, SqlDatabase, SqlExecutionContext}
 import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
+import util.Default
 
 import scala.concurrent._
 
@@ -151,24 +152,31 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
   }
 
   /**
-    * Calculates total of operations on specified accounts during specified period.
+    * Calculates total of operations in primary currency on specified accounts during specified period.
     * @param from period first day.
     * @param till period last day.
     * @param accounts list of accounts to operate on.
-    * @return sum of all operation on specified account during specified period.
+    * @return sum in primary currency of all operation on specified account during specified period.
     */
   def getTotalsForDate(from: LocalDate, till: LocalDate)(
-      accounts: Seq[Account]): DBIO[BigDecimal] = {
-    TransactionQuery.transactionsForPeriod(from, till).flatMap { txId =>
-      val ops = TransactionQuery.listOperations(txId)
-      ops.map(s => s.map({o =>
-        val account = accounts.find(_.id.get == o.account_id)
-        account.map(a => RateService.getCurrentRateToPrimary(a.currency_id).map(_.rate * o.amount).run.map(_.getOrElse(BigDecimal(0))))
-          .getOrElse(DBIO.successful(BigDecimal(0)))
-      }))
-        .flatMap(DBIO.sequence(_))
-        .map(_.foldLeft(BigDecimal(0))(_ + _))
-    }
+      accounts: Seq[Account]): Future[BigDecimal] = {
+    def applyCurrency(o: Operation, a: Account): Future[BigDecimal] =
+      rs.getCurrentRateToPrimary(a.currency_id)
+      .map(_.rate * o.amount)
+      .getOrElse(0)
+
+    def processOp(o: Operation): Future[BigDecimal] =
+      accounts.find(_.id.get == o.account_id)
+        .map(applyCurrency(o, _))
+        .getOrElse(Future.successful(0))
+
+    val operations = sql.query(TransactionQuery.transactionsForPeriod(from, till))
+      .map(TransactionQuery.listOperations)
+      .flatMap(sql.query)
+      .map(_.map(processOp))
+      .flatMap(Future.sequence(_))
+
+      operations.map(_.foldLeft(Default.value[BigDecimal])(_ + _))
   }
 
   /**
