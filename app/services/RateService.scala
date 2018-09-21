@@ -6,7 +6,7 @@ import dao.{SqlDatabase, SqlExecutionContext}
 import dao.queries.RateQuery
 import javax.inject.Inject
 import models.Rate
-import util.EitherD._
+import util.EitherOps._
 import scalaz._
 import Scalaz._
 

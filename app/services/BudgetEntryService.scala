@@ -11,7 +11,7 @@ import scalaz._
 import Scalaz._
 import dao.{SqlDatabase, SqlExecutionContext}
 import dao.queries.{AccountQuery, BudgetEntryQuery, BudgetQuery}
-import util.EitherD._
+import util.EitherOps._
 import javax.inject.Inject
 
 import scala.concurrent._
@@ -132,7 +132,7 @@ class BudgetEntryService @Inject() (protected val sql: SqlDatabase)(implicit ec:
       case _ => Some(false)
     }
     val query = BudgetEntryQuery.find(id, budget_id)
-    val entry = sql.query(query).map(_.fromOption("BUDGETENTRY_NOT_FOUND")).transform
+    val entry = EitherT(sql.query(query).map(_.fromOption("BUDGETENTRY_NOT_FOUND")))
     val updated = entry.map(x => x.copy(
       even_distribution = ed.getOrElse(x.even_distribution),
       proration = proration,

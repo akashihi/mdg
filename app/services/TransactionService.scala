@@ -8,7 +8,7 @@ import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
 import models.{Account, Operation, Transaction}
 import slick.jdbc.PostgresProfile.api._
-import util.EitherD._
+import util.EitherOps._
 import validators.Validator._
 import scalaz._
 import Scalaz._

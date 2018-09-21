@@ -3,7 +3,7 @@ package services
 import BigDecimal.RoundingMode.HALF_EVEN
 import dao.filters.AccountFilter
 import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
-import util.EitherD._
+import util.EitherOps._
 import validators.Validator._
 import controllers.dto.AccountDTO
 import dao.{SqlDatabase, SqlExecutionContext}

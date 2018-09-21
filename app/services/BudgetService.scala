@@ -6,7 +6,7 @@ import java.time.LocalDate
 import controllers.dto.BudgetDTO
 import dao.filters.EmptyAccountFilter
 import models.{Account, Budget, BudgetEntry}
-import util.EitherD._
+import util.EitherOps._
 import validators.Validator._
 import scalaz._
 import Scalaz._

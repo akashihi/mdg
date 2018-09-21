@@ -6,7 +6,7 @@ import dao.queries.{CurrencyQuery, SettingDao}
 import javax.inject.Inject
 import models.Setting
 import util.OptionConverters._
-import util.EitherD._
+import util.EitherOps._
 import scalaz._
 import Scalaz._
 
