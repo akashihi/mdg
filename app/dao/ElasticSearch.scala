@@ -156,9 +156,17 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
       splitOnNumerics = Some(false)
     )
     val language = HunspellTokenFilter("ru_RU", language = "ru")
-    val analyzer = CustomAnalyzerDefinition("ru_RU", triplets, ru_mapping, stopWordsFilter, wordDelimiter, language)
+    val comment_analyzer = CustomAnalyzerDefinition("ru_RU", triplets, ru_mapping, stopWordsFilter, wordDelimiter, language)
+    val tags_analyzer = CustomAnalyzerDefinition("ru_RU_tags", triplets, ru_mapping, wordDelimiter, language)
     getEsClient.execute {
-      createIndex(INDEX_NAME).mappings(mapping("tx").fields(textField("comment")).analyzer("ru_RU")).analysis(analyzer).settings(Map("number_of_shards" -> 1))
+      createIndex(INDEX_NAME)
+        .mappings(
+          mapping("tx").fields(
+            textField("comment").analyzer("ru_RU"), textField("tags").analyzer("ru_RU_tags")
+          )
+        )
+        .analysis(comment_analyzer, tags_analyzer)
+        .settings(Map("number_of_shards" -> 1))
     }.map(_.isSuccess)
   }
 
@@ -168,23 +176,18 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     * @param comment Value of the comment.
     * @return True in case of success.
     */
-  def saveComment(id: Long, comment: String): Future[Boolean] = {
+  def saveTx(id: Long, comment: String, tags: Seq[String]): Future[Boolean] = {
 
     val response = getEsClient.execute {
-      indexInto(INDEX_NAME / "tx").id(id.toString).fields("comment" -> comment).refresh(RefreshPolicy.Immediate)
+      indexInto(INDEX_NAME / "tx").id(id.toString).fields("comment" -> comment, "tags" -> tags).refresh(RefreshPolicy.Immediate)
     }
 
     response.map(_.isSuccess)
   }
 
-  /**
-    * Searches ElasticSearch for trsnaction, matching specified query string.
-    * @param query Text to look for.
-    * @return Array of matching SQL transaction ids.
-    */
-  def lookupComment(query: String): Future[Array[Long]] = {
+  protected def lookupTransaction(field: String)(query: String): Future[Array[Long]] = {
     val response = getEsClient.execute {
-      search(INDEX_NAME).query(MatchQuery(field = "comment", value = query, fuzziness = Some("1.0")))
+      search(INDEX_NAME).query(MatchQuery(field = field, value = query, fuzziness = Some("1.0")))
     }
 
     response.map { r =>
@@ -195,4 +198,16 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
       }
     }
   }
+
+  /**
+    * Searches ElasticSearch for transaction, with comment matching specified query string.
+    * @return Array of matching SQL transaction ids.
+    */
+  def lookupComment: String => Future[Array[Long]] = lookupTransaction("comment")
+
+  /**
+    * Searches ElasticSearch for transaction, with tags matching specified query string.
+    * @return Array of matching SQL transaction ids.
+    */
+  def lookupTags: String => Future[Array[Long]] = lookupTransaction("tags")
 }

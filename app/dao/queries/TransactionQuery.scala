@@ -21,26 +21,6 @@ object TransactionQuery {
 
   /**
     * Filtering helper. Retrieves list of transactions ids,
-    * which are tagged with specified tags.
-    * @param filter List of tags
-    * @return List of transactions id, wrapped to DBIO
-    */
-  def tagTxFilter(filter: Option[Seq[String]]): DBIO[Seq[Long]] = {
-    filter
-      .map { f =>
-        tags
-          .filter(_.txtag inSet f)
-          .map(_.id)
-          .result
-          .flatMap(tag_ids => {
-            tagMaps.filter(_.tag_id inSet tag_ids.flatten).map(_.tx_id).result
-          })
-      }
-      .getOrElse(DBIO.successful(Seq.empty[Long]))
-  }
-
-  /**
-    * Filtering helper. Retrieves list of transactions ids,
     * which have operations on the specified acocunt ids
     * @param filter List of tags
     * @return List of transactions id, wrapped to DBIO
@@ -82,21 +62,14 @@ object TransactionQuery {
     */
   private def makeCriteria(filter: TransactionFilter, fulltextIds: Array[Long])
     : DBIO[Query[Transactions, Transaction, Seq]] = {
-    val preActions = TransactionQuery.tagTxFilter(filter.tag) zip TransactionQuery
-      .accTxFilter(filter.account_id)
+    val preActions = TransactionQuery.accTxFilter(filter.account_id)
 
-    preActions.map(tx_id_s => {
-      val (tag_tx_s, acc_tx_s) = tx_id_s
-
-      //We need tag_tx_s and acc_tx_s lists
+    preActions.map(acc_tx_s => {
+      //We need acc_tx_s and ft_tx list
       //to be applied conditionally, depending
       //on presence of list contents
 
-      val tag_tx = Option(tag_tx_s).filter(_.nonEmpty)
       val acc_tx = Option(acc_tx_s).filter(_.nonEmpty)
-
-      //Same conditional application is valid for
-      //full text search list
       val ft_tx = Option(fulltextIds).filter(_.nonEmpty)
 
       transactions.filter {
@@ -105,7 +78,6 @@ object TransactionQuery {
             ft_tx.map(t.id inSet _),
             filter.notEarlier.map(t.timestamp >= _),
             filter.notLater.map(t.timestamp <= _),
-            tag_tx.map(t.id inSet _),
             acc_tx.map(t.id inSet _)
           ).collect({ case Some(x) => x })
             .reduceLeftOption(_ && _)
