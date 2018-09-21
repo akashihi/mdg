@@ -5,7 +5,7 @@ import models.Setting
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
 
-object SettingDao {
+object SettingQuery {
   val settings = TableQuery[Settings]
 
   def list(): DBIO[Seq[Setting]] =

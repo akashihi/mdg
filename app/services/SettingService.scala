@@ -2,7 +2,7 @@ package services
 
 import com.google.common.cache.{CacheBuilder, CacheLoader}
 import dao.{SqlDatabase, SqlExecutionContext}
-import dao.queries.{CurrencyQuery, SettingDao}
+import dao.queries.{CurrencyQuery, SettingQuery}
 import javax.inject.Inject
 import models.Setting
 import util.OptionConverters._
@@ -22,7 +22,7 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
 
   private val settingLoader = new CacheLoader[String, ErrorF[Setting]] {
     override def load(key: String): ErrorF[Setting] =
-      EitherT(sql.query(SettingDao.findById(key)).map(_.fromOption("SETTING_NOT_FOUND")))
+      EitherT(sql.query(SettingQuery.findById(key)).map(_.fromOption("SETTING_NOT_FOUND")))
   }
   implicit val settingsCache = CacheBuilder.newBuilder().build(settingLoader)
 
@@ -31,7 +31,7 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
     *
     * @return Sequence of BudgetEntry DTOs.
     */
-  def list(): Future[Seq[Setting]] = sql.query(SettingDao.list())
+  def list(): Future[Seq[Setting]] = sql.query(SettingQuery.list())
 
   /**
     * Retrieves setting by name or returns error
@@ -52,7 +52,7 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
     val haveCurrency =
       curOption.map(_.fromOption("SETTING_DATA_INVALID")).flatMapF(Future.successful)
 
-    val setting = haveCurrency.map(_ => SettingDao.findById(PrimaryCurrency))
+    val setting = haveCurrency.map(_ => SettingQuery.findById(PrimaryCurrency))
       .map(sql.query)
       .map(OptionT.apply)
       .flatMapF(_.fromOption("SETTING_NOT_FOUND"))
@@ -65,7 +65,7 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
       .fromOption("SETTING_DATA_INVALID")
 
     val setting = EitherT(Future.successful(option))
-      .map(_ => SettingDao.findById(UiTransactionCloseDialog))
+      .map(_ => SettingQuery.findById(UiTransactionCloseDialog))
       .map(sql.query)
       .map(OptionT.apply)
       .flatMapF(_.fromOption("SETTING_NOT_FOUND"))
@@ -75,7 +75,7 @@ class SettingService @Inject()(protected val sql: SqlDatabase)(implicit ec: SqlE
 
   protected def updateSetting(setting: ErrorF[Setting], name: String, value: Option[String]): ErrorF[Setting] = {
     val savedSetting = setting.map(s => s.copy(value = value.getOrElse(s.value)))
-      .map(SettingDao.update)
+      .map(SettingQuery.update)
       .map(sql.query)
 
     settingsCache.invalidate(name)
