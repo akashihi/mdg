@@ -36,13 +36,13 @@ export default class AccountsPage extends Component {
         } else {
             accounts = <Tabs>
                 <Tab label='Asset accounts'>
-                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.assetAccounts}/>
+                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.assetAccounts} hiddenVisible={props.hiddenVisible}/>
                 </Tab>
                 <Tab label='Income accounts'>
-                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.incomeAccounts}/>
+                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.incomeAccounts} hiddenVisible={props.hiddenVisible}/>
                 </Tab>
                 <Tab label='Expense accounts'>
-                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.expenseAccounts}/>
+                    <AccountList actions={props.actions} currencies={props.currencies} accounts={props.expenseAccounts} hiddenVisible={props.hiddenVisible}/>
                 </Tab>
             </Tabs>
         }

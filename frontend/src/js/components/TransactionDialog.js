@@ -62,7 +62,7 @@ class AccountMapper {
     }
 
     combineAccounts() {
-        return this.sortAssets().concat(this.expenseAccounts, this.incomeAccounts);
+        return this.sortAssets().concat(this.expenseAccounts, this.incomeAccounts).filter((item) => !item.attributes.hidden);
     }
 
     getAccounts() {
