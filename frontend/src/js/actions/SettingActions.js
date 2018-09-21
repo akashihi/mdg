@@ -89,3 +89,31 @@ export function setCloseTransactionDialog(value) {
           })
   }
 }
+
+export function reindexTransactions() {
+  return (dispatch) => {
+      dispatch({
+          type: GET_SETTING_REQUEST,
+          payload: true
+      });
+
+      var url = '/api/setting/mnt.transaction.reindex';
+      var method = 'PUT';
+
+      fetch(url, {
+          method: method,
+          headers: {
+              'Content-Type': 'application/vnd.mdg+json'
+          }
+      })
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(()=>dispatch(loadSettingList()))
+          .catch(function (response) {
+              dispatch({
+                  type: GET_SETTING_FAILURE,
+                  payload: response.json
+              })
+          })
+  }
+}
