@@ -1,40 +1,31 @@
 package controllers
 
 import javax.inject.Inject
-
 import controllers.dto.{TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.filters.TransactionFilter._
 import dao.ordering.SortBy._
 import dao.ordering.{Page, SortBy}
 import controllers.api.ResultMaker._
-import util.ApiOps._
-import util.EitherD._
+import dao.SqlExecutionContext
+import models.Setting
 import play.api.libs.json._
 import play.api.mvc._
-import services.TransactionService
-import services.ErrorService._
-import play.api.db.slick.DatabaseConfigProvider
-import slick.jdbc.JdbcProfile
-import slick.jdbc.PostgresProfile.api._
-
-import scala.concurrent._
+import services.{ErrorService, TransactionService}
 import scalaz._
+import Scalaz._
 
 /**
   * Transaction REST resource controller
   */
-class TransactionController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends InjectedController {
-
-  val db = dbConfigProvider.get[JdbcProfile].db
+class TransactionController @Inject()(protected val ts: TransactionService, protected val es: ErrorService)
+                                     (implicit ec: SqlExecutionContext) extends InjectedController {
 
   val DEFAULT_PAGE_SIZE = 10
 
   /**
     * Tries to convert Json data to TransactionWrapperDTO
+    *
     * @param data json representation of transaction.
     * @return conversion result.
     */
@@ -65,17 +56,15 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    val tx = TransactionService
-      .prepareTransactionDto(None, parseDto(request.body))
-      .map(_.map(TransactionService.add))
-      .transform
+    val dto = ts.prepareTransactionDto(None, parseDto(request.body))
+    val result = dto.flatMapF{tx => ts.add(tx).map(_.right)}
 
-    val result = tx.run.flatMap(x => handleErrors(x)(createResult))
-    db.run(result)
+    result.run.flatMap(x => es.handleErrors(x)(createResult))
   }
 
   /**
     * Retrieves transactions, matching specified predicates.
+    *
     * @return List of transactions wrapped to JSON.
     */
   def index(filter: Option[String],
@@ -105,27 +94,22 @@ class TransactionController @Inject()(
       case None => Seq[SortBy]()
     }
 
-    val result =
-      TransactionService
-        .list(filterObj, ordering, page)
-        .map { x =>
-          val (transactions, count) = x
-          makeResult(transactions, count)(OK)
-        }
-    db.run(result)
+    ts.list(filterObj, ordering, page)
+      .map { x =>
+        val (transactions, count) = x
+        makeResult(transactions, count)(OK)
+      }
   }
 
   /**
     * Transaction object retrieval method
+    *
     * @param id transaction id.
     * @return transaction object.
     */
   def show(id: Long) = Action.async {
-    val result = TransactionService.get(id).flatMap {
-      case None => makeErrorResult("TRANSACTION_NOT_FOUND")
-      case Some(x) => DBIO.successful(makeResult(x)(OK))
-    }
-    db.run(result)
+    ts.get(id).map(makeResult(_)(OK))
+      .getOrElseF(es.makeErrorResult("TRANSACTION_NOT_FOUND"))
   }
 
   /**
@@ -134,19 +118,9 @@ class TransactionController @Inject()(
     * @return newly created transaction (with id) wrapped to JSON.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    val tx = TransactionService.prepareTransactionDto(Some(id),
-                                                      parseDto(request.body))
-    val result = tx.flatMap {
-      case -\/(e) => makeErrorResult(e) //Fail fast
-      case \/-(dto) =>
-        TransactionService
-          .replace(id, dto)
-          .flatMap(x =>
-            handleErrors(x) { tx =>
-              makeResult(tx)(ACCEPTED)
-          });
-    }
-    db.run(result)
+    val dto = ts.prepareTransactionDto(Some(id), parseDto(request.body))
+    val result = dto.flatMapF(ts.replace(id, _))
+    result.run.flatMap { x => es.handleErrors(x) { tx => makeResult(tx)(ACCEPTED) } }
   }
 
   /**
@@ -156,12 +130,18 @@ class TransactionController @Inject()(
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    val result = TransactionService
-      .delete(id)
-      .flatMap(x =>
-        handleErrors(x) { _ =>
-          NoContent
-      })
-    db.run(result)
+    ts.delete(id).flatMap(x => es.handleErrors(x) { _ => NoContent })
+  }
+
+  /**
+    * mnt.transaction.reindex setting method.
+    *
+    * Not really a setting, triggers transaction fulltext search reindex.
+    *
+    * @return setting object.
+    */
+  def reindexTransactions() = Action.async {
+    val result = ts.reindexTransactions().map { s => Setting(id = Some("mnt.transaction.reindex"), value = s.toString) }
+    result.map(x => makeResult(x)(ACCEPTED))
   }
 }

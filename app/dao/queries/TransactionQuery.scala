@@ -1,10 +1,10 @@
-package dao
+package dao.queries
 
 import java.time.LocalDate
 
 import dao.filters.TransactionFilter
-import dao.ordering.{Asc, Desc, Page, SortBy}
 import dao.mappers.LocalDateMapper._
+import dao.ordering.{Asc, Desc, Page, SortBy}
 import dao.tables.{Operations, TagMap, Transactions}
 import models.{Operation, Transaction, TxTag}
 import play.api.libs.concurrent.Execution.Implicits._
@@ -13,11 +13,11 @@ import slick.jdbc.PostgresProfile.api._
 /**
   * Database actions for Transactions.
   */
-object TransactionDao {
+object TransactionQuery {
   val transactions = TableQuery[Transactions]
   val operations = TableQuery[Operations]
   val tagMaps = TableQuery[TagMap]
-  val tags = TagDao.tags
+  val tags = TagQuery.tags
 
   /**
     * Filtering helper. Retrieves list of transactions ids,
@@ -77,11 +77,12 @@ object TransactionDao {
   /**
     * Converts a Transaction filter specification to the Slick query definition.
     * @param filter Filter to work on.
+    * @param fulltextIds: List of matching transaction ids, returned by fulltext search.
     * @return Slick query, configured to match supplied filter.
     */
-  private def makeCriteria(filter: TransactionFilter)
+  private def makeCriteria(filter: TransactionFilter, fulltextIds: Array[Long])
     : DBIO[Query[Transactions, Transaction, Seq]] = {
-    val preActions = TransactionDao.tagTxFilter(filter.tag) zip TransactionDao
+    val preActions = TransactionQuery.tagTxFilter(filter.tag) zip TransactionQuery
       .accTxFilter(filter.account_id)
 
     preActions.map(tx_id_s => {
@@ -94,10 +95,14 @@ object TransactionDao {
       val tag_tx = Option(tag_tx_s).filter(_.nonEmpty)
       val acc_tx = Option(acc_tx_s).filter(_.nonEmpty)
 
+      //Same conditional application is valid for
+      //full text search list
+      val ft_tx = Option(fulltextIds).filter(_.nonEmpty)
+
       transactions.filter {
         t =>
           List(
-            filter.comment.map(t.comment.getOrElse("") === _),
+            ft_tx.map(t.id inSet _),
             filter.notEarlier.map(t.timestamp >= _),
             filter.notLater.map(t.timestamp <= _),
             tag_tx.map(t.id inSet _),
@@ -110,18 +115,26 @@ object TransactionDao {
   }
 
   /**
+    * Returns all transactions, used in reindexing.
+    * @return List of all database transactions.
+    */
+  def listAll: DBIO[Seq[Transaction]] = transactions.result
+
+  /**
     * Retrieves list of transaction, according to the
     * specified filter and ordering. List of transaction could be
     * paginated.
     * @param filter Transaction filter description.
     * @param sort Ordering destription.
     * @param page Pagination specification.
+    * @param fulltextIds: List of matching transaction ids, returned by fulltext search.
     * @return List of mathed transactions.
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
-           page: Option[Page]): DBIO[Seq[Transaction]] = {
-    makeCriteria(filter).flatMap { criteriaQuery =>
+           page: Option[Page],
+           fulltextIds: Array[Long]): DBIO[Seq[Transaction]] = {
+    makeCriteria(filter, fulltextIds).flatMap { criteriaQuery =>
       val sortedQuery =
         sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
           case SortBy("timestamp", Asc) =>
@@ -142,10 +155,11 @@ object TransactionDao {
     * Counts number of transactions, matching
     * specified filter.
     * @param filter Transaction filter description.
+    * @param fulltextIds: List of matching transaction ids, returned by fulltext search.
     * @return Number pof matched transactions.
     */
-  def count(filter: TransactionFilter): DBIO[Int] =
-    makeCriteria(filter).flatMap(_.length.result)
+  def count(filter: TransactionFilter, fulltextIds: Array[Long]): DBIO[Int] =
+    makeCriteria(filter, fulltextIds).flatMap(_.length.result)
 
   /**
     * Retrieves transaction by it's id.

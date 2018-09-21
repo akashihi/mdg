@@ -34,8 +34,9 @@ class BudgetEntryServiceTest extends ParameterizedSpec {
   property("Future spendings should be calculated properly") {
     new SpendingParameters {
       forAll(parameters) {
+            val bes = new BudgetEntryService(null)(null)
         (entry: BudgetEntry, day: LocalDate, budget: Budget, actual: BigDecimal, result: Option[BigDecimal]) =>
-          BudgetEntryService.getEntryAmounts(entry, day, budget, actual) should be(result)
+          bes.getEntryAmounts(entry, day, budget, actual) should be(result)
       }
     }
   }

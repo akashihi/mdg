@@ -10,6 +10,7 @@ import scala.collection.immutable
 class Default[+A](val default: A)
 
 trait LowerPriorityImplicits {
+  //noinspection ScalaStyle
   // Stop AnyRefs from clashing with AnyVals
   implicit def defaultNull[A <: AnyRef]: Default[A] =
     new Default[A](null.asInstanceOf[A])
@@ -25,6 +26,7 @@ object Default extends LowerPriorityImplicits {
   implicit object DefaultChar extends Default[Char]('\u0000')
   implicit object DefaultBoolean extends Default[Boolean](false)
   implicit object DefaultUnit extends Default[Unit](())
+  implicit object DefaultBigDecimal extends Default[BigDecimal](BigDecimal(0))
 
   implicit def defaultSeq[A]: Default[immutable.Seq[A]] =
     new Default[immutable.Seq[A]](immutable.Seq())
