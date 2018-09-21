@@ -3,8 +3,8 @@ package dao.queries
 import dao.filters.AccountFilter
 import dao.tables.Accounts
 import models.Account
-import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object AccountQuery {
   val accounts = TableQuery[Accounts]

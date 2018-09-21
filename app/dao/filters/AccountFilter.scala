@@ -8,7 +8,7 @@ import play.api.libs.json._
 case class AccountFilter(account_type: Option[String],
                          currency_id: Option[Long],
                          name: Option[String],
-                         hidden: Option[Boolean] = Some(false))
+                         hidden: Option[Boolean])
 object EmptyAccountFilter extends AccountFilter(None, None, None, None)
 
 object AccountFilter {

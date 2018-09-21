@@ -154,6 +154,11 @@
         "comment" : {
           "type" : "text",
           "analyzer": "ru_RU"
+        },
+        "tags": {
+          "type" : "text",
+          "analyzer": "ru_RU",
+          "search_analyzer": "ru_RU"
         }
       }
     }

@@ -67,7 +67,7 @@ class AccountController @Inject()(protected val as: AccountService, protected va
       .flatMap { x =>
         Json.parse(x).validate[AccountFilter].asOpt
       }
-      .getOrElse(AccountFilter(None, None, None))
+      .getOrElse(AccountFilter(None, None, None, None))
     as.list(accountFilter).map(x => makeResult(x)(OK))
   }
 
