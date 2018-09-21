@@ -19,7 +19,8 @@ import scala.concurrent._
   * Budget operations service.
   */
 class BudgetService @Inject() (protected val ts: TransactionService, protected val rs: RateService,
-                               protected val as: AccountService, protected val sql: SqlDatabase)
+                               protected val as: AccountService, protected val bes: BudgetEntryService,
+                               protected val sql: SqlDatabase)
                               (implicit ec: SqlExecutionContext) {
 
   /**
@@ -48,10 +49,7 @@ class BudgetService @Inject() (protected val ts: TransactionService, protected v
     ts.getTotalsForDate(today, today)(accounts)
   }
 
-  private def getAllowedSpendings(b: Budget): Future[BigDecimal] = {
-    val query = BudgetEntryService.list(b.id.get)
-    sql.query(query).map(_.flatMap(_.change_amount).foldLeft(BigDecimal(0))(_ + _))
-  }
+  private def getAllowedSpendings(b: Budget): Future[BigDecimal] = bes.list(b.id.get).map(_.flatMap(_.change_amount).foldLeft(BigDecimal(0))(_ + _))
 
   /**
     * Gets an budget entry and returns it's expected_amount value in primary currency with current rate.
