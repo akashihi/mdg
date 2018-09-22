@@ -4,7 +4,7 @@ import scalaz._
 import Scalaz._
 
 import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 object EitherOps {
   /**
