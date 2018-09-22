@@ -43,7 +43,14 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     * @return True in case of success.
     */
   def dropMdgIndex(): Future[Boolean] = {
-    getEsClient.execute { deleteIndex(INDEX_NAME) }.map(logEsError).map(_.isSuccess)
+    getEsClient.execute { deleteIndex(INDEX_NAME) }.map(logEsError).map { r =>
+      if (r.isError && r.error.`type` == "index_not_found_exception") {
+        // Ok, we failed to delete non existing index, this is fine
+        true
+      } else {
+        r.isSuccess
+      }
+    }
   }
 
   /**
