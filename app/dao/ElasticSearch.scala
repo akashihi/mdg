@@ -8,6 +8,7 @@ import com.sksamuel.elastic4s.searches.queries.matches.MatchQuery
 import javax.inject.Inject
 import play.api.Configuration
 import util.OptionConverters._
+import play.api.Logger
 
 import scala.concurrent._
 
@@ -23,10 +24,18 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
   import com.sksamuel.elastic4s.http.ElasticDsl._
 
   private val INDEX_NAME = "mdg"
+  private val log: Logger = Logger(this.getClass)
 
   protected def getEsClient: ElasticClient = {
     val url = config.getOptional[String]("elasticsearch.url").getOrElse("http://localhost:9200")
     ElasticClient(ElasticProperties(url))
+  }
+
+  def logEsError[T](response: Response[T]): Response[T] = {
+    if (response.isError) {
+      log.error(s"ES call failed with error ${response.error.`type`} caused by ${response.error.reason}")
+    }
+    response
   }
 
   /**
@@ -34,7 +43,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     * @return True in case of success.
     */
   def dropMdgIndex(): Future[Boolean] = {
-    getEsClient.execute { deleteIndex(INDEX_NAME) }.map(_.isSuccess)
+    getEsClient.execute { deleteIndex(INDEX_NAME) }.map(logEsError).map(_.isSuccess)
   }
 
   /**
@@ -167,7 +176,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
         )
         .analysis(comment_analyzer, tags_analyzer)
         .settings(Map("number_of_shards" -> 1))
-    }.map(_.isSuccess)
+    }.map(logEsError).map(_.isSuccess)
   }
 
   /**
@@ -182,7 +191,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
       indexInto(INDEX_NAME / "tx").id(id.toString).fields("comment" -> comment, "tags" -> tags).refresh(RefreshPolicy.Immediate)
     }
 
-    response.map(_.isSuccess)
+    response.map(logEsError).map(_.isSuccess)
   }
 
   protected def lookupTransaction(field: String)(query: String): Future[Array[Long]] = {
@@ -190,7 +199,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
       search(INDEX_NAME).query(MatchQuery(field = field, value = query, fuzziness = Some("1.0")))
     }
 
-    response.map { r =>
+    response.map(logEsError).map { r =>
       if (r.isSuccess) {
         r.result.hits.hits.map(_.id).flatMap(_.tryToLong)
       } else {
