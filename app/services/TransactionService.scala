@@ -17,6 +17,7 @@ import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
 import util.Default
 
 import scala.concurrent._
+import scala.concurrent.duration.Duration
 
 /**
   * Transaction operations service.
@@ -188,15 +189,16 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
   def reindexTransactions(): Future[Boolean] = {
     def create = OptionT(es.createMdgIndex().map(_.option(1)))
     def drop = OptionT(es.dropMdgIndex().map(_.option(1)))
-    def save = sql.query(TransactionQuery.listAll)
-    def index(transactions: Seq[Transaction]) = transactions.map({ tx =>
+    def saveToIndex(tx: Transaction) = {
       val tags = sql.query(TransactionQuery.listTags(tx.id.get)).map(_.map(_.txtag))
-      tags.flatMap(es.saveTx(tx.id.get, tx.comment.getOrElse(""), _))
-    })
+      // We have to wait for ES call completion before we switch to the next stream element
+      Await.result(tags.flatMap(es.saveTx(tx.id.get, tx.comment.getOrElse(""), _)), Duration.Inf)
+    }
+    def transactions: Future[Unit] = sql.stream(TransactionQuery.listAll).foreach(saveToIndex)
 
 
-    val result = drop.map(_ => create).flatMapF(_ => save).map(index).flatMapF(Future.sequence(_)).map(_.exists(!_)).map(!_)
+    val index = drop.flatMap(_ => create).flatMapF(_ => transactions)
 
-    result.getOrElse(false)
+    index.isDefined
   }
 }

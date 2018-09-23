@@ -90,7 +90,7 @@ object TransactionQuery {
     * Returns all transactions, used in reindexing.
     * @return List of all database transactions.
     */
-  def listAll: DBIO[Seq[Transaction]] = transactions.result
+  def listAll: StreamingDBIO[Seq[Transaction], Transaction] = transactions.result
 
   /**
     * Retrieves list of transaction, according to the
