@@ -25,6 +25,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
 
   private val INDEX_NAME = "mdg"
   private val log: Logger = Logger(this.getClass)
+  private val client = getEsClient
 
   protected def getEsClient: ElasticClient = {
     val url = config.getOptional[String]("elasticsearch.url").getOrElse("http://localhost:9200")
@@ -43,7 +44,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     * @return True in case of success.
     */
   def dropMdgIndex(): Future[Boolean] = {
-    getEsClient.execute { deleteIndex(INDEX_NAME) }.map(logEsError).map { r =>
+    client.execute { deleteIndex(INDEX_NAME) }.map(logEsError).map { r =>
       if (r.isError && r.error.`type` == "index_not_found_exception") {
         // Ok, we failed to delete non existing index, this is fine
         true
@@ -174,7 +175,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     val language = HunspellTokenFilter("ru_RU", language = "ru")
     val comment_analyzer = CustomAnalyzerDefinition("ru_RU", triplets, ru_mapping, stopWordsFilter, wordDelimiter, language)
     val tags_analyzer = CustomAnalyzerDefinition("ru_RU_tags", triplets, ru_mapping, wordDelimiter, language)
-    getEsClient.execute {
+    client.execute {
       createIndex(INDEX_NAME)
         .mappings(
           mapping("tx").fields(
@@ -194,7 +195,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     */
   def saveTx(id: Long, comment: String, tags: Seq[String]): Future[Boolean] = {
 
-    val response = getEsClient.execute {
+    val response = client.execute {
       indexInto(INDEX_NAME / "tx").id(id.toString).fields("comment" -> comment, "tags" -> tags).refresh(RefreshPolicy.Immediate)
     }
 
@@ -202,7 +203,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
   }
 
   protected def lookupTransaction(field: String)(query: String): Future[Array[Long]] = {
-    val response = getEsClient.execute {
+    val response = client.execute {
       search(INDEX_NAME).query(MatchQuery(field = field, value = query, fuzziness = Some("1.0")))
     }
 
