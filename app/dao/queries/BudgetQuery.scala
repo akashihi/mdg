@@ -67,7 +67,7 @@ object BudgetQuery {
     * Returns all known budgets.
     * @return list o budgets.
     */
-  def list(): DBIO[Seq[Budget]] = budgets.result
+  def list(): StreamingDBIO[Seq[Budget], Budget] = budgets.result
 
   /**
     * Finds budget by its id.

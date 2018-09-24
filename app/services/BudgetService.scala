@@ -10,6 +10,8 @@ import util.EitherOps._
 import validators.Validator._
 import scalaz._
 import Scalaz._
+import akka.stream._
+import akka.actor._
 import dao.{SqlDatabase, SqlExecutionContext}
 import dao.queries.BudgetQuery
 
@@ -20,7 +22,7 @@ import scala.concurrent._
   */
 class BudgetService @Inject() (protected val ts: TransactionService, protected val rs: RateService,
                                protected val as: AccountService, protected val bes: BudgetEntryService,
-                               protected val sql: SqlDatabase)
+                               protected val sql: SqlDatabase, implicit protected val acs: ActorSystem)
                               (implicit ec: SqlExecutionContext) {
 
   /**
@@ -147,8 +149,13 @@ class BudgetService @Inject() (protected val ts: TransactionService, protected v
     f.map(BudgetQuery.insert).map(sql.query).flatten.map(budgetToDTO).flatten
   }
 
-  def list(): Future[Seq[BudgetDTO]] =
-    sql.query(BudgetQuery.list()).flatMap(x => Future.sequence(x.map(budgetToDTO)))
+  def list(): Future[Seq[BudgetDTO]] = {
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
+    val budgets = Source.fromPublisher(sql.stream(BudgetQuery.list()))
+    budgets.mapAsync(1)(budgetToDTO).runWith(Sink.seq)
+  }
 
   /**
     * Retrieves specific Budget.

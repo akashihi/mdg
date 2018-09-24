@@ -12,7 +12,9 @@ import util.EitherOps._
 import validators.Validator._
 import scalaz._
 import Scalaz._
-import akka.actor.ActorSystem
+import akka.stream._
+import akka.stream.scaladsl._
+import akka.actor._
 import dao.{ElasticSearch, SqlDatabase, SqlExecutionContext}
 import dao.queries.{AccountQuery, TagQuery, TransactionQuery}
 import util.Default
@@ -191,8 +193,9 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     * @return True in case of success
     */
   def reindexTransactions(): Future[Boolean] = {
-    import akka.stream._
     import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
     log.info("Starting transaction reindexing")
     def create = OptionT(es.createMdgIndex().map(_.option(1)))
     def drop = OptionT(es.dropMdgIndex().map(_.option(1)))
@@ -202,7 +205,6 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     }
     def transactions = sql.stream(TransactionQuery.listAll)
 
-    implicit val am: ActorMaterializer = ActorMaterializer()
     def flow = Source.fromPublisher(transactions).mapAsync(1)(saveToIndex).map(if (_) 0 else 1).toMat(Sink.fold(0)(_ + _))(Keep.right)
 
     val index = drop.flatMap(_ => create).flatMapF(_ => flow.run())
