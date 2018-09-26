@@ -6,6 +6,15 @@ This application solves two issues, which are already solved in other existing p
 
 MDG (acronim of Moi.Den.Gi, that means "my money" in Russian) is a truly personal tool that can be deployed anywhere on your personal server (in the internet) and will be available from any point, from which that server is accesible, so making it cloud like.
 
+## Contents
+
+- [Deployment](#deployment)
+- [Usage](#usage)
+- [Development](#development)
+- [Versioning](#versioning)
+- [Authors](#authors)
+- [License](#license)
+
 ## Deployment
 
 ### Automatic deploy with Ansible on Atomic host
