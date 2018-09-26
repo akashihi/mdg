@@ -1,5 +1,3 @@
-import jQuery from 'jquery';
-
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 import {loadTransactionList} from './TransactionActions';
 import {loadBudgetEntryList} from './BudgetEntryActions';
@@ -15,20 +13,13 @@ import {
 } from '../constants/Account'
 
 export function loadAccountList() {
-    return (dispatch, getState) => {
+    return (dispatch) => {
         dispatch({
             type: GET_ACCOUNTLIST_REQUEST,
             payload: true
         });
 
-        var state = getState();
-
         var url = '/api/account';
-
-        if (state.account.ui.hiddenAccountsVisible) {
-            var filter = {filter: JSON.stringify({hidden: true})};
-            url = url + '?' + jQuery.param(filter)
-        }
 
         fetch(url)
             .then(parseJSON)
@@ -55,8 +46,6 @@ export function toggleHiddenAccounts(visible) {
             type: TOGGLE_HIDDEN_ACCOUNTS,
             payload: visible
         });
-
-        dispatch(()=>dispatch(loadAccountList()))
     };
 }
 

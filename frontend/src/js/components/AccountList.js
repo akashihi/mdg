@@ -25,7 +25,9 @@ export default class AccountsList extends Component {
             props.actions.editAccount(account)
         };
 
-        var accounts = props.accounts.map(function (item) {
+        var filtered_accounts = props.accounts.filter((item) => item.attributes.hidden === this.props.hiddenVisible)
+
+        var accounts = filtered_accounts.map(function (item) {
             return (
                 <div key={item.id}><Account account={item} currencies={props.currencies}
                                             switchFavoriteFunc={onSwitchFavoriteClick}

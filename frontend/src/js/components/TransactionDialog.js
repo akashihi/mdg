@@ -62,7 +62,7 @@ class AccountMapper {
     }
 
     combineAccounts() {
-        return this.sortAssets().concat(this.expenseAccounts, this.incomeAccounts);
+        return this.sortAssets().concat(this.expenseAccounts, this.incomeAccounts).filter((item) => !item.attributes.hidden);
     }
 
     getAccounts() {
@@ -296,7 +296,8 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionCancel();
     }
 
-    onCommentChange(event, value) {
+    onCommentChange(event) {
+        var value = event.target.value
         var attr = {...this.props.transaction.attributes};
         attr.comment = value;
         var tx = {...this.props.transaction, attributes: attr};

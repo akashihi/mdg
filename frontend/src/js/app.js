@@ -7,8 +7,6 @@ import thunk from 'redux-thunk'
 import createHistory from 'history/createBrowserHistory'
 import { ConnectedRouter, routerMiddleware} from 'react-router-redux'
 
-import injectTapEventPlugin from 'react-tap-event-plugin';
-injectTapEventPlugin();
 import 'whatwg-fetch';
 
 import rootReducer from './reducers/rootReducer'

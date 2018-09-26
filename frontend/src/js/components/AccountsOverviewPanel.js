@@ -23,7 +23,7 @@ export default class AccountsOverviewPanel extends Component {
                 <CardText>
                     <IconButton onClick={::this.onCreateAccountClick}><FontIcon className='material-icons'>add_circle_outline</FontIcon></IconButton>
                     <GridList cellHeight={70} cols={1}>
-                        <AccountList actions={props.actions} currencies={props.currencies} accounts={accounts}/>
+                        <AccountList hiddenVisible={false} actions={props.actions} currencies={props.currencies} accounts={accounts}/>
                     </GridList>
                 </CardText>
             </div>
