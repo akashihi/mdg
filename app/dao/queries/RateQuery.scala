@@ -1,13 +1,13 @@
-package dao
+package dao.queries
 
 import java.time.LocalDateTime
 
+import dao.mappers.LocalDateMapper._
 import dao.tables.Rates
 import models.Rate
-import dao.mappers.LocalDateMapper._
 import slick.jdbc.PostgresProfile.api._
 
-object RateDao {
+object RateQuery {
   val rates = TableQuery[Rates]
 
   def list(ts: LocalDateTime): DBIO[Seq[Rate]] =

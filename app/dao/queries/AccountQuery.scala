@@ -1,12 +1,12 @@
-package dao
+package dao.queries
 
 import dao.filters.AccountFilter
 import dao.tables.Accounts
 import models.Account
-import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
+import play.api.libs.concurrent.Execution.Implicits._
 
-object AccountDao {
+object AccountQuery {
   val accounts = TableQuery[Accounts]
 
   def insert(a: Account): DBIO[Account] = {

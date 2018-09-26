@@ -8,7 +8,9 @@ addons:
 services:
 - postgresql
 - docker
+- elasticsearch
 before_script:
+- sleep 10 # Elasticsearch needs some time for start-up
 - psql -f docs/createdb.sql -U postgres
 - git clone https://github.com/akashihi/mdg-api-test
 script:

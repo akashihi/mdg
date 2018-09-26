@@ -1,11 +1,11 @@
-package dao
+package dao.queries
 
 import dao.tables.Tags
 import models.TxTag
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
 
-object TagDao {
+object TagQuery {
   val tags = TableQuery[Tags]
 
   def list(): DBIO[Seq[TxTag]] = tags.sortBy(_.txtag.asc).result

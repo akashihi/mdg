@@ -1,16 +1,16 @@
-package dao
+package dao.queries
 
 import java.sql.Date
 import java.time.LocalDate
 
-import dao.mappers.LocalDateMapper._
-import dao.BudgetEntryDao._
+import dao.queries.BudgetEntryQuery._
 import dao.tables._
 import models.{Budget, BudgetEntry}
-import slick.jdbc.PostgresProfile.api._
 import play.api.libs.concurrent.Execution.Implicits._
+import slick.jdbc.PostgresProfile.api._
+import dao.mappers.LocalDateMapper._
 
-object BudgetDao {
+object BudgetQuery {
   val budgets = TableQuery[Budgets]
 
   /**
@@ -67,7 +67,7 @@ object BudgetDao {
     * Returns all known budgets.
     * @return list o budgets.
     */
-  def list(): DBIO[Seq[Budget]] = budgets.result
+  def list(): StreamingDBIO[Seq[Budget], Budget] = budgets.result
 
   /**
     * Finds budget by its id.

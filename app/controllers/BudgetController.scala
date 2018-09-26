@@ -1,30 +1,24 @@
 package controllers
 
 import java.time._
-import javax.inject.Inject
 
+import javax.inject.Inject
 import controllers.api.ResultMaker._
 import models.Budget
 import play.api.mvc._
-import services.BudgetService
-import services.ErrorService._
-import play.api.db.slick.DatabaseConfigProvider
-import slick.driver.JdbcProfile
+import services.{BudgetService, ErrorService}
 import slick.jdbc.PostgresProfile.api._
+import controllers.dto.BudgetDTO
+import dao.SqlExecutionContext
 
 import scala.concurrent._
-import _root_.util.ApiOps._
-import controllers.dto.BudgetDTO
 
 /**
   * Budget REST resource controller.
   */
-class BudgetController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends Controller {
-
-  val db = dbConfigProvider.get[JdbcProfile].db
+class BudgetController @Inject()(protected val bs: BudgetService, protected val es: ErrorService)
+                                (implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   /**
     * Makes Play result form Budget(DTO)
@@ -52,14 +46,11 @@ class BudgetController @Inject()(
       e <- (request.body \ "data" \ "attributes" \ "term_end").asOpt[LocalDate]
     } yield Budget(Some(b), b, e)
 
-    val result =
-      BudgetService.add(budget).run.flatMap(x => handleErrors(x)(createResult))
-    db.run(result)
+    bs.add(budget).run.flatMap(x => es.handleErrors(x)(createResult))
   }
 
   def index = Action.async {
-    val result = BudgetService.list().map(x => makeResult(x)(OK))
-    db.run(result)
+    bs.list().map(x => makeResult(x)(OK))
   }
 
   /**
@@ -68,11 +59,10 @@ class BudgetController @Inject()(
     * @return budget wrapper object.
     */
   def show(id: Long) = Action.async {
-    val result = BudgetService.get(id).flatMap {
-      case None => makeErrorResult("BUDGET_NOT_FOUND")
-      case Some(x) => DBIO.successful(makeResult(x)(OK))
+    bs.get(id).run.flatMap {
+      case None => es.makeErrorResult("BUDGET_NOT_FOUND")
+      case Some(x) => Future.successful(makeResult(x)(OK))
     }
-    db.run(result)
   }
 
   /**
@@ -82,12 +72,8 @@ class BudgetController @Inject()(
     * @return HTTP 204 in case of success, HTTP error otherwise
     */
   def delete(id: Long) = Action.async {
-    val result = BudgetService
-      .delete(id)
+    bs.delete(id).run
       .flatMap(x =>
-        handleErrors(x) { _ =>
-          NoContent
-      })
-    db.run(result)
+        es.handleErrors(x) { _ => NoContent })
   }
 }

@@ -15,6 +15,17 @@ libraryDependencies += "org.postgresql" % "postgresql" % "42.2.2"
 libraryDependencies += "com.ticketfly" %% "play-liquibase" % "1.4"
 libraryDependencies += "com.github.cb372" %% "scalacache-guava" % "0.24.1"
 
+// major.minor are in sync with the elasticsearch releases
+val elastic4sVersion = "6.3.7"
+libraryDependencies ++= Seq(
+  "com.sksamuel.elastic4s" %% "elastic4s-core" % elastic4sVersion,
+
+  // for the http client
+  "com.sksamuel.elastic4s" %% "elastic4s-http" % elastic4sVersion,
+)
+
+libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.5" % "test"
+
 val scalazVersion = "7.2.22"
 
 libraryDependencies ++= Seq(

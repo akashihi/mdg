@@ -1,23 +1,29 @@
 package services
 
+import javax.inject.Inject
 import java.time.LocalDate
 
 import controllers.dto.BudgetDTO
 import dao.filters.EmptyAccountFilter
-import dao.BudgetDao
 import models.{Account, Budget, BudgetEntry}
-import slick.jdbc.PostgresProfile.api._
-import util.EitherD
-import util.EitherD._
+import util.EitherOps._
 import validators.Validator._
 import scalaz._
 import Scalaz._
-import play.api.libs.concurrent.Execution.Implicits._
+import akka.stream._
+import akka.actor._
+import dao.{SqlDatabase, SqlExecutionContext}
+import dao.queries.BudgetQuery
+
+import scala.concurrent._
 
 /**
   * Budget operations service.
   */
-object BudgetService {
+class BudgetService @Inject() (protected val ts: TransactionService, protected val rs: RateService,
+                               protected val as: AccountService, protected val bes: BudgetEntryService,
+                               protected val sql: SqlDatabase, implicit protected val acs: ActorSystem)
+                              (implicit ec: SqlExecutionContext) {
 
   /**
     * Calculates actual change of remains on asset account during
@@ -28,9 +34,9 @@ object BudgetService {
   private def getActualSpendings(
       b: Budget,
       incomeAccounts: Seq[Account],
-      expenseAccounts: Seq[Account]): DBIO[(BigDecimal, BigDecimal)] = {
+      expenseAccounts: Seq[Account]): Future[(BigDecimal, BigDecimal)] = {
     val getTotalsForBudget =
-      TransactionService.getTotalsForDate(b.term_beginning, b.term_end) _
+      ts.getTotalsForDate(b.term_beginning, b.term_end) _
     getTotalsForBudget(incomeAccounts).map(-_) zip getTotalsForBudget(
       expenseAccounts)
   }
@@ -40,16 +46,12 @@ object BudgetService {
     * @param accounts accounts to look on.
     * @return sum of amounts of all operations on specified accounts today.
     */
-  private def getTodaySpendings(accounts: Seq[Account]): DBIO[BigDecimal] = {
+  private def getTodaySpendings(accounts: Seq[Account]): Future[BigDecimal] = {
     val today = LocalDate.now()
-    TransactionService.getTotalsForDate(today, today)(accounts)
+    ts.getTotalsForDate(today, today)(accounts)
   }
 
-  private def getAllowedSpendings(b: Budget): DBIO[BigDecimal] = {
-    BudgetEntryService
-      .list(b.id.get)
-      .map(_.flatMap(_.change_amount).foldLeft(BigDecimal(0))(_ + _))
-  }
+  private def getAllowedSpendings(b: Budget): Future[BigDecimal] = bes.list(b.id.get).map(_.flatMap(_.change_amount).foldLeft(BigDecimal(0))(_ + _))
 
   /**
     * Gets an budget entry and returns it's expected_amount value in primary currency with current rate.
@@ -57,9 +59,9 @@ object BudgetService {
     * @param relatedAccounts Accounts sequence to extract currency ids
     * @return Value of expected_amount exposed in primary currency
     */
-  private def entryApplyPrimaryRateToExpected(entry: BudgetEntry, relatedAccounts: Seq[Account]): DBIO[BigDecimal] = {
+  private def entryApplyPrimaryRateToExpected(entry: BudgetEntry, relatedAccounts: Seq[Account]): Future[BigDecimal] = {
     val currency_id = relatedAccounts.filter(a => a.id.get == entry.account_id).map(_.currency_id).head
-    val rate = RateService.getCurrentRateToPrimary(currency_id).map( r => r.rate * entry.expected_amount)
+    val rate = rs.getCurrentRateToPrimary(currency_id).map( r => r.rate * entry.expected_amount)
     rate.run.map(_.getOrElse(BigDecimal(0)))
   }
 
@@ -69,9 +71,9 @@ object BudgetService {
     * @param relatedAccounts Accounts of interest
     * @return Total of expected_changes on accounts of interest exposed in primary currency
     */
-  private def getExpectedChangedInPrimaryRate(budget_id: Long, relatedAccounts: Seq[Account]): DBIO[BigDecimal] = {
-    BudgetDao.getExpectedChange(budget_id, relatedAccounts.flatMap(_.id))
-      .flatMap(s => DBIO.sequence(s.map({ entry => entryApplyPrimaryRateToExpected(entry, relatedAccounts)})))
+  private def getExpectedChangedInPrimaryRate(budget_id: Long, relatedAccounts: Seq[Account]): Future[BigDecimal] = {
+    val query = BudgetQuery.getExpectedChange(budget_id, relatedAccounts.flatMap(_.id))
+    sql.query(query).flatMap(s => Future.sequence(s.map({ entry => entryApplyPrimaryRateToExpected(entry, relatedAccounts)})))
       .map(_.foldLeft(BigDecimal(0))(_ + _))
   }
 
@@ -83,12 +85,12 @@ object BudgetService {
   def getExpectedChange(
       b: Budget,
       incomeAccounts: Seq[Account],
-      expenseAccounts: Seq[Account]): DBIO[(BigDecimal, BigDecimal)] = {
+      expenseAccounts: Seq[Account]): Future[(BigDecimal, BigDecimal)] = {
     b.id
       .map(
         x =>
           getExpectedChangedInPrimaryRate(x, incomeAccounts) zip getExpectedChangedInPrimaryRate(x, expenseAccounts))
-      .getOrElse(DBIO.successful((BigDecimal(0), BigDecimal(0))))
+      .getOrElse(Future.successful((BigDecimal(0), BigDecimal(0))))
   }
 
   /**
@@ -96,11 +98,11 @@ object BudgetService {
     * @param b budget object to convert
     * @return Fully filled DTO object
     */
-  def budgetToDTO(b: Budget): DBIO[BudgetDTO] = {
-    AccountService.listSeparate(EmptyAccountFilter).flatMap { a =>
+  def budgetToDTO(b: Budget): Future[BudgetDTO] = {
+    as.listSeparate(EmptyAccountFilter).flatMap { a =>
       val (incomeAccounts, _, expenseAccounts) = a
 
-      BudgetDao.getIncomingAmount(b.term_beginning).flatMap { incoming =>
+      sql.query(BudgetQuery.getIncomingAmount(b.term_beginning)).flatMap { incoming =>
         getExpectedChange(b, incomeAccounts, expenseAccounts).flatMap {
           expectedChange =>
             val (expectedIncome, expectedExpense) = expectedChange
@@ -132,36 +134,37 @@ object BudgetService {
     * @param budget budget description object.
     * @return budget description object with id.
     */
-  def add(budget: Option[Budget]): EitherD[String, BudgetDTO] = {
+  def add(budget: Option[Budget]): ErrorF[BudgetDTO] = {
     val v = budget
       .fromOption("BUDGET_DATA_INVALID")
       .map { validate }
       .flatMap { validationToXor }
-      .map(x =>
-        BudgetDao.findOverlapping(x.term_beginning, x.term_end).map {
+    val f = EitherT(Future.successful(v)).map(x =>
+        BudgetQuery.findOverlapping(x.term_beginning, x.term_end).map {
           case Some(_) => "BUDGET_OVERLAPPING".left
           case None => x.right
       })
-      .transform
+      .flatMapF(sql.query)
 
-    v.map(BudgetDao.insert(_).flatMap(budgetToDTO)).run.transform
+    f.map(BudgetQuery.insert).map(sql.query).flatten.map(budgetToDTO).flatten
   }
 
-  def list(): DBIO[Seq[BudgetDTO]] =
-    BudgetDao.list().flatMap(x => DBIO.sequence(x.map(budgetToDTO)))
+  def list(): Future[Seq[BudgetDTO]] = {
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
+    val budgets = Source.fromPublisher(sql.stream(BudgetQuery.list()))
+    budgets.mapAsync(1)(budgetToDTO).runWith(Sink.seq)
+  }
 
   /**
     * Retrieves specific Budget.
     * @param id transaction unique id.
     * @return DTO object.
     */
-  def get(id: Long): DBIO[Option[BudgetDTO]] = {
-    BudgetDao.find(id).flatMap { x =>
-      x.map(budgetToDTO) match {
-        case Some(f) => f.map(Some(_))
-        case None => DBIO.successful(None)
-      }
-    }
+  def get(id: Long): OptionF[BudgetDTO] = {
+    val query = BudgetQuery.find(id)
+    OptionT(sql.query(query)).flatMapF(budgetToDTO)
   }
 
   /**
@@ -170,10 +173,11 @@ object BudgetService {
     * @param id identification of budget to remove.
     * @return either error result, or resultHandler processing result.
     */
-  def delete(id: Long): DBIO[\/[String, Int]] = {
-    BudgetDao.delete(id).map {
+  def delete(id: Long): ErrorF[Int] = {
+    val result = sql.query(BudgetQuery.delete(id)).map {
       case 1 => 1.right
       case _ => "BUDGET_NOT_FOUND".left
     }
+    EitherT(result)
   }
 }

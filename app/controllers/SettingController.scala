@@ -1,25 +1,18 @@
 package controllers
 
 import javax.inject._
-
 import controllers.api.ResultMaker._
-import play.api.db.slick.DatabaseConfigProvider
+import dao.SqlExecutionContext
 import play.api.mvc._
-import services.SettingService
-import services.ErrorService._
-import slick.jdbc.JdbcProfile
-
-import scala.concurrent.ExecutionContext
+import services.{ErrorService, SettingService}
 
 /**
   * Setting resource REST controller
   */
 @Singleton
-class SettingController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends Controller {
-  val db = dbConfigProvider.get[JdbcProfile].db
+class SettingController @Inject() (protected val ss: SettingService, protected val es: ErrorService)
+                                  (implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   /**
     * Setting list access method
@@ -27,7 +20,7 @@ class SettingController @Inject()(
     * @return list of settings on system, wrapped to json.
     */
   def index = Action.async {
-    db.run(SettingService.list().map(x => makeResult(x)(OK)))
+    ss.list().map(x => makeResult(x)(OK))
   }
 
   /**
@@ -37,14 +30,13 @@ class SettingController @Inject()(
     * @return setting object.
     */
   def show(id: String) = Action.async {
-    val result = SettingService
+    ss
       .get(id)
       .run
       .flatMap(x =>
-        handleErrors(x) { x =>
+        es.handleErrors(x) { x =>
           makeResult(x)(OK)
       })
-    db.run(result)
   }
 
   /**
@@ -55,12 +47,11 @@ class SettingController @Inject()(
   def editCurrencyPrimary() = Action.async(parse.tolerantJson) { request =>
     val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
 
-    val result = SettingService.setCurrencyPrimary(value).run.flatMap { x =>
-      handleErrors(x) { x =>
+    ss.setCurrencyPrimary(value).run.flatMap { x =>
+      es.handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }
     }
-    db.run(result)
   }
 
   /**
@@ -71,11 +62,10 @@ class SettingController @Inject()(
   def editUiTransactionCloseDialog() = Action.async(parse.tolerantJson) { request =>
     val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
 
-    val result = SettingService.setUiTransactionCloseDialog(value).run.flatMap { x =>
-      handleErrors(x) { x =>
+    ss.setUiTransactionCloseDialog(value).run.flatMap { x =>
+      es.handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }
     }
-    db.run(result)
   }
 }

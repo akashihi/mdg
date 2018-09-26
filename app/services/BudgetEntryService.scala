@@ -4,47 +4,51 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 import controllers.dto.BudgetEntryDTO
-import dao.{AccountDao, BudgetDao, BudgetEntryDao}
 import models.{Account, Budget, BudgetEntry, ExpenseAccount}
-import slick.jdbc.PostgresProfile.api._
-import play.api.libs.concurrent.Execution.Implicits._
+
 import scala.math.Ordering
 import scalaz._
 import Scalaz._
+import dao.{SqlDatabase, SqlExecutionContext}
+import dao.queries.{AccountQuery, BudgetEntryQuery, BudgetQuery}
+import util.EitherOps._
+import javax.inject.Inject
 
+import scala.concurrent._
 import scala.math.BigDecimal.RoundingMode
 
 /**
   * Budget operations service.
   */
-object BudgetEntryService {
+class BudgetEntryService @Inject() (protected val sql: SqlDatabase)(implicit ec: SqlExecutionContext) {
 
   /**
     * Calculates allowed future spendings.
     *
     * @param b      BudgetEntry
     * @param budget related Budget
-    * @return tuple of actual spendings, allowed future spendings.
+    * @return allowed future spendings.
     */
-  private def getEntryAmounts(b: BudgetEntry,
+  def getEntryAmounts(b: BudgetEntry,
+                              forDay: LocalDate,
                               budget: Budget,
                               actual: BigDecimal): Option[BigDecimal] = {
-    if (LocalDate.now().isAfter(budget.term_beginning) && LocalDate
-      .now()
-      .isBefore(budget.term_end)) {
+    if (forDay.plusDays(1).isAfter(budget.term_beginning) && forDay.minusDays(1).isBefore(budget.term_end)) { //We need to check equality condition too
       val budgetLength =
-        ChronoUnit.DAYS.between(budget.term_beginning, budget.term_end)
+        ChronoUnit.DAYS.between(budget.term_beginning.minusDays(1), budget.term_end) //We need to include first day
       val daysLeft =
-        ChronoUnit.DAYS.between(LocalDate.now(), budget.term_end)
+        ChronoUnit.DAYS.between(forDay.minusDays(1), budget.term_end) //We need to include specified day
+      val daysPassed =
+        ChronoUnit.DAYS.between(budget.term_beginning.minusDays(1), forDay) //We need to include first day
       val changeAmount = b.even_distribution match {
         case false => None
         case true =>
           b.proration match {
-            case Some(true) =>
-              Some((b.expected_amount - actual) / daysLeft)
             case Some(false) | None =>
+              Some((b.expected_amount - actual) / daysLeft)
+            case Some(true) =>
               Some(
-                b.expected_amount - actual - (b.expected_amount / budgetLength) * daysLeft)
+                (b.expected_amount / budgetLength) * daysPassed - actual)
           }
       }
       changeAmount
@@ -61,20 +65,23 @@ object BudgetEntryService {
     * @param b budget entry object to convert
     * @return Fully filled DTO object
     */
-  def entryToDTO(b: BudgetEntry): DBIO[BudgetEntryDTO] = {
-    val amounts: DBIO[(BigDecimal, Option[BigDecimal])] =
-      BudgetDao.find(b.budget_id).flatMap {
-        case None => DBIO.successful((BigDecimal(0), None))
-        case Some(budget) =>
-          BudgetEntryDao.getActualSpendings(b.account_id, budget).map {
-            actual =>
-              (actual, getEntryAmounts(b, budget, actual))
-          }
-      }
+  def entryToDTO(b: BudgetEntry): Future[BudgetEntryDTO] = {
+    def calculateAmounts(a: BigDecimal, bdgt: Option[Budget]): (BigDecimal, Option[BigDecimal]) = {
+      val entry = bdgt.flatMap(getEntryAmounts(b, LocalDate.now(), _, a))
+      (a, entry)
+    }
+
+    val budget = OptionT(sql.query(BudgetQuery.find(b.budget_id)))
+    val actual = budget.map(BudgetEntryQuery.getActualSpendings(b.account_id, _))
+      .flatMapF(sql.query)
+      .getOrElse(0)
+
+    val amounts = actual zip budget.run map (calculateAmounts _).tupled
+
     amounts.flatMap { p =>
       val (actual, normalizedChangeAmount) = p
       val defaultAccount = Account(None, ExpenseAccount, 0, "No account found", 0, false, false, false)
-      val account = AccountDao.findById(b.account_id).map(_.getOrElse(defaultAccount))
+      val account = sql.query(AccountQuery.findById(b.account_id).map(_.getOrElse(defaultAccount)))
       account.map { a =>
         BudgetEntryDTO(b.id,
           b.account_id,
@@ -95,19 +102,14 @@ object BudgetEntryService {
     * @param budget_id Identity of a budget.
     * @return Sequence of BudgetEntry DTOs.
     */
-  def list(budget_id: Long): DBIO[Seq[BudgetEntryDTO]] =
-    BudgetEntryDao
-      .list(budget_id: Long)
-      .flatMap(x => DBIO.sequence(x.map(entryToDTO)))
+  def list(budget_id: Long): Future[Seq[BudgetEntryDTO]] =
+    sql.query(BudgetEntryQuery.list(budget_id: Long))
+      .flatMap(x => Future.sequence(x.map(entryToDTO)))
     .map(_.sortBy(r => (r.account_type, r.account_name))(Ordering.Tuple2(Ordering.String.reverse, Ordering.String)))
 
-  def find(id: Long, budget_id: Long): DBIO[Option[BudgetEntryDTO]] = {
-    BudgetEntryDao.find(id, budget_id).flatMap { x =>
-      x.map(entryToDTO) match {
-        case Some(f) => f.map(Some(_))
-        case None => DBIO.successful(None)
-      }
-    }
+  def find(id: Long, budget_id: Long): OptionF[BudgetEntryDTO] = {
+    val query = BudgetEntryQuery.find(id, budget_id)
+    OptionT(sql.query(query)).flatMapF(entryToDTO)
   }
 
   /**
@@ -124,22 +126,25 @@ object BudgetEntryService {
            budget_id: Long,
            ed: Option[Boolean],
            p: Option[Boolean],
-           ea: Option[BigDecimal]): DBIO[\/[String, BudgetEntryDTO]] = {
+           ea: Option[BigDecimal]): ErrorF[BudgetEntryDTO] = {
     val proration = ed match {
       case Some(true) => p
       case _ => Some(false)
     }
-    BudgetEntryDao.find(id, budget_id).flatMap {
-      case None => DBIO.successful("BUDGETENTRY_NOT_FOUND".left)
-      case Some(x) =>
-        val updated = x.copy(even_distribution =
-          ed.getOrElse(x.even_distribution),
-          proration = proration,
-          expected_amount = ea.getOrElse(x.expected_amount))
-        BudgetEntryDao.update(updated).flatMap {
-          case 1 => entryToDTO(updated).map(_.right)
-          case _ => DBIO.successful("BUDGETENTRY_BOT_UPDATED".left)
-        }
-    }
+    val query = BudgetEntryQuery.find(id, budget_id)
+    val entry = EitherT(sql.query(query).map(_.fromOption("BUDGETENTRY_NOT_FOUND")))
+    val updated = entry.map(x => x.copy(
+      even_distribution = ed.getOrElse(x.even_distribution),
+      proration = proration,
+      expected_amount = ea.getOrElse(x.expected_amount)
+    ))
+
+    updated.map(BudgetEntryQuery.update)
+      .map(sql.query)
+      .flatten
+      .flatMap {
+        case 1 => updated.map(entryToDTO).flatten
+        case _ => EitherT(Future.successful("BUDGETENTRY_BOT_UPDATED".left))
+      }
   }
 }

@@ -1,31 +1,23 @@
 package controllers
 
 import javax.inject.Inject
-
 import controllers.api.JsonWrapper._
 import controllers.api.ResultMaker._
+import dao.SqlExecutionContext
 import play.api.mvc._
-import services.BudgetEntryService
-import services.ErrorService._
-import util.ApiOps._
-import play.api.db.slick.DatabaseConfigProvider
-import slick.jdbc.JdbcProfile
-import slick.jdbc.PostgresProfile.api._
+import services.{BudgetEntryService, ErrorService}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent._
 
 /**
   * Budget REST resource controller.
   */
-class BudgetEntryController @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)(
-    implicit ec: ExecutionContext)
-    extends Controller {
-  val db = dbConfigProvider.get[JdbcProfile].db
+class BudgetEntryController @Inject() (protected val bes: BudgetEntryService, protected val es: ErrorService)
+                                      (implicit ec: SqlExecutionContext)
+  extends InjectedController {
 
   def index(budget_id: Long) = Action.async {
-    val result = BudgetEntryService.list(budget_id).map(x => Ok(wrapJson(x)))
-    db.run(result)
+    bes.list(budget_id).map(x => Ok(wrapJson(x)))
   }
 
   /**
@@ -34,11 +26,10 @@ class BudgetEntryController @Inject()(
     * @return budgetentry wrapper object.
     */
   def show(id: Long, budget_id: Long) = Action.async {
-    val result = BudgetEntryService.find(id, budget_id).flatMap {
-      case None => makeErrorResult("BUDGETENTRY_NOT_FOUND")
-      case Some(x) => DBIO.successful(Ok(wrapJson(x)))
+    bes.find(id, budget_id).run.flatMap {
+      case None => es.makeErrorResult("BUDGETENTRY_NOT_FOUND")
+      case Some(x) => Future.successful(Ok(wrapJson(x)))
     }
-    db.run(result)
   }
 
   /**
@@ -56,13 +47,6 @@ class BudgetEntryController @Inject()(
       val a = (request.body \ "data" \ "attributes" \ "expected_amount")
         .asOpt[BigDecimal]
 
-      val result = BudgetEntryService.edit(id, budget_id, e, p, a).flatMap {
-        x =>
-          handleErrors(x) { x =>
-            makeResult(x)(ACCEPTED)
-          }
-      }
-
-      db.run(result)
+      bes.edit(id, budget_id, e, p, a).run.flatMap { x => es.handleErrors(x) { x => makeResult(x)(ACCEPTED) } }
   }
 }
