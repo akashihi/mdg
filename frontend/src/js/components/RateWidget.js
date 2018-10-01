@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {List, ListItem} from 'material-ui/List';
 import Subheader from 'material-ui/Subheader';
-import Divider from 'material-ui/Divider';
+import Divider from '@material-ui/core/Divider';
 
 export default class RateWidget extends Component {
 
