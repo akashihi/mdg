@@ -89,7 +89,7 @@ export function createAccount() {
       type: ACCOUNT_DIALOG_OPEN,
       payload: {
         full: true,
-        account: { attributes: {balance: 0, currency_id: state.setting.primaryCurrency} }
+        account: { attributes: {account_type: 'asset', balance: 0, currency_id: state.setting.primaryCurrency} }
       }
     })
   }

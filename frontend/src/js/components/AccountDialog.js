@@ -1,10 +1,16 @@
 import React from 'react';
-import Dialog from 'material-ui/Dialog';
-import TextField from 'material-ui/TextField';
-import Toggle from 'material-ui/Toggle';
-import FlatButton from 'material-ui/FlatButton';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import TextField from '@material-ui/core/TextField';
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import MenuItem from '@material-ui/core/MenuItem';
 
 
 export default class AccountDialog extends React.Component {
@@ -16,30 +22,30 @@ export default class AccountDialog extends React.Component {
         this.props.actions.editAccountCancel();
     }
 
-    onTypeChange(event, key, value) {
+    onTypeChange(event) {
         var attr = {...this.props.account.attributes};
-        attr.account_type = value;
+        attr.account_type = event.target.value;
         var account = {...this.props.account, attributes: attr};
         this.props.actions.editAccountChange(account);
     }
 
-    onNameChange(event, value) {
+    onNameChange(event) {
         var attr = {...this.props.account.attributes};
-        attr.name = value;
+        attr.name = event.target.value;
         var account = {...this.props.account, attributes: attr};
         this.props.actions.editAccountChange(account);
     }
 
-    onAmountChange(event, value) {
+    onAmountChange(event) {
         var attr = {...this.props.account.attributes};
-        attr.balance = value;
+        attr.balance = event.target.value;
         var account = {...this.props.account, attributes: attr};
         this.props.actions.editAccountChange(account);
     }
 
-    onCurrencyChange(event, key, value) {
+    onCurrencyChange(event) {
         var attr = {...this.props.account.attributes};
-        attr.currency_id = value;
+        attr.currency_id = event.target.value;
         var account = {...this.props.account, attributes: attr};
         this.props.actions.editAccountChange(account);
     }
@@ -70,31 +76,81 @@ export default class AccountDialog extends React.Component {
 
         var currencies = props.currencies.map(function (item) {
             return (
-                <MenuItem value={item.id} key={item.id} primaryText={item.attributes.name}/>
+                <MenuItem value={item.id} key={item.id}>{item.attributes.name}</MenuItem>
             )
         });
 
+        var nameLabel = 'Account name'
+        var nameText = false
+        if (props.errors.name) {
+          nameLabel = props.errors.name
+          nameText = true
+        }
+
+        var amountLabel = 'Initial amount'
+        var amountText = false
+        if (props.errors.balance) {
+          amountLabel = this.props.errors.balance
+          amountText = true
+        }
+
+        var currencyLabel = 'Account currency'
+        var currencyError = false
+        if (props.errors.currency_id) {
+          currencyLabel = props.errors.currency_id
+          currencyError = true
+        }
+
         return (<Dialog title='Account editing' open={props.open}>
-            <SelectField floatingLabelText='Account type' disabled={!props.full} value={props.account.attributes.account_type} onChange={::this.onTypeChange} errorText={props.errors.account_type}>
-                <MenuItem value='asset' primaryText='Asset account' />
-                <MenuItem value='income' primaryText='Income account' />
-                <MenuItem value='expense' primaryText='Expense account' />
-            </SelectField>
-            <br/>
-            <TextField hintText='Account name' value={props.account.attributes.name} onChange={::this.onNameChange} errorText={props.errors.name}/>
-            <br/>
-            <TextField hintText='Initial amount' value={props.account.attributes.balance} disabled={!props.full} onChange={::this.onAmountChange} errorText={props.errors.balance}/>
-            <br/>
-            <SelectField floatingLabelText='Account currency' disabled={!props.full} value={props.account.attributes.currency_id} onChange={::this.onCurrencyChange} errorText={props.errors.currency_id}>
-                {currencies}
-            </SelectField>
-            <br/>
-            <Toggle label='Favorite' toggled={props.account.attributes.favorite} onToggle={::this.onFavoriteChange}/>
-            <Toggle label='Operational' toggled={props.account.attributes.operational} onToggle={::this.onOperationalChange}/>
-            <Toggle label='Hidden' toggled={props.account.attributes.hidden} onToggle={::this.onHiddenChange} disabled={props.full}/>
-            <br/>
-            <FlatButton label='Save' primary={true} onClick={::this.onSaveClick} disabled={!props.valid}/>
-            <FlatButton label='Cancel' secondary={true} onClick={::this.onCancelClick}/>
+        <DialogContent>
+          <FormControl fullWidth={true}>
+              <InputLabel htmlFor={'account-type'}>Account type</InputLabel>
+              <Select value={props.account.attributes.account_type}
+                      onChange={::this.onTypeChange}
+                      inputProps={{id: 'account-type'}}>
+                      <MenuItem key='asset' value='asset'>Asset account</MenuItem>
+                      <MenuItem key='income' value='income'>Income account</MenuItem>
+                      <MenuItem key='expense' value='expense'>Expense account</MenuItem>
+              </Select>
+          </FormControl>
+          <TextField label={nameLabel} error={nameText} value={props.account.attributes.name} onChange={::this.onNameChange}/>
+          <br/>
+          <TextField label={amountLabel} error={amountText} value={props.account.attributes.balance} disabled={!props.full} onChange={::this.onAmountChange}/>
+          <FormControl error={currencyError} fullWidth={true}>
+                <InputLabel htmlFor={'currency'}>{currencyLabel}</InputLabel>
+                <Select value={props.account.attributes.currency_id}
+                        onChange={::this.onCurrencyChange}
+                        disabled={!props.full}
+                        inputProps={{id: 'currency'}}>
+                        {currencies}
+                </Select>
+          </FormControl>
+          <FormGroup row>
+            <FormControlLabel label='Favorite'
+              control={
+                <Switch checked={props.account.attributes.favorite} onChange={::this.onFavoriteChange} disabled={props.account.attributes.account_type != 'asset'}/>
+              }
+            />
+          </FormGroup>
+          <FormGroup row>
+            <FormControlLabel label='Operational'
+              control={
+                <Switch checked={props.account.attributes.operational} onChange={::this.onOperationalChange} disabled={props.account.attributes.account_type != 'asset'}/>
+              }
+            />
+          </FormGroup>
+          <FormGroup row>
+            <FormControlLabel label='Hidden'
+              control={
+                <Switch checked={props.account.attributes.hidden} onChange={::this.onHiddenChange} disabled={props.full}/>
+              }
+            />
+          </FormGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button color='primary' disabled={!props.valid} onClick={::this.onSaveClick}>Save</Button>
+          <Button color='secondary' onClick={::this.onCancelClick}>Cancel</Button>
+        </DialogActions>
         </Dialog>)
     }
 }
