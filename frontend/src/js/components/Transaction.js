@@ -1,15 +1,44 @@
-import React, {Component} from 'react';
-import {Card, CardHeader, CardText} from 'material-ui/Card';
+import React, {Component, Fragment} from 'react';
+import { withStyles } from '@material-ui/core/styles';
+import classnames from 'classnames';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-//import Checkbox from 'material-ui/Checkbox';
-import IconButton from 'material-ui/IconButton';
-import FontIcon from 'material-ui/FontIcon';
+import Checkbox from '@material-ui/core/Checkbox';
+import Button from '@material-ui/core/Button';
+import Delete from '@material-ui/icons/Delete';
+import Edit from '@material-ui/icons/Edit';
+import Collapse from '@material-ui/core/Collapse';
+import IconButton from '@material-ui/core/IconButton';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 
 import {timestampToFormattedDate} from '../util/DateUtil'
 import Operation from './Operation'
 
-export default class Transaction extends Component {
+const styles = theme => ({
+  expand: {
+    transform: 'rotate(0deg)',
+    transition: theme.transitions.create('transform', {
+      duration: theme.transitions.duration.shortest,
+    }),
+    marginLeft: 'auto',
+    [theme.breakpoints.up('sm')]: {
+      marginRight: -8,
+    },
+  },
+  expandOpen: {
+    transform: 'rotate(180deg)',
+  },
+});
+
+class Transaction extends Component {
+    state = { expanded: false };
+
+    handleExpandClick = () => {
+        this.setState(state => ({ expanded: !state.expanded }));
+      };
+
     renderTransactionAccountList(operations, accounts) {
         //Tx account list should include only non-asset
         //account.
@@ -29,7 +58,7 @@ export default class Transaction extends Component {
     renderOperations(tx, accounts) {
         return tx.attributes.operations.map(function (item) {
             return (
-                <div key={tx.id + '-' + item.account_id}><Operation operation={item} accounts={accounts}/></div>
+                <Fragment key={tx.id + '-' + item.account_id}><Operation operation={item} accounts={accounts}/></Fragment>
             )
         });
     }
@@ -102,6 +131,7 @@ export default class Transaction extends Component {
     }
 
     render() {
+        var { classes } = this.props;
         var props = this.props;
         var attributes = props.transaction.attributes;
 
@@ -109,31 +139,36 @@ export default class Transaction extends Component {
         var totals = ::this.getTotalChange(props.transaction, props.accounts);
 
         return <Card>
-            <CardHeader
-                actAsExpander={false}
-                showExpandableButton={true}>
+            <CardContent>
                 <Grid>
                     <Row>
-                        {/*<Col xs={1}><Checkbox/></Col>*/}
+                        {!props.preview && <Col xs={1}><Checkbox color='default'/></Col>}
                         <Col xs={1}>{timestampToFormattedDate(attributes.timestamp)}</Col>
                         <Col xs={3}>{attributes.comment}</Col>
-                        <Col xs={2}>
+                        <Col xs={1}>
                             <div style={{color: totals.color}}>{totals.total}</div>
                         </Col>
                         <Col xs={2}>{::this.renderTransactionAccountList(attributes.operations, props.accounts)}</Col>
                         <Col xs={2}>{attributes.tags.join(', ')}</Col>
-                        <Col xs={1}>
-                            <IconButton onClick={() => props.editAction(props.transaction)}><FontIcon className='material-icons'>mode_edit</FontIcon></IconButton>
-                            <IconButton onClick={() => props.deleteAction(props.transaction)}><FontIcon className='material-icons'>delete</FontIcon></IconButton>
+                        <Col xs={2}>
+                          <Button aria-label='Edit' onClick={() => props.editAction(props.transaction)}><Edit/></Button>
+                          <Button aria-label='Delete' onClick={() => props.deleteAction(props.transaction)}><Delete/></Button>
+                          {!props.preview && <IconButton className={classnames(classes.expand, {[classes.expandOpen]: this.state.expanded,})} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
+                            <ExpandMoreIcon />
+                          </IconButton>}
                         </Col>
                     </Row>
                 </Grid>
-            </CardHeader>
-            <CardText expandable={true}>
+            </CardContent>
+            <CardContent>
+              <Collapse in={this.state.expanded} timeout='auto' unmountOnExit>
                 <Grid>
                     {operations}
                 </Grid>
-            </CardText>
+              </Collapse>
+            </CardContent>
         </Card>;
     }
 }
+
+export default withStyles(styles)(Transaction);

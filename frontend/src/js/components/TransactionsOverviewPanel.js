@@ -21,7 +21,7 @@ class TransactionsOverviewPanel extends Component {
         var props = this.props;
 
         var transactions = props.transactions.map((item) => {
-            return <GridListTile key={item.id}><Transaction transaction={item} accounts={props.accounts}
+            return <GridListTile key={item.id}><Transaction transaction={item} accounts={props.accounts} preview={true}
                                                         editAction={props.actions.editTransaction}
                                                         deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
         });
