@@ -1,22 +1,52 @@
 import React, {Component} from 'react';
-import {Card, CardHeader, CardActions} from 'material-ui/Card';
-import Divider from 'material-ui/Divider';
-import {GridList, GridTile} from 'material-ui/GridList';
+import { withStyles } from '@material-ui/core/styles';
+import classnames from 'classnames';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardContent from '@material-ui/core/CardContent';
+import Divider from '@material-ui/core/Divider';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import ClipLoader from 'react-spinners/ClipLoader';
+import Collapse from '@material-ui/core/Collapse';
+import IconButton from '@material-ui/core/IconButton';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import Transaction from './Transaction';
 import TransactionPager from '../containers/TransactionsPager'
 import TransactionFilter from '../containers/TransactionsFilter'
 import TransactionDeleteDialog from '../containers/TransactionDeleteDialog'
 
-export default class TransactionsPage extends Component {
+const styles = theme => ({
+  expand: {
+    transform: 'rotate(0deg)',
+    transition: theme.transitions.create('transform', {
+      duration: theme.transitions.duration.shortest,
+    }),
+    marginLeft: 'auto',
+    [theme.breakpoints.up('sm')]: {
+      marginRight: -8,
+    },
+  },
+  expandOpen: {
+    transform: 'rotate(180deg)',
+  },
+});
+
+class TransactionsPage extends Component {
+  state = { expanded: false };
+
+  handleExpandClick = () => {
+      this.setState(state => ({ expanded: !state.expanded }));
+    };
 
     makeAccountsList(props) {
         return props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts)
     }
 
     render() {
+        var { classes } = this.props;
         var props = this.props;
 
         var accounts = ::this.makeAccountsList(props);
@@ -31,7 +61,7 @@ export default class TransactionsPage extends Component {
         } else {
             transactions = props.transactions.map(function (item) {
                 return (
-                    <GridTile key={item.id}><Transaction transaction={item} accounts={accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridTile>
+                    <GridListTile key={item.id}><Transaction transaction={item} accounts={accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
                 )
             });
         }
@@ -39,18 +69,21 @@ export default class TransactionsPage extends Component {
         return <div>
             <TransactionDeleteDialog/>
             <Card>
-                <CardHeader
-                    title={title}
-                    actAsExpander={true}
-                    showExpandableButton={true}
-                />
-                <CardActions expandable={true}>
+                <CardContent>
+                  {title}
+                  <IconButton className={classnames(classes.expand, {[classes.expandOpen]: this.state.expanded,})} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
+                    <ExpandMoreIcon />
+                  </IconButton>
+                  </CardContent>
+                  <CardContent>
+                  <Collapse in={this.state.expanded} timeout='auto' unmountOnExit>
                     <TransactionFilter/>
-                </CardActions>
+                  </Collapse>
+                </CardContent>
             </Card>
             <Divider/>
             <GridList cols={1} cellHeight='auto'>
-                <GridTile>
+                <GridListTile>
                     <Card>
                         <CardHeader>
                             <Grid>
@@ -66,10 +99,12 @@ export default class TransactionsPage extends Component {
                             </Grid>
                         </CardHeader>
                     </Card>
-                </GridTile>
+                </GridListTile>
                 {transactions}
             </GridList>
             <TransactionPager/>
         </div>;
     }
 }
+
+export default withStyles(styles)(TransactionsPage);
