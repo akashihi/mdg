@@ -14,7 +14,7 @@ export default class RateWidget extends Component {
       var currencyCode = this.props.currencies.filter((currency) => currency.id == item.attributes.from_currency)
       .map((currency) => currency.attributes.code)
 
-      return <ListItem><ListItemText key={'rate'+item.id} primary={currencyCode} secondary={item.attributes.rate}/></ListItem>
+      return <ListItem key={'rate'+item.id}><ListItemText primary={currencyCode} secondary={item.attributes.rate}/></ListItem>
     })
 
     return (

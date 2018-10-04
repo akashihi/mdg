@@ -1,20 +1,24 @@
 import React, {Component} from 'react';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import Checkbox from '@material-ui/core/Checkbox';
+import ListItemText from '@material-ui/core/ListItemText';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
 import DatePicker from 'react-date-picker'
-import FlatButton from 'material-ui/FlatButton';
-import TextField from 'material-ui/TextField';
-import IconButton from 'material-ui/IconButton';
-import FontIcon from 'material-ui/FontIcon';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Done from '@material-ui/icons/Done';
+import Clear from '@material-ui/icons/Clear';
 
 export default class TransactionsPageFilter extends Component {
     makeAccountsList(props) {
         return props.assetAccounts.concat(props.incomeAccounts, props.expenseAccounts)
     }
 
-    pageSizeChange(event, key, value) {
-        this.props.actions.setTransactionPageSize(value);
+    pageSizeChange(ev) {
+        this.props.actions.setTransactionPageSize(ev.target.value);
     }
 
     setPeriodDays(days) {
@@ -29,16 +33,16 @@ export default class TransactionsPageFilter extends Component {
         this.props.actions.setTransactionViewEnd(value)
     }
 
-    setFilterAccounts(ev, key, values) {
-        this.props.actions.setTransactionFilterAccount(values)
+    setFilterAccounts(ev) {
+        this.props.actions.setTransactionFilterAccount(ev.target.value)
     }
 
-    setFilterTags(ev, key, values) {
-        this.props.actions.setTransactionFilterTag(values)
+    setFilterTags(ev) {
+        this.props.actions.setTransactionFilterTag(ev.target.value)
     }
 
-    setFilterComment(ev, values) {
-        this.props.actions.setTransactionFilterComment(values)
+    setFilterComment(ev) {
+        this.props.actions.setTransactionFilterComment(ev.target.value)
     }
 
     clearFilter() {
@@ -60,44 +64,42 @@ export default class TransactionsPageFilter extends Component {
         };
 
         var accountItems = accounts.map((acc) => {
-            return <MenuItem
-                key={acc.id}
-                insetChildren={true}
-                checked={props.accountFilter.indexOf(acc.id) > -1}
-                value={acc.id}
-                primaryText={acc.attributes.name}
-            />
+            return <MenuItem key={acc.id} value={acc.id}>
+              <Checkbox checked={props.accountFilter.indexOf(acc.id) > -1} />
+              <ListItemText primary={acc.attributes.name}/>
+            </MenuItem>
         });
 
         var tagItems = props.tags.map((tag) => {
-            return <MenuItem
-                key={tag.attributes.txtag}
-                insetChildren={true}
-                checked={props.tagFilter.indexOf(tag.attributes.txtag) > -1}
-                value={tag.attributes.txtag}
-                primaryText={tag.attributes.txtag}
-            />
+            return <MenuItem key={tag.attributes.txtag} value={tag.attributes.txtag}>
+              <Checkbox checked={props.tagFilter.indexOf(tag.attributes.txtag) > -1}/>
+              <ListItemText primary={tag.attributes.txtag}/>
+            </MenuItem>
         });
 
         return <Grid fluid>
             <Row>
                 <Col xs={6} sm={6} md={4} lg={4}>
-                    <FlatButton label='Today' style={buttonStyle} onClick={() => ::this.setPeriodDays(0)}/>
-                    <FlatButton label='Week' style={buttonStyle} onClick={() => ::this.setPeriodDays(7)}/>
-                    <FlatButton label='Month' style={buttonStyle} onClick={() => ::this.setPeriodDays(30)}/>
-                    <FlatButton label='Three months' style={buttonStyle} onClick={() => ::this.setPeriodDays(90)}/>
-                    <FlatButton label='Year' style={buttonStyle} onClick={() => ::this.setPeriodDays(365)}/>
+                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(0)}>Today</Button>
+                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(7)}>Week</Button>
+                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(30)}>Month</Button>
+                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(90)}>Three months</Button>
+                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(365)}>Year</Button>
                 </Col>
                 <Col xs={6} sm={6} md={2} mdOffset={6} lg={2} lgOffset={6}>
-                    <SelectField floatingLabelText='Transactions on page:' value={props.pageSize}
-                                 onChange={::this.pageSizeChange}>
-                        <MenuItem value={10} primaryText='10'/>
-                        <MenuItem value={25} primaryText='20'/>
-                        <MenuItem value={50} primaryText='50'/>
-                        <MenuItem value={100} primaryText='100'/>
-                        <MenuItem value={250} primaryText='250'/>
-                        <MenuItem value={500} primaryText='500'/>
-                    </SelectField>
+                  <FormControl fullWidth={true}>
+                      <InputLabel htmlFor={'tx-on-page'}>Transactions on page</InputLabel>
+                      <Select value={props.pageSize}
+                              onChange={::this.pageSizeChange}
+                              inputProps={{id: 'tx-on-page'}}>
+                              <MenuItem value={10}>10</MenuItem>
+                              <MenuItem value={25}>25</MenuItem>
+                              <MenuItem value={50}>50</MenuItem>
+                              <MenuItem value={100}>100</MenuItem>
+                              <MenuItem value={250}>250</MenuItem>
+                              <MenuItem value={500}>500</MenuItem>
+                      </Select>
+                  </FormControl>
                 </Col>
             </Row>
             <Row>
@@ -108,32 +110,36 @@ export default class TransactionsPageFilter extends Component {
                   <DatePicker value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
                 </Col>
                 <Col xsOffset={1} xs={2} sm={2} md={3} lg={2}>
-                    <TextField hintText='Comment contains...' onChange={::this.setFilterComment}
+                    <TextField label='Comment contains...' onChange={::this.setFilterComment}
                                value={props.commentFilter}/>
                 </Col>
                 <Col xs={2} sm={2} md={3} lg={2}>
-                    <SelectField
-                        multiple={true}
-                        hintText='Select accounts'
-                        value={props.accountFilter}
-                        onChange={::this.setFilterAccounts}
-                    >
-                        {accountItems}
-                    </SelectField>
+                  <FormControl fullWidth={true}>
+                      <InputLabel htmlFor={'accounts-filter'}>Select accounts</InputLabel>
+                      <Select multiple={true}
+                              value={props.accountFilter}
+                              onChange={::this.setFilterAccounts}
+                              inputProps={{id: 'accounts-filter'}}
+                              renderValue={selected => selected.map((item) => accounts.filter((acc) => acc.id == item)[0].attributes.name+';')}>
+                              {accountItems}
+                      </Select>
+                  </FormControl>
                 </Col>
                 <Col xs={2} sm={2} md={3} lg={2}>
-                    <SelectField
-                        multiple={true}
-                        hintText='Select tags'
-                        value={props.tagFilter}
-                        onChange={::this.setFilterTags}
-                    >
-                        {tagItems}
-                    </SelectField>
+                  <FormControl fullWidth={true}>
+                      <InputLabel htmlFor={'tags-filter'}>Select tags</InputLabel>
+                      <Select multiple={true}
+                              value={props.tagFilter}
+                              onChange={::this.setFilterTags}
+                              inputProps={{id: 'tags-filter'}}
+                              renderValue={selected => selected.map((item) => item+',')}>>
+                              {tagItems}
+                      </Select>
+                  </FormControl>
                 </Col>
                 <Col xs={1} sm={1} md={1} lg={1}>
-                    <IconButton><FontIcon className='material-icons' onClick={::this.applyFilter}>done</FontIcon></IconButton>
-                    <IconButton><FontIcon className='material-icons' onClick={::this.clearFilter}>clear</FontIcon></IconButton>
+                  <Button aria-label='Done' onClick={::this.applyFilter}><Done/></Button>
+                  <Button aria-label='Clear' onClick={::this.clearFilter}><Clear/></Button>
                 </Col>
             </Row>
             <Row>
