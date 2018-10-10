@@ -1,3 +1,4 @@
+import mathjs from 'mathjs'
 import {
     GET_TRANSACTIONLIST_REQUEST,
     GET_TRANSACTIONLIST_SUCCESS,
@@ -47,6 +48,18 @@ function validateTransactionForm(tx) {
 
     attributes.operations.forEach((item) => {
         var operationError = {};
+
+        if (item.amount) {
+          var strAmount = item.amount.toString()
+          if ( strAmount.slice(-1) === '=') { //If it ends with =
+            var expr = strAmount.slice(0, -1) //Strip the = and evaluate mathematical expression
+            try {
+              item.amount = mathjs.eval(expr)
+            } catch(e) {
+              item.amount = expr
+            }
+          }
+        }
 
         if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(item.amount)) {
             operationError.amount = 'Amount is invalid';
