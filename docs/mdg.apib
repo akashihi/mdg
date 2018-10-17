@@ -112,6 +112,7 @@ A Currency object has the following attributes.
 
 - code (string, required) - Currency ISO 4217 alfa-3 code
 - name (string, required) - Human friendly currency name
+- active (boolean, required) - Whether this currency is used or not
 
 Object id should be currency ISO 4217 number-3 code
 
@@ -125,7 +126,8 @@ Object id should be currency ISO 4217 number-3 code
             "id": 840,
             "attributes": {
                 "code": "USD",
-                "name": "$"
+                "name": "$",
+                "active": true
             }
         },
         {
@@ -133,7 +135,8 @@ Object id should be currency ISO 4217 number-3 code
             "id": 978,
             "attributes": {
                 "code": "EUR",
-                "name": "€"
+                "name": "€",
+                "active": false
             }
         }
     ]
@@ -153,10 +156,42 @@ Object id should be currency ISO 4217 number-3 code
             "id": 840,
             "attributes": {
                 "code": "USD",
-                "name": "$"
+                "name": "$",
+                "active": true
             }
         }
   }
+
+### Modify currency data [PUT]
+
+Only `active` field could be changed. Values in other fields will be silently ignored.
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "currency",
+            "id": 840,
+            "attributes": {
+                "code": "USD",
+                "name": "$",
+                "active": false
+            }
+        }
+  }
+
++ Response 202 (application/vnd.mdg+json)
+  + Body
+      {
+        "data": {
+                "type": "currency",
+                "id": 840,
+                "attributes": {
+                    "code": "USD",
+                    "name": "$",
+                    "active": false
+                }
+            }
+      }
 
 # Group Rates
 
@@ -227,7 +262,7 @@ A Rate object has the following attributes.
                 "end": "2017-09-18T18:00:00"
             }
         }
-        }
+    }
   }
 
 # Group Accounts
