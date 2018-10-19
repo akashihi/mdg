@@ -13,7 +13,6 @@ import scalaz._
 /**
   * Currencies operations service.
   */
-@Singleton
 class CurrencyService @Inject() (protected val sql: SqlDatabase)
                                 (implicit ec: SqlExecutionContext) {
 

@@ -7,7 +7,7 @@ import controllers.api.OWritesOps._
 /**
   * Currency entity
   */
-case class Currency(id: Option[Long], code: String, name: String)
+case class Currency(id: Option[Long], code: String, name: String, active: Boolean)
     extends LongIdentifiable
 
 object Currency {
