@@ -7,8 +7,9 @@ import dao.mappers.LocalDateMapper._
 import dao.ordering.{Asc, Desc, Page, SortBy}
 import dao.tables.{Operations, TagMap, Transactions}
 import models.{Operation, Transaction, TxTag}
-import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Database actions for Transactions.
@@ -42,7 +43,8 @@ object TransactionQuery {
     */
   def insert(tx: Transaction,
              ops: Seq[Operation],
-             txtags: Seq[TxTag]): DBIO[Transaction] = {
+             txtags: Seq[TxTag])
+            (implicit ec: ExecutionContext): DBIO[Transaction] = {
     (for {
       txId <- tx.id match {
         case None => transactions returning transactions.map(_.id) += tx
@@ -61,7 +63,7 @@ object TransactionQuery {
     * @return Slick query, configured to match supplied filter.
     */
   private def makeCriteria(filter: TransactionFilter, fulltextIds: Array[Long])
-    : DBIO[Query[Transactions, Transaction, Seq]] = {
+                          (implicit ec: ExecutionContext): DBIO[Query[Transactions, Transaction, Seq]] = {
     val preActions = TransactionQuery.accTxFilter(filter.account_id)
 
     preActions.map(acc_tx_s => {
@@ -105,7 +107,8 @@ object TransactionQuery {
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page],
-           fulltextIds: Array[Long]): DBIO[Seq[Transaction]] = {
+           fulltextIds: Array[Long])
+          (implicit ec: ExecutionContext): DBIO[Seq[Transaction]] = {
     makeCriteria(filter, fulltextIds).flatMap { criteriaQuery =>
       val sortedQuery =
         sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
@@ -130,7 +133,7 @@ object TransactionQuery {
     * @param fulltextIds: List of matching transaction ids, returned by fulltext search.
     * @return Number pof matched transactions.
     */
-  def count(filter: TransactionFilter, fulltextIds: Array[Long]): DBIO[Int] =
+  def count(filter: TransactionFilter, fulltextIds: Array[Long])(implicit ec: ExecutionContext): DBIO[Int] =
     makeCriteria(filter, fulltextIds).flatMap(_.length.result)
 
   /**

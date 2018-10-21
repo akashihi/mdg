@@ -4,7 +4,8 @@ import dao.filters.AccountFilter
 import dao.tables.Accounts
 import models.Account
 import slick.jdbc.PostgresProfile.api._
-import play.api.libs.concurrent.Execution.Implicits._
+
+import scala.concurrent.ExecutionContext
 
 object AccountQuery {
   val accounts = TableQuery[Accounts]
@@ -35,14 +36,14 @@ object AccountQuery {
     accounts.filter(_.id === id).result.headOption
   }
 
-  def update(a: Account): DBIO[Option[Account]] = {
+  def update(a: Account)(implicit ec: ExecutionContext): DBIO[Option[Account]] = {
     accounts.filter(_.id === a.id).update(a).map {
       case 1 => Some(a)
       case _ => None
     }
   }
 
-  def delete(id: Long): DBIO[Option[Int]] = {
+  def delete(id: Long)(implicit ec: ExecutionContext): DBIO[Option[Int]] = {
     (for { a <- accounts if a.id === id } yield a.hidden)
       .update(true)
       .map {

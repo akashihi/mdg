@@ -3,8 +3,9 @@ package dao.queries
 import dao.queries.TransactionQuery._
 import dao.tables.BudgetEntries
 import models.{Budget, BudgetEntry, IncomeAccount}
-import play.api.libs.concurrent.Execution.Implicits._
 import slick.jdbc.PostgresProfile.api._
+
+import scala.concurrent.ExecutionContext
 
 object BudgetEntryQuery {
   val entries = TableQuery[BudgetEntries]
@@ -41,7 +42,7 @@ object BudgetEntryQuery {
     * @param budget budget to filter on
     * @return Sum of all operations on the specified account.
     */
-  def getActualSpendings(account_id: Long, budget: Budget): DBIO[BigDecimal] = {
+  def getActualSpendings(account_id: Long, budget: Budget)(implicit ec: ExecutionContext): DBIO[BigDecimal] = {
     transactionsForPeriod(budget.term_beginning, budget.term_end).flatMap {
       txId =>
         val value = operations
