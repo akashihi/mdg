@@ -35,4 +35,21 @@ class CurrencyController @Inject() (protected val es: ErrorService, protected va
       .flatMap(x =>
         es.handleErrors(x) { x => makeResult(x)(OK) })
   }
+
+  /**
+    * Currency object modification method
+    *
+    * @param id currency id.
+    * @return account object.
+    */
+  def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
+    val a = (request.body \ "data" \ "attributes" \ "active").asOpt[Boolean]
+
+    cs.edit(id, a).run.flatMap { x =>
+      es.handleErrors(x) { x =>
+        makeResult(x)(ACCEPTED)
+      }
+    }
+  }
+
 }

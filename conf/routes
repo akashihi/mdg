@@ -5,6 +5,7 @@
 
 GET     /currency                               controllers.CurrencyController.index
 GET     /currency/:id                           controllers.CurrencyController.show(id: Long)
+PUT     /currency/:id                           controllers.CurrencyController.edit(id: Long)
 
 POST    /account                                controllers.AccountController.create
 GET     /account                                controllers.AccountController.index(filter: Option[String])
