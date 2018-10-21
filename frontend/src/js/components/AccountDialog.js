@@ -74,7 +74,7 @@ export default class AccountDialog extends React.Component {
     render() {
         var props = this.props;
 
-        var currencies = props.currencies.map(function (item) {
+        var currencies = props.currencies.filter((item) => item.attributes.active).map(function (item) {
             return (
                 <MenuItem value={item.id} key={item.id}>{item.attributes.name}</MenuItem>
             )
