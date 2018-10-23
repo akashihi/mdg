@@ -28,3 +28,26 @@ export function loadCurrencyList() {
             });
     }
 }
+
+export function updateCurrency(currency) {
+    return (dispatch) => {
+        dispatch({
+            type: GET_CURRENCYLIST_REQUEST,
+            payload: true
+        });
+
+        var url = '/api/currency/' + currency.id;
+        var method = 'PUT';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json'
+            },
+            body: JSON.stringify({data: currency})
+        })
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(()=>dispatch(loadCurrencyList()))
+    }
+}
