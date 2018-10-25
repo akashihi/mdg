@@ -38,13 +38,24 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
     }
   }
 
+  def dtoToAccount(dto: AccountDTO): Account = Account(id = dto.id,
+    account_type = dto.account_type,
+    currency_id = dto.currency_id,
+    name = dto.name,
+    balance = dto.balance,
+    operational = dto.operational,
+    favorite = dto.favorite,
+    hidden = dto.hidden)
+
+
   /**
     * Creates Account or reports error.
-    * @param account Account to create, if exists.
+    * @param dto Account to create, if exists.
     * @return Xor with errors or newly created account.
     */
-  def create(account: Option[Account]): ErrorF[AccountDTO] =
-    account
+  def create(dto: Option[AccountDTO]): ErrorF[AccountDTO] =
+    dto
+      .map(dtoToAccount)
       .fromOption("ACCOUNT_DATA_INVALID")
       .map(validate)
       .flatMap(validationToXor)
@@ -97,29 +108,19 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
   /**
     * Changes values of specified account.
     * @param id Account id to edit
-    * @param name new 'name' value
-    * @param operational new 'operational' value
-    * @param favorite new 'favorite' value
-    * @param hidden new 'hidden' value
+    * @param dto Account to edit
     * @return Update account or error
     */
   def edit(id: Long,
-           name: Option[String],
-           operational: Option[Boolean],
-           favorite: Option[Boolean],
-           hidden: Option[Boolean]): ErrorF[AccountDTO] = {
-    val newAcc = this
-      .getAccount(id)
-      .map(acc =>
-        acc.copy(
-          name = name.getOrElse(acc.name),
-          hidden = hidden.getOrElse(acc.hidden),
-          operational = operational.getOrElse(acc.operational),
-          favorite = favorite.getOrElse(acc.favorite)
-      ))
+           dto: Option[AccountDTO]): ErrorF[AccountDTO] = {
+    val dtoValue = Future.successful(dto.fromOption("ACCOUNT_DATA_INVALID"))
+
+    val newAcc = EitherT(dtoValue)
+      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, operational = ad.operational, favorite = ad.favorite))})
       .map(validate)
       .map(validationToXor)
-      .flatMapF(Future.successful)
+      .map(Future.successful)
+      .flatMap(EitherT.apply)
 
     newAcc
       .map(acc =>
