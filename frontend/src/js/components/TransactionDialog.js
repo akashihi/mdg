@@ -161,6 +161,7 @@ class FullOperationsEditor extends OperationsEditor {
             .map((item) => item.account_id)
             .filter((item) => !(item === undefined))
             .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
+            .filter((item) => !(item === undefined))
             .map((item) => item.attributes.currency_id)
             .filter((value, index, self) => self.indexOf(value) === index);
         if (currencies.length <= 1) {
