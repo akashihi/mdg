@@ -253,7 +253,7 @@ export function setCloseOnSave(value) {
 export function createTransaction() {
     return {
         type: TRANSACTION_DIALOG_OPEN,
-        payload: { type: 'transaction', attributes: {comment: '', timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'), tags: [], operations: [ {amount: 0}, {amount: 0}]} }
+        payload: { type: 'transaction', attributes: {comment: '', timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'), tags: [], operations: [ {amount: 0, account_id: -1}, {amount: 0, account_id: -1}]} }
     }
 }
 
