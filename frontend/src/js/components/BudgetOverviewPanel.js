@@ -29,6 +29,11 @@ export default class BudgetOverviewPanel extends Component {
             }
         }
 
+        var actual_profit = (attrs.outgoing_amount.actual - attrs.incoming_amount).toFixed(2)
+        actual_profit = (actual_profit <= 0 ?'':'+') + actual_profit
+        var expected_profit = (attrs.outgoing_amount.expected - attrs.incoming_amount).toFixed(2)
+        expected_profit = (expected_profit <= 0 ?'':'+') + expected_profit
+
         var title = 'Budget for: ' + attrs.term_beginning + ' - ' + attrs.term_end
 
         return (
@@ -42,11 +47,11 @@ export default class BudgetOverviewPanel extends Component {
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
                                 <p style={{'textAlign': 'center'}}>Actual assets last
-                                    day: {attrs.outgoing_amount.actual.toFixed(2)}</p>
+                                    day: {attrs.outgoing_amount.actual.toFixed(2)} ({actual_profit})</p>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
                                 <p style={{'textAlign': 'right'}}>Expected assets last
-                                    day: {attrs.outgoing_amount.expected.toFixed(2)}</p>
+                                    day: {attrs.outgoing_amount.expected.toFixed(2)} ({expected_profit})</p>
                             </Col>
                         </Row>
                         <Row>

@@ -55,7 +55,6 @@ class SettingsPage extends Component {
     });
 
     var allCurrencies = props.currencies.map(function (item) {
-      console.log(item)
         return (
             <ListItem key={item.id} dense button>
               <ListItemText primary={item.attributes.name}/>
