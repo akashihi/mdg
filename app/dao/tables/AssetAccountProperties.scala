@@ -7,8 +7,8 @@ import slick.lifted._
 /**
   * Maps AssertAccountProperty entity to the SQL table.
   */
-class AssetAccountProperties(tag: Tag) extends Table[AssetAccountProperty](tag, "ASSET_ACCOUNT_PROPERTIES") {
-  def id = column[Option[Long]]("id", O.PrimaryKey, O.AutoInc)
+class AssetAccountProperties(tag: Tag) extends Table[AssetAccountProperty](tag, "asset_account_properties") {
+  def id = column[Option[Long]]("id", O.PrimaryKey)
   def operational = column[Boolean]("operational")
   def favorite = column[Boolean]("favorite")
   def * =

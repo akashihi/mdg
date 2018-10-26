@@ -2,7 +2,7 @@ package services
 
 import BigDecimal.RoundingMode.HALF_EVEN
 import dao.filters.AccountFilter
-import models.{Account, AssetAccount, ExpenseAccount, IncomeAccount}
+import models._
 import util.EitherOps._
 import validators.Validator._
 import controllers.dto.AccountDTO
@@ -11,6 +11,7 @@ import dao.queries.AccountQuery
 import javax.inject.Inject
 import scalaz._
 import Scalaz._
+
 import scala.concurrent._
 
 /**
@@ -19,23 +20,35 @@ import scala.concurrent._
 class AccountService @Inject() (protected val rs: RateService, protected val sql: SqlDatabase)
                                    (implicit ec: SqlExecutionContext) {
 
+  private def getAssetPropertyForAccountDto(validDto: \/[String, AccountDTO]) = {
+    val assetAccountProperty = validDto.map(d => d.account_type match {
+      case AssetAccount => Some(dtoToAssetAccountProperty(d))
+      case _ => None
+    }).toOption.flatten
+    assetAccountProperty
+  }
+
   def accountToDto(account: Account): ErrorF[AccountDTO] = {
     rs.getCurrentRateToPrimary(account.currency_id)
         .map(_.rate * account.balance)
         .map(_.setScale(2, HALF_EVEN))
-        .map { primary_balance =>
-      AccountDTO(
-        account.id,
-        account.account_type,
-        account.currency_id,
-        account.name,
-        account.balance,
-        primary_balance,
-        account.operational,
-        account.favorite,
-        account.hidden
-      )
-    }
+        .flatMap { primary_balance =>
+          val properties = sql.query(AccountQuery.findPropertyById(account.id.get))
+          val propValue = properties.map(_.map(p => (p.operational, p.favorite)).getOrElse(false, false))
+          val dto:Future[\/[String, AccountDTO]] = propValue.map(pv =>
+            AccountDTO(
+              account.id,
+              account.account_type,
+              account.currency_id,
+              account.name,
+              account.balance,
+              primary_balance,
+              operational = pv._1,
+              favorite = pv._2,
+              hidden = account.hidden).right
+          )
+          EitherT(dto)
+      }
   }
 
   def dtoToAccount(dto: AccountDTO): Account = Account(id = dto.id,
@@ -43,26 +56,33 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
     currency_id = dto.currency_id,
     name = dto.name,
     balance = dto.balance,
-    operational = dto.operational,
-    favorite = dto.favorite,
     hidden = dto.hidden)
 
+  def dtoToAssetAccountProperty(dto: AccountDTO): AssetAccountProperty = AssetAccountProperty(
+    id = dto.id,
+    operational = dto.operational,
+    favorite = dto.favorite
+  )
 
   /**
     * Creates Account or reports error.
     * @param dto Account to create, if exists.
     * @return Xor with errors or newly created account.
     */
-  def create(dto: Option[AccountDTO]): ErrorF[AccountDTO] =
-    dto
+  def create(dto: Option[AccountDTO]): ErrorF[AccountDTO] = {
+    val validDto = dto
       .fromOption("ACCOUNT_DATA_INVALID")
       .map(validate)
       .flatMap(validationToXor)
-      .map(dtoToAccount)
-      .map(AccountQuery.insert)
+
+    val query = getAssetPropertyForAccountDto(validDto).map(p => AccountQuery.insertWithProperties(p) _).getOrElse(AccountQuery.insert _)
+
+    validDto.map(dtoToAccount)
+      .map(query)
       .map(sql.query)
       .transform
       .flatMap(accountToDto)
+  }
 
   def list(filter: AccountFilter): Future[Seq[AccountDTO]] =
     sql.query(AccountQuery.list(filter))
@@ -118,11 +138,15 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
       .flatMap(validationToXor)
 
     val newAcc = EitherT(Future.successful(validDto))
-      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, operational = ad.operational, favorite = ad.favorite))})
+      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden))})
+
+    val query = getAssetPropertyForAccountDto(validDto)
+      .map(_.copy(id = Some(id)))
+      .map(p => AccountQuery.updateWithProperties(p) _)
+      .getOrElse(AccountQuery.update _)
 
     newAcc
-      .map(acc =>
-        AccountQuery.update(acc).map(_.fromOption("ACCOUNT_NOT_UPDATED")))
+      .map(query(_).map(_.fromOption("ACCOUNT_NOT_UPDATED")))
       .flatMapF(sql.query)
       .flatMap(accountToDto)
   }
