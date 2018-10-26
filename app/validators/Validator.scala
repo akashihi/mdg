@@ -8,7 +8,7 @@ import scalaz._
 
 object Validator {
   type StringValidation[T] = ValidationNel[String, T]
-  type AccountValidation = StringValidation[Account]
+  type AccountValidation = StringValidation[AccountDTO]
   type TransactionDTOValidation = StringValidation[TransactionDto]
   type BudgetValidation = StringValidation[Budget]
 
@@ -26,7 +26,7 @@ object Validator {
     * @param account Account to process
     * @return List of errors or account object
     */
-  def validate(account: Account): AccountValidation = {
+  def validate(account: AccountDTO): AccountValidation = {
     (AccountValidator.validateOpsFlag(account)
       |@| AccountValidator.validateFavFlag(account)) { case _ => account }
   }

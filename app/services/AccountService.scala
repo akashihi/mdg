@@ -55,10 +55,10 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
     */
   def create(dto: Option[AccountDTO]): ErrorF[AccountDTO] =
     dto
-      .map(dtoToAccount)
       .fromOption("ACCOUNT_DATA_INVALID")
       .map(validate)
       .flatMap(validationToXor)
+      .map(dtoToAccount)
       .map(AccountQuery.insert)
       .map(sql.query)
       .transform
@@ -113,14 +113,12 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
     */
   def edit(id: Long,
            dto: Option[AccountDTO]): ErrorF[AccountDTO] = {
-    val dtoValue = Future.successful(dto.fromOption("ACCOUNT_DATA_INVALID"))
-
-    val newAcc = EitherT(dtoValue)
-      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, operational = ad.operational, favorite = ad.favorite))})
+    val validDto = dto.fromOption("ACCOUNT_DATA_INVALID")
       .map(validate)
-      .map(validationToXor)
-      .map(Future.successful)
-      .flatMap(EitherT.apply)
+      .flatMap(validationToXor)
+
+    val newAcc = EitherT(Future.successful(validDto))
+      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, operational = ad.operational, favorite = ad.favorite))})
 
     newAcc
       .map(acc =>
