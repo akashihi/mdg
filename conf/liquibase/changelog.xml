@@ -18,5 +18,6 @@
     <include file="14-indices.sql" relativeToChangelogFile="true"/>
     <include file="15-allcurrencies.sql" relativeToChangelogFile="true"/>
     <include file="16-assetaccountproperties.sql" relativeToChangelogFile="true"/>
+    <include file="17-assetaccounttype.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>
 
