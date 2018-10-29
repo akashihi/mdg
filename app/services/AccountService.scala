@@ -34,11 +34,12 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
         .map(_.setScale(2, HALF_EVEN))
         .flatMap { primary_balance =>
           val properties = sql.query(AccountQuery.findPropertyById(account.id.get))
-          val propValue = properties.map(_.map(p => (p.operational, p.favorite)).getOrElse(false, false))
+          val propValue = properties.map(_.map(p => (p.operational, p.favorite, Some(p.asset_type))).getOrElse(false, false, Option.empty[AssetType]))
           val dto:Future[\/[String, AccountDTO]] = propValue.map(pv =>
             AccountDTO(
               account.id,
               account.account_type,
+              pv._3,
               account.currency_id,
               account.name,
               account.balance,
@@ -61,7 +62,8 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
   def dtoToAssetAccountProperty(dto: AccountDTO): AssetAccountProperty = AssetAccountProperty(
     id = dto.id,
     operational = dto.operational,
-    favorite = dto.favorite
+    favorite = dto.favorite,
+    asset_type = dto.asset_type.get
   )
 
   /**

@@ -1,12 +1,13 @@
 package controllers.dto
 
 import controllers.api.IdentifiableObject.LongIdentifiable
-import models.AccountType
+import models.{AccountType, AssetType}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 case class AccountDTO(id: Option[Long],
                       account_type: AccountType,
+                      asset_type: Option[AssetType],
                       currency_id: Long,
                       name: String,
                       balance: BigDecimal,
@@ -20,6 +21,7 @@ object AccountDTO {
   implicit val accountDtoRead: Reads[AccountDTO] = (
     (JsPath \ "data" \ "attributes" \ "id").readNullable[Long] and
       (JsPath \ "data" \ "attributes" \ "account_type").read[String].map(AccountType.apply) and
+      (JsPath \ "data" \ "attributes" \ "asset_type").readNullable[String].map(_.map(AssetType.apply)) and
       (JsPath \ "data" \ "attributes" \ "currency_id").read[Long] and
       (JsPath \ "data" \ "attributes" \ "name").read[String] and
       (JsPath \ "data" \ "attributes" \ "balance").readWithDefault[BigDecimal](0) and
@@ -31,7 +33,7 @@ object AccountDTO {
 
   implicit val accountDtoWrites = new Writes[AccountDTO] {
     override def writes(o: AccountDTO): JsValue = {
-      Json.obj(
+      val j = Json.obj(
         "name" -> o.name,
         "currency_id" -> o.currency_id,
         "balance" -> o.balance,
@@ -41,6 +43,11 @@ object AccountDTO {
         "operational" -> o.operational,
         "favorite" -> o.favorite
       )
+      if (o.asset_type.isDefined) {
+        j ++ Json.obj("asset_type" -> o.asset_type.map(_.value))
+      } else {
+        j
+      }
     }
   }
 }
