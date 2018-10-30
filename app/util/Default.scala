@@ -27,6 +27,7 @@ object Default extends LowerPriorityImplicits {
   implicit object DefaultBoolean extends Default[Boolean](false)
   implicit object DefaultUnit extends Default[Unit](())
   implicit object DefaultBigDecimal extends Default[BigDecimal](BigDecimal(0))
+  implicit object DefaultStirng extends Default[String]("")
 
   implicit def defaultSeq[A]: Default[immutable.Seq[A]] =
     new Default[immutable.Seq[A]](immutable.Seq())

@@ -34,25 +34,9 @@ class AccountController @Inject()(protected val as: AccountService, protected va
     * @return newly created account (with id) wrapped to JSON.
     */
   def create = Action.async(parse.tolerantJson) { request =>
-    val account = for {
-      n <- (request.body \ "data" \ "attributes" \ "name").asOpt[String]
-      t <- (request.body \ "data" \ "attributes" \ "account_type")
-        .asOpt[String]
-      c <- (request.body \ "data" \ "attributes" \ "currency_id").asOpt[Long]
-      b <- (request.body \ "data" \ "attributes" \ "balance")
-        .asOpt[BigDecimal] match {
-        case Some(x) => Some(x)
-        case None => Some[BigDecimal](0)
-      }
-      f = (request.body \ "data" \ "attributes" \ "favorite")
-        .asOpt[Boolean]
-        .getOrElse(false)
-      o = (request.body \ "data" \ "attributes" \ "operational")
-        .asOpt[Boolean]
-        .getOrElse(false)
-    } yield Account(Some(0), AccountType(t), c, n, b, f, o, hidden = false)
+    val dto = request.body.validate[AccountDTO].asOpt
 
-    as.create(account)
+    as.create(dto)
       .run
       .flatMap(x => es.handleErrors(x)(createResult))
   }
@@ -91,14 +75,9 @@ class AccountController @Inject()(protected val as: AccountService, protected va
     * @return account object.
     */
   def edit(id: Long) = Action.async(parse.tolerantJson) { request =>
-    val n = (request.body \ "data" \ "attributes" \ "name").asOpt[String]
-    val h = (request.body \ "data" \ "attributes" \ "hidden").asOpt[Boolean]
-    val f = (request.body \ "data" \ "attributes" \ "favorite")
-      .asOpt[Boolean]
-    val o = (request.body \ "data" \ "attributes" \ "operational")
-      .asOpt[Boolean]
+    val dto = request.body.validate[AccountDTO].asOpt
 
-    as.edit(id, n, o, f, h).run.flatMap { x =>
+    as.edit(id, dto).run.flatMap { x =>
       es.handleErrors(x) { x =>
         makeResult(x)(ACCEPTED)
       }

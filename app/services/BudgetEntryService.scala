@@ -80,7 +80,7 @@ class BudgetEntryService @Inject() (protected val sql: SqlDatabase)(implicit ec:
 
     amounts.flatMap { p =>
       val (actual, normalizedChangeAmount) = p
-      val defaultAccount = Account(None, ExpenseAccount, 0, "No account found", 0, false, false, false)
+      val defaultAccount = Account(None, ExpenseAccount, 0, "No account found", 0, hidden = false)
       val account = sql.query(AccountQuery.findById(b.account_id).map(_.getOrElse(defaultAccount)))
       account.map { a =>
         BudgetEntryDTO(b.id,

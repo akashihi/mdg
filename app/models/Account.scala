@@ -27,8 +27,6 @@ case class Account(id: Option[Long],
                    currency_id: Long,
                    name: String,
                    balance: BigDecimal,
-                   operational: Boolean,
-                   favorite: Boolean,
                    hidden: Boolean)
     extends LongIdentifiable
 
