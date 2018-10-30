@@ -11,6 +11,7 @@ import dao.queries.AccountQuery
 import javax.inject.Inject
 import scalaz._
 import Scalaz._
+import util.Default
 
 import scala.concurrent._
 
@@ -63,7 +64,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
     id = dto.id,
     operational = dto.operational,
     favorite = dto.favorite,
-    asset_type = dto.asset_type.get
+    asset_type = dto.asset_type.getOrElse(CurrentAssetAccount)
   )
 
   /**
