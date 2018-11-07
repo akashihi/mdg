@@ -29,6 +29,13 @@ export default class AccountDialog extends React.Component {
         this.props.actions.editAccountChange(account);
     }
 
+    onAssetChange(event) {
+        var attr = {...this.props.account.attributes};
+        attr.asset_type = event.target.value;
+        var account = {...this.props.account, attributes: attr};
+        this.props.actions.editAccountChange(account);
+    }
+
     onNameChange(event) {
         var attr = {...this.props.account.attributes};
         attr.name = event.target.value;
@@ -111,6 +118,22 @@ export default class AccountDialog extends React.Component {
                       <MenuItem key='asset' value='asset'>Asset account</MenuItem>
                       <MenuItem key='income' value='income'>Income account</MenuItem>
                       <MenuItem key='expense' value='expense'>Expense account</MenuItem>
+              </Select>
+          </FormControl>
+          <FormControl fullWidth={true}>
+              <InputLabel htmlFor={'asset-type'}>Asset type</InputLabel>
+              <Select value={props.account.attributes.asset_type}
+                      disabled={props.account.attributes.account_type != 'asset'}
+                      onChange={::this.onAssetChange}
+                      inputProps={{id: 'asset-type'}}>
+                      <MenuItem key='cash' value='cash'>Cash account</MenuItem>
+                      <MenuItem key='current' value='current'>Current account</MenuItem>
+                      <MenuItem key='savings' value='savings'>Savings account</MenuItem>
+                      <MenuItem key='deposit' value='deposit'>Deposit account</MenuItem>
+                      <MenuItem key='credit' value='credit'>Credit</MenuItem>
+                      <MenuItem key='debt' value='debt'>Debt</MenuItem>
+                      <MenuItem key='broker' value='broker'>Trading account</MenuItem>
+                      <MenuItem key='tradable' value='tradable'>Tradable asset</MenuItem>
               </Select>
           </FormControl>
           <TextField label={nameLabel} error={nameText} value={props.account.attributes.name} onChange={::this.onNameChange}/>
