@@ -911,3 +911,48 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
 ### Delete a BudgetEntry [DELETE]
 
 + Response 204
+
+# Group Report
+
+Various reporting data, mostly read-only
+
+## TotalsReport [/report/totals]
+
+A TotalsReport object have the following attributes:
+
++ value (array[TotalsReportEntry], required) - Array of TotalsReportEntries
+
+### TotalsReportEntry:
+
++ asset_type (string, required) - Asset type name
++ primary_balance (decimal, required) - Sum of all the asset account of specified asset type, converted to a primary currency
++ totals (array[TotalsDetailEntry, required) - Detailed report of totals of the specified asset type, grouped by currency
+
+### TotalsDetailEntry
+
++ balance (decimal, required) - Sum of all asset account of parent's asset type and same currency
++ currency_id (integer, required) - Currency id of the sum above.
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {
+                        "asset_type": "cash",
+                        "primary": 100.500,
+                        "totals": [
+                            {
+                                "balance": 9000,
+                                "currency_id", 978
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+  }

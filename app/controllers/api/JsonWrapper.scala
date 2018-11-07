@@ -1,5 +1,6 @@
 package controllers.api
 
+import controllers.dto.reporting.TotalsReportDTO
 import util.Default
 import controllers.dto.{AccountDTO, BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.{Currency, Error, Rate, Setting, TxTag}
@@ -41,6 +42,7 @@ object JsonDataWrapper {
     case _: TxTag => "tag"
     case _: Setting => "setting"
     case _: Rate => "rate"
+    case _: TotalsReportDTO => "report"
   }
 }
 

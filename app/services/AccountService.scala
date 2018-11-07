@@ -11,7 +11,6 @@ import dao.queries.AccountQuery
 import javax.inject.Inject
 import scalaz._
 import Scalaz._
-import util.Default
 
 import scala.concurrent._
 
