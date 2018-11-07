@@ -5,7 +5,7 @@ import play.api.libs.json._
 import controllers.api.OWritesOps._
 
 case class TotalsDetailEntry(balance: BigDecimal, currency_id: Long)
-case class TotalsReportEntry(assetType: String, primary_balance: BigDecimal, totals: Seq[TotalsDetailEntry])
+case class TotalsReportEntry(asset_type: String, primary_balance: BigDecimal, totals: Seq[TotalsDetailEntry])
 case class TotalsReportDTO(id: Option[Long], value: Seq[TotalsReportEntry]) extends LongIdentifiable
 
 object TotalsDetailEntry {
