@@ -2,6 +2,7 @@ import {checkApiError, parseJSON} from '../util/ApiUtils';
 
 import {GET_SETTING_REQUEST, GET_SETTING_SUCCESS, GET_SETTING_FAILURE} from '../constants/Setting'
 import {loadAccountList} from './AccountViewerActions'
+import {loadTotalsReport} from './ReportActions'
 
 export function loadSettingList() {
     return (dispatch) => {
@@ -50,6 +51,7 @@ export function setPrimaryCurrency(currency_id) {
           .then(checkApiError)
           .then(()=>dispatch(loadSettingList()))
           .then(()=>dispatch(loadAccountList()))
+          .then(()=>dispatch(loadTotalsReport()))
           .catch(function (response) {
               dispatch({
                   type: GET_SETTING_FAILURE,

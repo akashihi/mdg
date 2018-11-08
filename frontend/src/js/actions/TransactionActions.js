@@ -5,6 +5,7 @@ import {checkApiError, parseJSON} from '../util/ApiUtils';
 
 import {loadAccountList} from './AccountViewerActions'
 import {loadBudgetInfoById} from './BudgetEntryActions';
+import {loadTotalsReport} from './ReportActions'
 
 import {
     GET_TRANSACTIONLIST_REQUEST,
@@ -234,6 +235,7 @@ export function deleteTransaction(tx) {
             .then(parseJSON)
             .then(checkApiError)
             .then(()=>dispatch(loadAccountList())) //Reloading accounts will trigger transactions reload
+            .then(()=>dispatch(loadTotalsReport()))
             .catch(function (response) {
                 dispatch({
                     type: DELETE_TRANSACTION_FAILURE,
@@ -322,6 +324,7 @@ export function updateTransaction(tx) {
             .then(parseJSON)
             .then(checkApiError)
             .then(()=>dispatch(loadAccountList())) //Reloading accounts will trigger transactions reload
+            .then(()=>dispatch(loadTotalsReport()))
             .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetInfoById(selectedBudgetId))}})
             .catch(()=>dispatch(loadTransactionList()))
     }
