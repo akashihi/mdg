@@ -112,6 +112,7 @@ A Currency object has the following attributes.
 
 - code (string, required) - Currency ISO 4217 alfa-3 code
 - name (string, required) - Human friendly currency name
+- active (boolean, required) - Whether this currency is used or not
 
 Object id should be currency ISO 4217 number-3 code
 
@@ -125,7 +126,8 @@ Object id should be currency ISO 4217 number-3 code
             "id": 840,
             "attributes": {
                 "code": "USD",
-                "name": "$"
+                "name": "$",
+                "active": true
             }
         },
         {
@@ -133,7 +135,8 @@ Object id should be currency ISO 4217 number-3 code
             "id": 978,
             "attributes": {
                 "code": "EUR",
-                "name": "€"
+                "name": "€",
+                "active": false
             }
         }
     ]
@@ -153,10 +156,42 @@ Object id should be currency ISO 4217 number-3 code
             "id": 840,
             "attributes": {
                 "code": "USD",
-                "name": "$"
+                "name": "$",
+                "active": true
             }
         }
   }
+
+### Modify currency data [PUT]
+
+Only `active` field could be changed. Values in other fields will be silently ignored.
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "currency",
+            "id": 840,
+            "attributes": {
+                "code": "USD",
+                "name": "$",
+                "active": false
+            }
+        }
+  }
+
++ Response 202 (application/vnd.mdg+json)
+  + Body
+      {
+        "data": {
+                "type": "currency",
+                "id": 840,
+                "attributes": {
+                    "code": "USD",
+                    "name": "$",
+                    "active": false
+                }
+            }
+      }
 
 # Group Rates
 
@@ -227,7 +262,7 @@ A Rate object has the following attributes.
                 "end": "2017-09-18T18:00:00"
             }
         }
-        }
+    }
   }
 
 # Group Accounts
@@ -250,6 +285,16 @@ An Account object has the following attributes
 - hidden: (boolean, optional) - Marks deleted accounts
 - favorite: (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
 - operational: (boolean, optional) - Marks account as operational. Applicable only to the 'asset' accounts
+- asset_type: (enum[string], optional) - Actual type of asset, hold on that account. Only valid accounts with type `asset` and should be ignored for other types. If omitted, defaults to 'current'
+  + Members
+    + `cash`       - actually cash in hands.
+    + `current`    - bank account with ability to immediately pay from it. This covers non-credit bank cards too.
+    + `savings`    - bank account that have a limitation on accessing it, but not term bounded.
+    + `deposit`    - A savings account with term, so money could not be used before that term
+    + `credit`     - Account to hold a track of money, owed to somebody else.
+    + `debt`       - Account to hold a track of money, use owed and now debiting.
+    + `tradable`   - Represents all possible tradable assets, like bonds, stocks and so on.
+    + `broker`     - Current account at your broker.
 
 ### List all Accounts [GET?filter={hidden:true}]
 
@@ -281,6 +326,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
                 "account_type": "asset",
                 "currency_id": 978,
                 "name": "Savings EUR",
+                "asset_type": "savings",
                 "primary_balance": 10100,
                 "balance": 9000
             }
@@ -370,7 +416,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 
 ### Modify account data [PUT]
 
-Only `hidden`, `name`, `favorite` and `operational` fields could be changed. Values in other fields will be silently ignored.
+Only `hidden`, `name`, `favorite`, `operational` and 'asset_type' fields could be changed. Values in other fields will be silently ignored.
 
 + Request (application/vnd.mdg+json)
   {
@@ -865,3 +911,48 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
 ### Delete a BudgetEntry [DELETE]
 
 + Response 204
+
+# Group Report
+
+Various reporting data, mostly read-only
+
+## TotalsReport [/report/totals]
+
+A TotalsReport object have the following attributes:
+
++ value (array[TotalsReportEntry], required) - Array of TotalsReportEntries
+
+### TotalsReportEntry:
+
++ asset_type (string, required) - Asset type name
++ primary_balance (decimal, required) - Sum of all the asset account of specified asset type, converted to a primary currency
++ totals (array[TotalsDetailEntry, required) - Detailed report of totals of the specified asset type, grouped by currency
+
+### TotalsDetailEntry
+
++ balance (decimal, required) - Sum of all asset account of parent's asset type and same currency
++ currency_id (integer, required) - Currency id of the sum above.
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {
+                        "asset_type": "cash",
+                        "primary": 100.500,
+                        "totals": [
+                            {
+                                "balance": 9000,
+                                "currency_id", 978
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+  }

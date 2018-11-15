@@ -4,7 +4,6 @@ import scalaz._
 import Scalaz._
 
 import scala.concurrent._
-import play.api.libs.concurrent.Execution.Implicits._
 
 object EitherOps {
   /**
@@ -41,7 +40,7 @@ object EitherOps {
     * @param o object to convert
     */
   implicit class XorFromOptionTOps[L, R](val o: OptionF[R]) extends AnyVal {
-    def fromOption(l: L): Future[L \/ R]= o.run.map(_.map(_.right).getOrElse(l.left))
+    def fromOption(l: L)(implicit ec: ExecutionContext): Future[L \/ R]= o.run.map(_.map(_.right).getOrElse(l.left))
   }
 
   /**
@@ -50,7 +49,7 @@ object EitherOps {
     * @param o object to convert
     */
   implicit class EitherFOps1[R](val o: \/[String, Future[R]]) extends AnyVal {
-    def transform: ErrorF[R] = {
+    def transform(implicit ec: ExecutionContext): ErrorF[R] = {
       val r = o match {
         case -\/(e) => Future.successful(e.left)
         case \/-(e) => e.map(_.right)
@@ -75,7 +74,7 @@ object EitherOps {
     */
   implicit class EitherFFlatten1[R](val o: ErrorF[Future[R]])
     extends AnyVal {
-    def flatten: ErrorF[R] = EitherT(o.run.map(_.transform).flatMap(_.run))
+    def flatten(implicit ec: ExecutionContext): ErrorF[R] = EitherT(o.run.map(_.transform).flatMap(_.run))
   }
 
 }

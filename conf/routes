@@ -5,6 +5,7 @@
 
 GET     /currency                               controllers.CurrencyController.index
 GET     /currency/:id                           controllers.CurrencyController.show(id: Long)
+PUT     /currency/:id                           controllers.CurrencyController.edit(id: Long)
 
 POST    /account                                controllers.AccountController.create
 GET     /account                                controllers.AccountController.index(filter: Option[String])
@@ -37,5 +38,7 @@ PUT     /setting/mnt.transaction.reindex        controllers.TransactionControlle
 
 GET     /rate/:ts                               controllers.RateController.index(ts: String)
 GET     /rate/:ts/:from/:to                     controllers.RateController.show(ts: String, from: Long, to: Long)
+
+GET     /report/totals                          controllers.reporting.TotalsReportController.index
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                           controllers.Assets.versioned(path="/public", file: Asset)

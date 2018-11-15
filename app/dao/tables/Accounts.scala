@@ -16,8 +16,6 @@ class Accounts(tag: Tag) extends Table[Account](tag, "account") {
   def currency_id = column[Long]("currency_id")
   def name = column[String]("name")
   def balance = column[BigDecimal]("balance")
-  def operational = column[Boolean]("operational")
-  def favorite = column[Boolean]("favorite")
   def hidden = column[Boolean]("hidden")
   def * =
     (id,
@@ -25,7 +23,5 @@ class Accounts(tag: Tag) extends Table[Account](tag, "account") {
      currency_id,
      name,
      balance,
-     operational,
-     favorite,
      hidden) <> ((Account.apply _).tupled, Account.unapply)
 }
