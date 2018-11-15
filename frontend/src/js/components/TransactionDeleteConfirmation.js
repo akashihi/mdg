@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class TransactionDeleteConfirmation extends Component {
@@ -11,27 +13,21 @@ export default class TransactionDeleteConfirmation extends Component {
             actions = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
         } else {
             actions = [
-                <FlatButton
-                    label='Cancel'
-                    primary={true}
-                    onClick={props.actions.deleteTransactionCancel}
-                />,
-                <FlatButton
-                    label='Delete'
-                    secondary={true}
-                    onClick={() => props.actions.deleteTransaction(props.transaction)}
-                />,
+                <Button key='cancel-button' color='primary'onClick={props.actions.deleteTransactionCancel}>Cancel</Button>,
+                <Button key='delete-button' color='secondary' onClick={() => props.actions.deleteTransaction(props.transaction)}>Delete</Button>,
             ];
         }
 
         return (
                 <Dialog
-                    actions={actions}
                     modal={false}
                     open={props.visible}
-                    onRequestClose={props.actions.deleteTransactionCancel}
+                    onExit={props.actions.deleteTransactionCancel}
                 >
+                  <DialogContent>
                     Please confirm transaction '{props.transaction.attributes.comment}' deletion
+                  </DialogContent>
+                  <DialogActions>{actions}</DialogActions>
                 </Dialog>
         );
     }

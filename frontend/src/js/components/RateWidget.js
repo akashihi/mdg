@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
-import {List, ListItem} from 'material-ui/List';
-import Subheader from 'material-ui/Subheader';
-import Divider from 'material-ui/Divider';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import Divider from '@material-ui/core/Divider';
 
 export default class RateWidget extends Component {
 
@@ -12,12 +14,12 @@ export default class RateWidget extends Component {
       var currencyCode = this.props.currencies.filter((currency) => currency.id == item.attributes.from_currency)
       .map((currency) => currency.attributes.code)
 
-      return <ListItem key={'rate'+item.id} primaryText={currencyCode} secondaryText={item.attributes.rate}/>
+      return <ListItem key={'rate'+item.id}><ListItemText primary={currencyCode} secondary={item.attributes.rate}/></ListItem>
     })
 
     return (
       <List>
-        <Subheader>Currency rates</Subheader>
+        <ListSubheader>Currency rates</ListSubheader>
         <Divider/>
         {rates}
       </List>

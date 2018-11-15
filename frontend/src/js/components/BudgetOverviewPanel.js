@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {CardHeader, CardText} from 'material-ui/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import SegmentedProgressbar from '../widgets/SegmentedProgressbar'
 import { Progress } from 'react-sweet-progress';
@@ -28,24 +29,29 @@ export default class BudgetOverviewPanel extends Component {
             }
         }
 
+        var actual_profit = (attrs.outgoing_amount.actual - attrs.incoming_amount).toFixed(2)
+        actual_profit = (actual_profit <= 0 ?'':'+') + actual_profit
+        var expected_profit = (attrs.outgoing_amount.expected - attrs.incoming_amount).toFixed(2)
+        expected_profit = (expected_profit <= 0 ?'':'+') + expected_profit
+
+        var title = 'Budget for: ' + attrs.term_beginning + ' - ' + attrs.term_end
+
         return (
             <div>
-                <CardHeader style={{'textAlign': 'center'}}>
-                    Budget for: {attrs.term_beginning}&nbsp;-&nbsp;{attrs.term_end}
-                </CardHeader>
-                <CardText>
+                <CardHeader title={title}/>
+                <CardContent>
                     <Grid fluid>
                         <Row>
                             <Col xs={4} sm={4} md={4} lg={4}>
-                                <p>Assets first day: {attrs.incoming_amount}</p>
+                                <p>Assets first day: {attrs.incoming_amount.toFixed(2)}</p>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
                                 <p style={{'textAlign': 'center'}}>Actual assets last
-                                    day: {attrs.outgoing_amount.actual}</p>
+                                    day: {attrs.outgoing_amount.actual.toFixed(2)} ({actual_profit})</p>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
                                 <p style={{'textAlign': 'right'}}>Expected assets last
-                                    day: {attrs.outgoing_amount.expected}</p>
+                                    day: {attrs.outgoing_amount.expected.toFixed(2)} ({expected_profit})</p>
                             </Col>
                         </Row>
                         <Row>
@@ -93,7 +99,7 @@ export default class BudgetOverviewPanel extends Component {
                             </Col>
                         </Row>
                     </Grid>
-                </CardText>
+                </CardContent>
             </div>
         )
     }

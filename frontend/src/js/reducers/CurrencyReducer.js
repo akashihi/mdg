@@ -8,11 +8,11 @@ export default function currencyReducer(state = initialState, action) {
     var index = 0;
     switch(action.type) {
         case GET_CURRENCYLIST_REQUEST:
-            return {...state, currencyList: Array(1000).fill({id: index++, attributes: {name: 'Loading currencies'}})};
+            return {...state, currencyList: Array.from({length: 1000}, () => ({id: index++, attributes: {name: 'Loading currencies'}}))};
         case GET_CURRENCYLIST_SUCCESS:
             return {...state, currencyList: action.payload};
         case GET_CURRENCYLIST_FAILURE:
-            return {...state, currencyList: Array(1000).fill({id: index++, attributes: {name: 'Error loading currencies'}})};
+            return {...state, currencyList: Array.from({length: 1000}, () => ({id: index++, attributes: {name: 'Error loading currencies'}}))};
         default:
             return state;
     }

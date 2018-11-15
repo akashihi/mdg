@@ -38,27 +38,34 @@ class AccountMapper {
     }
 
     sortAssets() {
-        return this.assetAccounts.sort((l,r) => {
-            if (l.attributes.operational) {
-                if (r.attributes.operational) {
-                    return l.attributes.name-r.attributes.name;
-                }
-                return -1;
-            }
-            if (r.attributes.operational) {
-                return 1;
-            }
+        var assetCompare = function(l, r) {
+          if (l.attributes.asset_type === r.attributes.asset_type) {
+            return l.attributes.name-r.attributes.name;
+          }
+          var typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable']
+          return typesInOrder.indexOf(l.attributes.asset_type) - typesInOrder.indexOf(r.attributes.asset_type)
+        }
 
-            if (l.attributes.favorite) {
-                if (r.attributes.favorite) {
-                    return l.attributes.name-r.attributes.name;
-                }
-                return -1;
-            }
-            if (r.attributes.favorite) {
-                return 1;
-            }
-        })
+        var flagsCompare = function(l,r) {
+          if (l.attributes.operational === r.attributes.operational || l.attributes.favorite === r.attributes.favorite) {
+            return  assetCompare(l,r)
+          }
+          if (l.attributes.operational) {
+              return -1;
+          }
+          if (r.attributes.operational) {
+              return 1;
+          }
+
+          if (l.attributes.favorite) {
+              return -1;
+          }
+          if (r.attributes.favorite) {
+              return 1;
+          }
+        }
+
+        return this.assetAccounts.sort(flagsCompare)
     }
 
     combineAccounts() {
@@ -161,6 +168,7 @@ class FullOperationsEditor extends OperationsEditor {
             .map((item) => item.account_id)
             .filter((item) => !(item === undefined))
             .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
+            .filter((item) => !(item === undefined))
             .map((item) => item.attributes.currency_id)
             .filter((value, index, self) => self.indexOf(value) === index);
         if (currencies.length <= 1) {

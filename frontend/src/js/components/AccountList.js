@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 
 import Account from './Account'
 
@@ -37,7 +37,7 @@ export default class AccountsList extends Component {
             )
         });
         return (
-            <div>{accounts}</div>
+            <Fragment>{accounts}</Fragment>
         )
     }
 }

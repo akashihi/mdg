@@ -1,8 +1,6 @@
-import React, {Component} from 'react';
-import {CardHeader, CardText} from 'material-ui/Card';
-import IconButton from 'material-ui/IconButton';
-import {GridList} from 'material-ui/GridList';
-import FontIcon from 'material-ui/FontIcon';
+import React, {Component, Fragment} from 'react';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
 
 import AccountList from './AccountList'
 
@@ -18,15 +16,12 @@ export default class AccountsOverviewPanel extends Component {
         var accounts = props.assetAccounts.filter((item) => item.attributes.favorite);
 
         return (
-            <div>
+            <Fragment>
                 <CardHeader title='Accounts'/>
-                <CardText>
-                    <IconButton onClick={::this.onCreateAccountClick}><FontIcon className='material-icons'>add_circle_outline</FontIcon></IconButton>
-                    <GridList cellHeight={70} cols={1}>
-                        <AccountList hiddenVisible={false} actions={props.actions} currencies={props.currencies} accounts={accounts}/>
-                    </GridList>
-                </CardText>
-            </div>
+                <CardContent>
+                  <AccountList hiddenVisible={false} actions={props.actions} currencies={props.currencies} accounts={accounts}/>
+                </CardContent>
+            </Fragment>
         )
     }
 }

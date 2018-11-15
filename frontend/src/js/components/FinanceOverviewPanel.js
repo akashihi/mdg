@@ -1,44 +1,84 @@
-import React, {Component} from 'react';
-import {CardHeader, CardText} from 'material-ui/Card';
+import React, {Component, Fragment} from 'react';
+import { withStyles } from '@material-ui/core/styles';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 
-export default class FinanceOverviewPanel extends Component {
+const styles = {
+  content: {
+    overflowX: 'hidden',
+    overflowY: 'auto'
+  },
+  panel: {
+    height: 300
+  }
+};
+
+
+class FinanceOverviewPanel extends Component {
+
+    renderAsset(props, item) {
+      var getCurrency = function(id) {
+        return props.currencies.filter((c) => c.id == id).map((c) => c.attributes.code)
+      }
+
+      var primaryCurrencyCode = getCurrency(props.primaryCurrency)
+
+      if (!(item.totals.length == 1 && item.totals[0].currency_id == props.primaryCurrency)) {
+        var detailed = item.totals.map((subitem) => {
+          var currencyCode = getCurrency(subitem.currency_id)
+          return subitem.balance.toFixed(2)+' '+currencyCode
+        })
+        var details = <Fragment>({detailed.join(', ')})</Fragment>
+      }
+
+      var color = 'black'
+      if (item.primary_balance < 0) {
+        color = 'red'
+      }
+
+      return (
+          <GridListTile>
+            <Grid fluid>
+              <Row>
+                <Col xs={2} sm={2} md={2} lg={2}>
+                  <div style={{'text-transform': 'capitalize'}}>{item.asset_type}:</div>
+                </Col>
+                <Col xs={3} sm={3} md={3} lg={3}>
+                  <span style={{color: color}}>{item.primary_balance.toFixed(2)}</span> {primaryCurrencyCode}
+                </Col>
+                <Col xs={7} sm={7} md={7} lg={7}>
+                  {details}
+                </Col>
+              </Row>
+            </Grid>
+          </GridListTile>
+      )
+    }
 
     render() {
         var props = this.props;
 
-        var totals = props.assetAccounts.reduce((memo, obj) => {
-            if (!(obj.attributes.currency_id in memo)) {
-                memo[obj.attributes.currency_id] = 0
-            }
-            memo[obj.attributes.currency_id] += obj.attributes.balance;
-            return memo
-        }, {});
+        var sorted = props.totals.sort((l, r) => {
+          var typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable']
+          return typesInOrder.indexOf(l.asset_type) - typesInOrder.indexOf(r.asset_type)
+        })
 
-        var result = Object.keys(totals).map((currency_id) => {
-            var value = totals[currency_id];
-            var name = props.currencies.filter((item) => item.id == currency_id).map((item) => item.attributes.name);
-            return (
-                <Row key={currency_id}>
-                    <Col xs={2} sm={2} md={2} lg={2}>
-                        <p>{name}:</p>
-                    </Col>
-                    <Col xs={2} sm={2} md={2} lg={2}>
-                        <p style={{'textAlign': 'right'}}>{value}</p>
-                    </Col>
-                </Row>
-            )
-        });
+        var result = sorted.map((item) => this.renderAsset(props, item))
 
         return (
-            <div>
+            <Fragment>
                 <CardHeader title='Financial status'/>
-                <CardText>
-                    <Grid fluid>
+                  <CardContent className={this.props.classes.content}>
+                    <GridList cellHeight={30} cols={1} className={this.props.classes.panel}>
                         {result}
-                    </Grid>
-                </CardText>
-            </div>
+                    </GridList>
+                  </CardContent>
+            </Fragment>
         )
     }
 }
+
+export default withStyles(styles)(FinanceOverviewPanel)

@@ -10,6 +10,7 @@ import BudgetEntryReducer from './BudgetEntryReducer'
 import SettingReducer from './SettingReducer'
 import SettingViewReducer from './SettingViewReducer'
 import RateReducer from './RateReducer'
+import ReportReducer from './ReportReducer'
 
 export default combineReducers({
     router,
@@ -22,5 +23,6 @@ export default combineReducers({
     budgetentry: BudgetEntryReducer,
     setting: SettingReducer,
     settingView: SettingViewReducer,
-    rate: RateReducer
+    rate: RateReducer,
+    report: ReportReducer
 })

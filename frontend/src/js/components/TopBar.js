@@ -1,7 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 
-import AppBar from 'material-ui/AppBar';
-import FlatButton from 'material-ui/FlatButton';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
 import { push } from 'react-router-redux'
 
 export default class TopBar extends Component {
@@ -17,31 +19,38 @@ export default class TopBar extends Component {
       this.props.store.dispatch(push(path))
     }
 
-    setSelectedColor(path) {
+    setSelectedStyle(path) {
       if (this.props.path == path) {
-        return '#008FD4'
+        return 'outlined'
       }
       else {
-        return '#00BCD4'
+        return 'text'
       }
     }
     render() {
     var leftButtons = (
-        <div>
-            <FlatButton label='Overview' onClick={() => ::this.setPath('/')} backgroundColor={::this.setSelectedColor('/')}/>
-            <FlatButton label='Budget' onClick={() => ::this.setPath('/budget')} backgroundColor={::this.setSelectedColor('/budget')}/>
-            <FlatButton label='Transactions' onClick={() => ::this.setPath('/transactions')} backgroundColor={::this.setSelectedColor('/transactions')}/>
-            <FlatButton label='Accounts' onClick={() => ::this.setPath('/accounts')} backgroundColor={::this.setSelectedColor('/accounts')}/>
-        </div>
+        <Fragment>
+            <Button onClick={() => ::this.setPath('/')} variant={::this.setSelectedStyle('/')} color='inherit'>Overview</Button>
+            <Button onClick={() => ::this.setPath('/budget')} variant={::this.setSelectedStyle('/budget')} color='inherit'>Budget</Button>
+            <Button onClick={() => ::this.setPath('/transactions')} variant={::this.setSelectedStyle('/transactions')} color='inherit'>Transactions</Button>
+            <Button onClick={() => ::this.setPath('/accounts')} variant={::this.setSelectedStyle('/accounts')} color='inherit'>Accounts</Button>
+        </Fragment>
       )
 
       var rightButtons = (
-        <div>
-            <FlatButton label='Settings' onClick={() => ::this.setPath('/settings')} backgroundColor={::this.setSelectedColor('/settings')}/>
-        </div>
+        <Fragment>
+            <Button onClick={() => ::this.setPath('/settings')} variant={::this.setSelectedStyle('/settings')} color='inherit'>Settings</Button>
+        </Fragment>
       )
       return (
-          <AppBar iconElementLeft={leftButtons} iconElementRight={rightButtons}/>
+          <AppBar position='static'>
+            <Toolbar>
+              <Typography type='title' color='inherit' style={{ flex: 1 }}>
+              {leftButtons}
+            </Typography>
+              {rightButtons}
+            </Toolbar>
+          </AppBar>
       )
     }
 }

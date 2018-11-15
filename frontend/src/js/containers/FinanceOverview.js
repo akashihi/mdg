@@ -5,7 +5,8 @@ import FinanceOverviewPanel from '../components/FinanceOverviewPanel'
 const mapStateToProps = (state) => {
     return {
         currencies: state.currency.currencyList,
-        assetAccounts: state.account.assetAccountList,
+        totals: state.report.totalsReport,
+        primaryCurrency: state.setting.primaryCurrency
     }
 };
 

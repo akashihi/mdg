@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import Divider from 'material-ui/Divider';
+import Divider from '@material-ui/core/Divider';
 import {Row, Col} from 'react-flexbox-grid';
 
 

@@ -12,6 +12,8 @@ import {
     ACCOUNT_DIALOG_CHANGE
 } from '../constants/Account'
 
+import {loadTotalsReport} from './ReportActions'
+
 export function loadAccountList() {
     return (dispatch) => {
         dispatch({
@@ -76,6 +78,7 @@ export function updateAccount(account) {
             .then(parseJSON)
             .then(checkApiError)
             .then(()=>dispatch(loadAccountList()))
+            .then(()=>dispatch(loadTotalsReport()))
             .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId))}})
             .catch(()=>dispatch(loadAccountList()))
     }
@@ -89,7 +92,7 @@ export function createAccount() {
       type: ACCOUNT_DIALOG_OPEN,
       payload: {
         full: true,
-        account: { attributes: {balance: 0, currency_id: state.setting.primaryCurrency} }
+        account: { attributes: {account_type: 'asset', balance: 0, currency_id: state.setting.primaryCurrency} }
       }
     })
   }

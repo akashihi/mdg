@@ -1,12 +1,25 @@
 import React, {Component} from 'react';
+import { withStyles } from '@material-ui/core/styles';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import ClipLoader from 'react-spinners/ClipLoader';
 import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import ListItemText from '@material-ui/core/ListItemText';
 
-export default class SettingsPage extends Component {
+const styles = {
+  root: {
+    position: 'relative',
+    overflow: 'auto',
+    maxHeight: 160,
+  }
+};
+
+class SettingsPage extends Component {
   onPrimaryCurrencyChange(value) {
       this.props.actions.setPrimaryCurrency(value);
   }
@@ -21,6 +34,12 @@ export default class SettingsPage extends Component {
 
   render() {
     var props = this.props;
+    const { classes } = props;
+
+    var onCurrencyCheck = function(item) {
+      item.attributes.active = !item.attributes.active
+      props.currencyActions.updateCurrency(item)
+    }
 
     if (props.waiting) {
       return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
@@ -29,9 +48,18 @@ export default class SettingsPage extends Component {
       return (<h1>Unable to load settings</h1>)
     }
 
-    var currencies = props.currencies.map(function (item) {
+    var currencies = props.currencies.filter((item) => item.attributes.active).map(function (item) {
         return (
             <MenuItem value={item.id} key={item.id}>{item.attributes.name}</MenuItem>
+        )
+    });
+
+    var allCurrencies = props.currencies.map(function (item) {
+        return (
+            <ListItem key={item.id} dense button>
+              <ListItemText primary={item.attributes.name}/>
+              <ListItemSecondaryAction><Checkbox checked={item.attributes.active} onChange={() => this::onCurrencyCheck(item)}/></ListItemSecondaryAction>
+            </ListItem>
         )
     });
 
@@ -66,7 +94,17 @@ export default class SettingsPage extends Component {
                 <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
               </Col>
             </Row>
+            <Col xs={6} sm={6} md={4} lg={4}>
+              <p>Active currencies:</p>
+            </Col>
+            <Col xs={6} sm={6} md={4} lg={4}>
+              <List className={classes.root}>
+                {allCurrencies}
+              </List>
+            </Col>
         </Grid>
   )
   }
 }
+
+export default withStyles(styles)(SettingsPage)

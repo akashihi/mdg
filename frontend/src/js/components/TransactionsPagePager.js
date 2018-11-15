@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import Pagination from 'material-ui-pagination';
+import Pagination from '../widgets/material-ui-pagination';
 
 export default class TransactionsPagePager extends Component {
     setPage(no) {
@@ -15,7 +15,7 @@ export default class TransactionsPagePager extends Component {
         var pages = Math.ceil(props.count/props.pageSize);
 
         return (
-            <div style = {{width: 500,margin: '0 auto',}}>
+            <div style = {{width: 550,margin: '0 auto',}}>
                 <Pagination style={{display: 'block', margin: '0 auto'}} total={pages} current={props.pageNumber} display={10} onChange = {::this.setPage} />
             </div>
         )
