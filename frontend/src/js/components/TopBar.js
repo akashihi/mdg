@@ -33,6 +33,7 @@ export default class TopBar extends Component {
             <Button onClick={() => ::this.setPath('/')} variant={::this.setSelectedStyle('/')} color='inherit'>Overview</Button>
             <Button onClick={() => ::this.setPath('/budget')} variant={::this.setSelectedStyle('/budget')} color='inherit'>Budget</Button>
             <Button onClick={() => ::this.setPath('/transactions')} variant={::this.setSelectedStyle('/transactions')} color='inherit'>Transactions</Button>
+            <Button onClick={() => ::this.setPath('/reports')} variant={::this.setSelectedStyle('/reports')} color='inherit'>Reports</Button>
             <Button onClick={() => ::this.setPath('/accounts')} variant={::this.setSelectedStyle('/accounts')} color='inherit'>Accounts</Button>
         </Fragment>
       )
