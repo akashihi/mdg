@@ -4,8 +4,9 @@ import controllers.dto.AccountDTO.accountDtoWrites
 import controllers.dto.BudgetDTO.budgetWrites
 import controllers.dto.BudgetEntryDTO.budgetEntryWrites
 import controllers.dto.TransactionDto.transactionWrites
-import controllers.dto.reporting.TotalsReportDTO
+import controllers.dto.reporting.{SimpleAssetReportDTO, TotalsReportDTO}
 import controllers.dto.reporting.TotalsReportDTO.totalsReportDTOWrite
+import controllers.dto.reporting.SimpleAssetReportDTO.simpleAssetReportDTOWrite
 import controllers.dto.{AccountDTO, BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.Currency.currencyWrites
 import models.TxTag.txtagWrites
@@ -37,5 +38,6 @@ object IdentifiableObject {
     case setting: Setting => settingWrites.writes(setting)
     case rate: Rate => rateWrites.writes(rate)
     case totalsReport: TotalsReportDTO => totalsReportDTOWrite.writes(totalsReport)
+    case simpleAssetReport: SimpleAssetReportDTO => simpleAssetReportDTOWrite.writes(simpleAssetReport)
   }
 }
