@@ -3,6 +3,7 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 import controllers.dto.reporting.{SimpleAssetReportDTO, SimpleAssetReportEntry}
+import dao.queries.BudgetQuery
 import dao.{SqlDatabase, SqlExecutionContext}
 import javax.inject.Inject
 import services.RateService
@@ -16,9 +17,9 @@ class SimpleAssetReport @Inject() (protected val rs: RateService, protected val 
     val daysGenerated = for (f <- 0 to numberOfDays.intValue()) yield start.plusDays(f*granularity)
     val days = daysGenerated.:+(end)
 
-    val series = days.map(d => (d, BigDecimal(1)))
+    val series = days.map(d => sql.query(BudgetQuery.getTotalAssetsForDate(d)).map((d,_)))
 
-    Future.successful(series)
+    Future.sequence(series)
   }
 
   def get(start: LocalDate, end: LocalDate, granularity: Int): Future[SimpleAssetReportDTO] = {
