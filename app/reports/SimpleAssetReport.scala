@@ -13,8 +13,8 @@ class SimpleAssetReport @Inject() (protected val rs: RateService, protected val 
                                   (implicit ec: SqlExecutionContext){
   def calculate(start: LocalDate, end: LocalDate, granularity: Int): Future[Seq[(LocalDate, BigDecimal)]] = {
     val numberOfDays = ChronoUnit.DAYS.between(start, end)/granularity
-    val daysGenerated = for (f <- 0 to numberOfDays.intValue()) yield start.plusDays(f)
-    val days = daysGenerated.+:(end)
+    val daysGenerated = for (f <- 0 to numberOfDays.intValue()) yield start.plusDays(f*granularity)
+    val days = daysGenerated.:+(end)
 
     val series = days.map(d => (d, BigDecimal(1)))
 
