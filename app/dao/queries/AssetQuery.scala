@@ -1,0 +1,31 @@
+package dao.queries
+import java.sql.Date
+import java.time.LocalDate
+import slick.jdbc.PostgresProfile.api._
+
+import scala.concurrent.ExecutionContext
+
+/**
+* Asset totals queries
+  */
+object AssetQuery {
+  /**
+    * Calculates remains on asset accounts for specified date.
+    * @param term_beginning date on which remain is calculated
+    * @return remains on that date
+    */
+  def getTotalAssetsForDate(term_beginning: LocalDate)(implicit ec: ExecutionContext): DBIO[BigDecimal] = {
+    val dt = Date.valueOf(term_beginning)
+    sql"""
+         select sum(o.amount*coalesce(r.rate,1))
+         from operation as o
+         left outer join account as a on(o.account_id = a.id)
+         inner join tx on (o.tx_id=tx.id)
+         inner join setting as s on (s.name='currency.primary')
+         left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value::bigint and r.rate_beginning <= now() and r.rate_end > now())
+         where a.account_type='asset' and a.hidden='f' and tx.ts <  ${dt}"""
+      .as[Option[BigDecimal]]
+      .map(_.head)
+      .map(_.getOrElse(BigDecimal(0)))
+  }
+}
