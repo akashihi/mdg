@@ -9,7 +9,10 @@ import {
   GET_TOTALSREPORT_FAILURE,
   GET_SIMPLEASSETREPORT_REQUEST,
   GET_SIMPLEASSETREPORT_SUCCESS,
-  GET_SIMPLEASSETREPORT_FAILURE
+  GET_SIMPLEASSETREPORT_FAILURE,
+  SET_REPORT_STARTDATE,
+  SET_REPORT_ENDDATE,
+  SET_REPORT_GRANULARITY
 } from '../constants/Report'
 
 export function loadTotalsReport() {
@@ -38,13 +41,15 @@ export function loadTotalsReport() {
 }
 
 export function loadSimpleAssetReport() {
-  return (dispatch) => {
+  return (dispatch, getState) => {
       dispatch({
           type: GET_SIMPLEASSETREPORT_REQUEST,
           payload: true
       });
 
-      var params = {start: '2014-01-01', end: '2018-12-31', granularity: 30}
+      var state = getState()
+
+      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
       var url = '/api/report/asset/simple' + '?' + jQuery.param(params)
 
       fetch(url)
@@ -66,5 +71,26 @@ export function loadSimpleAssetReport() {
                   payload: response.json
               })
           });
+  }
+}
+
+export function setReportGranularity(granularity) {
+  return {
+    type: SET_REPORT_GRANULARITY,
+    payload: granularity
+  }
+}
+
+export function setReportStartDate(startDate) {
+  return {
+    type: SET_REPORT_STARTDATE,
+    payload: moment(startDate)
+  }
+}
+
+export function setReportEndDate(endDate) {
+  return {
+    type: SET_REPORT_ENDDATE,
+    payload: moment(endDate)
   }
 }

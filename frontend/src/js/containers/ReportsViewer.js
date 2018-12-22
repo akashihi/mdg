@@ -6,7 +6,10 @@ import * as ReportActions from '../actions/ReportActions'
 
 const mapStateToProps = (state) => {
     return {
-        simpleAssetReport: state.report.simpleAssetReport
+        simpleAssetReport: state.report.simpleAssetReport,
+        startDate: state.report.startDate,
+        endDate: state.report.endDate,
+        granularity: state.report.granularity,
     }
 };
 
