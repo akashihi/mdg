@@ -19,7 +19,7 @@ object GenericReportDTO {
         case assetByType: AssetByTypeReportEntry => assetByTypeReportEntryWrites.writes(assetByType)
       }
       Json.obj(
-        "attributes" -> values, "type" -> "report"
+        "value" -> values
       )
     }
   }
