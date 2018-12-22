@@ -2,7 +2,7 @@ package reports
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-import controllers.dto.reporting.{AssetByCurrencyReportDetail, AssetByCurrencyReportEntry, GenericReportDTO, SimpleAssetReportEntry}
+import controllers.dto.reporting._
 import dao.queries.AssetQuery
 import dao.{SqlDatabase, SqlExecutionContext}
 import javax.inject.Inject
@@ -45,5 +45,14 @@ class AssetReport @Inject() (protected val sql: SqlDatabase)
     val detailed = report.map(_.map(e => (e._1, e._2.map(d => AssetByCurrencyReportDetail(d._1, d._2)))))
     val entries = detailed.map(s => s.map(e => AssetByCurrencyReportEntry(e._1, e._2)))
     entries.map(GenericReportDTO(Some("asset_by_currency"), _))
+  }
+
+  def assetByTypeReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[AssetByTypeReportEntry]] = {
+    val series = expandPeriod(start, end, granularity)
+      .map(d => sql.query(AssetQuery.getTotalAssetsByTypeForDate(d)).map((d,_)))
+    val report = Future.sequence(series)
+    val detailed = report.map(_.map(e => (e._1, e._2.map(d => AssetByTypeReportDetail(d._1, d._2)))))
+    val entries = detailed.map(s => s.map(e => AssetByTypeReportEntry(e._1, e._2)))
+    entries.map(GenericReportDTO(Some("asset_by_type"), _))
   }
 }

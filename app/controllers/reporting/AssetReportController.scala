@@ -34,4 +34,8 @@ class AssetReportController @Inject() (protected val sar: AssetReport)(implicit 
   def assetByCurrencyReport(start: String, end: String, granularity: Int) = Action.async {
     callReport(sar.assetByCurrencyReport, start, end, granularity)
   }
+
+  def assetByTypeReport(start: String, end: String, granularity: Int) = Action.async {
+    callReport(sar.assetByTypeReport, start, end, granularity)
+  }
 }
