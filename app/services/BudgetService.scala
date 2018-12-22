@@ -13,7 +13,7 @@ import Scalaz._
 import akka.stream._
 import akka.actor._
 import dao.{SqlDatabase, SqlExecutionContext}
-import dao.queries.BudgetQuery
+import dao.queries.{AssetQuery, BudgetQuery}
 
 import scala.concurrent._
 
@@ -102,7 +102,7 @@ class BudgetService @Inject() (protected val ts: TransactionService, protected v
     as.listSeparate(EmptyAccountFilter).flatMap { a =>
       val (incomeAccounts, _, expenseAccounts) = a
 
-      sql.query(BudgetQuery.getIncomingAmount(b.term_beginning)).flatMap { incoming =>
+      sql.query(AssetQuery.getTotalAssetsForDate(b.term_beginning)).flatMap { incoming =>
         getExpectedChange(b, incomeAccounts, expenseAccounts).flatMap {
           expectedChange =>
             val (expectedIncome, expectedExpense) = expectedChange

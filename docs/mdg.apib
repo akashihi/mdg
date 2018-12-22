@@ -956,3 +956,72 @@ A TotalsReport object have the following attributes:
             }
         }
   }
+
+## AssetSimpleReport [/report/asset/simple?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A AssetSimpleReport object have the following attributes:
+
++ value (array[AssetSimpleReportEntry], required) - Array of AssetSimpleReportEntries
+
+### AssetSimpleReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all asset accounts for a specified date. 
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000},
+                    {"date": "2018-02-01", "value": 100.500}
+                ]
+            }
+        }
+  }
+
+## AssetCurrencyReport [/report/asset/currency?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A AssetCurrencyReport object have the following attributes:
+
++ value (array[AssetCurrencyReportEntry], required) - Array of AssetCurrencyReportEntries
+
+### AssetCurrencyReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all asset accounts of that currency for a specified date.
++ currency_id (integer, required) - Id of associated currency
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000, currency_id: 978},
+                    {"date": "2018-02-01", "value": 100.500, currency_id: 840}
+                ]
+            }
+        }
+  }

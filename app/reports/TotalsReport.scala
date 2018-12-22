@@ -8,7 +8,9 @@ import services.RateService
 import scala.concurrent.Future
 import scalaz._
 import Scalaz._
-import controllers.dto.reporting.{TotalsDetailEntry, TotalsReportDTO, TotalsReportEntry}
+import controllers.dto.reporting.{GenericReportDTO, TotalsDetailEntry, TotalsReportEntry}
+
+import scala.language.postfixOps
 
 class TotalsReport @Inject() (protected val rs: RateService, protected val sql: SqlDatabase)
                              (implicit ec: SqlExecutionContext) {
@@ -25,10 +27,10 @@ class TotalsReport @Inject() (protected val rs: RateService, protected val sql: 
     withTotals.map(_.mapValues(v => (v._1, v._2.map(e => (e._2, e._3)))))
   }
 
-  def get(): Future[TotalsReportDTO] = {
+  def get(): Future[GenericReportDTO[TotalsReportEntry]] = {
     val report = this.calculate()
     val detailed = report.map(_.mapValues(v => (v._1, v._2.map(e => TotalsDetailEntry(e._2, e._1)))))
     val entries = detailed.map(_.map { case (k,v) => TotalsReportEntry(k, v._1, v._2)} toList)
-    entries.map(TotalsReportDTO(Some(-1), _))
+    entries.map(GenericReportDTO(Some("totals"), _))
   }
 }

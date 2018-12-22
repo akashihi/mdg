@@ -1,6 +1,6 @@
 package controllers.api
 
-import controllers.dto.reporting.TotalsReportDTO
+import controllers.dto.reporting.GenericReportDTO
 import util.Default
 import controllers.dto.{AccountDTO, BudgetDTO, BudgetEntryDTO, TransactionDto}
 import models.{Currency, Error, Rate, Setting, TxTag}
@@ -42,7 +42,7 @@ object JsonDataWrapper {
     case _: TxTag => "tag"
     case _: Setting => "setting"
     case _: Rate => "rate"
-    case _: TotalsReportDTO => "report"
+    case _: GenericReportDTO[_] => "report"
   }
 }
 
@@ -65,39 +65,33 @@ object JsonWrapper {
     * Json helpers
     */
   implicit def dataWrites[T]: Writes[JsonDataWrapper[T]] =
-    new Writes[JsonDataWrapper[T]] {
-      override def writes(o: JsonDataWrapper[T]): JsValue = {
-        val idWriter = o.id match {
-          case l: Long => (JsPath \ "id").write[Long].writes(l)
-          case s: String => (JsPath \ "id").write[String].writes(s)
-        }
-        idWriter ++
-          (JsPath \ "type").write[String].writes(o.`type`) ++
-          (JsPath \ "attributes")
-            .write[IdentifiableObject[T]]
-            .writes(o.attributes)
+    (o: JsonDataWrapper[T]) => {
+      val idWriter = o.id match {
+        case l: Long   => (JsPath \ "id").write[Long].writes(l)
+        case s: String => (JsPath \ "id").write[String].writes(s)
       }
+      idWriter ++
+        (JsPath \ "type").write[String].writes(o.`type`) ++
+        (JsPath \ "attributes")
+          .write[IdentifiableObject[T]]
+          .writes(o.attributes)
     }
   implicit def wrapperWrites[T]: Writes[JsonWrapper[T]] =
-    new Writes[JsonWrapper[T]] {
-      override def writes(o: JsonWrapper[T]): JsValue = {
-        (JsPath \ "data").write[JsonDataWrapper[T]].writes(o.data)
-      }
+    (o: JsonWrapper[T]) => {
+      (JsPath \ "data").write[JsonDataWrapper[T]].writes(o.data)
     }
   implicit def wrapperSeqWrites[T]: Writes[JsonWrapperSeq[T]] =
-    new Writes[JsonWrapperSeq[T]] {
-      override def writes(o: JsonWrapperSeq[T]): JsValue = {
-        o.count match {
-          case None =>
-            (JsPath \ "data").write[Seq[JsonDataWrapper[T]]].writes(o.data)
-          case Some(count) =>
-            (JsPath \ "data")
-              .write[Seq[JsonDataWrapper[T]]]
-              .writes(o.data) ++ (JsPath \ "count").write[Int].writes(count)
-        }
+    (o: JsonWrapperSeq[T]) => {
+      o.count match {
+        case None =>
+          (JsPath \ "data").write[Seq[JsonDataWrapper[T]]].writes(o.data)
+        case Some(count) =>
+          (JsPath \ "data")
+            .write[Seq[JsonDataWrapper[T]]]
+            .writes(o.data) ++ (JsPath \ "count").write[Int].writes(count)
       }
     }
-  implicit val errorWrapperWrites = Json.writes[ErrorWrapper]
+  implicit val errorWrapperWrites: OWrites[ErrorWrapper] = Json.writes[ErrorWrapper]
 
   /**
     * Converts ApiObject to Json
