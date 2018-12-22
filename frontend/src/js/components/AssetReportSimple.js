@@ -14,6 +14,7 @@ export default class AssetReportSimple extends Component {
     container.style.height = '100%';
     container.style.width = '100%';
     this.chartComponent.current.chart.reflow();
+    this.props.actions.loadSimpleAssetReport()
   }
 
     render() {
@@ -28,12 +29,7 @@ export default class AssetReportSimple extends Component {
               text: 'Excluding debt accounts'
           },
           xAxis: {
-              allowDecimals: false,
-              labels: {
-                  formatter: function () {
-                      return this.value; // clean, unformatted number for year
-                  }
-              }
+              type: 'datetime',
           },
           yAxis: {
               title: {
@@ -46,7 +42,7 @@ export default class AssetReportSimple extends Component {
               }
           },
           tooltip: {
-              pointFormat: '{series.name} had stockpiled <b>{point.y:,.0f}</b><br/>warheads in {point.x}'
+              pointFormat: 'Totally had <b>{point.y:,.0f}</b> assets in primary currency'
           },
           plotOptions: {
               area: {
@@ -64,11 +60,7 @@ export default class AssetReportSimple extends Component {
           },
           series: [{
               name: 'Total assets',
-              data: [
-                  ['2014-04-01', 0],
-                  ['2014-05-01', 200],
-                  ['2014-06-01', 400],
-              ]
+              data: this.props.data
           }]
 }
         return (

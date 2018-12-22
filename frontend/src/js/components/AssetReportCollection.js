@@ -8,14 +8,15 @@ import AssetReportSimple from './AssetReportSimple'
 
 export default class AssetReportCollection extends Component {
     render() {
+      var props = this.props
         return (
           <Fragment>
-            <ExpansionPanel expanded={true}>
+            <ExpansionPanel defaultExpanded={true}>
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 Assets by time
               </ExpansionPanelSummary>
               <ExpansionPanelDetails>
-                <AssetReportSimple/>
+                <AssetReportSimple actions={props.actions} data={props.simpleAssetReport}/>
               </ExpansionPanelDetails>
             </ExpansionPanel>
             <ExpansionPanel>

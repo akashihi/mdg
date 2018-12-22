@@ -1,30 +1,19 @@
 import { connect } from 'react-redux'
-//import { bindActionCreators } from 'redux'
+import { bindActionCreators } from 'redux'
 
 import ReportsPage from '../components/ReportsPage'
-//import * as TransactionActions from '../actions/TransactionActions'
-//import * as TagActions from '../actions/TagActions'
+import * as ReportActions from '../actions/ReportActions'
 
-/*const mapStateToProps = (state) => {
+const mapStateToProps = (state) => {
     return {
-        currencies: state.currency.currencyList,
-        waiting: state.transaction.ui.transactionListLoading,
-        error: state.transaction.ui.transactionListError,
-        assetAccounts: state.account.assetAccountList,
-        incomeAccounts: state.account.incomeAccountList,
-        expenseAccounts: state.account.expenseAccountList,
-        transactions: state.transaction.transactionList,
-        periodBeginning: state.transactionview.periodBeginning,
-        periodEnd: state.transactionview.periodEnd
+        simpleAssetReport: state.report.simpleAssetReport
     }
 };
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(TransactionActions, dispatch),
-        tagActions: bindActionCreators(TagActions, dispatch),
+        actions: bindActionCreators(ReportActions, dispatch),
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TransactionsPage)*/
-export default connect()(ReportsPage)
+export default connect(mapStateToProps, mapDispatchToProps)(ReportsPage)
