@@ -2,7 +2,7 @@ package reports
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-import controllers.dto.reporting.{SimpleAssetReportDTO, SimpleAssetReportEntry}
+import controllers.dto.reporting.{GenericReportDTO, SimpleAssetReportEntry}
 import dao.queries.BudgetQuery
 import dao.{SqlDatabase, SqlExecutionContext}
 import javax.inject.Inject
@@ -22,9 +22,9 @@ class SimpleAssetReport @Inject() (protected val rs: RateService, protected val 
     Future.sequence(series)
   }
 
-  def get(start: LocalDate, end: LocalDate, granularity: Int): Future[SimpleAssetReportDTO] = {
+  def get(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[SimpleAssetReportEntry]] = {
     val report = this.calculate(start, end, granularity)
     val entries = report.map(s => s.map(e => SimpleAssetReportEntry(e._1, e._2)))
-    entries.map(SimpleAssetReportDTO(Some(-1), _))
+    entries.map(GenericReportDTO(Some("simple_asset"), _))
   }
 }
