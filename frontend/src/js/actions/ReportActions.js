@@ -176,22 +176,37 @@ export function loadSimpleAssetReport() {
 
 
 export function setReportGranularity(granularity) {
-  return {
-    type: SET_REPORT_GRANULARITY,
-    payload: granularity
+  return (dispatch) => {
+      dispatch({
+        type: SET_REPORT_GRANULARITY,
+        payload: granularity
+    });
+    dispatch(loadTypeAssetReport());
+    dispatch(loadCurrencyAssetReport());
+    dispatch(loadSimpleAssetReport())
   }
 }
 
 export function setReportStartDate(startDate) {
-  return {
-    type: SET_REPORT_STARTDATE,
-    payload: moment(startDate)
+  return (dispatch) => {
+    dispatch({
+      type: SET_REPORT_STARTDATE,
+      payload: moment(startDate)
+    })
+    dispatch(loadTypeAssetReport());
+    dispatch(loadCurrencyAssetReport());
+    dispatch(loadSimpleAssetReport())
   }
 }
 
 export function setReportEndDate(endDate) {
-  return {
-    type: SET_REPORT_ENDDATE,
-    payload: moment(endDate)
+  return (dispatch) => {
+    dispatch({
+      type: SET_REPORT_ENDDATE,
+      payload: moment(endDate)
+    })
+    dispatch(loadTypeAssetReport());
+    dispatch(loadCurrencyAssetReport());
+    dispatch(loadSimpleAssetReport())
   }
 }
