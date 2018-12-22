@@ -3,6 +3,7 @@ import controllers.api.IdentifiableObject.StringIdentifiable
 import play.api.libs.json._
 import controllers.dto.reporting.TotalsReportEntry.totalsReportEntryWrite
 import controllers.dto.reporting.SimpleAssetReportEntry.simpleAssetReportEntryWrite
+import controllers.dto.reporting.AssetByCurrencyReportEntry.assetByCurrencyReportEntryWrites
 
 trait GenericReportEntry
 case class GenericReportDTO[+V <: GenericReportEntry](id: Option[String], value: Seq[V]) extends StringIdentifiable
@@ -13,6 +14,7 @@ object GenericReportDTO {
       val values = o.value.map {
         case totals: TotalsReportEntry => totalsReportEntryWrite.writes(totals)
         case simpleAsset: SimpleAssetReportEntry => simpleAssetReportEntryWrite.writes(simpleAsset)
+        case assetByCurrency: AssetByCurrencyReportEntry => assetByCurrencyReportEntryWrites.writes(assetByCurrency)
       }
       Json.obj(
         "attributes" -> values, "type" -> "report"
