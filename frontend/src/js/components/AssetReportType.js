@@ -18,6 +18,7 @@ export default class AssetReportType extends Component {
   }
 
     render() {
+      console.log(this.props.data)
       var series=[]
       for (var entry in this.props.data.series) {
         var seriesData = {

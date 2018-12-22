@@ -70,8 +70,20 @@ export function loadTypeAssetReport() {
                 if (!(item.type in series)) {
                   series[item.type] = []
                 }
-                series[item.type].push(item.value)
               })
+            })
+            report.forEach((dtEntry) => {
+              var visited = []
+              dtEntry.entries.forEach((item) => {
+                series[item.type].push(item.value)
+                visited.push(item.type)
+              })
+              // Stuff skipped values
+              for (var type in series) {
+                if (!visited.find((item) => item==type)) {
+                  series[type].push(0)
+                }
+              }
             })
               dispatch({
                   type: GET_TYPEASSETREPORT_SUCCESS,
@@ -120,10 +132,28 @@ export function loadCurrencyAssetReport() {
                 if (!(currency in series)) {
                   series[currency] = []
                 }
-                series[currency].push(item.value)
               })
             })
-              dispatch({
+            report.forEach((dtEntry) => {
+              var visited = []
+              dtEntry.entries.forEach((item) => {
+                var currencyObject = state.currency.currencyList.find((currency) => currency.id == item.currency)
+                if (currencyObject) {
+                  var currency = currencyObject.attributes.name
+                } else {
+                  currency = item.currency
+                }
+                series[currency].push(item.value)
+                visited.push(currency)
+              })
+              // Stuff skipped values
+              for (var type in series) {
+                if (!visited.find((item) => item==type)) {
+                  series[type].push(0)
+                }
+              }
+            })
+            dispatch({
                   type: GET_CURRENCYASSETREPORT_SUCCESS,
                   payload: {
                     dates: dates,
