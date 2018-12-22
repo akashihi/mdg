@@ -65,7 +65,7 @@ export default class ReportsPage extends Component {
                 <Tab label='Incomes report' value='income'/>
                 <Tab label='Expenses report' value='expenses'/>
             </Tabs>
-            {this.state.tabValue == 'asset' && <AssetReportCollection actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency}/>}
+            {this.state.tabValue == 'asset' && <AssetReportCollection actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency} assetReportType={props.assetReportType}/>}
             {this.state.tabValue == 'budget' && <div>Budget report</div>}
             {this.state.tabValue == 'income' && <div>Incomes report</div>}
             {this.state.tabValue == 'expenses' && <div>Expenses report</div>}

@@ -15,7 +15,10 @@ import {
   SET_REPORT_GRANULARITY,
   GET_CURRENCYASSETREPORT_REQUEST,
   GET_CURRENCYASSETREPORT_SUCCESS,
-  GET_CURRENCYASSETREPORT_FAILURE
+  GET_CURRENCYASSETREPORT_FAILURE,
+  GET_TYPEASSETREPORT_REQUEST,
+  GET_TYPEASSETREPORT_SUCCESS,
+  GET_TYPEASSETREPORT_FAILURE
 } from '../constants/Report'
 
 export function loadTotalsReport() {
@@ -41,6 +44,50 @@ export function loadTotalsReport() {
                 })
             });
     }
+}
+
+export function loadTypeAssetReport() {
+  return (dispatch, getState) => {
+      dispatch({
+          type: GET_TYPEASSETREPORT_REQUEST,
+          payload: true
+      });
+
+      var state = getState()
+
+      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
+      var url = '/api/report/asset/type' + '?' + jQuery.param(params)
+
+      fetch(url)
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(function (json) {
+            var report = json.data.attributes.value
+            var dates = report.map((item) => moment(item.date, 'YYYY-MM-DD'))
+            var series = {}
+            report.forEach((dtEntry) => {
+              dtEntry.entries.forEach((item) => {
+                if (!(item.type in series)) {
+                  series[item.type] = []
+                }
+                series[item.type].push(item.value)
+              })
+            })
+              dispatch({
+                  type: GET_TYPEASSETREPORT_SUCCESS,
+                  payload: {
+                    dates: dates,
+                    series: series
+                  }
+              });
+          })
+          .catch(function (response) {
+              dispatch({
+                  type: GET_TYPEASSETREPORT_FAILURE,
+                  payload: response.json
+              })
+          });
+  }
 }
 
 export function loadCurrencyAssetReport() {

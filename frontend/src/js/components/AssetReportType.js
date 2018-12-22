@@ -2,7 +2,7 @@ import React, {Component, Fragment} from 'react';
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
-export default class AssetReportCurrency extends Component {
+export default class AssetReportType extends Component {
   constructor(props) {
     super(props);
      this.chartComponent = React.createRef();
@@ -14,7 +14,7 @@ export default class AssetReportCurrency extends Component {
     container.style.height = '100%';
     container.style.width = '100%';
     this.chartComponent.current.chart.reflow();
-    this.props.actions.loadCurrencyAssetReport()
+    this.props.actions.loadTypeAssetReport()
   }
 
     render() {
@@ -35,12 +35,15 @@ export default class AssetReportCurrency extends Component {
               text: 'Asset Totals '
           },
           subtitle: {
-              text: 'by currency'
+              text: 'by asset type'
           },
           xAxis: {
               categories: this.props.data.dates.map((item) => item.format('DD. MMM\' YY'))
           },
           yAxis: {
+              title: {
+                  text: 'CZK'
+              },
               labels: {
                   formatter: function () {
                       return this.value;
