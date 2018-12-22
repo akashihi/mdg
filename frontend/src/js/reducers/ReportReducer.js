@@ -9,12 +9,16 @@ import {
   GET_SIMPLEASSETREPORT_FAILURE,
   SET_REPORT_STARTDATE,
   SET_REPORT_ENDDATE,
-  SET_REPORT_GRANULARITY
+  SET_REPORT_GRANULARITY,
+  GET_CURRENCYASSETREPORT_REQUEST,
+  GET_CURRENCYASSETREPORT_SUCCESS,
+  GET_CURRENCYASSETREPORT_FAILURE
 } from '../constants/Report'
 
 const initialState = {
    totalsReport: [],
    simpleAssetReport: [],
+   currencyAssetReport: {dates:[], series: []},
    startDate: moment().subtract(1, 'month'),
    endDate: moment(),
    granularity: 7
@@ -33,6 +37,11 @@ export default function reportReducer(state = initialState, action) {
             return {...state, simpleAssetReport: []}
         case GET_SIMPLEASSETREPORT_SUCCESS:
           return {...state, simpleAssetReport: action.payload}
+          case GET_CURRENCYASSETREPORT_REQUEST:
+          case GET_CURRENCYASSETREPORT_FAILURE:
+              return {...state, currencyAssetReport: {dates:[], series: []}}
+          case GET_CURRENCYASSETREPORT_SUCCESS:
+            return {...state, currencyAssetReport: action.payload}
         case SET_REPORT_STARTDATE:
           return {...state, startDate: action.payload}
         case SET_REPORT_ENDDATE:

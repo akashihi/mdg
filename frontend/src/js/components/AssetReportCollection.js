@@ -5,6 +5,7 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import AssetReportSimple from './AssetReportSimple'
+import AssetReportCurrency from './AssetReportCurrency'
 
 export default class AssetReportCollection extends Component {
     render() {
@@ -24,7 +25,7 @@ export default class AssetReportCollection extends Component {
                 Detailed assets by time
               </ExpansionPanelSummary>
               <ExpansionPanelDetails>
-                Data
+                <AssetReportCurrency actions={props.actions} data={props.currencyAssetReport}/>
               </ExpansionPanelDetails>
             </ExpansionPanel>
             <ExpansionPanel>

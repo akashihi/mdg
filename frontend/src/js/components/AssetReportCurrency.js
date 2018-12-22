@@ -2,7 +2,7 @@ import React, {Component, Fragment} from 'react';
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
-export default class AssetReportSimple extends Component {
+export default class AssetReportCurrency extends Component {
   constructor(props) {
     super(props);
      this.chartComponent = React.createRef();
@@ -14,19 +14,31 @@ export default class AssetReportSimple extends Component {
     container.style.height = '100%';
     container.style.width = '100%';
     this.chartComponent.current.chart.reflow();
-    this.props.actions.loadSimpleAssetReport()
+    this.props.actions.loadCurrencyAssetReport()
   }
 
     render() {
+      var series=[]
+      for (var entry in this.props.data.series) {
+        var seriesData = {
+          name: entry,
+          data: this.props.data.series[entry]
+        }
+        series.push(seriesData)
+      }
+
       const options = {
         chart: {
               type: 'area'
           },
           title: {
-              text: 'Asset Totals'
+              text: 'Asset Totals '
+          },
+          subtitle: {
+              text: 'by currency'
           },
           xAxis: {
-              type: 'datetime',
+              categories: this.props.data.dates.map((item) => item.format('DD. MMM\' YY'))
           },
           yAxis: {
               title: {
@@ -39,10 +51,13 @@ export default class AssetReportSimple extends Component {
               }
           },
           tooltip: {
-              pointFormat: 'You had <b>{point.y:,.0f}</b> in primary currency'
+              split: true
           },
           plotOptions: {
               area: {
+                  stacking: 'normal',
+                  lineColor: '#666666',
+                  lineWidth: 1,
                   marker: {
                       enabled: false,
                       symbol: 'circle',
@@ -55,11 +70,8 @@ export default class AssetReportSimple extends Component {
                   }
               }
           },
-          series: [{
-              name: 'Total assets',
-              data: this.props.data
-          }]
-}
+          series: series
+        }
         return (
           <Fragment>
             <HighchartsReact highcharts={Highcharts} options={options} ref={this.chartComponent} />

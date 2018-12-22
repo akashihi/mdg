@@ -12,7 +12,10 @@ import {
   GET_SIMPLEASSETREPORT_FAILURE,
   SET_REPORT_STARTDATE,
   SET_REPORT_ENDDATE,
-  SET_REPORT_GRANULARITY
+  SET_REPORT_GRANULARITY,
+  GET_CURRENCYASSETREPORT_REQUEST,
+  GET_CURRENCYASSETREPORT_SUCCESS,
+  GET_CURRENCYASSETREPORT_FAILURE
 } from '../constants/Report'
 
 export function loadTotalsReport() {
@@ -38,6 +41,56 @@ export function loadTotalsReport() {
                 })
             });
     }
+}
+
+export function loadCurrencyAssetReport() {
+  return (dispatch, getState) => {
+      dispatch({
+          type: GET_CURRENCYASSETREPORT_REQUEST,
+          payload: true
+      });
+
+      var state = getState()
+
+      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
+      var url = '/api/report/asset/currency' + '?' + jQuery.param(params)
+
+      fetch(url)
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(function (json) {
+            var report = json.data.attributes.value
+            var dates = report.map((item) => moment(item.date, 'YYYY-MM-DD'))
+            var series = {}
+            report.forEach((dtEntry) => {
+              dtEntry.entries.forEach((item) => {
+                var currencyObject = state.currency.currencyList.find((currency) => currency.id == item.currency)
+                if (currencyObject) {
+                  var currency = currencyObject.attributes.name
+                } else {
+                  currency = item.currency
+                }
+                if (!(currency in series)) {
+                  series[currency] = []
+                }
+                series[currency].push(item.value)
+              })
+            })
+              dispatch({
+                  type: GET_CURRENCYASSETREPORT_SUCCESS,
+                  payload: {
+                    dates: dates,
+                    series: series
+                  }
+              });
+          })
+          .catch(function (response) {
+              dispatch({
+                  type: GET_CURRENCYASSETREPORT_FAILURE,
+                  payload: response.json
+              })
+          });
+  }
 }
 
 export function loadSimpleAssetReport() {
@@ -73,6 +126,7 @@ export function loadSimpleAssetReport() {
           });
   }
 }
+
 
 export function setReportGranularity(granularity) {
   return {
