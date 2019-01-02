@@ -32,7 +32,7 @@ class AssetReport @Inject() (protected val sql: SqlDatabase)
   }
 
   def simpleAssetReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[SimpleAssetReportEntry]] = {
-    val series = expandPeriod(start, end,granularity).map(d => sql.query(AssetQuery.getTotalAssetsForDate(d, includeHidden = true)).map((d,_)))
+    val series = expandPeriod(start, end,granularity).map(d => sql.query(AssetQuery.getTotalAssetsForDate(d)).map((d,_)))
     val report = Future.sequence(series)
     val entries = report.map(s => s.map(e => SimpleAssetReportEntry(e._1, e._2)))
     entries.map(GenericReportDTO(Some("simple_asset"), _))
