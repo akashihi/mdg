@@ -14,19 +14,16 @@ export default class BudgetExecutionReport extends Component {
     container.style.height = '100%';
     container.style.width = '100%';
     this.chartComponent.current.chart.reflow();
-    this.props.actions.loadSimpleAssetReport()
+    //this.props.actions.loadSimpleAssetReport()
   }
 
     render() {
       const options = {
-        chart: {
-              type: 'area'
-          },
           title: {
-              text: 'Asset Totals'
+              text: 'Budget execution'
           },
           xAxis: {
-              type: 'datetime',
+              categories: ['Jun 2018', 'Jul 2018', 'Aug 2018', 'Sep 2018'],
           },
           yAxis: {
               title: {
@@ -42,23 +39,41 @@ export default class BudgetExecutionReport extends Component {
               pointFormat: 'You had <b>{point.y:,.0f}</b> in primary currency'
           },
           plotOptions: {
-              area: {
-                  marker: {
-                      enabled: false,
-                      symbol: 'circle',
-                      radius: 2,
-                      states: {
-                          hover: {
-                              enabled: true
-                          }
-                      }
-                  }
+              column: {
+                stacking: 'normal'
               }
           },
-          series: [{
-              name: 'Total assets',
-              data: this.props.data
-          }]
+          series: [
+            {
+              name: 'Actual income',
+              type: 'column',
+              data: [70000, 49000, 55000, 48000],
+              stack: 'actual'
+            },
+            {
+                name: 'Actual expense',
+                type: 'column',
+                data: [-52000, -50000, -48000, -48000],
+                stack: 'actual'
+            },
+            {
+              name: 'Expected income',
+              type: 'column',
+              data: [69000, 49000, 57000, 48000],
+              stack: 'expected'
+            },
+            {
+                name: 'Expected expense',
+                type: 'column',
+                data: [-52000, -42000, -48000, -40000],
+                stack: 'expected'
+            },
+            {
+                name: 'Profit',
+                type: 'spline',
+                data: [18000, -1000, 7000, 0]
+            }
+        ]
 }
         return (
           <Fragment>
