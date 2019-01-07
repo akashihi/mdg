@@ -37,7 +37,7 @@ export default class BudgetExecutionReport extends Component {
               }
           },
           tooltip: {
-              pointFormat: 'You had <b>{point.y:,.0f}</b> in primary currency'
+              pointFormat: 'You earned <b>{point.y:,.0f}</b>'
           },
           plotOptions: {
               column: {
