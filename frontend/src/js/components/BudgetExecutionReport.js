@@ -14,13 +14,11 @@ export default class BudgetExecutionReport extends Component {
     container.style.height = '100%';
     container.style.width = '100%';
     this.chartComponent.current.chart.reflow();
-    //this.props.actions.loadSimpleAssetReport()
   }
 
     render() {
       var props = this.props;
       var report = props.budgetExecution;
-
       const options = {
           title: {
               text: 'Budget execution'
