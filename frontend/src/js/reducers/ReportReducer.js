@@ -18,15 +18,24 @@ import {
   GET_TYPEASSETREPORT_FAILURE
 } from '../constants/Report'
 
+import {
+    GET_BUDGETLIST_SUCCESS
+} from '../constants/Budget'
+
 const initialState = {
    totalsReport: [],
    simpleAssetReport: [],
    currencyAssetReport: {dates:[], series: []},
    typeAssetReport: {dates:[], series: []},
+   budgetExecutionReport: {dates: [], aIncome: [], eIncome: [], aExpense: [], eExpense:[], profit:[]},
    startDate: moment().subtract(1, 'month'),
    endDate: moment(),
    granularity: 7
 };
+
+function prepareBudgetExecutionReport(/*budgetList*/) {
+  return {dates: [], aIncome: [], eIncome: [], aExpense: [], eExpense:[], profit:[]}
+}
 
 export default function reportReducer(state = initialState, action) {
     switch(action.type) {
@@ -57,6 +66,8 @@ export default function reportReducer(state = initialState, action) {
           return {...state, endDate: action.payload}
         case SET_REPORT_GRANULARITY:
           return {...state, granularity: action.payload}
+        case GET_BUDGETLIST_SUCCESS:
+          return {...state, budgeExecutiontReport: prepareBudgetExecutionReport(action.payload)}
         default:
             return state;
     }

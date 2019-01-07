@@ -18,12 +18,15 @@ export default class BudgetExecutionReport extends Component {
   }
 
     render() {
+      var props = this.props;
+      var report = props.budgetExecution;
+
       const options = {
           title: {
               text: 'Budget execution'
           },
           xAxis: {
-              categories: ['Jun 2018', 'Jul 2018', 'Aug 2018', 'Sep 2018'],
+              categories: report.dates,
           },
           yAxis: {
               title: {
@@ -47,31 +50,31 @@ export default class BudgetExecutionReport extends Component {
             {
               name: 'Actual income',
               type: 'column',
-              data: [70000, 49000, 55000, 48000],
+              data: report.aIncome,
               stack: 'actual'
             },
             {
                 name: 'Actual expense',
                 type: 'column',
-                data: [-52000, -50000, -48000, -48000],
+                data: report.aExpense,
                 stack: 'actual'
             },
             {
               name: 'Expected income',
               type: 'column',
-              data: [69000, 49000, 57000, 48000],
+              data: report.eIncome,
               stack: 'expected'
             },
             {
                 name: 'Expected expense',
                 type: 'column',
-                data: [-52000, -42000, -48000, -40000],
+                data: report.eExpense,
                 stack: 'expected'
             },
             {
                 name: 'Profit',
                 type: 'spline',
-                data: [18000, -1000, 7000, 0]
+                data: report.profit
             }
         ]
 }
