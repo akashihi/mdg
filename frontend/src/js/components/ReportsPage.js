@@ -9,6 +9,7 @@ import FormControl from '@material-ui/core/FormControl';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 
 import AssetReportCollection from './AssetReportCollection'
+import BudgetExecutionReport from './BudgetExecutionReport'
 
 export default class ReportsPage extends Component {
     state = { tabValue: 'asset' };
@@ -66,7 +67,7 @@ export default class ReportsPage extends Component {
                 <Tab label='Expenses report' value='expenses'/>
             </Tabs>
             {this.state.tabValue == 'asset' && <AssetReportCollection actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency} assetReportType={props.assetReportType}/>}
-            {this.state.tabValue == 'budget' && <div>Budget report</div>}
+            {this.state.tabValue == 'budget' && <BudgetExecutionReport budgetExecution={props.budgetExecution}/>}
             {this.state.tabValue == 'income' && <div>Incomes report</div>}
             {this.state.tabValue == 'expenses' && <div>Expenses report</div>}
           </Fragment>
