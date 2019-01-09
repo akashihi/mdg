@@ -74,6 +74,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
   def create(dto: Option[AccountDTO]): ErrorF[AccountDTO] = {
     val validDto = dto
       .fromOption("ACCOUNT_DATA_INVALID")
+      .map(_.copy(balance = 0)) // Accounts can only be created with 0 balance.
       .map(validate)
       .flatMap(validationToXor)
 
