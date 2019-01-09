@@ -43,13 +43,6 @@ export default class AccountDialog extends React.Component {
         this.props.actions.editAccountChange(account);
     }
 
-    onAmountChange(event) {
-        var attr = {...this.props.account.attributes};
-        attr.balance = event.target.value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
     onCurrencyChange(event) {
         var attr = {...this.props.account.attributes};
         attr.currency_id = event.target.value;
@@ -94,13 +87,6 @@ export default class AccountDialog extends React.Component {
           nameText = true
         }
 
-        var amountLabel = 'Initial amount'
-        var amountText = false
-        if (props.errors.balance) {
-          amountLabel = this.props.errors.balance
-          amountText = true
-        }
-
         var currencyLabel = 'Account currency'
         var currencyError = false
         if (props.errors.currency_id) {
@@ -138,7 +124,6 @@ export default class AccountDialog extends React.Component {
           </FormControl>
           <TextField label={nameLabel} error={nameText} value={props.account.attributes.name} onChange={::this.onNameChange}/>
           <br/>
-          <TextField label={amountLabel} error={amountText} value={props.account.attributes.balance} disabled={!props.full} onChange={::this.onAmountChange}/>
           <FormControl error={currencyError} fullWidth={true}>
                 <InputLabel htmlFor={'currency'}>{currencyLabel}</InputLabel>
                 <Select value={props.account.attributes.currency_id}

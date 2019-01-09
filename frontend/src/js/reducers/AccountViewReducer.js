@@ -42,10 +42,6 @@ function validateAccountForm(account) {
         errors.account_type = 'Type is not selected'
     }
 
-    if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(attributes.balance)) {
-        errors.balance = 'Amount is invalid'
-    }
-
     if (!attributes.currency_id) {
         errors.currency_id = 'Currency is not selected'
     }
