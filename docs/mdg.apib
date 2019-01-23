@@ -197,7 +197,7 @@ Only `active` field could be changed. Values in other fields will be silently ig
 
 Resources describing currency exchange rates
 
-## Currency collection [/rate/{timestamp}]
+## Rate collection [/rate/{timestamp}]
 
 + parameters
     + timestamp: (required, timestamp) - Point in time in format YYYY-MM-DDTHH:MM:SS for which exchange rates should be valid
@@ -265,6 +265,243 @@ A Rate object has the following attributes.
     }
   }
 
+# Group Categories
+
+Resources describing account categories. A category is just an account label, used in analysis, statistics, rendering etc.
+
+## Category collection [/category]
+
+A Catrgory object has the following attributes
+
+- parent_id: (integer, optional) - Category's parent category id. May be missing for top level categories
+- name: (string, required) - Category name
+- order: (integer, required) - Ordering weight of that category. Categories output will be sorted ascendant by that weight. Same rule applies to the chidlren attribute.
+- account_type: (enum[string], readonly) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
+  + Members
+    + `asset`
+    + `expense`
+    + `income`
+- children: (array[category], optional) - Array of subcategories of that cateogories, may be empty or missing
+
+### List all Categories [GET]
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": [{
+            "type": "category",
+            "id": 1,
+            "attributes": {
+                "name": "Flat payments",
+                "order": 1,
+                "account_type": "expense",
+                "children": [
+                    {
+                        "type": "category",
+                        "id": 2,
+                        "attributes": {
+                            "parent_id": 1,
+                            "name": "Rent",
+                            "order": 1,
+                            "account_type": "expense"
+                        }
+                    },
+                    {
+                        "type": "category",
+                        "id": 3,
+                        "attributes": {
+                            "parent_id": 1,
+                            "name": "Facilities",
+                            "order": 1,
+                            "account_type": "expense"
+                        }
+                    }
+                ]
+            },
+            {
+            "type": "category",
+            "id": 4,
+            "attributes": {
+                "name": "Work income",
+                "order": 1,
+                "account_type": "income",
+                "children": [
+                    {
+                        "type": "category",
+                        "id": 5,
+                        "attributes": {
+                            "parent_id": 4,
+                            "name": "Salary",
+                            "order": 1,
+                            "account_type": "income"
+                        }
+                    },
+                    {
+                        "type": "category",
+                        "id": 5,
+                        "attributes": {
+                            "parent_id": 4,
+                            "name": "Bnouses",
+                            "order": 1,
+                            "account_type": "income"
+                        }
+                    }
+                ]
+            }   
+        }
+    }]
+  }
+
+### Create a new cetegory [POST]
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+                "type": "category",
+                "attributes": {
+                    "parent_id": 4,
+                    "name": "Bnouses",
+                    "order": 1,
+                    "account_type": "income"
+                }
+            }
+        }
+  }
+
++ Response 201 (application/vnd.mdg+json)
+  + Headers
+    Location: /category/5
+  + Body
+  {
+    "data": {
+                "id": 5,
+                "type": "category",
+                "attributes": {
+                    "parent_id": 4,
+                    "name": "Bnouses",
+                    "order": 1,
+                    "account_type": "income"
+                }
+            }
+        }
+  }
+
+## Category [/category/{category_id}]
+
++ parameters
+    + category_id: (required, number) - ID of an category in form of integer
+
+### View a category detail [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+    {
+    "data": {
+            "type": "category",
+            "id": 1,
+            "attributes": {
+                "name": "Flat payments",
+                "order": 1,
+                "account_type": "expense",
+                "children": [
+                    {
+                        "type": "category",
+                        "id": 2,
+                        "attributes": {
+                            "parent_id": 1,
+                            "name": "Rent",
+                            "order": 1,
+                            "account_type": "expense"
+                        }
+                    },
+                    {
+                        "type": "category",
+                        "id": 3,
+                        "attributes": {
+                            "parent_id": 1,
+                            "name": "Facilities",
+                            "order": 1,
+                            "account_type": "expense"
+                        }
+                    }
+                ]
+            },
+            {
+            "type": "category",
+            "id": 4,
+            "attributes": {
+                "name": "Work income",
+                "order": 1,
+                "account_type": "income",
+                "children": [
+                    {
+                        "type": "category",
+                        "id": 5,
+                        "attributes": {
+                            "parent_id": 4,
+                            "name": "Salary",
+                            "order": 1,
+                            "account_type": "income"
+                        }
+                    },
+                    {
+                        "type": "category",
+                        "id": 5,
+                        "attributes": {
+                            "parent_id": 4,
+                            "name": "Bnouses",
+                            "order": 1,
+                            "account_type": "income"
+                        }
+                    }
+                ]
+            }   
+        }
+    }
+  }
+
+### Modify category data [PUT]
+
+Only `parent_id`, `name` and `order` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, it will be reparented to a next parent or will have no parent, if next parent is not available, to
+remove cycles in a tree. Set parent_id to null or do not send that field at all, to make that category a top level category. Parenting category to the parent with different account_type is not possible.
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "account",
+            "id": 4
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Montlhy rent",
+                "balance": 9000,
+                "primary_balance": 10100,
+                "parent_id": 3
+            }
+        }
+  }
+
++ Response 202 (application/vnd.mdg+json)
+  + Body
+  {
+    "data": {
+            "type": "account",
+            "id": 4
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Montlhy rent",
+                "balance": 9000,
+                "primary_balance": 10100,
+                "parent_id": 3
+            }
+        }
+  }
+
+### Delete a category [DELETE]
+
+Deleting a category reparents all it's 1st degree descendants to the up level parent or makea them top-level categories, if no up-level parent is available. Linked accounts will be uncategorized.
+
++ Response 204
+
 # Group Accounts
 
 Resources related to account management
@@ -279,6 +516,7 @@ An Account object has the following attributes
     + `expense`
     + `income`
 - currency_id: (integer, required) - account's currency id
+- category_id: (integet, optional) - account's category id, may be missing in case account doesn't belongs to the any category.
 - name: (string, required) - Account name
 - balance: (decimal, readonly) - Account balance.
 - primary_balance: (decimal, readonly) - Account balance in primary currency. Automatically converted from the 'balance' field by applying correspondent rate.
