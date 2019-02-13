@@ -2,7 +2,7 @@ package controllers.api
 
 import controllers.dto.reporting.GenericReportDTO
 import util.Default
-import controllers.dto.{AccountDTO, BudgetDTO, BudgetEntryDTO, TransactionDto}
+import controllers.dto._
 import models.{Currency, Error, Rate, Setting, TxTag}
 import play.api.libs.json._
 
@@ -35,6 +35,7 @@ object JsonDataWrapper {
     */
   def typeName[T >: ApiObject](x: T): String = x match {
     case _: Currency => "currency"
+    case _: CategoryDTO => "category"
     case _: AccountDTO => "account"
     case _: TransactionDto => "transaction"
     case _: BudgetDTO => "budget"

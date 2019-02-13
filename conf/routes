@@ -7,6 +7,12 @@ GET     /currency                               controllers.CurrencyController.i
 GET     /currency/:id                           controllers.CurrencyController.show(id: Long)
 PUT     /currency/:id                           controllers.CurrencyController.edit(id: Long)
 
+POST    /category                               controllers.CategoryController.create
+GET     /category                               controllers.CategoryController.index
+GET     /category/:id                           controllers.CategoryController.show(id: Long)
+PUT     /category/:id                           controllers.CategoryController.edit(id: Long)
+DELETE  /category/:id                           controllers.CategoryController.delete(id: Long)
+
 POST    /account                                controllers.AccountController.create
 GET     /account                                controllers.AccountController.index(filter: Option[String])
 GET     /account/:id                            controllers.AccountController.show(id: Long)

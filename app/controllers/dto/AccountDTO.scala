@@ -19,7 +19,7 @@ case class AccountDTO(id: Option[Long],
 
 object AccountDTO {
   implicit val accountDtoRead: Reads[AccountDTO] = (
-    (JsPath \ "data" \ "attributes" \ "id").readNullable[Long] and
+    (JsPath \ "data" \ "id").readNullable[Long] and
       (JsPath \ "data" \ "attributes" \ "account_type").read[String].map(AccountType.apply) and
       (JsPath \ "data" \ "attributes" \ "asset_type").readNullable[String].map(_.map(AssetType.apply)) and
       (JsPath \ "data" \ "attributes" \ "currency_id").read[Long] and
