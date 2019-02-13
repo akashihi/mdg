@@ -19,3 +19,14 @@ ALTER TABLE ACCOUNT ADD COLUMN CATEGORY_ID BIGINT NOT NULL REFERENCES CATEGORY(I
 --rollback DROP TABLE CATEGORY;
 --rollback DROP TABLE CATEGORY_TREE;
 --rollback ALTER TABLE ACCOUNT DROP COLUMN CATEGORY_ID;
+
+--changeset akashihi:2
+INSERT INTO ERROR VALUES('CATEGORY_DATA_INVALID', '412', 'Category attributes are invalid', 'Some category attributes are missing or have invalid values.');
+
+--rollback DELETE FROM ERROR WHERE CODE='CATEGORY_DATA_INVALID'
+
+--changeset akashihi:3
+INSERT INTO ERROR VALUES('CATEGORY_NOT_FOUND', '404', 'Requested category could not be found', 'We can not find category with specified code in the database, check it''s id please.');
+
+--rollback DELETE FROM ERROR WHERE CODE='CATEGORY_NOT_FOUND'
+

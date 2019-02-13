@@ -3,7 +3,6 @@ import controllers.api.ResultMaker.makeResult
 import controllers.dto.CategoryDTO
 import dao.SqlExecutionContext
 import javax.inject.Inject
-import play.api.libs.json.Json
 import play.api.mvc.{InjectedController, Result}
 import services.{CategoryService, ErrorService}
 
@@ -19,7 +18,7 @@ class CategoryController @Inject()(protected val cs: CategoryService, protected 
     */
   def createResult(dto: CategoryDTO): Result =
     makeResult(dto)(CREATED)
-      .withHeaders("Location" -> s"/api/account/${ dto.id}")
+      .withHeaders("Location" -> s"/api/category/${ dto.id}")
 
   /**
     * Adds new account to the system.
