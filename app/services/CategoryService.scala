@@ -43,11 +43,16 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
 
   def edit(id: Long, dto: Option[CategoryDTO]): ErrorF[CategoryDTO] = {
     val validDto = dto.fromOption("CATEGORY_DATA_INVALID")
-    val newCategory = EitherT(Future.successful(validDto))
-      .flatMap(vd => getCategory(id)
+    val wrappedDto = EitherT(Future.successful(validDto))
+    val newCategory = wrappedDto.flatMap(vd => getCategory(id)
         .map(_.copy(name = vd.name, priority = vd.priority)))
-    newCategory
-      .map(CategoryQuery.update(_).map(_.fromOption("CATEGORY_NOT_FOUND")))
+
+    val query = wrappedDto.map(dto => dto.parent_id)
+      .flatMap(_.map(parent => newCategory.map(CategoryQuery.reparent(_, parent)))
+        .getOrElse(newCategory.map(CategoryQuery.update(_))))
+        .map(_.map(_.fromOption("CATEGORY_NOT_FOUND")))
+
+    query
       .flatMapF(sql.query)
       .map(categoryToDto)
       .flatten

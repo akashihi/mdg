@@ -17,7 +17,7 @@ object CategoryQuery {
         FROM category_tree AS t
         WHERE t.descendant = $parent
         UNION ALL
-          SELECT $leaf, $leaf, 1"""
+          SELECT $leaf, $leaf, 0"""
   }
 
   def insert(c: Category): DBIO[Category] = categories returning categories
@@ -32,12 +32,12 @@ object CategoryQuery {
     * @return List of top-level categories.
     */
   def list(implicit ec: ExecutionContext): DBIO[Seq[Category]] = {
-    val treeQuery = categoriesTree.filter(_.depth > 1).map(_.descendant).result
+    val treeQuery = categoriesTree.filter(_.depth > 0).map(_.descendant).result
     treeQuery.flatMap(tlc => categories.filterNot(_.id inSet  tlc).sortBy(_.priority.asc).result)
   }
 
   def listChildren(c: Category)(implicit ec: ExecutionContext): DBIO[Seq[Category]] = {
-    val query = categories join categoriesTree on (_.id === _.descendant) filter(q => q._2.ancestor === c.id.get) filter (q => q._2.depth === 2)
+    val query = categories join categoriesTree on (_.id === _.descendant) filter(q => q._2.ancestor === c.id.get) filter (q => q._2.depth === 1)
     query.map(_._1).sortBy(_.priority.asc).result
   }
 
@@ -50,6 +50,33 @@ object CategoryQuery {
       case 1 => Some(a)
       case _ => None
     }
+  }
+
+  def reparent(c: Category, destination: Long)(implicit ec: ExecutionContext): DBIO[Option[Category]] = {
+    val deleteQuery =
+      sqlu"""
+            DELETE FROM category_tree
+            WHERE descendant IN (
+              SELECT descendant FROM category_tree
+              WHERE ancestor = ${c.id.get})
+            AND ancestor IN (
+              SELECT ancestor FROM category_tree
+              WHERE descendant = ${c.id.get}
+              AND ancestor != descendant
+            )"""
+
+    val reparentQuery =
+      sqlu"""
+             INSERT INTO category_tree (ancestor, descendant, depth)
+             SELECT supertree.ancestor, subtree.descendant, supertree.depth+subtree.depth+1
+             FROM category_tree AS supertree
+             CROSS JOIN category_tree AS subtree
+             WHERE subtree.ancestor = ${c.id.get}
+             AND supertree.descendant = $destination"""
+
+    val reparent = deleteQuery zip reparentQuery
+
+    reparent.flatMap(_ => update(c)).transactionally
   }
 
   def delete(id: Long)(implicit ec: ExecutionContext): DBIO[Int] = categories.filter(_.id === id).delete
