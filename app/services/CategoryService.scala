@@ -14,9 +14,10 @@ import util.Default
 class CategoryService  @Inject() (protected val sql: SqlDatabase)
                                  (implicit ec: SqlExecutionContext) {
 
-  private def categoryToDto(c: Category): CategoryDTO = {
-    //TODO Implement tree stuff
-    CategoryDTO(c.id, c.name, c.account_type, c.priority, None, Seq.empty)
+  private def categoryToDto(c: Category): Future[CategoryDTO] = {
+    val query = sql.query(CategoryQuery.listChildren(c))
+    val kids = query.map(_.map(categoryToDto)).flatMap(k => Future.sequence(k))
+    kids.map(k => CategoryDTO(c.id, c.name, c.account_type, c.priority, None, k))
   }
 
   private def dtoToCategory(dto: CategoryDTO): Category =
@@ -31,14 +32,14 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
       .map(_.getOrElse(Default.value[Long]))
         .flatMap(parent => category.map(CategoryQuery.insertLeaf(parent, _)))
 
-    query.map(sql.query).transform.map(categoryToDto)
+    query.map(sql.query).transform.map(categoryToDto).flatten
   }
 
-  def list(): Future[Seq[CategoryDTO]] = sql.query(CategoryQuery.list).map(_.map(categoryToDto))
+  def list(): Future[Seq[CategoryDTO]] = sql.query(CategoryQuery.list).map(_.map(categoryToDto)).flatMap(dto => Future.sequence(dto))
 
   def getCategory(id: Long): ErrorF[Category] = EitherT(sql.query(CategoryQuery.findById(id)).map(_.fromOption("CATEGORY_NOT_FOUND")))
 
-  def get(id: Long): ErrorF[CategoryDTO] = getCategory(id).map(categoryToDto)
+  def get(id: Long): ErrorF[CategoryDTO] = getCategory(id).map(categoryToDto).flatten
 
   def edit(id: Long, dto: Option[CategoryDTO]): ErrorF[CategoryDTO] = {
     val validDto = dto.fromOption("CATEGORY_DATA_INVALID")
@@ -49,6 +50,7 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
       .map(CategoryQuery.update(_).map(_.fromOption("CATEGORY_NOT_FOUND")))
       .flatMapF(sql.query)
       .map(categoryToDto)
+      .flatten
   }
 
   def delete(id: Long): ErrorF[Int] = {

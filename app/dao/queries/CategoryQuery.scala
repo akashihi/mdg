@@ -20,14 +20,26 @@ object CategoryQuery {
           SELECT $leaf, $leaf, 1"""
   }
 
-  def insert(a: Category): DBIO[Category] = categories returning categories
-    .map(_.id) into ((item, id) => item.copy(id = id)) += a
+  def insert(c: Category): DBIO[Category] = categories returning categories
+    .map(_.id) into ((item, id) => item.copy(id = id)) += c
 
   def insertLeaf(parent: Long, a: Category)(implicit ec: ExecutionContext): DBIO[Category] = {
     insert(a).flatMap(aId => addLeaf(parent, aId.id.get).map(_ => aId).transactionally)
   }
 
-  def list: DBIO[Seq[Category]] = categories.result
+  /**
+    * Unconditional listing should only return top-level categories.
+    * @return List of top-level categories.
+    */
+  def list(implicit ec: ExecutionContext): DBIO[Seq[Category]] = {
+    val treeQuery = categoriesTree.filter(_.depth > 1).map(_.descendant).result
+    treeQuery.flatMap(tlc => categories.filterNot(_.id inSet  tlc).sortBy(_.priority.asc).result)
+  }
+
+  def listChildren(c: Category)(implicit ec: ExecutionContext): DBIO[Seq[Category]] = {
+    val query = categories join categoriesTree on (_.id === _.descendant) filter(q => q._2.ancestor === c.id.get) filter (q => q._2.depth === 2)
+    query.map(_._1).sortBy(_.priority.asc).result
+  }
 
   def findById(id: Long): DBIO[Option[Category]] = {
     categories.filter(_.id === id).result.headOption
