@@ -9,6 +9,7 @@ import scala.concurrent._
 import scalaz._
 import Scalaz._
 import dao.queries.CategoryQuery
+import util.Default
 
 class CategoryService  @Inject() (protected val sql: SqlDatabase)
                                  (implicit ec: SqlExecutionContext) {
@@ -24,7 +25,13 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
   def create(dto: Option[CategoryDTO]): ErrorF[CategoryDTO] = {
     val validDto = dto.fromOption("CATEGORY_DATA_INVALID")
 
-    validDto.map(dtoToCategory).map(CategoryQuery.insert).map(sql.query).transform.map(categoryToDto)
+    val category = validDto.map(dtoToCategory)
+
+    val query = validDto.map(_.parent_id)
+      .map(_.getOrElse(Default.value[Long]))
+        .flatMap(parent => category.map(CategoryQuery.insertLeaf(parent, _)))
+
+    query.map(sql.query).transform.map(categoryToDto)
   }
 
   def list(): Future[Seq[CategoryDTO]] = sql.query(CategoryQuery.list).map(_.map(categoryToDto))

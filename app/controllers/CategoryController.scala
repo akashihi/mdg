@@ -39,7 +39,7 @@ class CategoryController @Inject()(protected val cs: CategoryService, protected 
     * @return list of accounts on system, wrapped to json.
     */
   def index() = Action.async {
-    cs.list.map(x => makeResult(x)(OK))
+    cs.list().map(x => makeResult(x)(OK))
   }
 
   /**
