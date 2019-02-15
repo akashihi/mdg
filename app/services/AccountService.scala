@@ -41,6 +41,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
               account.account_type,
               pv._3,
               account.currency_id,
+              account.category_id,
               account.name,
               account.balance,
               primary_balance,
@@ -55,6 +56,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
   def dtoToAccount(dto: AccountDTO): Account = Account(id = dto.id,
     account_type = dto.account_type,
     currency_id = dto.currency_id,
+    category_id = dto.category_id,
     name = dto.name,
     balance = dto.balance,
     hidden = dto.hidden)
@@ -141,7 +143,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
       .flatMap(validationToXor)
 
     val newAcc = EitherT(Future.successful(validDto))
-      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden))})
+      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, category_id = ad.category_id))})
 
     val query = getAssetPropertyForAccountDto(validDto)
       .map(_.copy(id = Some(id)))

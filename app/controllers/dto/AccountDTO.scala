@@ -9,6 +9,7 @@ case class AccountDTO(id: Option[Long],
                       account_type: AccountType,
                       asset_type: Option[AssetType],
                       currency_id: Long,
+                      category_id: Option[Long],
                       name: String,
                       balance: BigDecimal,
                       primary_balance: BigDecimal,
@@ -23,6 +24,7 @@ object AccountDTO {
       (JsPath \ "data" \ "attributes" \ "account_type").read[String].map(AccountType.apply) and
       (JsPath \ "data" \ "attributes" \ "asset_type").readNullable[String].map(_.map(AssetType.apply)) and
       (JsPath \ "data" \ "attributes" \ "currency_id").read[Long] and
+      (JsPath \ "data" \ "attributes" \ "category_id").readNullable[Long] and
       (JsPath \ "data" \ "attributes" \ "name").read[String] and
       (JsPath \ "data" \ "attributes" \ "balance").readWithDefault[BigDecimal](0) and
       (JsPath \ "data" \ "attributes" \ "balance").readWithDefault[BigDecimal](0) and // Just to fill primary_balance
@@ -36,6 +38,7 @@ object AccountDTO {
       val j = Json.obj(
         "name" -> o.name,
         "currency_id" -> o.currency_id,
+        "category_id" -> o.category_id,
         "balance" -> o.balance,
         "primary_balance" -> o.primary_balance,
         "hidden" -> o.hidden,
