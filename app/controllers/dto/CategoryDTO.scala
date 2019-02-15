@@ -26,6 +26,7 @@ object CategoryDTO {
   implicit val categoryDtoWrites: Writes[CategoryDTO] = new Writes[CategoryDTO] {
     override def writes(o: CategoryDTO): JsValue = {
       val j = Json.obj(
+        "id" -> o.id,
         "name" -> o.name,
         "account_type" -> o.account_type.value,
         "priority" -> o.priority
