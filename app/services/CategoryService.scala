@@ -71,7 +71,10 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
       case None => newCategory
     }
 
-    val query = wrappedDto.map(dto => dto.parent_id)
+    val parentValue = wrappedDto.map(dto => dto.parent_id)
+      .map(_.map(p => if (p == id) { Default.value[Long] } else { p }))
+
+    val query = parentValue
       .flatMap(_.map(parent => parentedCategory.map(CategoryQuery.reparent(_, parent)))
         .getOrElse(parentedCategory.map(CategoryQuery.update(_))))
         .map(_.map(_.fromOption("CATEGORY_NOT_FOUND")))

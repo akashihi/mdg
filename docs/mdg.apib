@@ -461,7 +461,7 @@ A Catrgory object has the following attributes
 ### Modify category data [PUT]
 
 Only `parent_id`, `name` and `order` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, it will be reparented to a next parent or will have no parent, if next parent is not available, to
-remove cycles in a tree. Set parent_id to null or do not send that field at all, to make that category a top level category. Parenting category to the parent with different account_type is not possible.
+remove cycles in a tree. Set parent_id to the category id (self) to make that category a top level category. Parenting category to the parent with different account_type is not possible.
 
 + Request (application/vnd.mdg+json)
   {
