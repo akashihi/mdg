@@ -35,3 +35,7 @@ INSERT INTO ERROR VALUES('CATEGORY_INVALID_TYPE', '412', 'Category can''t be a l
 
 --rollback DELETE FROM ERROR WHERE CODE='CATEGORY_INVALID_TYPE'
 
+--changeset akashihi:5
+INSERT INTO ERROR VALUES('CATEGORY_TREE_CYCLED', '412', 'Repareting will cause cyclic dependency', 'Category is going to be reparented to one of it''s descendats, that will result in cycle in a tree');
+
+--rollback DELETE FROM ERROR WHERE CODE='CATEGORY_TREE_CYCLED'

@@ -27,13 +27,28 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
     val parentQuery = CategoryQuery.findById(parent)
     val parentType = OptionT[Future, Category](sql.query(parentQuery)).map(_.account_type).getOrElse(c.account_type)
     val validator = parentType.map { p =>
-      if (p.value eq c.account_type.value) {
+      if (p.value == c.account_type.value) {
         c.right
       } else {
         "CATEGORY_INVALID_TYPE".left
       }
     }
     EitherT(validator)
+  }
+
+  private def validateParentCycle(c: Category, parent: Long): ErrorF[Category] = {
+    if (c.id.get == parent) {
+      // Okay, we are parented to the top, skip check
+      val valid: \/[String, Category] = c.right
+      EitherT(Future.successful(valid))
+    } else {
+      val query = CategoryQuery.checkCyclicParent(c.id.get, parent)
+      val check = sql.query(query).map {
+        case Some(_) => "CATEGORY_TREE_CYCLED".left
+        case None => c.right
+      }
+      EitherT(check)
+    }
   }
 
   def create(dto: Option[CategoryDTO]): ErrorF[CategoryDTO] = {
@@ -75,7 +90,7 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
       .map(_.map(p => if (p == id) { Default.value[Long] } else { p }))
 
     val query = parentValue
-      .flatMap(_.map(parent => parentedCategory.map(CategoryQuery.reparent(_, parent)))
+      .flatMap(_.map(parent => parentedCategory.flatMap(validateParentCycle(_, parent)).map(CategoryQuery.reparent(_, parent)))
         .getOrElse(parentedCategory.map(CategoryQuery.update(_))))
         .map(_.map(_.fromOption("CATEGORY_NOT_FOUND")))
 

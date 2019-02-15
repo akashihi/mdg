@@ -1,7 +1,7 @@
 package dao.queries
 
 import dao.tables.{Categories, CategoriesTree}
-import models.Category
+import models.{Category, ClosureTable}
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext
@@ -78,6 +78,9 @@ object CategoryQuery {
 
     reparent.flatMap(_ => update(c)).transactionally
   }
+
+  def checkCyclicParent(id: Long, parent: Long): DBIO[Option[ClosureTable]] =
+    categoriesTree.filter(_.descendant === parent).filter(_.ancestor === id).result.headOption
 
   def delete(id: Long)(implicit ec: ExecutionContext): DBIO[Int] = categories.filter(_.id === id).delete
 }
