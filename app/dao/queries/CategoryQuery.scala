@@ -82,5 +82,10 @@ object CategoryQuery {
   def checkCyclicParent(id: Long, parent: Long): DBIO[Option[ClosureTable]] =
     categoriesTree.filter(_.descendant === parent).filter(_.ancestor === id).result.headOption
 
-  def delete(id: Long)(implicit ec: ExecutionContext): DBIO[Int] = categories.filter(_.id === id).delete
+  def delete(id: Long)(implicit ec: ExecutionContext): DBIO[Int] = {
+    val a = for { acc <- AccountQuery.accounts if acc.category_id === id } yield acc.category_id
+    val aUpdate = a.update(None)
+    val cDelete = categories.filter(_.id === id).delete
+    (aUpdate zip cDelete).transactionally.map(_._2)
+  }
 }
