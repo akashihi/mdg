@@ -7,7 +7,7 @@ import util.EitherOps._
 import validators.Validator._
 import controllers.dto.AccountDTO
 import dao.{SqlDatabase, SqlExecutionContext}
-import dao.queries.AccountQuery
+import dao.queries.{AccountQuery, CategoryQuery}
 import javax.inject.Inject
 import scalaz._
 import Scalaz._
@@ -26,6 +26,17 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
       case _ => None
     }).toOption.flatten
     assetAccountProperty
+  }
+
+  private def validateCategoryType(account: AccountDTO): ErrorF[AccountDTO] = {
+    if (account.category_id.isEmpty) {
+      var result: \/[String, AccountDTO] = account.right
+      EitherT(Future.successful(result))
+    } else {
+      var categoryQuery = CategoryQuery.findById(account.category_id.get).map(_.fromOption("CATEGORY_NOT_FOUND"))
+      EitherT(sql.query(categoryQuery))
+        .map(c => if (c.account_type == account.account_type) { account.right } else { "CATEGORY_INVALID_TYPE".left }).flatMapF(Future.successful)
+    }
   }
 
   def accountToDto(account: Account): ErrorF[AccountDTO] = {
@@ -80,12 +91,14 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
       .map(validate)
       .flatMap(validationToXor)
 
+    val checkedCategory = EitherT(Future.successful(validDto)).flatMap(validateCategoryType)
+
     val query = getAssetPropertyForAccountDto(validDto).map(p => AccountQuery.insertWithProperties(p) _).getOrElse(AccountQuery.insert _)
 
-    validDto.map(dtoToAccount)
+    checkedCategory.map(dtoToAccount)
       .map(query)
       .map(sql.query)
-      .transform
+      .flatten
       .flatMap(accountToDto)
   }
 
@@ -142,8 +155,9 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
       .map(validate)
       .flatMap(validationToXor)
 
-    val newAcc = EitherT(Future.successful(validDto))
-      .flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, category_id = ad.category_id))})
+    val checkedCategory = EitherT(Future.successful(validDto)).flatMap(validateCategoryType)
+
+    val newAcc = checkedCategory.flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, category_id = ad.category_id))})
 
     val query = getAssetPropertyForAccountDto(validDto)
       .map(_.copy(id = Some(id)))
