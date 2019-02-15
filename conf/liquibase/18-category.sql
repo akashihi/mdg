@@ -30,3 +30,8 @@ INSERT INTO ERROR VALUES('CATEGORY_NOT_FOUND', '404', 'Requested category could 
 
 --rollback DELETE FROM ERROR WHERE CODE='CATEGORY_NOT_FOUND'
 
+--changeset akashihi:4
+INSERT INTO ERROR VALUES('CATEGORY_INVALID_TYPE', '412', 'Category can''t be a leaf of a different type', 'Categories can only form trees of a same account types. Categories with different account types can not be attached to the same tree');
+
+--rollback DELETE FROM ERROR WHERE CODE='CATEGORY_INVALID_TYPE'
+
