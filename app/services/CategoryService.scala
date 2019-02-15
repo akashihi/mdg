@@ -14,10 +14,10 @@ import util.Default
 class CategoryService  @Inject() (protected val sql: SqlDatabase)
                                  (implicit ec: SqlExecutionContext) {
 
-  private def categoryToDto(c: Category): Future[CategoryDTO] = {
+  private def categoryToDto(c: Category, parent: Option[Long] = None): Future[CategoryDTO] = {
     val query = sql.query(CategoryQuery.listChildren(c))
-    val kids = query.map(_.map(categoryToDto)).flatMap(k => Future.sequence(k))
-    kids.map(k => CategoryDTO(c.id, c.name, c.account_type, c.priority, None, k))
+    val kids = query.map(_.map(k => categoryToDto(k, c.id))).flatMap(k => Future.sequence(k))
+    kids.map(k => CategoryDTO(c.id, c.name, c.account_type, c.priority, parent, k))
   }
 
   private def dtoToCategory(dto: CategoryDTO): Category =
@@ -66,14 +66,14 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
       .map(_.getOrElse(Default.value[Long]))
         .flatMap(parent => parentedCategory.map(CategoryQuery.insertLeaf(parent, _)))
 
-    query.map(sql.query).flatten.map(categoryToDto).flatten
+    query.map(sql.query).flatten.map(categoryToDto(_)).flatten
   }
 
-  def list(): Future[Seq[CategoryDTO]] = sql.query(CategoryQuery.list).map(_.map(categoryToDto)).flatMap(dto => Future.sequence(dto))
+  def list(): Future[Seq[CategoryDTO]] = sql.query(CategoryQuery.list).map(_.map(categoryToDto(_))).flatMap(dto => Future.sequence(dto))
 
   def getCategory(id: Long): ErrorF[Category] = EitherT(sql.query(CategoryQuery.findById(id)).map(_.fromOption("CATEGORY_NOT_FOUND")))
 
-  def get(id: Long): ErrorF[CategoryDTO] = getCategory(id).map(categoryToDto).flatten
+  def get(id: Long): ErrorF[CategoryDTO] = getCategory(id).map(categoryToDto(_)).flatten
 
   def edit(id: Long, dto: Option[CategoryDTO]): ErrorF[CategoryDTO] = {
     val validDto = dto.fromOption("CATEGORY_DATA_INVALID")
@@ -96,7 +96,7 @@ class CategoryService  @Inject() (protected val sql: SqlDatabase)
 
     query
       .flatMapF(sql.query)
-      .map(categoryToDto)
+      .map(categoryToDto(_))
       .flatten
   }
 
