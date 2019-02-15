@@ -25,6 +25,7 @@ case object ExpenseAccount extends AccountType {
 case class Account(id: Option[Long],
                    account_type: AccountType,
                    currency_id: Long,
+                   category_id: Option[Long],
                    name: String,
                    balance: BigDecimal,
                    hidden: Boolean)
