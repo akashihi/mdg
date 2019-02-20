@@ -7,7 +7,9 @@ import * as CategoryActions from '../actions/CategoryActions'
 
 const mapStateToProps = (state) => {
     return {
-        categoryList: state.category.categoryList
+        categoryList: state.category.categoryList,
+        loading: state.category.ui.categoryListLoading,
+        error: state.category.ui.categoryListError,
     }
 };
 

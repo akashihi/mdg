@@ -60,6 +60,7 @@ export default function categoryReducer(state = initialState, action) {
             ui = {...ui, categoryListLoading: true, categoryListError: false};
             return {...state, ui: ui};
         case GET_CATEGORYLIST_SUCCESS:
+            ui = {...ui, categoryListLoading: false, categoryListError: false};
             return { ...state, categoryList: action.payload, ui: ui };
         case GET_CATEGORYLIST_FAILURE:
             ui = {...ui, categoryListLoading: false, categoryListError: true};

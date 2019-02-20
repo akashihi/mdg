@@ -1,5 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import MuiTreeView from 'material-ui-treeview';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class CategoryViewerWidget extends Component {
 
@@ -22,7 +23,15 @@ export default class CategoryViewerWidget extends Component {
 
   render() {
     var props = this.props
-    
+
+    if (props.error) {
+      return (<h1>Error loading category list</h1>)
+    }
+
+    if (props.loading) {
+      return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
+    }
+
     var tree = props.categoryList.map(::this.categoryToTree)
 
     return (
