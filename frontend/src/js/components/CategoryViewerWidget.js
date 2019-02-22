@@ -43,7 +43,7 @@ export default class CategoryViewerWidget extends Component {
     return (
       <Fragment>
         Categories:
-        <MuiTreeView tree = {tree}/>
+        <MuiTreeView tree={tree} onLeafClick={node => props.actions.editCategory(node.id)}/>
         <Button color='primary' onClick={::this.onAddClick}>Add new category</Button>
         <CategoryEditor/>
       </Fragment>

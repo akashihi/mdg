@@ -54,15 +54,15 @@ export default class CategoryDialog extends React.Component {
       entries.push(entry)
 
       var mapEntry = function(category, prefix) {
-        // We do not want edited category and it's children in a parents list
-        if (category.id == currentId) {
-          return
-        }
-
         if ('attributes' in category) {
           var attr = category.attributes
         } else {
           attr = category
+        }
+
+        // We do not want edited category and it's children in a parents list
+        if (attr.id == currentId) {
+          return
         }
 
           var prepend = '-'.repeat(prefix)

@@ -79,6 +79,52 @@ export function createCategory() {
   }
 }
 
+function findCategoryInListById(categoryId, categoryList) {
+  var getEntry = function(category) {
+    if ('attributes' in category) {
+      var attr = category.attributes
+    } else {
+      attr = category
+    }
+    // We do not want edited category and it's children in a parents list
+    if (attr.id == categoryId) {
+      return {id: categoryId, attributes: attr}
+    }
+    if (attr.children) {
+      for (var item of attr.children) {
+        var result = getEntry(item)
+        if (result != null) {
+          return result
+        }
+      }
+    }
+    return null
+  }
+  for (var item of categoryList) {
+    var result = getEntry(item)
+    if (result != null) {
+      return result
+    }
+  }
+  return { attributes: {account_type: 'income', priority: 1, name: ''} }
+}
+
+export function editCategory(categoryId) {
+  return (dispatch, getState) => {
+    var state = getState()
+    var categoryList = state.category.categoryList
+    var category = findCategoryInListById(categoryId, categoryList)
+    dispatch({
+        type: CATEGORY_DIALOG_OPEN,
+        payload: {
+            full: false,
+            category: category
+          }
+    })
+  }
+}
+
+
 export function editCategoryCancel() {
     return {
         type: CATEGORY_DIALOG_CLOSE,
