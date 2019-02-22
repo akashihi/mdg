@@ -22,8 +22,8 @@ const initialState = {
     }
 };
 
-/*function validateAccountForm(account) {
-    var attributes = account.attributes;
+function validateCategoryForm(category) {
+    var attributes = category.attributes;
     var errors = {};
     if (!attributes.name) {
         errors.name = 'Name is empty'
@@ -33,27 +33,20 @@ const initialState = {
         errors.account_type = 'Type is not selected'
     }
 
-    if (!attributes.currency_id) {
-        errors.currency_id = 'Currency is not selected'
-    }
-
-    if ((attributes.favorite || attributes.operational) && attributes.account_type != 'asset') {
-        errors.account_type = 'Only asset accounts can be favorite or operational'
+    if (isNaN(attributes.priority)) {
+        errors.order = 'Order is invalid';
     }
 
     return {valid: Object.keys(errors).length == 0, errors: errors}
-}*/
-
-function validateCategoryForm() {
-  return {valid: true, errors: []}
 }
+
 
 export default function categoryReducer(state = initialState, action) {
     var ui = state.ui;
     var dialog = state.dialog;
     switch (action.type) {
         case CATEGORY_DIALOG_OPEN:
-            var validInitial = validateCategoryForm(action.payload.account);
+            var validInitial = validateCategoryForm(action.payload.category);
             dialog = {...dialog, open: true, full: action.payload.full, category: action.payload.category, valid: validInitial.valid, errors: validInitial.errors};
             return {...state, dialog: dialog};
         case CATEGORY_DIALOG_CLOSE:
@@ -61,7 +54,7 @@ export default function categoryReducer(state = initialState, action) {
             return {...state, dialog: dialog};
         case CATEGORY_DIALOG_CHANGE:
             var valid = validateCategoryForm(action.payload);
-            dialog = {...dialog, account: action.payload, valid: valid.valid, errors: valid.errors};
+            dialog = {...dialog, category: action.payload, valid: valid.valid, errors: valid.errors};
             return {...state, dialog: dialog};
         case GET_CATEGORYLIST_REQUEST:
             ui = {...ui, categoryListLoading: true, categoryListError: false};

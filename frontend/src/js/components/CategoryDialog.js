@@ -35,7 +35,14 @@ export default class CategoryDialog extends React.Component {
 
     onOrderChange(event) {
         var attr = {...this.props.category.attributes};
-        attr.order = event.target.value;
+        attr.priority = event.target.value;
+        var category = {...this.props.category, attributes: attr};
+        this.props.actions.editCategoryChange(category);
+    }
+
+    onParentChange(event) {
+        var attr = {...this.props.category.attributes};
+        attr.parent_id = event.target.value;
         var category = {...this.props.category, attributes: attr};
         this.props.actions.editCategoryChange(category);
     }
@@ -109,13 +116,13 @@ export default class CategoryDialog extends React.Component {
           </FormControl>
           <FormControl fullWidth={true}>
               <InputLabel htmlFor={'parent'}>Parent</InputLabel>
-              <Select value={props.category.attributes.account_type}
-                      onChange={::this.onTypeChange}
+              <Select value={props.category.attributes.parent_id}
+                      onChange={::this.onParentChange}
                       inputProps={{id: 'parent'}}>
                       {parents}
               </Select>
           </FormControl>
-          <TextField label={orderLabel} error={orderText} value={props.category.attributes.order} onChange={::this.onOrderChange}/>
+          <TextField label={orderLabel} error={orderText} value={props.category.attributes.priority} onChange={::this.onOrderChange}/>
         </DialogContent>
         <DialogActions>
           <Button color='primary' disabled={!props.valid} onClick={::this.onSaveClick}>Save</Button>

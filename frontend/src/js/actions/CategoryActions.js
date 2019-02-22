@@ -6,6 +6,7 @@ import {
     GET_CATEGORYLIST_SUCCESS,
     GET_CATEGORYLIST_FAILURE,
     CATEGORY_DIALOG_OPEN,
+    CATEGORY_DIALOG_CHANGE,
     CATEGORY_DIALOG_CLOSE
 } from '../constants/Category'
 
@@ -37,13 +38,42 @@ export function loadCategoryList() {
     }
 }
 
+export function updateCategory(category) {
+    return (dispatch) => {
+        dispatch({
+            type: GET_CATEGORYLIST_REQUEST,
+            payload: true
+        });
+
+        var url = '/api/category';
+        var method = 'POST';
+        if (category.hasOwnProperty('id') && category['id'] ) {
+            url = url + '/' + category.id;
+            method = 'PUT';
+        }
+
+        category.attributes.priority = parseInt(category.attributes.priority)
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json'
+            },
+            body: JSON.stringify({data: category})
+        })
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(()=>dispatch(loadCategoryList()))
+            .catch(()=>dispatch(loadCategoryList()))
+    }
+}
+
 export function createCategory() {
   return(dispatch) => {
     dispatch({
       type: CATEGORY_DIALOG_OPEN,
       payload: {
         full: true,
-        category: { attributes: {account_type: 'income', order: 1, name: ''} }
+        category: { attributes: {account_type: 'income', priority: 1, name: ''} }
       }
     })
   }
@@ -53,5 +83,25 @@ export function editCategoryCancel() {
     return {
         type: CATEGORY_DIALOG_CLOSE,
         payload: true
+    }
+}
+
+export function editCategoryChange(category) {
+    return {
+        type: CATEGORY_DIALOG_CHANGE,
+        payload: category
+    }
+}
+
+export function editCategorySave() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: CATEGORY_DIALOG_CLOSE,
+            payload: true
+        });
+
+        var state = getState();
+        var category = state.category.dialog.category;
+        dispatch(updateCategory(category));
     }
 }
