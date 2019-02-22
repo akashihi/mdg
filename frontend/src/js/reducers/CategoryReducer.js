@@ -1,7 +1,10 @@
 import {
     GET_CATEGORYLIST_REQUEST,
     GET_CATEGORYLIST_SUCCESS,
-    GET_CATEGORYLIST_FAILURE
+    GET_CATEGORYLIST_FAILURE,
+    CATEGORY_DIALOG_OPEN,
+    CATEGORY_DIALOG_CLOSE,
+    CATEGORY_DIALOG_CHANGE
 } from '../constants/Category'
 
 const initialState = {
@@ -41,21 +44,25 @@ const initialState = {
     return {valid: Object.keys(errors).length == 0, errors: errors}
 }*/
 
+function validateCategoryForm() {
+  return {valid: true, errors: []}
+}
+
 export default function categoryReducer(state = initialState, action) {
     var ui = state.ui;
-    //var dialog = state.dialog;
+    var dialog = state.dialog;
     switch (action.type) {
-        /*case ACCOUNT_DIALOG_OPEN:
-            var validInitial = validateAccountForm(action.payload.account);
-            dialog = {...dialog, open: true, full: action.payload.full, account: action.payload.account, valid: validInitial.valid, errors: validInitial.errors};
+        case CATEGORY_DIALOG_OPEN:
+            var validInitial = validateCategoryForm(action.payload.account);
+            dialog = {...dialog, open: true, full: action.payload.full, category: action.payload.category, valid: validInitial.valid, errors: validInitial.errors};
             return {...state, dialog: dialog};
-        case ACCOUNT_DIALOG_CLOSE:
+        case CATEGORY_DIALOG_CLOSE:
             dialog = {...dialog, open: false};
             return {...state, dialog: dialog};
-        case ACCOUNT_DIALOG_CHANGE:
-            var valid = validateAccountForm(action.payload);
+        case CATEGORY_DIALOG_CHANGE:
+            var valid = validateCategoryForm(action.payload);
             dialog = {...dialog, account: action.payload, valid: valid.valid, errors: valid.errors};
-            return {...state, dialog: dialog};*/
+            return {...state, dialog: dialog};
         case GET_CATEGORYLIST_REQUEST:
             ui = {...ui, categoryListLoading: true, categoryListError: false};
             return {...state, ui: ui};

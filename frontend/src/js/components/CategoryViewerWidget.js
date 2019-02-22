@@ -1,8 +1,14 @@
 import React, {Component, Fragment} from 'react';
 import MuiTreeView from 'material-ui-treeview';
 import ClipLoader from 'react-spinners/ClipLoader';
+import Button from '@material-ui/core/Button';
+import CategoryEditor from '../containers/CategoryEditor.js';
 
 export default class CategoryViewerWidget extends Component {
+
+  onAddClick() {
+    this.props.actions.createCategory()
+  }
 
   categoryToTree(category) {
     if ('attributes' in category) {
@@ -38,6 +44,8 @@ export default class CategoryViewerWidget extends Component {
       <Fragment>
         Categories:
         <MuiTreeView tree = {tree}/>
+        <Button color='primary' onClick={::this.onAddClick}>Add new category</Button>
+        <CategoryEditor/>
       </Fragment>
     )
   }

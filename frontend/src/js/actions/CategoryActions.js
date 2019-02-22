@@ -4,7 +4,9 @@ import {loadAccountList} from './AccountViewerActions';
 import {
     GET_CATEGORYLIST_REQUEST,
     GET_CATEGORYLIST_SUCCESS,
-    GET_CATEGORYLIST_FAILURE
+    GET_CATEGORYLIST_FAILURE,
+    CATEGORY_DIALOG_OPEN,
+    CATEGORY_DIALOG_CLOSE
 } from '../constants/Category'
 
 export function loadCategoryList() {
@@ -32,5 +34,24 @@ export function loadCategoryList() {
                     payload: response.json
                 })
             });
+    }
+}
+
+export function createCategory() {
+  return(dispatch) => {
+    dispatch({
+      type: CATEGORY_DIALOG_OPEN,
+      payload: {
+        full: true,
+        category: { attributes: {account_type: 'income', order: 1, name: ''} }
+      }
+    })
+  }
+}
+
+export function editCategoryCancel() {
+    return {
+        type: CATEGORY_DIALOG_CLOSE,
+        payload: true
     }
 }
