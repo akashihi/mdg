@@ -29,6 +29,13 @@ export default class AccountDialog extends React.Component {
         this.props.actions.editAccountChange(account);
     }
 
+    onCategoryChange(event) {
+        var attr = {...this.props.account.attributes};
+        attr.category_id = event.target.value;
+        var account = {...this.props.account, attributes: attr};
+        this.props.actions.editAccountChange(account);
+    }
+
     onAssetChange(event) {
         var attr = {...this.props.account.attributes};
         attr.asset_type = event.target.value;
@@ -71,6 +78,32 @@ export default class AccountDialog extends React.Component {
         this.props.actions.editAccountChange(account);
     }
 
+    mapCategoryListToMenu(categoryList) {
+      var entries = []
+
+      var mapEntry = function(category, prefix) {
+        if ('attributes' in category) {
+          var attr = category.attributes
+        } else {
+          attr = category
+        }
+
+          var prepend = '-'.repeat(prefix)
+          var entry = <MenuItem key={attr.id} value={attr.id}>{prepend}{attr.name}</MenuItem>
+          entries.push(entry)
+          if (attr.children) {
+            for (var item of attr.children) {
+              mapEntry(item, prefix+1)
+            }
+          }
+      }
+
+      for (var item of categoryList) {
+        mapEntry(item, 0)
+      }
+      return entries
+    }
+
     render() {
         var props = this.props;
 
@@ -93,6 +126,8 @@ export default class AccountDialog extends React.Component {
           currencyLabel = props.errors.currency_id
           currencyError = true
         }
+
+        var parents = this.mapCategoryListToMenu(props.categoryList.filter((item) => item.attributes.account_type == props.account.attributes.account_type))
 
         return (<Dialog title='Account editing' open={props.open}>
         <DialogContent>
@@ -132,6 +167,15 @@ export default class AccountDialog extends React.Component {
                         inputProps={{id: 'currency'}}>
                         {currencies}
                 </Select>
+          </FormControl>
+          <FormControl fullWidth={true}>
+              <InputLabel htmlFor={'parent'}>Category</InputLabel>
+              <Select value={props.account.attributes.category_id}
+                      onChange={::this.onCategoryChange}
+                      disabled={props.account.attributes.account_type == 'asset'}
+                      inputProps={{id: 'parent'}}>
+                      {parents}
+              </Select>
           </FormControl>
           <FormGroup row>
             <FormControlLabel label='Favorite'
