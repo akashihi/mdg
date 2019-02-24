@@ -9,6 +9,7 @@ import * as AccountActions from '../actions/AccountViewerActions'
 const mapStateToProps = (state) => {
     return {
         currencies: state.currency.currencyList,
+        categoryList: state.category.categoryList,
         waiting: state.account.ui.accountListLoading,
         error: state.account.ui.accountListError,
         totals: state.account.totals,

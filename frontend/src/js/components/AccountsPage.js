@@ -9,8 +9,8 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
 import AccountEditor from '../containers/AccountEditor'
-import AccountList from './AccountList'
 import AssetAccountList from './AssetAccountList'
+import CategorizedAccountList from './CategorizedAccountList.js'
 
 export default class AccountsPage extends Component {
   constructor(props) {
@@ -56,8 +56,8 @@ export default class AccountsPage extends Component {
                   <Tab label='Expense accounts' value='expense'/>
               </Tabs>
               {this.state.tabValue == 'asset' && <AssetAccountList actions={props.actions} currencies={props.currencies} accounts={props.assetAccounts} hiddenVisible={props.hiddenVisible}/>}
-              {this.state.tabValue == 'income' && <AccountList actions={props.actions} currencies={props.currencies} accounts={props.incomeAccounts} hiddenVisible={props.hiddenVisible}/>}
-              {this.state.tabValue == 'expense' && <AccountList actions={props.actions} currencies={props.currencies} accounts={props.expenseAccounts} hiddenVisible={props.hiddenVisible}/>}
+              {this.state.tabValue == 'income' && <CategorizedAccountList categoryList={props.categoryList} actions={props.actions} currencies={props.currencies} accounts={props.incomeAccounts} hiddenVisible={props.hiddenVisible}/>}
+              {this.state.tabValue == 'expense' && <CategorizedAccountList categoryList={props.categoryList} actions={props.actions} currencies={props.currencies} accounts={props.expenseAccounts} hiddenVisible={props.hiddenVisible}/>}
             </Fragment>
         }
 
