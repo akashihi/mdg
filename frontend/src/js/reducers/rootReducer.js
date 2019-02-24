@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux'
 import { routerReducer as router } from 'react-router-redux'
 import BudgetSelectorReducer from './BudgetSelectorReducer'
+import CategoryReducer from './CategoryReducer'
 import CurrencyReducer from './CurrencyReducer'
 import AccountViewReducer from './AccountViewReducer'
 import TransactionReducer from './TransactionReducer'
@@ -15,6 +16,7 @@ import ReportReducer from './ReportReducer'
 export default combineReducers({
     router,
     budget: BudgetSelectorReducer,
+    category: CategoryReducer,
     currency: CurrencyReducer,
     account: AccountViewReducer,
     transaction: TransactionReducer,
