@@ -151,3 +151,36 @@ export function editCategorySave() {
         dispatch(updateCategory(category));
     }
 }
+
+export function editCategoryDelete() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: CATEGORY_DIALOG_CLOSE,
+            payload: true
+        });
+
+        var state = getState();
+        var category = state.category.dialog.category;
+
+          dispatch({
+              type: GET_CATEGORYLIST_REQUEST,
+              payload: true
+          });
+
+          var url = '/api/category';
+          var method = 'DELETE';
+          url = url + '/' + category.id;
+
+          fetch(url, {
+              method: method,
+              headers: {
+                  'Content-Type': 'application/vnd.mdg+json'
+              },
+              body: JSON.stringify({data: category})
+          })
+              .then(parseJSON)
+              .then(checkApiError)
+              .then(()=>dispatch(loadCategoryList()))
+              .catch(()=>dispatch(loadCategoryList()))
+    }
+}

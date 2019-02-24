@@ -19,6 +19,10 @@ export default class CategoryDialog extends React.Component {
         this.props.actions.editCategoryCancel();
     }
 
+    onDeleteClick() {
+        this.props.actions.editCategoryDelete();
+    }
+
     onTypeChange(event) {
         var attr = {...this.props.category.attributes};
         attr.account_type = event.target.value;
@@ -108,8 +112,9 @@ export default class CategoryDialog extends React.Component {
               <InputLabel htmlFor={'account-type'}>This category is for account of type</InputLabel>
               <Select value={props.category.attributes.account_type}
                       onChange={::this.onTypeChange}
+                      disabled={!props.full}
                       inputProps={{id: 'account-type'}}>
-                      <MenuItem key='asset' value='asset'>Asset account</MenuItem>
+                      {/*<MenuItem key='asset' value='asset'>Asset account</MenuItem>*/}
                       <MenuItem key='income' value='income'>Income account</MenuItem>
                       <MenuItem key='expense' value='expense'>Expense account</MenuItem>
               </Select>
@@ -125,6 +130,7 @@ export default class CategoryDialog extends React.Component {
           <TextField label={orderLabel} error={orderText} value={props.category.attributes.priority} onChange={::this.onOrderChange}/>
         </DialogContent>
         <DialogActions>
+          <Button color='primary' disabled={props.full} variant='contained' onClick={::this.onDeleteClick}>Delete</Button>
           <Button color='primary' disabled={!props.valid} onClick={::this.onSaveClick}>Save</Button>
           <Button color='secondary' onClick={::this.onCancelClick}>Cancel</Button>
         </DialogActions>
