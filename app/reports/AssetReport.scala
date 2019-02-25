@@ -1,6 +1,6 @@
 package reports
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import PeriodUtils._
 
 import controllers.dto.reporting._
 import dao.queries.AssetQuery
@@ -11,26 +11,6 @@ import scala.concurrent.Future
 
 class AssetReport @Inject() (protected val sql: SqlDatabase)
                                   (implicit ec: SqlExecutionContext){
-  /**
-    * Takes period of two dates and granularity
-    * and generated list of days between those two days
-    * with specified granularity.
-    * @param start First date of the period (inclusive)
-    * @param end Last date of the period (inclusive)
-    * @param granularity quantity of days between two dates
-    * @return A sorted array of dates between start and end, filled
-    *         with days, that have granularity days between them.
-    */
-  private def expandPeriod(start: LocalDate,
-                           end: LocalDate,
-                           granularity: Int) = {
-    val numberOfDays = ChronoUnit.DAYS.between(start, end) / granularity
-    val daysGenerated = for (f <- 0L to numberOfDays)
-      yield start.plusDays(f * granularity)
-    val days = daysGenerated.:+(end)
-    days
-  }
-
   def simpleAssetReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[SimpleAssetReportEntry]] = {
     val series = expandPeriod(start, end,granularity).map(d => sql.query(AssetQuery.getTotalAssetsForDate(d)).map((d,_)))
     val report = Future.sequence(series)
