@@ -18,7 +18,10 @@ import {
   GET_CURRENCYASSETREPORT_FAILURE,
   GET_TYPEASSETREPORT_REQUEST,
   GET_TYPEASSETREPORT_SUCCESS,
-  GET_TYPEASSETREPORT_FAILURE
+  GET_TYPEASSETREPORT_FAILURE,
+  GET_INCOMEEVENTACCOUNTREPORT_REQUEST,
+  GET_INCOMEEVENTACCOUNTREPORT_SUCCESS,
+  GET_INCOMEEVENTACCOUNTREPORT_FAILURE
 } from '../constants/Report'
 
 export function loadTotalsReport() {
@@ -204,6 +207,73 @@ export function loadSimpleAssetReport() {
   }
 }
 
+export function loadIncomeEventAccountReport() {
+  return (dispatch, getState) => {
+      dispatch({
+          type: GET_INCOMEEVENTACCOUNTREPORT_REQUEST,
+          payload: true
+      });
+
+      var state = getState()
+
+      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
+      var url = '/api/report/income/events' + '?' + jQuery.param(params)
+
+      fetch(url)
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(function (json) {
+            var report = json.data.attributes.value
+            var dates = report.map((item) => moment(item.date, 'YYYY-MM-DD'))
+            var series = {}
+            report.forEach((dtEntry) => {
+              dtEntry.entries.forEach((item) => {
+                var accountObject = state.account.incomeAccountList.find((account) => account.id == item.account_id)
+                if (accountObject) {
+                  var account = accountObject.attributes.name
+                } else {
+                  account = item.account_id
+                }
+                if (!(account in series)) {
+                  series[account] = []
+                }
+              })
+            })
+            report.forEach((dtEntry) => {
+              var visited = []
+              dtEntry.entries.forEach((item) => {
+                var accountObject = state.account.incomeAccountList.find((account) => account.id == item.account_id)
+                if (accountObject) {
+                  var account = accountObject.attributes.name
+                } else {
+                  account = item.account_id
+                }
+                series[account].push(item.value)
+                visited.push(account)
+              })
+              // Stuff skipped values
+              for (var type in series) {
+                if (!visited.find((item) => item==type)) {
+                  series[type].push(0)
+                }
+              }
+            })
+            dispatch({
+                  type: GET_INCOMEEVENTACCOUNTREPORT_SUCCESS,
+                  payload: {
+                    dates: dates,
+                    series: series
+                  }
+              });
+          })
+          .catch(function (response) {
+              dispatch({
+                  type: GET_INCOMEEVENTACCOUNTREPORT_FAILURE,
+                  payload: response.json
+              })
+          });
+  }
+}
 
 export function setReportGranularity(granularity) {
   return (dispatch) => {
@@ -213,7 +283,8 @@ export function setReportGranularity(granularity) {
     });
     dispatch(loadTypeAssetReport());
     dispatch(loadCurrencyAssetReport());
-    dispatch(loadSimpleAssetReport())
+    dispatch(loadSimpleAssetReport());
+    dispatch(loadIncomeEventAccountReport())
   }
 }
 
@@ -225,7 +296,8 @@ export function setReportStartDate(startDate) {
     })
     dispatch(loadTypeAssetReport());
     dispatch(loadCurrencyAssetReport());
-    dispatch(loadSimpleAssetReport())
+    dispatch(loadSimpleAssetReport());
+    dispatch(loadIncomeEventAccountReport())
   }
 }
 
@@ -237,6 +309,7 @@ export function setReportEndDate(endDate) {
     })
     dispatch(loadTypeAssetReport());
     dispatch(loadCurrencyAssetReport());
-    dispatch(loadSimpleAssetReport())
+    dispatch(loadSimpleAssetReport());
+    dispatch(loadIncomeEventAccountReport())
   }
 }

@@ -10,6 +10,7 @@ const mapStateToProps = (state) => {
         assetReportCurrency: state.report.currencyAssetReport,
         assetReportType: state.report.typeAssetReport,
         budgetExecution: state.report.budgetExecutionReport,
+        incomeByAccount: state.report.incomeByAccount,
         startDate: state.report.startDate,
         endDate: state.report.endDate,
         granularity: state.report.granularity,

@@ -15,7 +15,10 @@ import {
   GET_CURRENCYASSETREPORT_FAILURE,
   GET_TYPEASSETREPORT_REQUEST,
   GET_TYPEASSETREPORT_SUCCESS,
-  GET_TYPEASSETREPORT_FAILURE
+  GET_TYPEASSETREPORT_FAILURE,
+  GET_INCOMEEVENTACCOUNTREPORT_REQUEST,
+  GET_INCOMEEVENTACCOUNTREPORT_SUCCESS,
+  GET_INCOMEEVENTACCOUNTREPORT_FAILURE
 } from '../constants/Report'
 
 import {
@@ -28,6 +31,7 @@ const initialState = {
    currencyAssetReport: {dates:[], series: []},
    typeAssetReport: {dates:[], series: []},
    budgetExecutionReport: {dates: [], aIncome: [], eIncome: [], aExpense: [], eExpense:[], profit:[]},
+   incomeByAccount: {dates:[], series: []},
    startDate: moment().subtract(1, 'month'),
    endDate: moment(),
    granularity: 7
@@ -66,16 +70,21 @@ export default function reportReducer(state = initialState, action) {
             return {...state, simpleAssetReport: []}
         case GET_SIMPLEASSETREPORT_SUCCESS:
           return {...state, simpleAssetReport: action.payload}
-          case GET_CURRENCYASSETREPORT_REQUEST:
-          case GET_CURRENCYASSETREPORT_FAILURE:
-              return {...state, currencyAssetReport: {dates:[], series: []}}
-          case GET_CURRENCYASSETREPORT_SUCCESS:
-            return {...state, currencyAssetReport: action.payload}
-          case GET_TYPEASSETREPORT_REQUEST:
-          case GET_TYPEASSETREPORT_FAILURE:
-              return {...state, typeAssetReport: {dates:[], series: []}}
-          case GET_TYPEASSETREPORT_SUCCESS:
-            return {...state, typeAssetReport: action.payload}
+        case GET_CURRENCYASSETREPORT_REQUEST:
+        case GET_CURRENCYASSETREPORT_FAILURE:
+            return {...state, currencyAssetReport: {dates:[], series: []}}
+        case GET_CURRENCYASSETREPORT_SUCCESS:
+          return {...state, currencyAssetReport: action.payload}
+        case GET_TYPEASSETREPORT_REQUEST:
+        case GET_TYPEASSETREPORT_FAILURE:
+            return {...state, typeAssetReport: {dates:[], series: []}}
+        case GET_TYPEASSETREPORT_SUCCESS:
+          return {...state, typeAssetReport: action.payload}
+        case GET_INCOMEEVENTACCOUNTREPORT_REQUEST:
+        case GET_INCOMEEVENTACCOUNTREPORT_FAILURE:
+            return {...state, incomeByAccount: {dates:[], series: []}}
+        case GET_INCOMEEVENTACCOUNTREPORT_SUCCESS:
+          return {...state, incomeByAccount: action.payload}
         case SET_REPORT_STARTDATE:
           return {...state, startDate: action.payload}
         case SET_REPORT_ENDDATE:
