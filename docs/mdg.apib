@@ -1241,3 +1241,38 @@ A AssetCurrencyReport object have the following attributes:
             }
         }
   }
+
+## IncomeEventsReport [/report/income/events?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A IncomeEventsReport object have the following attributes:
+
++ value (array[IncomeEventsReportEntry], required) - Array of IncomeEventsReportEntry
+
+### IncomeEventsReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all income operations on specified account
++ account_id (integer, required) - Id of associated account
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000, account_id: 978},
+                    {"date": "2018-02-01", "value": 100.500, account_id: 840}
+                ]
+            }
+        }
+  }
