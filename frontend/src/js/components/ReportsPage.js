@@ -11,6 +11,7 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 import AssetReportCollection from './AssetReportCollection'
 import BudgetExecutionReport from './BudgetExecutionReport'
 import IncomeReportCollection from './IncomeReportCollection'
+import ExpenseReportCollection from './ExpenseReportCollection'
 
 export default class ReportsPage extends Component {
     state = { tabValue: 'asset' };
@@ -70,7 +71,7 @@ export default class ReportsPage extends Component {
             {this.state.tabValue == 'asset' && <AssetReportCollection actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency} assetReportType={props.assetReportType}/>}
             {this.state.tabValue == 'budget' && <BudgetExecutionReport budgetExecution={props.budgetExecution}/>}
             {this.state.tabValue == 'income' && <IncomeReportCollection actions={props.actions} incomeByAccount={props.incomeByAccount}/>}
-            {this.state.tabValue == 'expenses' && <div>Expenses report</div>}
+            {this.state.tabValue == 'expenses' && <ExpenseReportCollection actions={props.actions} expenseByAccount={props.expenseByAccount}/>}
           </Fragment>
         );
     }

@@ -18,7 +18,10 @@ import {
   GET_TYPEASSETREPORT_FAILURE,
   GET_INCOMEEVENTACCOUNTREPORT_REQUEST,
   GET_INCOMEEVENTACCOUNTREPORT_SUCCESS,
-  GET_INCOMEEVENTACCOUNTREPORT_FAILURE
+  GET_INCOMEEVENTACCOUNTREPORT_FAILURE,
+  GET_EXPENSEEVENTACCOUNTREPORT_REQUEST,
+  GET_EXPENSEEVENTACCOUNTREPORT_SUCCESS,
+  GET_EXPENSEEVENTACCOUNTREPORT_FAILURE
 } from '../constants/Report'
 
 import {
@@ -32,6 +35,7 @@ const initialState = {
    typeAssetReport: {dates:[], series: []},
    budgetExecutionReport: {dates: [], aIncome: [], eIncome: [], aExpense: [], eExpense:[], profit:[]},
    incomeByAccount: {dates:[], series: []},
+   expenseByAccount: {dates:[], series: []},
    startDate: moment().subtract(1, 'month'),
    endDate: moment(),
    granularity: 7
@@ -85,6 +89,11 @@ export default function reportReducer(state = initialState, action) {
             return {...state, incomeByAccount: {dates:[], series: []}}
         case GET_INCOMEEVENTACCOUNTREPORT_SUCCESS:
           return {...state, incomeByAccount: action.payload}
+        case GET_EXPENSEEVENTACCOUNTREPORT_REQUEST:
+        case GET_EXPENSEEVENTACCOUNTREPORT_FAILURE:
+            return {...state, expenseByAccount: {dates:[], series: []}}
+        case GET_EXPENSEEVENTACCOUNTREPORT_SUCCESS:
+          return {...state, expenseByAccount: action.payload}
         case SET_REPORT_STARTDATE:
           return {...state, startDate: action.payload}
         case SET_REPORT_ENDDATE:
