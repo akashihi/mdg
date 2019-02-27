@@ -22,8 +22,11 @@ class IncomeReportController  @Inject() (protected val sar: IncomeReport)(implic
     f(startDate, endDate, granularity).map(x => makeResult(x)(OK))
   }
 
-  def incomeEventByCurrencyReport(start: String, end: String, granularity: Int) = Action.async {
+  def incomeEventByAccountReport(start: String, end: String, granularity: Int) = Action.async {
     callReport(sar.incomeEventsByAccountReport, start, end, granularity)
   }
 
+  def incomeStructureByAccountReport(start: String, end: String, granularity: Int) = Action.async {
+    callReport(sar.incomeEventsByAccountReport, start, end, granularity)
+  }
 }

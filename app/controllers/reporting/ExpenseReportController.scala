@@ -22,8 +22,12 @@ class ExpenseReportController  @Inject() (protected val sar: ExpenseReport)(impl
     f(startDate, endDate, granularity).map(x => makeResult(x)(OK))
   }
 
-  def expenseEventByCurrencyReport(start: String, end: String, granularity: Int) = Action.async {
+  def expenseEventByAccountReport(start: String, end: String, granularity: Int) = Action.async {
     callReport(sar.expensEventsByAccountReport, start, end, granularity)
+  }
+
+  def expenseStructureByAccountReport(start: String, end: String, granularity: Int) = Action.async {
+    callReport(sar.expenseStructureByAccountReport, start, end, granularity)
   }
 
 }
