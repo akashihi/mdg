@@ -1,6 +1,5 @@
 package dao.queries
 
-import java.sql.Date
 import java.time.LocalDate
 
 import dao.queries.BudgetEntryQuery._
@@ -9,23 +8,8 @@ import models.{Budget, BudgetEntry}
 import slick.jdbc.PostgresProfile.api._
 import dao.mappers.LocalDateMapper._
 
-import scala.concurrent.ExecutionContext
-
 object BudgetQuery {
   val budgets = TableQuery[Budgets]
-
-  /**
-    * Calculates remains on asset accounts for specified date.
-    * @param term_beginning date on which remain is calculated
-    * @return remains on that date
-    */
-  def getIncomingAmount(term_beginning: LocalDate)(implicit ec: ExecutionContext): DBIO[BigDecimal] = {
-    val dt = Date.valueOf(term_beginning)
-    sql"select sum(o.amount*coalesce(r.rate,1)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value::bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type='asset' and a.hidden='f' and tx.ts <  ${dt}"
-      .as[Option[BigDecimal]]
-      .map(_.head)
-      .map(_.getOrElse(BigDecimal(0)))
-  }
 
   /**
     * Calculates, how budget is expected to change remains on asset accounts.

@@ -197,7 +197,7 @@ Only `active` field could be changed. Values in other fields will be silently ig
 
 Resources describing currency exchange rates
 
-## Currency collection [/rate/{timestamp}]
+## Rate collection [/rate/{timestamp}]
 
 + parameters
     + timestamp: (required, timestamp) - Point in time in format YYYY-MM-DDTHH:MM:SS for which exchange rates should be valid
@@ -265,6 +265,221 @@ A Rate object has the following attributes.
     }
   }
 
+# Group Categories
+
+Resources describing account categories. A category is just an account label, used in analysis, statistics, rendering etc.
+
+## Category collection [/category]
+
+A Category object has the following attributes
+
+- id: (integer, required) - Due to hierarchical nature of categories, category is an exception and provides id twice: inside of a attributes and in a wrapper object.
+- parent_id: (integer, optional) - Category's parent category id. May be missing for top level categories
+- name: (string, required) - Category name
+- priority: (integer, required) - Ordering weight of that category. Categories output will be sorted ascendant by that weight. Same rule applies to the chidlren attribute.
+- account_type: (enum[string], readonly) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
+  + Members
+    + `asset`
+    + `expense`
+    + `income`
+- children: (array[category], optional) - Array of subcategories of that categories, may be empty or missing. Only 'attributes' section is included
+
+### List all Categories [GET]
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": [{
+            "type": "category",
+            "id": 1,
+            "attributes": {
+                "id": 1,
+                "name": "Flat payments",
+                "priority": 1,
+                "account_type": "expense",
+                "children": [
+                    {
+                        "id": 2,
+                        "parent_id": 1,
+                        "name": "Rent",
+                        "priority": 1,
+                        "account_type": "expense"
+                    },
+                    {
+                        "id": 3,
+                        "parent_id": 1,
+                        "name": "Facilities",
+                        "priority": 1,
+                        "account_type": "expense"
+                    }
+                ]
+            },
+            {
+            "type": "category",
+            "id": 4,
+            "attributes": {
+                "id": 4,
+                "name": "Work income",
+                "priority": 1,
+                "account_type": "income",
+                "children": [
+                    {
+                        "parent_id": 4,
+                        "id": 5,
+                        "name": "Salary",
+                        "priority": 1,
+                        "account_type": "income"
+                    },
+                    {
+                        "id": 6,
+                        "parent_id": 4,
+                        "name": "Bnouses",
+                        "priority": 1,
+                        "account_type": "income"
+                    }
+                ]
+            }   
+        }
+    }]
+  }
+
+### Create a new category [POST]
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+                "type": "category",
+                "attributes": {
+                    "parent_id": 4,
+                    "name": "Bnouses",
+                    "priority": 1,
+                    "account_type": "income"
+                }
+            }
+        }
+  }
+
++ Response 201 (application/vnd.mdg+json)
+  + Headers
+    Location: /category/5
+  + Body
+  {
+    "data": {
+                "id": 5,
+                "type": "category",
+                "attributes": {
+                    "parent_id": 4,
+                    "name": "Bnouses",
+                    "priority": 1,
+                    "account_type": "income"
+                }
+            }
+        }
+  }
+
+## Category [/category/{category_id}]
+
++ parameters
+    + category_id: (required, number) - ID of an category in form of integer
+
+### View a category detail [GET]
+
++ Respone 200 (application/vnd.mdg+json)
+    {
+    "data": {
+            "type": "category",
+            "id": 1,
+            "attributes": {
+                "name": "Flat payments",
+                "priority": 1,
+                "account_type": "expense",
+                "children": [
+                    {
+                       "id": 2,
+                        "parent_id": 1,
+                        "name": "Rent",
+                        "priority": 1,
+                        "account_type": "expense"
+                    },
+                    {
+                        "id": 3,
+                        "parent_id": 1,
+                        "name": "Facilities",
+                        "priority": 1,
+                        "account_type": "expense"
+                    }
+                ]
+            },
+            {
+            "type": "category",
+            "id": 4,
+            "attributes": {
+                "name": "Work income",
+                "priority": 1,
+                "account_type": "income",
+                "children": [
+                    {
+                        "id": 5,
+                        "parent_id": 4,
+                        "name": "Salary",
+                        "priority": 1,
+                        "account_type": "income"
+                    },
+                    {
+                        "id": 6,
+                        "parent_id": 4,
+                        "name": "Bnouses",
+                        "priority": 1,
+                        "account_type": "income"
+                    }
+                ]
+            }   
+        }
+    }
+  }
+
+### Modify category data [PUT]
+
+Only `parent_id`, `name` and `order` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, error will be returned. Set parent_id to the category id (self) to make that category a top level category. Parenting category to the parent with different account_type is not possible.
+
++ Request (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "account",
+            "id": 4
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Montlhy rent",
+                "balance": 9000,
+                "primary_balance": 10100,
+                "parent_id": 3
+            }
+        }
+  }
+
++ Response 202 (application/vnd.mdg+json)
+  + Body
+  {
+    "data": {
+            "type": "account",
+            "id": 4
+            "attributes": {
+                "account_type": "expense",
+                "currency_id": 978,
+                "name": "Montlhy rent",
+                "balance": 9000,
+                "primary_balance": 10100,
+                "parent_id": 3
+            }
+        }
+  }
+
+### Delete a category [DELETE]
+
+Deleting a category reparents all it's 1st degree descendants to the up level parent or makea them top-level categories, if no up-level parent is available. Linked accounts will be uncategorized.
+
++ Response 204
+
 # Group Accounts
 
 Resources related to account management
@@ -279,8 +494,9 @@ An Account object has the following attributes
     + `expense`
     + `income`
 - currency_id: (integer, required) - account's currency id
+- category_id: (integet, optional) - account's category id, may be missing in case account doesn't belongs to the any category.
 - name: (string, required) - Account name
-- balance: (decimal, readonly) - Account balance. Initial value could be set during account creation
+- balance: (decimal, readonly) - Account balance.
 - primary_balance: (decimal, readonly) - Account balance in primary currency. Automatically converted from the 'balance' field by applying correspondent rate.
 - hidden: (boolean, optional) - Marks deleted accounts
 - favorite: (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
@@ -416,7 +632,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 
 ### Modify account data [PUT]
 
-Only `hidden`, `name`, `favorite`, `operational` and 'asset_type' fields could be changed. Values in other fields will be silently ignored.
+Only `hidden`, `name`, `category_id`, `favorite`, `operational` and 'asset_type' fields could be changed. Values in other fields will be silently ignored.
 
 + Request (application/vnd.mdg+json)
   {
@@ -952,6 +1168,215 @@ A TotalsReport object have the following attributes:
                             }
                         ]
                     }
+                ]
+            }
+        }
+  }
+
+## AssetSimpleReport [/report/asset/simple?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A AssetSimpleReport object have the following attributes:
+
++ value (array[AssetSimpleReportEntry], required) - Array of AssetSimpleReportEntries
+
+### AssetSimpleReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all asset accounts for a specified date. 
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000},
+                    {"date": "2018-02-01", "value": 100.500}
+                ]
+            }
+        }
+  }
+
+## AssetCurrencyReport [/report/asset/currency?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A AssetCurrencyReport object have the following attributes:
+
++ value (array[AssetCurrencyReportEntry], required) - Array of AssetCurrencyReportEntries
+
+### AssetCurrencyReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all asset accounts of that currency for a specified date.
++ currency_id (integer, required) - Id of associated currency
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000, currency_id: 978},
+                    {"date": "2018-02-01", "value": 100.500, currency_id: 840}
+                ]
+            }
+        }
+  }
+
+## IncomeEventsReport [/report/income/events?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A IncomeEventsReport object have the following attributes:
+
++ value (array[IncomeEventsReportEntry], required) - Array of IncomeEventsReportEntry
+
+### IncomeEventsReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all income operations on specified account
++ account_id (integer, required) - Id of associated account
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000, account_id: 978},
+                    {"date": "2018-02-01", "value": 100.500, account_id: 840}
+                ]
+            }
+        }
+  }
+
+## ExpenseEventsReport [/report/expense/events?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A ExpenseEventsReport object have the following attributes:
+
++ value (array[ExpenseEventsReportEntry], required) - Array of ExpenseEventsReportEntry
+
+### ExpenseEventsReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all expense operations on specified account
++ account_id (integer, required) - Id of associated account
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000, account_id: 978},
+                    {"date": "2018-02-01", "value": 100.500, account_id: 840}
+                ]
+            }
+        }
+  }
+
+## IncomeStructureReport [/report/income/accounts?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A IncomeStructureReport object have the following attributes:
+
++ value (array[IncomeStructureReportEntry], required) - Array of IncomeStructureReportEntry
+
+### IncomeStructureReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all income operations on specified account
++ account_id (integer, required) - Id of associated account
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000, account_id: 978},
+                    {"date": "2018-02-01", "value": 100.500, account_id: 840}
+                ]
+            }
+        }
+  }
+
+## ExpenseStructureReport [/report/expense/accounts?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&granularity=30]
+
++ Parameters
+  + startDate: (required, date) - First day of report in YYYY-MM-DD format.
+  + endData: (required, date) - Last day of report in YYYY-MM-DD format.
+  + granularity: (required, number) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+
+A ExpenseStructureReport object have the following attributes:
+
++ value (array[ExpenseStructureReportEntry], required) - Array of ExpenseStructureReportEntry
+
+### ExpenseStructureReportEntry:
+
++ date: (date, required) - Date of reported value.
++ value (decimal, required) - Sum of all expense operations on specified account
++ account_id (integer, required) - Id of associated account
+
+### View a report [GET]
+
+
++ Response 200 (application/vnd.mdg+json)
+  {
+    "data": {
+            "type": "report",
+            "id": 1,
+            "attributes": {
+                "value": [
+                    {"date": "2018-01-01", "value": 9000, account_id: 978},
+                    {"date": "2018-02-01", "value": 100.500, account_id: 840}
                 ]
             }
         }

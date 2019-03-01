@@ -7,6 +7,12 @@ GET     /currency                               controllers.CurrencyController.i
 GET     /currency/:id                           controllers.CurrencyController.show(id: Long)
 PUT     /currency/:id                           controllers.CurrencyController.edit(id: Long)
 
+POST    /category                               controllers.CategoryController.create
+GET     /category                               controllers.CategoryController.index
+GET     /category/:id                           controllers.CategoryController.show(id: Long)
+PUT     /category/:id                           controllers.CategoryController.edit(id: Long)
+DELETE  /category/:id                           controllers.CategoryController.delete(id: Long)
+
 POST    /account                                controllers.AccountController.create
 GET     /account                                controllers.AccountController.index(filter: Option[String])
 GET     /account/:id                            controllers.AccountController.show(id: Long)
@@ -40,5 +46,12 @@ GET     /rate/:ts                               controllers.RateController.index
 GET     /rate/:ts/:from/:to                     controllers.RateController.show(ts: String, from: Long, to: Long)
 
 GET     /report/totals                          controllers.reporting.TotalsReportController.index
+GET     /report/asset/simple                    controllers.reporting.AssetReportController.simpleAssetReport(start: String, end: String, granularity: Int)
+GET     /report/asset/currency                  controllers.reporting.AssetReportController.assetByCurrencyReport(start: String, end: String, granularity: Int)
+GET     /report/asset/type                      controllers.reporting.AssetReportController.assetByTypeReport(start: String, end: String, granularity: Int)
+GET     /report/income/events                   controllers.reporting.IncomeReportController.incomeEventByAccountReport(start: String, end: String, granularity: Int)
+GET     /report/income/accounts                 controllers.reporting.IncomeReportController.incomeStructureByAccountReport(start: String, end: String, granularity: Int)
+GET     /report/expense/events                  controllers.reporting.ExpenseReportController.expenseEventByAccountReport(start: String, end: String, granularity: Int)
+GET     /report/expense/accounts                controllers.reporting.ExpenseReportController.expenseStructureByAccountReport(start: String, end: String, granularity: Int)
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                           controllers.Assets.versioned(path="/public", file: Asset)
