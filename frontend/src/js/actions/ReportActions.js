@@ -24,7 +24,13 @@ import {
   GET_INCOMEEVENTACCOUNTREPORT_FAILURE,
   GET_EXPENSEEVENTACCOUNTREPORT_REQUEST,
   GET_EXPENSEEVENTACCOUNTREPORT_SUCCESS,
-  GET_EXPENSEEVENTACCOUNTREPORT_FAILURE
+  GET_EXPENSEEVENTACCOUNTREPORT_FAILURE,
+  GET_INCOMEWEIGHTACCOUNTREPORT_REQUEST,
+  GET_INCOMEWEIGHTACCOUNTREPORT_SUCCESS,
+  GET_INCOMEWEIGHTACCOUNTREPORT_FAILURE,
+  GET_EXPENSEWEIGHTACCOUNTREPORT_REQUEST,
+  GET_EXPENSEWEIGHTACCOUNTREPORT_SUCCESS,
+  GET_EXPENSEWEIGHTACCOUNTREPORT_FAILURE
 } from '../constants/Report'
 
 export function loadTotalsReport() {
@@ -346,6 +352,102 @@ export function loadExpenseEventAccountReport() {
   }
 }
 
+export function loadIncomeWeightAccountReport() {
+  return (dispatch, getState) => {
+      dispatch({
+          type: GET_INCOMEWEIGHTACCOUNTREPORT_REQUEST,
+          payload: true
+      });
+
+      var state = getState()
+
+      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
+      var url = '/api/report/income/accounts' + '?' + jQuery.param(params)
+
+      fetch(url)
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(function (json) {
+            var report = json.data.attributes.value
+            var date = moment(report[0].date, 'YYYY-MM-DD')
+            var series = []
+            report[0].entries.forEach((item) => {
+              var accountObject = state.account.incomeAccountList.find((account) => account.id == item.account_id)
+              if (accountObject) {
+                var account = accountObject.attributes.name
+              } else {
+                account = item.account_id
+              }
+              series.push({
+                name: account,
+                y: item.value
+              })
+            })
+            dispatch({
+                  type: GET_INCOMEWEIGHTACCOUNTREPORT_SUCCESS,
+                  payload: {
+                    date: date,
+                    series: series
+                  }
+              });
+          })
+          .catch(function (response) {
+              dispatch({
+                  type: GET_INCOMEWEIGHTACCOUNTREPORT_FAILURE,
+                  payload: response.json
+              })
+          });
+  }
+}
+
+export function loadExpenseWeightAccountReport() {
+  return (dispatch, getState) => {
+      dispatch({
+          type: GET_EXPENSEWEIGHTACCOUNTREPORT_REQUEST,
+          payload: true
+      });
+
+      var state = getState()
+
+      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
+      var url = '/api/report/expense/accounts' + '?' + jQuery.param(params)
+
+      fetch(url)
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(function (json) {
+            var report = json.data.attributes.value
+            var date = moment(report[0].date, 'YYYY-MM-DD')
+            var series = []
+            report[0].entries.forEach((item) => {
+              var accountObject = state.account.expenseAccountList.find((account) => account.id == item.account_id)
+              if (accountObject) {
+                var account = accountObject.attributes.name
+              } else {
+                account = item.account_id
+              }
+              series.push({
+                name: account,
+                y: item.value
+              })
+            })
+            dispatch({
+                  type: GET_EXPENSEWEIGHTACCOUNTREPORT_SUCCESS,
+                  payload: {
+                    date: date,
+                    series: series
+                  }
+              });
+          })
+          .catch(function (response) {
+              dispatch({
+                  type: GET_EXPENSEWEIGHTACCOUNTREPORT_FAILURE,
+                  payload: response.json
+              })
+          });
+  }
+}
+
 export function setReportGranularity(granularity) {
   return (dispatch) => {
       dispatch({
@@ -356,7 +458,9 @@ export function setReportGranularity(granularity) {
     dispatch(loadCurrencyAssetReport());
     dispatch(loadSimpleAssetReport());
     dispatch(loadIncomeEventAccountReport());
-    dispatch(loadExpenseEventAccountReport())
+    dispatch(loadExpenseEventAccountReport());
+    dispatch(loadIncomeWeightAccountReport());
+    dispatch(loadExpenseWeightAccountReport())
   }
 }
 
@@ -370,7 +474,9 @@ export function setReportStartDate(startDate) {
     dispatch(loadCurrencyAssetReport());
     dispatch(loadSimpleAssetReport());
     dispatch(loadIncomeEventAccountReport());
-    dispatch(loadExpenseEventAccountReport())
+    dispatch(loadExpenseEventAccountReport());
+    dispatch(loadIncomeWeightAccountReport());
+    dispatch(loadExpenseWeightAccountReport())
   }
 }
 
@@ -384,6 +490,8 @@ export function setReportEndDate(endDate) {
     dispatch(loadCurrencyAssetReport());
     dispatch(loadSimpleAssetReport());
     dispatch(loadIncomeEventAccountReport());
-    dispatch(loadExpenseEventAccountReport())
+    dispatch(loadExpenseEventAccountReport());
+    dispatch(loadIncomeWeightAccountReport());
+    dispatch(loadExpenseWeightAccountReport())
   }
 }

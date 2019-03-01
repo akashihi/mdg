@@ -5,6 +5,7 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import IncomeReportEventsAccount from './IncomeReportEventsAccount'
+import IncomeByAccountWeight from './IncomeByAccountWeight'
 
 export default class IncomeReportCollection extends Component {
     render() {
@@ -24,7 +25,7 @@ export default class IncomeReportCollection extends Component {
                 Income accounts weight
               </ExpansionPanelSummary>
               <ExpansionPanelDetails>
-                {/*<AssetReportCurrency actions={props.actions} data={props.currencyAssetReport}/>*/}
+                <IncomeByAccountWeight actions={props.actions} data={props.incomeByAccountWeight}/>
               </ExpansionPanelDetails>
             </ExpansionPanel>
           </Fragment>

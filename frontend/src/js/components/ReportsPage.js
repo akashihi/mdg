@@ -70,8 +70,8 @@ export default class ReportsPage extends Component {
             </Tabs>
             {this.state.tabValue == 'asset' && <AssetReportCollection actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency} assetReportType={props.assetReportType}/>}
             {this.state.tabValue == 'budget' && <BudgetExecutionReport budgetExecution={props.budgetExecution}/>}
-            {this.state.tabValue == 'income' && <IncomeReportCollection actions={props.actions} incomeByAccount={props.incomeByAccount}/>}
-            {this.state.tabValue == 'expenses' && <ExpenseReportCollection actions={props.actions} expenseByAccount={props.expenseByAccount}/>}
+            {this.state.tabValue == 'income' && <IncomeReportCollection actions={props.actions} incomeByAccount={props.incomeByAccount} incomeByAccountWeight={props.incomeByAccountWeight}/>}
+            {this.state.tabValue == 'expenses' && <ExpenseReportCollection actions={props.actions} expenseByAccount={props.expenseByAccount} expenseByAccountWeight={props.expenseByAccountWeight}/>}
           </Fragment>
         );
     }

@@ -5,6 +5,7 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import ExpenseReportEventsAccount from './ExpenseReportEventsAccount'
+import ExpenseByAccountWeight from './ExpenseByAccountWeight'
 
 export default class ExpenseReportCollection extends Component {
     render() {
@@ -24,7 +25,7 @@ export default class ExpenseReportCollection extends Component {
                 Expense accounts weight
               </ExpansionPanelSummary>
               <ExpansionPanelDetails>
-                {/*<AssetReportCurrency actions={props.actions} data={props.currencyAssetReport}/>*/}
+                <ExpenseByAccountWeight actions={props.actions} data={props.expenseByAccountWeight}/>
               </ExpansionPanelDetails>
             </ExpansionPanel>
           </Fragment>
