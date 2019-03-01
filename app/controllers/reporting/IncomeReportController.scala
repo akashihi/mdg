@@ -27,6 +27,6 @@ class IncomeReportController  @Inject() (protected val sar: IncomeReport)(implic
   }
 
   def incomeStructureByAccountReport(start: String, end: String, granularity: Int) = Action.async {
-    callReport(sar.incomeEventsByAccountReport, start, end, granularity)
+    callReport(sar.incomeStructureByAccountReport, start, end, granularity)
   }
 }
