@@ -13,6 +13,7 @@ import TransactionsViewer from '../containers/TransactionsViewer'
 import SettingsViewer from '../containers/SettingsViewer'
 import RateViewer from '../containers/RateViewer'
 import TransactionEditor from '../containers/TransactionEditor'
+import ReportsViewer from '../containers/ReportsViewer'
 
 window.notifications = React.createRef();
 
@@ -27,6 +28,7 @@ export default class Main extends Component {
                   <Route exact path='/' component={Overview}/>
                   <Route path='/budget' component={BudgetViewer}/>
                   <Route path='/transactions' component={TransactionsViewer}/>
+                  <Route path='/reports' component={ReportsViewer}/>
                   <Route path='/accounts' component={AccountsViewer}/>
                   <Route path='/settings' component={SettingsViewer}/>
                 </Col>

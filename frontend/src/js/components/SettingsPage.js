@@ -11,6 +11,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 
+import CategoryViewer from '../containers/CategoryViewer.js';
+
 const styles = {
   root: {
     position: 'relative',
@@ -94,6 +96,7 @@ class SettingsPage extends Component {
                 <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
               </Col>
             </Row>
+            <Row>
             <Col xs={6} sm={6} md={4} lg={4}>
               <p>Active currencies:</p>
             </Col>
@@ -102,6 +105,12 @@ class SettingsPage extends Component {
                 {allCurrencies}
               </List>
             </Col>
+            </Row>
+            <Row>
+              <Col xs={12} sm={12} md={12} lg={12}>
+                <CategoryViewer/>
+              </Col>
+            </Row>
         </Grid>
   )
   }
