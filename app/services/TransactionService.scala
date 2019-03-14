@@ -112,12 +112,18 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page]): Future[(Seq[TransactionDto], Int)] = {
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
     val commentsIds = filter.comment.map(es.lookupComment).getOrElse(Future.successful(Array[Long]()))
     val tagIds = filter.tag.map(_.mkString(" ")).map(es.lookupTags).getOrElse(Future.successful(Array[Long]()))
     val searchIds = commentsIds zip tagIds map {case(a, b) => a ++ b} map { _.distinct }
+
     val list = searchIds.map(TransactionQuery.list(filter, sort, page, _))
-      .flatMap(sql.query)
-      .map(_.map(txToDto)).flatMap(Future.sequence(_))
+      .map(sql.stream).map(Source.fromPublisher)
+      .map(_.mapAsync(1)(txToDto))
+      .flatMap(_.runWith(Sink.seq))
+
     val count = commentsIds.map(TransactionQuery.count(filter,_)).flatMap(sql.query)
 
     list zip count

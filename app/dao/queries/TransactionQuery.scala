@@ -108,7 +108,7 @@ object TransactionQuery {
            sort: Seq[SortBy],
            page: Option[Page],
            fulltextIds: Array[Long])
-          (implicit ec: ExecutionContext): DBIO[Seq[Transaction]] = {
+          (implicit ec: ExecutionContext): StreamingDBIO[Seq[Transaction], Transaction] = {
     makeCriteria(filter, fulltextIds).flatMap { criteriaQuery =>
       val sortedQuery =
         sort.headOption.getOrElse(SortBy("timestamp", Desc)) match {
