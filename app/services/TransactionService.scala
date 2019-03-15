@@ -239,7 +239,14 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
   }
 
   def replaceCurrencyForAccount(a: Account):ErrorF[Int] = {
-    val r: String \/ Int = 1.right
-    EitherT(Future.successful(r))
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
+    val filter = TransactionFilter(account_id = a.id.map(Seq.apply(_)))
+    def flow = streamTransactions(filter, Seq.empty[SortBy], None, Array.emptyLongArray)
+      .mapAsync(1)(old => replace(old.id.get, old))
+      .map(_.map(_ => 1))
+      .toMat(Sink.fold(0)(_ + _.getOrElse(0)))(Keep.right)
+    EitherT(flow.run().map(i => i.right[String]))
   }
 }
