@@ -12,6 +12,7 @@ import util.EitherOps._
 import validators.Validator._
 import scalaz._
 import Scalaz._
+import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl._
 import akka.actor._
@@ -106,6 +107,26 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
   }
 
   /**
+    * Provides you with a stream of transactions from the data base.
+    * @param filter Filter to apply on those transactions.
+    * @param sort Optionally sort those transactions by specified fields.
+    * @param page Optionally limit result by specified page size ond number.
+    * @param searchIds Retrieve only transaction, matching specified transaction ids.
+    * @return Stream of transaction DTOs.
+    */
+  def streamTransactions(filter: TransactionFilter,
+                         sort: Seq[SortBy],
+                         page: Option[Page],
+                         searchIds: Array[Long]
+                        ): Source[TransactionDto, NotUsed] = {
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
+    val query = TransactionQuery.list(filter, sort, page, searchIds)
+    Source.fromPublisher(sql.stream(query)).mapAsync(1)(txToDto)
+  }
+
+  /**
     * Returns all transaction objects from the database.
     * @return Sequence of transaction DTOs.
     */
@@ -119,10 +140,7 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     val tagIds = filter.tag.map(_.mkString(" ")).map(es.lookupTags).getOrElse(Future.successful(Array[Long]()))
     val searchIds = commentsIds zip tagIds map {case(a, b) => a ++ b} map { _.distinct }
 
-    val list = searchIds.map(TransactionQuery.list(filter, sort, page, _))
-      .map(sql.stream).map(Source.fromPublisher)
-      .map(_.mapAsync(1)(txToDto))
-      .flatMap(_.runWith(Sink.seq))
+    val list = searchIds.map(streamTransactions(filter, sort, page, _)).flatMap(_.runWith(Sink.seq))
 
     val count = commentsIds.map(TransactionQuery.count(filter,_)).flatMap(sql.query)
 
@@ -218,5 +236,10 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     index.map {errors => log.warn(s"Transaction reindexing finished with $errors errors"); errors}
         .map(e => e == 0)
       .getOrElse(false)
+  }
+
+  def replaceCurrencyForAccount(a: Account):ErrorF[Int] = {
+    val r: String \/ Int = 1.right
+    EitherT(Future.successful(r))
   }
 }

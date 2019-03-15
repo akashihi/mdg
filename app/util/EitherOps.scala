@@ -1,5 +1,6 @@
 package util
 
+import Function.tupled
 import scalaz._
 import Scalaz._
 
@@ -77,4 +78,18 @@ object EitherOps {
     def flatten(implicit ec: ExecutionContext): ErrorF[R] = EitherT(o.run.map(_.transform).flatMap(_.run))
   }
 
+  implicit class ErrorFZip[R,B](val o: ErrorF[R]) extends AnyVal {
+    def zip(other: ErrorF[B])(implicit ex: ExecutionContext):ErrorF[(R,B)] = {
+      val futures = o.run zip other.run
+
+      val zipped = futures map tupled {(l,r) => l match {
+        case -\/(e) => e.left
+        case \/-(lv) => r match {
+          case -\/(e) => e.left
+          case \/-(rv) => (lv, rv).right
+        }
+      }}
+      EitherT(zipped)
+    }
+  }
 }
