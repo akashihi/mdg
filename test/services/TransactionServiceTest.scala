@@ -13,7 +13,6 @@ import scala.concurrent.Future
 class TransactionServiceTest extends ParameterizedSpec with MockFactory {
   val system = akka.actor.ActorSystem("system")
   val ec = new SqlExecutionContext(system)
-  val as = mock[AccountService]
   val rs= mock[RateService]
 
   val accounts = Array(
@@ -23,10 +22,9 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
   )
 
   property("Transactions with same currency rebalanced precisely") {
-    (as.list _).expects(*).returning(Future.successful(accounts))
     (rs.get _).expects(*, 978, 978).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 978, 978, 1)))
 
-    val ts = new TransactionService(rs, null, as, null, null)(ec)
+    val ts = new TransactionService(rs, null, null, null)(ec)
 
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
@@ -35,7 +33,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
 
-    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false)).await
+    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false), accounts).await
     val actualOp = actual.operations.filter(_.account_id == 3L).head
 
     actualOp.rate should be (Some(1))
@@ -43,10 +41,9 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
   }
 
   property("Transactions with default currency rebalanced correctly") {
-    (as.list _).expects(*).returning(Future.successful(accounts))
     (rs.get _).expects(*, 203, 203).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 203, 203, 1)))
 
-    val ts = new TransactionService(rs, null, as, null, null)(ec)
+    val ts = new TransactionService(rs, null, null, null)(ec)
 
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
@@ -55,7 +52,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
 
-    val actual = ts.txReplaceAccCurrency(tx, Account(Some(1L), AssetAccount, 203, None, "CZK", 0, false)).await
+    val actual = ts.txReplaceAccCurrency(tx, Account(Some(1L), AssetAccount, 203, None, "CZK", 0, false), accounts).await
     val actualOp = actual.operations.filter(_.account_id == 1L).head
 
     actualOp.rate should be (Some(1))
@@ -63,11 +60,10 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
   }
 
   property("Transactions with several currencies have rate recalculated") {
-    (as.list _).expects(*).returning(Future.successful(accounts))
     (rs.get _).expects(*, 978, 978).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 978, 978, 1)))
     (rs.get _).expects(*, 840, 978).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 840, 978, 0.8)))
 
-    val ts = new TransactionService(rs, null, as, null, null)(ec)
+    val ts = new TransactionService(rs, null, null, null)(ec)
 
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
@@ -77,7 +73,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
 
-    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false)).await
+    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false), accounts).await
     val actualOp = actual.operations.filter(_.account_id == 3L).head
 
     actualOp.rate should be (Some(1))

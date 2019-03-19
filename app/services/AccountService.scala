@@ -167,7 +167,12 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
       currency_id = ad.currency_id))})
 
     val currencyChanger = checkedCategory zip oldAcc flatMap tupled
-    {(n,o) => if (n.currency_id != o.currency_id) { ts.replaceCurrencyForAccount(o).flatMap(_ => newAcc) } else { newAcc }}
+    {(n,o) => if (n.currency_id != o.currency_id) {
+      val l = EitherT(list(AccountFilter(None, None, None, None)).map(_.right[String]))
+
+        l.flatMap(ts.replaceCurrencyForAccount(o, _))
+        .flatMap(_ => newAcc)
+    } else { newAcc }}
 
     val query = getAssetPropertyForAccountDto(validDto)
       .map(_.copy(id = Some(id)))
