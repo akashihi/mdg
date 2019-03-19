@@ -4,7 +4,7 @@ import javax.inject.Inject
 import java.time.LocalDate
 
 import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
-import dao.filters.TransactionFilter
+import dao.filters.{AccountFilter, TransactionFilter}
 import dao.ordering.{Page, SortBy}
 import models.{Account, Operation, Transaction}
 import slick.jdbc.PostgresProfile.api._
@@ -28,7 +28,8 @@ import scala.concurrent._
   * Transaction operations service.
   */
 class TransactionService @Inject() (protected val rs: RateService, protected val es: ElasticSearch,
-                                    protected val sql: SqlDatabase, implicit protected val as: ActorSystem)
+                                    protected val as: AccountService, protected val sql: SqlDatabase,
+                                    implicit protected val acs: ActorSystem)
                                    (implicit ec: SqlExecutionContext) {
   val log: Logger = Logger(this.getClass)
 
@@ -248,5 +249,79 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
       .map(_.map(_ => 1))
       .toMat(Sink.fold(0)(_ + _.getOrElse(0)))(Keep.right)
     EitherT(flow.run().map(i => i.right[String]))
+  }
+
+  /**
+    * Here we replace operation amount for account that changes currency.
+    * The procedure is straightforward: we know, that each transaction is balanced,
+    * so sum of all operations, converted to default rate, is 0. We know,
+    * that transaction always have a default currency, so we can base on.
+    * What we do to replace currency on the account is:
+    *
+    * 1)We remove all operations for specified account
+    * 2)We detect default currency of the transaction
+    * 3)We convert all remaining operations to that currency
+    * 4)..and summarize them
+    * 5)As we removed operations for changing account, transaction
+    * will be unbalanced now and sum of all ops is a remaining
+    * amount for account.
+    * 6)So we need it to be converted from default currency to
+    * account new currency and written as a new op.
+    *
+    * There is a problem with step 2 - it may happen, that default currency
+    * will be lost during step 1. In that case we can recover in two ways -
+    * if there is an op with same currency as a new currency of a account, use it as
+    * default and recalculate all other rates. If all the other currencies are different,
+    * use new account currency as default.
+    *
+    * TODO: Code below is written in synchronous way intentionally, needs to be refactored,
+    * but i need that feature immediately.
+    * @param tx Transaction DTO to process
+    * @param a Account to replace
+    * @return Recalculated TransactionDTO
+    */
+  def txReplaceAccCurrency(tx: TransactionDto, a: Account): TransactionDto = {
+    import com.sksamuel.elastic4s.http.ElasticDsl._
+    val accounts = as.list(AccountFilter(None, None, None, None)).await
+    // 1 - Remove replaced account
+    var accLessOps = tx.operations.filterNot(_.account_id == a.id.get)
+
+    // 2 - Find default currency
+    val accountIdWithDefaultCurrency = accLessOps
+      .map(o => (o.account_id, o.rate.getOrElse(BigDecimal(1))))
+      .filter(_._2 == 1)
+      .map(o => o._1)
+      .headOption
+    var defaultCurrencyId = Default.value[Long]
+    if (accountIdWithDefaultCurrency.isEmpty) {
+      //Ok, our life is much harder now, we need to replace default currency
+      defaultCurrencyId = a.currency_id
+      //And replace rates
+      accLessOps = accLessOps
+        .map(o => (o, accounts.filter(_.id.get == o.account_id).head))
+        .map(o =>
+          (o._1,
+           rs.get(tx.timestamp, o._2.currency_id, defaultCurrencyId).await))
+        .map(o => o._1.copy(rate = Some(o._2.rate)))
+    } else {
+      //Load default currency Id from account
+      defaultCurrencyId = accounts
+        .filter(_.id.get == accountIdWithDefaultCurrency.get)
+        .map(_.currency_id)
+        .head
+    }
+
+    // 3&4 - Convert and summarize
+    val disbalance =
+      accLessOps.map(o => o.rate.getOrElse(BigDecimal(1)) * o.amount).sum
+
+    // 5&6 - a disbalance is in transaction default currency, so we need to apply
+    // reverse rate, from the default to the account currency and write it.
+    val reverseRate =
+      rs.get(tx.timestamp, defaultCurrencyId, a.currency_id).await.rate
+    val convertedOp =
+      OperationDto(a.id.get, disbalance * reverseRate, Some(reverseRate))
+    val txOps = accLessOps :+ convertedOp
+    tx.copy(operations = txOps)
   }
 }

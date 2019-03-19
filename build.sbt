@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
   "com.sksamuel.elastic4s" %% "elastic4s-http" % elastic4sVersion,
 )
 
+libraryDependencies += "org.scalamock" %% "scalamock" % "4.1.0" % Test
 libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.5" % "test"
 
 val scalazVersion = "7.2.22"
