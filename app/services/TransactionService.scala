@@ -274,17 +274,15 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     * default and recalculate all other rates. If all the other currencies are different,
     * use new account currency as default.
     *
-    * TODO: Code below is written in synchronous way intentionally, needs to be refactored,
-    * but i need that feature immediately.
     * @param tx Transaction DTO to process
     * @param a Account to replace
     * @return Recalculated TransactionDTO
     */
-  def txReplaceAccCurrency(tx: TransactionDto, a: Account): TransactionDto = {
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-    val accounts = as.list(AccountFilter(None, None, None, None)).await
+  def txReplaceAccCurrency(tx: TransactionDto, a: Account): Future[TransactionDto] = {
+    val accounts = as.list(AccountFilter(None, None, None, None))
     // 1 - Remove replaced account
-    var accLessOps = tx.operations.filterNot(_.account_id == a.id.get)
+    val accLessOps = tx.operations.filterNot(_.account_id == a.id.get)
+    var accLessOpsF: Future[Seq[OperationDto]] = null
 
     // 2 - Find default currency
     val accountIdWithDefaultCurrency = accLessOps
@@ -292,36 +290,36 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
       .filter(_._2 == 1)
       .map(o => o._1)
       .headOption
-    var defaultCurrencyId = Default.value[Long]
-    if (accountIdWithDefaultCurrency.isEmpty) {
+    val defaultCurrencyId = if (accountIdWithDefaultCurrency.isEmpty) {
       //Ok, our life is much harder now, we need to replace default currency
-      defaultCurrencyId = a.currency_id
-      //And replace rates
-      accLessOps = accLessOps
-        .map(o => (o, accounts.filter(_.id.get == o.account_id).head))
-        .map(o =>
-          (o._1,
-           rs.get(tx.timestamp, o._2.currency_id, defaultCurrencyId).await))
-        .map(o => o._1.copy(rate = Some(o._2.rate)))
+      //and replace rates
+      val currencies = accLessOps
+        .map(o => (o, accounts.map(_.filter(_.id.get == o.account_id).head)))
+        .map(o => Applicative[Future].tuple2(Future.successful(o._1), o._2))
+      var rates = Future.sequence(currencies).map(_.map(o =>(o._1,rs.get(tx.timestamp, o._2.currency_id, a.currency_id))))
+        .map(_.map(o => Applicative[Future].tuple2(Future.successful(o._1), o._2)))
+        .flatMap(s => Future.sequence(s))
+      accLessOpsF = rates.map(_.map(o => o._1.copy(rate = Some(o._2.rate))))
+
+      Future.successful(a.currency_id)
     } else {
       //Load default currency Id from account
-      defaultCurrencyId = accounts
-        .filter(_.id.get == accountIdWithDefaultCurrency.get)
+      accLessOpsF = Future.successful(accLessOps)
+      accounts.map(_.filter(_.id.get == accountIdWithDefaultCurrency.get)
         .map(_.currency_id)
-        .head
+        .head)
     }
 
     // 3&4 - Convert and summarize
     val disbalance =
-      accLessOps.map(o => o.rate.getOrElse(BigDecimal(1)) * o.amount).sum
+      accLessOpsF.map(_.map(o => o.rate.getOrElse(BigDecimal(1)) * o.amount).sum)
 
     // 5&6 - a disbalance is in transaction default currency, so we need to apply
     // reverse rate, from the default to the account currency and write it.
-    val reverseRate =
-      rs.get(tx.timestamp, defaultCurrencyId, a.currency_id).await.rate
-    val convertedOp =
-      OperationDto(a.id.get, disbalance * reverseRate, Some(reverseRate))
-    val txOps = accLessOps :+ convertedOp
-    tx.copy(operations = txOps)
+    val reverseRate = defaultCurrencyId.flatMap(c => rs.get(tx.timestamp, c, a.currency_id)).map(_.rate)
+    val convertedOp = reverseRate.flatMap(rate => disbalance.map(d => OperationDto(a.id.get, d * rate, Some(rate))))
+
+    val txOps = convertedOp.flatMap(o => accLessOpsF.map(_ :+ o))
+    txOps.map(o => tx.copy(operations = o))
   }
 }

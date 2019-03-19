@@ -5,10 +5,14 @@ import controllers.dto.{AccountDTO, OperationDto, TransactionDto}
 import models._
 import org.scalamock.scalatest.MockFactory
 import tests.ParameterizedSpec
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import dao.SqlExecutionContext
 
 import scala.concurrent.Future
 
 class TransactionServiceTest extends ParameterizedSpec with MockFactory {
+  val system = akka.actor.ActorSystem("system")
+  val ec = new SqlExecutionContext(system)
   val as = mock[AccountService]
   val rs= mock[RateService]
 
@@ -22,7 +26,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
     (as.list _).expects(*).returning(Future.successful(accounts))
     (rs.get _).expects(*, 978, 978).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 978, 978, 1)))
 
-    val ts = new TransactionService(rs, null, as, null, null)(null)
+    val ts = new TransactionService(rs, null, as, null, null)(ec)
 
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
@@ -31,7 +35,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
 
-    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false))
+    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false)).await
     val actualOp = actual.operations.filter(_.account_id == 3L).head
 
     actualOp.rate should be (Some(1))
@@ -42,7 +46,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
     (as.list _).expects(*).returning(Future.successful(accounts))
     (rs.get _).expects(*, 203, 203).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 203, 203, 1)))
 
-    val ts = new TransactionService(rs, null, as, null, null)(null)
+    val ts = new TransactionService(rs, null, as, null, null)(ec)
 
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
@@ -51,7 +55,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
 
-    val actual = ts.txReplaceAccCurrency(tx, Account(Some(1L), AssetAccount, 203, None, "CZK", 0, false))
+    val actual = ts.txReplaceAccCurrency(tx, Account(Some(1L), AssetAccount, 203, None, "CZK", 0, false)).await
     val actualOp = actual.operations.filter(_.account_id == 1L).head
 
     actualOp.rate should be (Some(1))
@@ -63,7 +67,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
     (rs.get _).expects(*, 978, 978).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 978, 978, 1)))
     (rs.get _).expects(*, 840, 978).anyNumberOfTimes().returning(Future.successful(Rate(None, LocalDateTime.now(), LocalDateTime.now(), 840, 978, 0.8)))
 
-    val ts = new TransactionService(rs, null, as, null, null)(null)
+    val ts = new TransactionService(rs, null, as, null, null)(ec)
 
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
@@ -73,7 +77,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
 
-    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false))
+    val actual = ts.txReplaceAccCurrency(tx, Account(Some(3L), AssetAccount, 978, None, "CZK", 0, false)).await
     val actualOp = actual.operations.filter(_.account_id == 3L).head
 
     actualOp.rate should be (Some(1))
