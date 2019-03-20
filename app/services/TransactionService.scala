@@ -309,6 +309,7 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     // 3&4 - Convert and summarize
     val disbalance =
       accLessOpsF.map(_.map(o => o.rate.getOrElse(BigDecimal(1)) * o.amount).sum)
+      .map(-1 * _) //We need to invert it, so when added back to transaction it will become 0 in all ops sum
 
     // 5&6 - a disbalance is in transaction default currency, so we need to apply
     // reverse rate, from the default to the account currency and write it.

@@ -27,7 +27,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
     val ts = new TransactionService(rs, null, null, null)(ec)
 
     val ops = Seq(
-      OperationDto(1L, 100, Some(25)),
+      OperationDto(1L, -100, Some(25)),
       OperationDto(3L, 2500, Some(1))
     )
 
@@ -47,7 +47,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
 
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
-      OperationDto(3L, 2500, Some(1))
+      OperationDto(3L, -2500, Some(1))
     )
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
@@ -68,7 +68,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
     val ops = Seq(
       OperationDto(1L, 100, Some(25)),
       OperationDto(2L, 100, Some(20)),
-      OperationDto(3L, 4500, Some(1))
+      OperationDto(3L, -4500, Some(1))
     )
 
     val tx = TransactionDto(None, LocalDateTime.now(), None, operations = ops)
@@ -77,7 +77,7 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
     val actualOp = actual.operations.filter(_.account_id == 3L).head
 
     actualOp.rate should be (Some(1))
-    actualOp.amount should be (180)
+    actualOp.amount should be (-180)
 
     val eurOp = actual.operations.filter(_.account_id == 1L).head
 
