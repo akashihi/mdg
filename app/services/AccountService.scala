@@ -168,8 +168,13 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
 
     val currencyChanger = newAcc zip oldAcc flatMap tupled
     {(n,o) => if (n.currency_id != o.currency_id) {
-      val l = EitherT(list(AccountFilter(None, None, None, None)).map(_.right[String]))
-       l.flatMap(ts.replaceCurrencyForAccount(n, _)).flatMap(_ => newAcc)
+      if (n.account_type == AssetAccount) {
+        //We do not support currency change on asset accounts
+        EitherT(Future.successful("ACCOUNT_CURRENCY_ASSET".left[Account]))
+      } else {
+        val l = EitherT(list(AccountFilter(None, None, None, None)).map(_.right[String]))
+        l.flatMap(ts.replaceCurrencyForAccount(n, _)).flatMap(_ => newAcc)
+      }
     } else { newAcc }}
 
     val query = getAssetPropertyForAccountDto(validDto)
