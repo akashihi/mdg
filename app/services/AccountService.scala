@@ -1,5 +1,6 @@
 package services
 
+import Function.tupled
 import BigDecimal.RoundingMode.HALF_EVEN
 import dao.filters.AccountFilter
 import models._
@@ -17,7 +18,8 @@ import scala.concurrent._
 /**
   * Account operations service.
   */
-class AccountService @Inject() (protected val rs: RateService, protected val sql: SqlDatabase)
+class AccountService @Inject() (protected val rs: RateService, protected val ts: TransactionService,
+                                protected val sql: SqlDatabase)
                                    (implicit ec: SqlExecutionContext) {
 
   private def getAssetPropertyForAccountDto(validDto: \/[String, AccountDTO]) = {
@@ -157,14 +159,30 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
 
     val checkedCategory = EitherT(Future.successful(validDto)).flatMap(validateCategoryType)
 
-    val newAcc = checkedCategory.flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, category_id = ad.category_id))})
+    val oldAcc = getAccount(id)
+    val newAcc = checkedCategory.flatMap(ad => {oldAcc.map(_.copy(
+      name = ad.name,
+      hidden = ad.hidden,
+      category_id = ad.category_id,
+      currency_id = ad.currency_id))})
+
+    val currencyChanger = newAcc zip oldAcc flatMap tupled
+    {(n,o) => if (n.currency_id != o.currency_id) {
+      if (n.account_type == AssetAccount) {
+        //We do not support currency change on asset accounts
+        EitherT(Future.successful("ACCOUNT_CURRENCY_ASSET".left[Account]))
+      } else {
+        val l = EitherT(list(AccountFilter(None, None, None, None)).map(_.right[String]))
+        l.flatMap(ts.replaceCurrencyForAccount(n, _)).flatMap(_ => newAcc)
+      }
+    } else { newAcc }}
 
     val query = getAssetPropertyForAccountDto(validDto)
       .map(_.copy(id = Some(id)))
       .map(p => AccountQuery.updateWithProperties(p) _)
       .getOrElse(AccountQuery.update _)
 
-    newAcc
+    currencyChanger
       .map(query(_).map(_.fromOption("ACCOUNT_NOT_UPDATED")))
       .flatMapF(sql.query)
       .flatMap(accountToDto)

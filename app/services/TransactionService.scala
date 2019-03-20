@@ -3,7 +3,7 @@ package services
 import javax.inject.Inject
 import java.time.LocalDate
 
-import controllers.dto.{OperationDto, TransactionDto, TransactionWrapperDto}
+import controllers.dto.{AccountDTO, OperationDto, TransactionDto, TransactionWrapperDto}
 import dao.filters.TransactionFilter
 import dao.ordering.{Page, SortBy}
 import models.{Account, Operation, Transaction}
@@ -12,6 +12,7 @@ import util.EitherOps._
 import validators.Validator._
 import scalaz._
 import Scalaz._
+import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl._
 import akka.actor._
@@ -27,7 +28,7 @@ import scala.concurrent._
   * Transaction operations service.
   */
 class TransactionService @Inject() (protected val rs: RateService, protected val es: ElasticSearch,
-                                    protected val sql: SqlDatabase, implicit protected val as: ActorSystem)
+                                    protected val sql: SqlDatabase, implicit protected val acs: ActorSystem)
                                    (implicit ec: SqlExecutionContext) {
   val log: Logger = Logger(this.getClass)
 
@@ -106,18 +107,41 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
   }
 
   /**
+    * Provides you with a stream of transactions from the data base.
+    * @param filter Filter to apply on those transactions.
+    * @param sort Optionally sort those transactions by specified fields.
+    * @param page Optionally limit result by specified page size ond number.
+    * @param searchIds Retrieve only transaction, matching specified transaction ids.
+    * @return Stream of transaction DTOs.
+    */
+  def streamTransactions(filter: TransactionFilter,
+                         sort: Seq[SortBy],
+                         page: Option[Page],
+                         searchIds: Array[Long]
+                        ): Source[TransactionDto, NotUsed] = {
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
+    val query = TransactionQuery.list(filter, sort, page, searchIds)
+    Source.fromPublisher(sql.stream(query)).mapAsync(1)(txToDto)
+  }
+
+  /**
     * Returns all transaction objects from the database.
     * @return Sequence of transaction DTOs.
     */
   def list(filter: TransactionFilter,
            sort: Seq[SortBy],
            page: Option[Page]): Future[(Seq[TransactionDto], Int)] = {
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
     val commentsIds = filter.comment.map(es.lookupComment).getOrElse(Future.successful(Array[Long]()))
     val tagIds = filter.tag.map(_.mkString(" ")).map(es.lookupTags).getOrElse(Future.successful(Array[Long]()))
     val searchIds = commentsIds zip tagIds map {case(a, b) => a ++ b} map { _.distinct }
-    val list = searchIds.map(TransactionQuery.list(filter, sort, page, _))
-      .flatMap(sql.query)
-      .map(_.map(txToDto)).flatMap(Future.sequence(_))
+
+    val list = searchIds.map(streamTransactions(filter, sort, page, _)).flatMap(_.runWith(Sink.seq))
+
     val count = commentsIds.map(TransactionQuery.count(filter,_)).flatMap(sql.query)
 
     list zip count
@@ -212,5 +236,87 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     index.map {errors => log.warn(s"Transaction reindexing finished with $errors errors"); errors}
         .map(e => e == 0)
       .getOrElse(false)
+  }
+
+  def replaceCurrencyForAccount(a: Account, accounts: Seq[AccountDTO]):ErrorF[Int] = {
+    import akka.stream.scaladsl._
+    implicit val am: ActorMaterializer = ActorMaterializer()
+
+    val filter = TransactionFilter(account_id = a.id.map(Seq.apply(_)))
+    def flow = streamTransactions(filter, Seq.empty[SortBy], None, Array.emptyLongArray)
+      .mapAsync(1)(old => txReplaceAccCurrency(old, a, accounts))
+      .mapAsync(1)(old => replace(old.id.get, old))
+      .map(_.map(_ => 1))
+      .toMat(Sink.fold(0)(_ + _.getOrElse(0)))(Keep.right)
+    EitherT(flow.run().map(i => i.right[String]))
+  }
+
+  /**
+    * Here we replace operation amount for account that changes currency.
+    * The procedure is straightforward: we know, that each transaction is balanced,
+    * so sum of all operations, converted to default rate, is 0. We know,
+    * that transaction always have a default currency, so we can base on.
+    * What we do to replace currency on the account is:
+    *
+    * 1)We remove all operations for specified account
+    * 2)We detect default currency of the transaction
+    * 3)We convert all remaining operations to that currency
+    * 4)..and summarize them
+    * 5)As we removed operations for changing account, transaction
+    * will be unbalanced now and sum of all ops is a remaining
+    * amount for account.
+    * 6)So we need it to be converted from default currency to
+    * account new currency and written as a new op.
+    *
+    * There is a problem with step 2 - it may happen, that default currency
+    * will be lost during step 1. In that case we can recover in two ways -
+    * if there is an op with same currency as a new currency of a account, use it as
+    * default and recalculate all other rates. If all the other currencies are different,
+    * use new account currency as default.
+    *
+    * @param tx Transaction DTO to process
+    * @param a Account to replace
+    * @return Recalculated TransactionDTO
+    */
+  def txReplaceAccCurrency(tx: TransactionDto, a: Account, accounts: Seq[AccountDTO]): Future[TransactionDto] = {
+    // 1 - Remove replaced account
+    val accLessOps = tx.operations.filterNot(_.account_id == a.id.get)
+    var accLessOpsF: Future[Seq[OperationDto]] = null
+
+    // 2 - Find default currency
+    val accountIdWithDefaultCurrency = accLessOps
+      .map(o => (o.account_id, o.rate.getOrElse(BigDecimal(1))))
+      .filter(_._2 == 1)
+      .map(o => o._1)
+      .headOption
+    val defaultCurrencyId = if (accountIdWithDefaultCurrency.isEmpty) {
+      //Ok, our life is much harder now, we need to replace default currency
+      //and replace rates
+      val currencies = accLessOps
+        .map(o => (o, accounts.filter(_.id.get == o.account_id).head))
+      val rates = currencies.map(o =>(o._1,rs.get(tx.timestamp, o._2.currency_id, a.currency_id)))
+        .map(o => Applicative[Future].tuple2(Future.successful(o._1), o._2))
+
+      accLessOpsF = Future.sequence(rates).map(_.map(o => o._1.copy(rate = Some(o._2.rate))))
+
+      a.currency_id
+    } else {
+      //Load default currency Id from account
+      accLessOpsF = Future.successful(accLessOps)
+      accounts.filter(_.id.get == accountIdWithDefaultCurrency.get).map(_.currency_id).head
+    }
+
+    // 3&4 - Convert and summarize
+    val disbalance =
+      accLessOpsF.map(_.map(o => o.rate.getOrElse(BigDecimal(1)) * o.amount).sum)
+      .map(-1 * _) //We need to invert it, so when added back to transaction it will become 0 in all ops sum
+
+    // 5&6 - a disbalance is in transaction default currency, so we need to apply
+    // reverse rate, from the default to the account currency and write it.
+    val reverseRate = rs.get(tx.timestamp, defaultCurrencyId, a.currency_id).map(_.rate)
+    val convertedOp = reverseRate.flatMap(rate => disbalance.map(d => OperationDto(a.id.get, d * rate, Some(rate))))
+
+    val txOps = convertedOp.flatMap(o => accLessOpsF.map(_ :+ o))
+    txOps.map(o => tx.copy(operations = o))
   }
 }
