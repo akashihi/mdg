@@ -4,16 +4,18 @@ import {createStore, applyMiddleware} from 'redux'
 import {Provider} from 'react-redux'
 import thunk from 'redux-thunk'
 import createHistory from 'history/createBrowserHistory'
-import { ConnectedRouter, routerMiddleware} from 'react-router-redux'
+import { ConnectedRouter, routerMiddleware, compose} from 'react-router-redux'
 
 import 'whatwg-fetch';
 
 import rootReducer from './reducers/rootReducer'
 import Main from './components/Main'
 
-const history = createHistory()
-const router = routerMiddleware(history)
-const store = createStore(rootReducer, {}, applyMiddleware(thunk, router));
+const history = createHistory();
+const router = routerMiddleware(history);
+
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(rootReducer, {}, composeEnhancers(applyMiddleware(thunk, router)));
 
 const App = () => (
     <Provider store={store}>
