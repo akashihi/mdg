@@ -1,0 +1,12 @@
+@media (max-width: 640px) {
+    .top-bar {
+        display: none !important;
+    }
+}
+
+@media (min-width: 640px) {
+    .top-bar-small {
+        display: none !important;
+    }
+}
+
