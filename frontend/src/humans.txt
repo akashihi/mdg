@@ -3,13 +3,14 @@
 
 # TEAM
 
-    <name> -- <role> -- <twitter>
+    Denis Chaplygin -- Initial work -- https://github.com/akashihi
 
 # THANKS
 
-    <name>
+    * Cloud based personal accounting services, that love to spy on you
+      and inspired me to make an open one.
 
 # TECHNOLOGY COLOPHON
 
     CSS3, HTML5
-    Apache Server Configs, jQuery, Modernizr, Normalize.css
+    Nginx, React, Redux, Material-UI
