@@ -1,12 +1,17 @@
 @media (max-width: 640px) {
-    .top-bar {
+    .hide-on-small {
         display: none !important;
     }
 }
 
 @media (min-width: 640px) {
-    .top-bar-small {
+    .hide-on-medium {
         display: none !important;
     }
 }
 
+@media (max-width: 1024px) {
+    .hide-on-big {
+        display: none !important;
+    }
+}

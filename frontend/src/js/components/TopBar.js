@@ -64,7 +64,7 @@ export default class TopBar extends Component {
             </Fragment>
         );
         return (
-            <AppBar position='static' className='top-bar'>
+            <AppBar position='static' className='hide-on-small'>
                 <Toolbar>
                     <Typography type='title' color='inherit' style={{flex: 1}}>
                         {leftButtons}
@@ -99,7 +99,7 @@ export default class TopBar extends Component {
                 currentPage='Settings';
                 break;
         }
-        return (<AppBar position='static' className='top-bar-small'>
+        return (<AppBar position='static' className='hide-on-medium'>
             <Toolbar>
                 <IconButton color='inherit' aria-label='Menu' onClick={::this.openMenu}>
                     <MenuIcon/>

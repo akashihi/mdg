@@ -34,7 +34,7 @@ export default class Main extends Component {
                     <Route path='/settings' component={SettingsViewer}/>
                   </Switch>
                 </Col>
-                <Col xs={0} sm={0} md={1} lg={1}>
+                <Col xs={0} sm={0} md={1} lg={1} className='hide-on-big'>
                   <Row><RateViewer/></Row>
                 </Col>
               </Row>
