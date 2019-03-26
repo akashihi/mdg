@@ -8,7 +8,6 @@ import MenuIcon from '@material-ui/icons/Menu';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import {push} from 'react-router-redux'
 
 export default class TopBar extends Component {
     state = {
@@ -29,7 +28,7 @@ export default class TopBar extends Component {
 
 
     setPath = function (path) {
-        this.props.store.dispatch(push(path));
+        this.props.push(path);
         this.setState({anchorEl: null})
     };
 

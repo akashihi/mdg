@@ -1,5 +1,6 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import { push } from 'connected-react-router'
 
 import TopBarWidget from '../components/TopBar'
 import * as CurrencyActions from '../actions/CurrencyActions'
@@ -21,6 +22,7 @@ function mapDispatchToProps(dispatch) {
         tagActions: bindActionCreators(TagActions, dispatch),
         budgetActions: bindActionCreators(BudgetActions, dispatch),
         rateActions: bindActionCreators(RateActions, dispatch),
+        push: bindActionCreators(push, dispatch),
     }
 }
 
