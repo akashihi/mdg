@@ -1,20 +1,20 @@
-import { OrderedMap } from 'immutable';
+import {OrderedMap, Map} from 'immutable';
 import {GET_CURRENCYLIST_REQUEST, GET_CURRENCYLIST_SUCCESS, GET_CURRENCYLIST_FAILURE} from '../constants/Currency'
 
-const initialState = {
+const initialState = Map({
     currencies: OrderedMap(),
     loading: false,
     error: false
-};
+});
 
 export default function currencyReducer(state = initialState, action) {
-    switch(action.type) {
+    switch (action.type) {
         case GET_CURRENCYLIST_REQUEST:
-            return {...state, loading: true, error: false, currencies: OrderedMap()};
+            return state.set('loading', true).set('error', false).set('currencies', OrderedMap());
         case GET_CURRENCYLIST_SUCCESS:
-            return {...state, loading: false, errot:false, currencies: action.payload};
+            return state.set('loading', false).set('error', false).set('currencies', action.payload);
         case GET_CURRENCYLIST_FAILURE:
-            return {...state, loading: false, error: true, currencies: OrderedMap()};
+            return state.set('loading', false).set('error', true).set('currencies', action.payload);
         default:
             return state;
     }

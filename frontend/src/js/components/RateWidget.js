@@ -10,13 +10,13 @@ export default class RateWidget extends Component {
 
     render() {
         const props = this.props;
-        if (props.currency.error || props.currency.loading) {
+        if (props.currency.get('error') || props.currency.get('loading')) {
             return <ClipLoader sizeUnit={'px'} size={80} loading={true}/>
         }
         const rates = this.props.rates
             .filter((item) => item.attributes.to_currency === this.props.primaryCurrency)
             .map((item) => {
-                var currency = this.props.currency.currencies.find((v, k) => k === item.attributes.from_currency);
+                var currency = this.props.currency.get('currencies').get(item.attributes.from_currency);
                 if (currency) {
                     return <ListItem key={'rate' + item.id}><ListItemText primary={currency.get('code')}
                                                                           secondary={item.attributes.rate}/></ListItem>

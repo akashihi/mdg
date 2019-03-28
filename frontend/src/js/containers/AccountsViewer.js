@@ -8,7 +8,7 @@ import * as AccountActions from '../actions/AccountViewerActions'
 
 const mapStateToProps = (state) => {
     return {
-        currencies: state.currency.currencies,
+        currencies: state.currency.get('currencies'),
         categoryList: state.category.categoryList,
         waiting: state.account.ui.accountListLoading,
         error: state.account.ui.accountListError,

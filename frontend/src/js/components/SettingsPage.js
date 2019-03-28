@@ -32,15 +32,15 @@ class CurrencyEditorWidget extends Component {
         const props = this.props;
         const {classes} = props;
 
-        if (props.currency.loading) {
+        if (props.currency.get('loading')) {
             return <ClipLoader sizeUnit={'px'} size={180} loading={true}/>
         }
 
-        if (props.currency.error) {
+        if (props.currency.get('error')) {
             return <h1>Error loading currency list</h1>
         }
 
-        const allCurrencies = props.currency.currencies.map((v, k) => {
+        const allCurrencies = props.currency.get('currencies').map((v, k) => {
             return (
                 <ListItem key={k} dense button>
                     <ListItemText primary={v.get('name')}/>
@@ -81,7 +81,7 @@ class SettingsPage extends Component {
             return (<h1>Unable to load settings</h1>)
         }
 
-        var currencies = props.currency.currencies.filter((v) => v.get('active')).map((v, k) => {
+        var currencies = props.currency.get('currencies').filter((v) => v.get('active')).map((v, k) => {
             return (
                 <MenuItem value={k} key={k}>{v.get('name')}</MenuItem>
             )
