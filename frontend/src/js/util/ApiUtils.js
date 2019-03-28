@@ -15,6 +15,15 @@ export function dataToMap(json) {
     }, new OrderedMap())
 }
 
+export function mapToData(id, item) {
+    return {
+        data: {
+            id: id,
+            attributes: item.toJS()
+        }
+    }
+}
+
 export function checkApiError(json) {
     if (typeof json === 'undefined') {
         return json

@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
 
 import {GET_CURRENCYLIST_REQUEST, GET_CURRENCYLIST_SUCCESS, GET_CURRENCYLIST_FAILURE} from '../constants/Currency'
 import {loadCategoryList} from './CategoryActions'
@@ -32,14 +32,14 @@ export function loadCurrencyList() {
     }
 }
 
-export function updateCurrency(currency) {
+export function updateCurrency(id, currency) {
     return (dispatch) => {
         dispatch({
             type: GET_CURRENCYLIST_REQUEST,
             payload: true
         });
 
-        var url = '/api/currency/' + currency.id;
+        var url = '/api/currency/' + id;
         var method = 'PUT';
 
         fetch(url, {
@@ -47,7 +47,7 @@ export function updateCurrency(currency) {
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify({data: currency})
+            body: JSON.stringify(mapToData(id, currency))
         })
             .then(parseJSON)
             .then(checkApiError)
