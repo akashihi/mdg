@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 import {withStyles} from '@material-ui/core/styles';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import Select from '@material-ui/core/Select';
@@ -53,14 +53,14 @@ class CurrencyEditorWidget extends Component {
         }).valueSeq().toJS();
 
         return (<List className={classes.root}>
-                    {allCurrencies}
-                </List>)
+            {allCurrencies}
+        </List>)
     }
 }
 
 const CurrencyEditor = withStyles(styles)(CurrencyEditorWidget);
 
-class SettingsPage extends Component {
+class SettingEditor extends Component {
     onPrimaryCurrencyChange(value) {
         this.props.actions.setPrimaryCurrency(value);
     }
@@ -74,13 +74,13 @@ class SettingsPage extends Component {
     }
 
     render() {
-        var props = this.props;
+        const props = this.props;
 
-        if (props.waiting) {
-            return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
+        if (props.ui.get('settingListLoading')) {
+            return <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
         }
-        if (props.error) {
-            return (<h1>Unable to load settings</h1>)
+        if (props.ui.get('settingListError')) {
+            return <h1>Unable to load settings</h1>
         }
 
         var currencies = props.currency.get('currencies').filter((v) => v.get('active')).map((v, k) => {
@@ -89,38 +89,51 @@ class SettingsPage extends Component {
             )
         }).valueSeq().toJS();
 
+        return (<Fragment>
+            <Row>
+                <Col xs={12} sm={6} md={4} lg={4}>
+                    <p>Primary currency:</p>
+                </Col>
+                <Col xs={12} sm={6} md={4} lg={4}>
+                    <Select
+                        value={props.primaryCurrency}
+                        onChange={(ev) => ::this.onPrimaryCurrencyChange(ev.target.value)}
+                    >
+                        {currencies}
+                    </Select>
+                </Col>
+            </Row>
+            <Row>
+                <Col xs={6} sm={6} md={4} lg={4}>
+                    <p>By default close transaction dialog:</p>
+                </Col>
+                <Col xs={6} sm={6} md={4} lg={4}>
+                    <Checkbox checked={this.props.closeTransactionDialog}
+                              onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
+                </Col>
+            </Row>
+            <Row>
+                <Col xs={6} sm={6} md={4} lg={4}>
+                    <p>Reindex transactions search data:</p>
+                </Col>
+                <Col xs={6} sm={6} md={4} lg={4}>
+                    <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
+                </Col>
+            </Row>
+        </Fragment>)
+    }
+}
+
+class SettingsPage extends Component {
+    render() {
+        const props = this.props;
+
         return (
             <Grid fluid>
-                <Row>
-                    <Col xs={12} sm={6} md={4} lg={4}>
-                        <p>Primary currency:</p>
-                    </Col>
-                    <Col xs={12} sm={6} md={4} lg={4}>
-                        <Select
-                            value={props.primaryCurrency}
-                            onChange={(ev) => ::this.onPrimaryCurrencyChange(ev.target.value)}
-                        >
-                            {currencies}
-                        </Select>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col xs={6} sm={6} md={4} lg={4}>
-                        <p>By default close transaction dialog:</p>
-                    </Col>
-                    <Col xs={6} sm={6} md={4} lg={4}>
-                        <Checkbox checked={this.props.closeTransactionDialog}
-                                  onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col xs={6} sm={6} md={4} lg={4}>
-                        <p>Reindex transactions search data:</p>
-                    </Col>
-                    <Col xs={6} sm={6} md={4} lg={4}>
-                        <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
-                    </Col>
-                </Row>
+                <SettingEditor ui={props.setting.get('ui')} currency={props.currency}
+                               primaryCurrency={props.primaryCurrency}
+                               closeTransactionDialog={props.closeTransactionDialog}
+                               actions={props.actions}/>
                 <Divider/>
                 <Row>
                     <Col xs={12} sm={6} md={4} lg={4}>

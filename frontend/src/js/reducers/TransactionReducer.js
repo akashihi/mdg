@@ -120,8 +120,7 @@ export default function transactionReducer(state = initialState, action) {
             dialog = {...dialog, closeOnSave: action.payload};
             return {...state, dialog: dialog};
        case GET_SETTING_SUCCESS:
-            var closeTransactionDialogObject = action.payload.filter((item) => item.id == 'ui.transaction.closedialog')[0]
-            var closeTransactionDialog = closeTransactionDialogObject.attributes.value === 'true'
+            var closeTransactionDialog = action.payload.get('ui.transaction.closedialog').get('value') === 'true';
 
             dialog = {...dialog, closeOnSave: closeTransactionDialog};
             return {...state, dialog: dialog};

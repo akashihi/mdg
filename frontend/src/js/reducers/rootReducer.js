@@ -9,7 +9,6 @@ import TransactionViewReducer from './TransactionViewReducer'
 import TagReducer from './TagReducer'
 import BudgetEntryReducer from './BudgetEntryReducer'
 import SettingReducer from './SettingReducer'
-import SettingViewReducer from './SettingViewReducer'
 import RateReducer from './RateReducer'
 import ReportReducer from './ReportReducer'
 
@@ -24,7 +23,6 @@ export default (history) => combineReducers({
     tag: TagReducer,
     budgetentry: BudgetEntryReducer,
     setting: SettingReducer,
-    settingView: SettingViewReducer,
     rate: RateReducer,
     report: ReportReducer
 })

@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, dataToMap, parseJSON} from '../util/ApiUtils';
 
 import {GET_SETTING_REQUEST, GET_SETTING_SUCCESS, GET_SETTING_FAILURE} from '../constants/Setting'
 import {loadAccountList} from './AccountViewerActions'
@@ -14,16 +14,17 @@ export function loadSettingList() {
         fetch('/api/setting')
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_SETTING_SUCCESS,
-                    payload: json.data
+                    payload: map
                 });
             })
             .catch(function (response) {
                 dispatch({
                     type: GET_SETTING_FAILURE,
-                    payload: response.json
+                    payload: response
                 })
             });
     }
