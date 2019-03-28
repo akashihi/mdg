@@ -10,6 +10,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
+import Divider from '@material-ui/core/Divider';
 
 import CategoryViewer from '../containers/CategoryViewer.js';
 
@@ -18,6 +19,7 @@ const styles = {
         position: 'relative',
         overflow: 'auto',
         maxHeight: 160,
+        margin: '1em'
     }
 };
 
@@ -85,15 +87,15 @@ class SettingsPage extends Component {
             return (
                 <MenuItem value={k} key={k}>{v.get('name')}</MenuItem>
             )
-        });
+        }).valueSeq().toJS();
 
         return (
             <Grid fluid>
                 <Row>
-                    <Col xs={6} sm={6} md={4} lg={4}>
+                    <Col xs={12} sm={6} md={4} lg={4}>
                         <p>Primary currency:</p>
                     </Col>
-                    <Col xs={6} sm={6} md={4} lg={4}>
+                    <Col xs={12} sm={6} md={4} lg={4}>
                         <Select
                             value={props.primaryCurrency}
                             onChange={(ev) => ::this.onPrimaryCurrencyChange(ev.target.value)}
@@ -119,14 +121,16 @@ class SettingsPage extends Component {
                         <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
                     </Col>
                 </Row>
+                <Divider/>
                 <Row>
-                    <Col xs={6} sm={6} md={4} lg={4}>
+                    <Col xs={12} sm={6} md={4} lg={4}>
                         <p>Active currencies:</p>
                     </Col>
-                    <Col xs={6} sm={6} md={4} lg={4}>
+                    <Col xs={12} sm={6} md={4} lg={4}>
                         <CurrencyEditor currency={props.currency} currencyActions={this.props.currencyActions}/>
                     </Col>
                 </Row>
+                <Divider/>
                 <Row>
                     <Col xs={12} sm={12} md={12} lg={12}>
                         <CategoryViewer/>
