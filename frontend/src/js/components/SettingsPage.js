@@ -21,6 +21,43 @@ const styles = {
     }
 };
 
+class CurrencyEditorWidget extends Component {
+    onCurrencyChange(k, item) {
+        const modified = item.set('active', !item.get('active'));
+        this.props.currencyActions.updateCurrency(k, modified)
+    }
+
+    render() {
+        const cls = this;
+        const props = this.props;
+        const {classes} = props;
+
+        if (props.currency.loading) {
+            return <ClipLoader sizeUnit={'px'} size={180} loading={true}/>
+        }
+
+        if (props.currency.error) {
+            return <h1>Error loading currency list</h1>
+        }
+
+        const allCurrencies = props.currency.currencies.map((v, k) => {
+            return (
+                <ListItem key={k} dense button>
+                    <ListItemText primary={v.get('name')}/>
+                    <ListItemSecondaryAction><Checkbox checked={v.get('active')}
+                                                       onChange={() => cls.onCurrencyChange(k, v)}/></ListItemSecondaryAction>
+                </ListItem>
+            )
+        }).valueSeq().toJS();
+
+        return (<List className={classes.root}>
+                    {allCurrencies}
+                </List>)
+    }
+}
+
+const CurrencyEditor = withStyles(styles)(CurrencyEditorWidget);
+
 class SettingsPage extends Component {
     onPrimaryCurrencyChange(value) {
         this.props.actions.setPrimaryCurrency(value);
@@ -34,15 +71,8 @@ class SettingsPage extends Component {
         this.props.actions.reindexTransactions();
     }
 
-    onCurrencyChange(k, item) {
-        const modified = item.set('active', !item.get('active'));
-        this.props.currencyActions.updateCurrency(k, modified)
-    }
-
     render() {
-        var cls = this;
         var props = this.props;
-        const {classes} = props;
 
         if (props.waiting) {
             return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
@@ -51,19 +81,9 @@ class SettingsPage extends Component {
             return (<h1>Unable to load settings</h1>)
         }
 
-        var currencies = props.currencies.filter((v) => v.get('active')).map((v, k) => {
+        var currencies = props.currency.currencies.filter((v) => v.get('active')).map((v, k) => {
             return (
                 <MenuItem value={k} key={k}>{v.get('name')}</MenuItem>
-            )
-        });
-
-        var allCurrencies = props.currencies.map((v, k) => {
-            return (
-                <ListItem key={k} dense button>
-                    <ListItemText primary={v.get('name')}/>
-                    <ListItemSecondaryAction><Checkbox checked={v.get('active')}
-                                                       onChange={() => cls.onCurrencyChange(k, v)}/></ListItemSecondaryAction>
-                </ListItem>
             )
         });
 
@@ -104,9 +124,7 @@ class SettingsPage extends Component {
                         <p>Active currencies:</p>
                     </Col>
                     <Col xs={6} sm={6} md={4} lg={4}>
-                        <List className={classes.root}>
-                            {allCurrencies}
-                        </List>
+                        <CurrencyEditor currency={props.currency} currencyActions={this.props.currencyActions}/>
                     </Col>
                 </Row>
                 <Row>
