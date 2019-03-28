@@ -7,7 +7,6 @@ import * as TagActions from '../actions/TagActions'
 
 const mapStateToProps = (state) => {
     return {
-        currencies: state.currency.currencyList,
         waiting: state.transaction.ui.transactionListLoading,
         error: state.transaction.ui.transactionListError,
         assetAccounts: state.account.assetAccountList,

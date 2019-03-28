@@ -50,17 +50,17 @@ class SettingsPage extends Component {
       return (<h1>Unable to load settings</h1>)
     }
 
-    var currencies = props.currencies.filter((item) => item.attributes.active).map(function (item) {
+    var currencies = props.currencies.filter((v) => v.get('active')).map((v,k) => {
         return (
-            <MenuItem value={item.id} key={item.id}>{item.attributes.name}</MenuItem>
+            <MenuItem value={k} key={k}>{v.get('name')}</MenuItem>
         )
     });
 
-    var allCurrencies = props.currencies.map(function (item) {
+    var allCurrencies = props.currencies.map((v,k) => {
         return (
-            <ListItem key={item.id} dense button>
-              <ListItemText primary={item.attributes.name}/>
-              <ListItemSecondaryAction><Checkbox checked={item.attributes.active} onChange={() => this::onCurrencyCheck(item)}/></ListItemSecondaryAction>
+            <ListItem key={k} dense button>
+              <ListItemText primary={v.get('name')}/>
+              <ListItemSecondaryAction><Checkbox checked={v.get('active')} onChange={() => this::onCurrencyCheck(v)}/></ListItemSecondaryAction>
             </ListItem>
         )
     });

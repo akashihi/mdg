@@ -29,10 +29,10 @@ class AccountMapper {
     }
 
     accountToMenuItem(item) {
-        const currencyIndex = this.currencies.map((c) => c.id).indexOf(item.attributes.currency_id);
+        const currency = this.currencies.find((v, k) => k === item.attributes.currency_id);
         var currencyName = '';
-        if (currencyIndex > -1) {
-            currencyName = '(' + this.currencies[currencyIndex].attributes.name + ')'
+        if (currency > -1) {
+            currencyName = '(' + currency.get('name') + ')'
         }
         return (<MenuItem key={item.id} value={item.id}>{item.attributes.name + currencyName}</MenuItem>)
     }

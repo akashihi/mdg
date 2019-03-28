@@ -68,7 +68,7 @@ export default class AccountsPage extends Component {
             hiddenButton = <Button onClick={this.onHiddenAccountsClick.bind(this)}>Show hidden accounts</Button>
         }
 
-        var primaryCurrencyName = props.currencies.filter((item) => item.id == props.primaryCurrency).map((item) => item.attributes.name)[0]
+        var primaryCurrencyName = props.currencies.find((v,k) => k == props.primaryCurrency).get('name');
 
         return (
             <div>

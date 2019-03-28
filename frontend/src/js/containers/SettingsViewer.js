@@ -9,7 +9,7 @@ const mapStateToProps = (state) => {
     return {
         primaryCurrency: state.setting.primaryCurrency,
         closeTransactionDialog: state.setting.closeTransactionDialog,
-        currencies: state.currency.currencyList,
+        currencies: state.currency.currencies,
         waiting: state.settingView.ui.settingListLoading,
         error: state.settingView.ui.settingListError
     }

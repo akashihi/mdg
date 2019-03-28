@@ -81,7 +81,7 @@ export default class BudgetEntry extends Component {
             <Grid fluid>
                 <Row>
                     <Col xs={6} sm={6} md={3} lg={3}>
-                        <p>{attr.account_name}&nbsp;({props.currency.attributes.name})</p>
+                        <p>{attr.account_name}&nbsp;({props.currency.get('name')})</p>
                     </Col>
                     <Col xs={6} sm={6} md={3} lg={3}>
                         {change}

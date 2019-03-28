@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
 
 import {GET_CURRENCYLIST_REQUEST, GET_CURRENCYLIST_SUCCESS, GET_CURRENCYLIST_FAILURE} from '../constants/Currency'
 import {loadCategoryList} from './CategoryActions'
@@ -14,10 +14,11 @@ export function loadCurrencyList() {
         fetch('/api/currency')
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_CURRENCYLIST_SUCCESS,
-                    payload: json.data
+                    payload: map
                 });
             })
             .then(() => dispatch(loadCategoryList()))

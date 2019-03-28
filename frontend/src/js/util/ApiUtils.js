@@ -1,3 +1,5 @@
+import { OrderedMap, Map } from 'immutable';
+
 export function parseJSON(response) {
     try {
         return response.json()
@@ -5,6 +7,12 @@ export function parseJSON(response) {
         //Not a json, pass
     }
 
+}
+
+export function dataToMap(json) {
+    return json.data.reduce((acc, item) => {
+        return acc.set(item.id, Map(item.attributes))
+    }, new OrderedMap())
 }
 
 export function checkApiError(json) {

@@ -107,11 +107,9 @@ export default class AccountDialog extends React.Component {
     render() {
         var props = this.props;
 
-        var currencies = props.currencies.filter((item) => item.attributes.active).map(function (item) {
-            return (
-                <MenuItem value={item.id} key={item.id}>{item.attributes.name}</MenuItem>
-            )
-        });
+        var currencies = props.currencies.filter((v) => v.get('active'))
+            .map((v,k) => (<MenuItem value={k} key={k}>{v.get('name')}</MenuItem>))
+            .valueSeq().toJS();
 
         var nameLabel = 'Account name'
         var nameText = false

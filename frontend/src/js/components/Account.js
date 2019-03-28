@@ -12,9 +12,7 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 
 export default class Account extends Component {
     getCurrency = function(account, currencies) {
-        var currencyId = account.currency_id;
-        var names = currencies.filter((item) => item.id == currencyId).map((item) => item.attributes.name);
-        return names[0];
+        return currencies.find((v, k) => k === account.currency_id).get('name')
     };
 
     render() {

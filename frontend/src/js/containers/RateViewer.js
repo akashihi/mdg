@@ -7,7 +7,7 @@ import * as RateActions from '../actions/RateActions'
 const mapStateToProps = (state) => {
     return {
         primaryCurrency: state.setting.primaryCurrency,
-        currencies: state.currency.currencyList,
+        currencies: state.currency.currencies,
         rates: state.rate.rateList
     }
 };
