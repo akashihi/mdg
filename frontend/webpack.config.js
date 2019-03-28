@@ -49,13 +49,14 @@ var build = {
 
 var development = {
     mode: 'development',
-    devtool: 'inline-source-map',
+    devtool: 'eval-source-map',
     devServer: {
         contentBase: path.resolve(__dirname, 'src'), // `__dirname` is root of the project
         watchContentBase: true,
+        historyApiFallback: true,
         proxy: {
             '/api': {
-                target: 'http://127.0.0.1:9000/api',
+                target: 'http://127.0.0.1/api',
                 pathRewrite: {'^/api' : ''}
             }
         }
