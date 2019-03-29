@@ -10,20 +10,15 @@ export default class CategoryViewerWidget extends Component {
     this.props.actions.createCategory()
   }
 
-  categoryToTree(category) {
-    if ('attributes' in category) {
-      var attr = category.attributes
-    } else {
-      attr = category
-    }
-    if ('children' in attr) {
+  categoryToTree(category, id) {
+    if (category.has('children')) {
       return {
-        id: attr.id,
-        value: attr.name,
-        nodes: attr.children.map(::this.categoryToTree)
+        id: id,
+        value: category.get('name'),
+        nodes: category.get('children').map(::this.categoryToTree).valueSeq()
       }
     } else {
-        return {id: attr.id, value: attr.name}
+        return {id: id, value: category.get('name')}
     }
   }
 
@@ -38,8 +33,8 @@ export default class CategoryViewerWidget extends Component {
       return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
     }
 
-    var tree = props.categoryList.map(::this.categoryToTree)
-
+    var tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS()
+    
     return (
       <Fragment>
         Categories:

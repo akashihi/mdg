@@ -10,8 +10,23 @@ export function parseJSON(response) {
 }
 
 export function dataToMap(json) {
+    function mapChildren(content) {
+      if (content.has('children')) {
+        var children = content.get('children').reduce((subacc, item) => {
+          return subacc.set(item.id, OrderedMap(item))
+        }, new OrderedMap())
+        children = mapChildren(children)
+        content = content.set('children', children)
+      }
+      return content
+    }
+
     return json.data.reduce((acc, item) => {
-        return acc.set(item.id, Map(item.attributes))
+        var content = Map(item.attributes)
+
+        // Special handling for tree structures, like Category
+        content = mapChildren(content)
+        return acc.set(item.id, content)
     }, new OrderedMap())
 }
 

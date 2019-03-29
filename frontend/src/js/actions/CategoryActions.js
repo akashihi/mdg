@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
 import {loadAccountList} from './AccountViewerActions';
 
 import {
@@ -22,10 +22,11 @@ export function loadCategoryList() {
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (data) {
                 dispatch({
                     type: GET_CATEGORYLIST_SUCCESS,
-                    payload: json.data
+                    payload: data
                 })
             })
             .then(() => dispatch(loadAccountList()))

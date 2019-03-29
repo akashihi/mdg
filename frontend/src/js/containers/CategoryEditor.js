@@ -7,12 +7,12 @@ import * as CategoryActions from '../actions/CategoryActions'
 
 const mapStateToProps = (state) => {
     return {
-        categoryList: state.category.categoryList,
-        open: state.category.dialog.open,
-        full: state.category.dialog.full,
-        category: state.category.dialog.category,
-        valid: state.category.dialog.valid,
-        errors: state.category.dialog.errors
+        categoryList: state.category.get('categoryList'),
+        open: state.category.get('dialog').get('open'),
+        full: state.category.get('dialog').get('full'),
+        category: state.category.get('dialog').get('category'),
+        valid: state.category.get('dialog').get('valid'),
+        errors: state.category.get('dialog').get('errors')
     }
 };
 
