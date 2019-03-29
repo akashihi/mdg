@@ -17,9 +17,10 @@ const initialState = Map({
     dialog: Map({
         open: false,
         full: false,
-        category: {attributes: {}},
+        category: Map(),
+        id: null,
         valid: false,
-        errors: { }
+        errors: Map()
     })
 });
 
@@ -45,9 +46,11 @@ export default function categoryReducer(state = initialState, action) {
     switch (action.type) {
         case CATEGORY_DIALOG_OPEN:
             var validInitial = validateCategoryForm(action.payload.category);
+
             return state.setIn(['dialog', 'open'], true)
               .setIn(['dialog', 'full'], action.payload.full)
               .setIn(['dialog', 'category'], action.payload.category)
+              .setIn(['dialog', 'id'], action.payload.id)
               .setIn(['dialog', 'valid'], validInitial.get('valid'))
               .setIn(['dialog', 'errors'], validInitial.get('errors'))
         case CATEGORY_DIALOG_CLOSE:

@@ -13,9 +13,9 @@ export function dataToMap(json) {
     function mapChildren(content) {
       if (content.has('children')) {
         var children = content.get('children').reduce((subacc, item) => {
-          return subacc.set(item.id, OrderedMap(item))
+          const mapItem = Map(item)
+          return subacc.set(item.id, mapChildren(mapItem))
         }, new OrderedMap())
-        children = mapChildren(children)
         content = content.set('children', children)
       }
       return content

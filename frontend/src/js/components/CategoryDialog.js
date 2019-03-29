@@ -23,65 +23,34 @@ export default class CategoryDialog extends React.Component {
         this.props.actions.editCategoryDelete();
     }
 
-    onTypeChange(event) {
-        var attr = {...this.props.category.attributes};
-        attr.account_type = event.target.value;
-        var category = {...this.props.category, attributes: attr};
+    onPropChange(id, prop, event) {
+        var category = this.props.category.set(prop, event.target.value)
         this.props.actions.editCategoryChange(category);
     }
 
-    onNameChange(event) {
-        var attr = {...this.props.category.attributes};
-        attr.name = event.target.value;
-        var category = {...this.props.category, attributes: attr};
-        this.props.actions.editCategoryChange(category);
-    }
-
-    onOrderChange(event) {
-        var attr = {...this.props.category.attributes};
-        attr.priority = event.target.value;
-        var category = {...this.props.category, attributes: attr};
-        this.props.actions.editCategoryChange(category);
-    }
-
-    onParentChange(event) {
-        var attr = {...this.props.category.attributes};
-        attr.parent_id = event.target.value;
-        var category = {...this.props.category, attributes: attr};
-        this.props.actions.editCategoryChange(category);
-    }
-
-    mapCategoryListToMenu(currentId, categoryList) {
+    mapCategoryListToMenu(currentId, account_type, categoryList) {
       var entries = []
 
       var entry = <MenuItem key='top' value={currentId}>&lt;TOP&gt;</MenuItem>
       entries.push(entry)
 
-      var mapEntry = function(category, prefix) {
-        if ('attributes' in category) {
-          var attr = category.attributes
-        } else {
-          attr = category
-        }
-
+      var mapEntry = function(id, category, prefix) {
         // We do not want edited category and it's children in a parents list
-        if (attr.id == currentId) {
+        if (id == currentId) {
           return
         }
 
           var prepend = '-'.repeat(prefix)
-          var entry = <MenuItem key={attr.id} value={attr.id}>{prepend}{attr.name}</MenuItem>
+          var entry = <MenuItem key={id} value={id}>{prepend}{category.get('name')}</MenuItem>
           entries.push(entry)
-          if (attr.children) {
-            for (var item of attr.children) {
-              mapEntry(item, prefix+1)
-            }
+          if (category.has('children')) {
+            category.get('children').forEach((v, k) => {
+              mapEntry(k, v, prefix+1)
+            })
           }
       }
 
-      for (var item of categoryList) {
-        mapEntry(item, 0)
-      }
+      categoryList.filter(v => v.get('account_type') == account_type).forEach((v, k) => {mapEntry(k, v, 0)})
       return entries
     }
 
@@ -90,28 +59,28 @@ export default class CategoryDialog extends React.Component {
 
         var nameLabel = 'Category name'
         var nameText = false
-        if (props.errors.name) {
-          nameLabel = props.errors.name
+        if (props.errors.has('name')) {
+          nameLabel = props.errors.get('name')
           nameText = true
         }
 
         var orderLabel = 'Ordering value'
         var orderText = false
-        if (props.errors.order) {
-          orderLabel = props.errors.order
+        if (props.errors.has('order')) {
+          orderLabel = props.errors.get('order')
           orderText = true
         }
 
-        var parents = this.mapCategoryListToMenu(props.category.id, props.categoryList)
-
+        var parents = this.mapCategoryListToMenu(props.id, props.category.get('account_type'), props.categoryList)
+        
         return (<Dialog title='Category editing' open={props.open}>
         <DialogContent>
-          <TextField label={nameLabel} error={nameText} value={props.category.attributes.name} onChange={::this.onNameChange}/>
+          <TextField label={nameLabel} error={nameText} value={props.category.get('name')} onChange={(event) => ::this.onPropChange(props.id, 'name', event)}/>
           <br/>
           <FormControl fullWidth={true}>
               <InputLabel htmlFor={'account-type'}>This category is for account of type</InputLabel>
-              <Select value={props.category.attributes.account_type}
-                      onChange={::this.onTypeChange}
+              <Select value={props.category.get('account_type')}
+                      onChange={(event) => ::this.onPropChange(props.id, 'account_type', event)}
                       disabled={!props.full}
                       inputProps={{id: 'account-type'}}>
                       {/*<MenuItem key='asset' value='asset'>Asset account</MenuItem>*/}
@@ -121,13 +90,13 @@ export default class CategoryDialog extends React.Component {
           </FormControl>
           <FormControl fullWidth={true}>
               <InputLabel htmlFor={'parent'}>Parent</InputLabel>
-              <Select value={props.category.attributes.parent_id}
-                      onChange={::this.onParentChange}
+              <Select value={props.category.get('parent_id')}
+                      onChange={(event) => ::this.onPropChange(props.id, 'parent_id', event)}
                       inputProps={{id: 'parent'}}>
                       {parents}
               </Select>
           </FormControl>
-          <TextField label={orderLabel} error={orderText} value={props.category.attributes.priority} onChange={::this.onOrderChange}/>
+          <TextField label={orderLabel} error={orderText} value={props.category.get('priority')} onChange={(event) => ::this.onPropChange(props.id, 'priority', event)}/>
         </DialogContent>
         <DialogActions>
           <Button color='primary' disabled={props.full} variant='contained' onClick={::this.onDeleteClick}>Delete</Button>

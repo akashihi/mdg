@@ -11,6 +11,7 @@ export default class CategoryViewerWidget extends Component {
   }
 
   categoryToTree(category, id) {
+    
     if (category.has('children')) {
       return {
         id: id,
@@ -34,7 +35,7 @@ export default class CategoryViewerWidget extends Component {
     }
 
     var tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS()
-    
+
     return (
       <Fragment>
         Categories:
