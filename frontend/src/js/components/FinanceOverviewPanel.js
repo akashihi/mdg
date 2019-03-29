@@ -21,7 +21,11 @@ class FinanceOverviewPanel extends Component {
 
     renderAsset(props, item) {
       var getCurrency = function(id) {
-          return props.currencies.find((v, k) => id == k).get('code');
+          const currency = props.currencies.find((v, k) => id == k);
+          if (currency) {
+            return currency.get('code');
+          }
+          return '';
       };
 
 
