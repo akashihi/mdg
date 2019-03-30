@@ -11,9 +11,7 @@ const mapStateToProps = (state) => {
         open: state.category.get('dialog').get('open'),
         full: state.category.get('dialog').get('full'),
         category: state.category.get('dialog').get('category'),
-        id: state.category.get('dialog').get('id'),
-        valid: state.category.get('dialog').get('valid'),
-        errors: state.category.get('dialog').get('errors')
+        id: state.category.get('dialog').get('id')
     }
 };
 

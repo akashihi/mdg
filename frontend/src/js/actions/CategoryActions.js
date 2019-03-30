@@ -8,7 +8,6 @@ import {
     GET_CATEGORYLIST_SUCCESS,
     GET_CATEGORYLIST_FAILURE,
     CATEGORY_DIALOG_OPEN,
-    CATEGORY_DIALOG_CHANGE,
     CATEGORY_DIALOG_CLOSE
 } from '../constants/Category'
 
@@ -50,7 +49,7 @@ export function updateCategory(id, category) {
 
         var url = '/api/category';
         var method = 'POST';
-        if (id != -1) {
+        if (id !== -1) {
             url = url + '/' + id;
             method = 'PUT';
         }
@@ -91,7 +90,7 @@ function findCategoryInListById(categoryId, categoryList) {
 
   var result = Map({account_type: 'income', priority: 1, name: ''})
   var getEntry = function(id, category) {
-    if (id == categoryId) {
+    if (id === categoryId) {
       result = category
     }
     if (category.has('children')) {
@@ -126,23 +125,16 @@ export function editCategoryCancel() {
     }
 }
 
-export function editCategoryChange(category) {
-    return {
-        type: CATEGORY_DIALOG_CHANGE,
-        payload: category
-    }
-}
-
-export function editCategorySave() {
+export function editCategorySave(newCategory) {
     return (dispatch, getState) => {
         dispatch({
             type: CATEGORY_DIALOG_CLOSE,
             payload: true
         });
 
-        var state = getState();
-        var id = state.category.getIn(['dialog', 'id']);
-        var category = state.category.getIn(['dialog', 'category']);
+        const state = getState();
+        const id = state.category.getIn(['dialog', 'id']);
+        var category = state.category.getIn(['dialog', 'category']).merge(newCategory);
         dispatch(updateCategory(id, category));
     }
 }

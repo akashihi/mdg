@@ -17,7 +17,7 @@ export default function currencyReducer(state = initialState, action) {
                 .setIn(['ui', 'settingListError'], false);
         case GET_SETTING_SUCCESS:
             return state.set('primaryCurrency', parseInt(action.payload.get('currency.primary').get('value')))
-                .set('closeTransactionDialog', action.payload.get('ui.transaction.closedialog').get('value') == 'true')
+                .set('closeTransactionDialog', action.payload.get('ui.transaction.closedialog').get('value') === 'true')
                 .setIn(['ui', 'settingListLoading'], false)
                 .setIn(['ui', 'settingListError'], false);
         case GET_SETTING_FAILURE:
