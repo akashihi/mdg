@@ -10,7 +10,7 @@ object CurrencyQuery {
   val currencies = TableQuery[Currencies]
 
   def list(): DBIO[Seq[Currency]] =
-    currencies.sortBy(r => (r.active.desc, r.name.desc)).result
+    currencies.sortBy(r => (r.active.desc, r.name.asc)).result
 
   def findById(id: Long): DBIO[Option[Currency]] =
     currencies.filter(_.id === id).result.headOption
