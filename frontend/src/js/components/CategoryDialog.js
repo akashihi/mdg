@@ -72,7 +72,7 @@ export default class CategoryDialog extends React.Component {
                 {({submitForm, isSubmitting, values}) => (
                     <Form>
                         <DialogContent>
-                            <Field type='text' name='name' label='Category name' component={TextField}/>
+                            <Field type='text' name='name' label='Category name' component={TextField} className='common-field-width'/>
                             <ErrorMessage name='name' component='div'/>
                             <br/>
                             <Field
@@ -83,7 +83,8 @@ export default class CategoryDialog extends React.Component {
                                 disabled={!props.full}
                                 helperText='Please select account type'
                                 margin='normal'
-                                component={TextField}>
+                                component={TextField}
+                                className='common-field-width'>
                                 {/*<MenuItem key='asset' value='asset'>Asset account</MenuItem>*/}
                                 <MenuItem key='income' value='income'>Income account</MenuItem>
                                 <MenuItem key='expense' value='expense'>Expense account</MenuItem>
@@ -97,12 +98,13 @@ export default class CategoryDialog extends React.Component {
                                 select
                                 helperText='Please select parent'
                                 margin='normal'
-                                component={TextField}>
+                                component={TextField}
+                                className='common-field-width'>
                                 {::this.mapCategoryListToMenu(values.account_type)}
                                 ))}
                             </Field>
                             <br/>
-                            <Field type='number' name='priority' label='Ordering value' component={TextField}/>
+                            <Field type='number' name='priority' label='Ordering value' component={TextField}  className='common-field-width'/>
                             <ErrorMessage name='priority' component='div'/>
                         </DialogContent>
                         <DialogActions>
