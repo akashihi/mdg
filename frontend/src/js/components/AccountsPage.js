@@ -2,7 +2,6 @@ import React, {Component, Fragment} from 'react';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import ClipLoader from 'react-spinners/ClipLoader';
 import Tabs from '@material-ui/core/Tabs';
@@ -68,7 +67,10 @@ export default class AccountsPage extends Component {
             hiddenButton = <Button onClick={this.onHiddenAccountsClick.bind(this)}>Show hidden accounts</Button>
         }
 
-        var primaryCurrencyName = props.currencies.find((v,k) => k == props.primaryCurrency).get('name');
+        var primaryCurrencyName = '';
+        if (props.currencies.has(props.primaryCurrency)) {
+          primaryCurrencyName = props.currencies.get(props.primaryCurrency).get('name')
+        }
 
         return (
             <div>
@@ -89,7 +91,7 @@ export default class AccountsPage extends Component {
                             </Row>
                             <Row>
                                 <Col xs={12} sm={12} md={3} lg={3}>
-                                    <Button aria-label='Add account' onClick={::this.onCreateAccountClick}><AddCircleOutline/></Button>
+                                    <Button aria-label='Add account' color='primary' onClick={::this.onCreateAccountClick}>Add account</Button>
                                 </Col>
                                 <Col xs={12} sm={12} mdOffset={6} md={3} lgOffset={6} lg={3}>
                                     {hiddenButton}

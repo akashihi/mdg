@@ -9,7 +9,7 @@ import * as AccountActions from '../actions/AccountViewerActions'
 const mapStateToProps = (state) => {
     return {
         currencies: state.currency.get('currencies'),
-        categoryList: state.category.categoryList,
+        categoryList: state.category.get('categoryList'),
         waiting: state.account.ui.accountListLoading,
         error: state.account.ui.accountListError,
         totals: state.account.totals,
@@ -17,7 +17,7 @@ const mapStateToProps = (state) => {
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
-        primaryCurrency: state.setting.primaryCurrency
+        primaryCurrency: state.setting.get('primaryCurrency')
     }
 };
 

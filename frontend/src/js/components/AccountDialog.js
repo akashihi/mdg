@@ -125,7 +125,7 @@ export default class AccountDialog extends React.Component {
           currencyError = true
         }
 
-        var parents = this.mapCategoryListToMenu(props.categoryList.filter((item) => item.attributes.account_type == props.account.attributes.account_type))
+        var parents = this.mapCategoryListToMenu(props.categoryList.filter((v) => v.account_type == props.account.attributes.account_type))
 
         return (<Dialog title='Account editing' open={props.open}>
         <DialogContent>
