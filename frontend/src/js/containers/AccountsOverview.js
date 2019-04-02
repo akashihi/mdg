@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
 import AccountsOverviewPanel from '../components/AccountsOverviewPanel'
-import * as AccountActions from '../actions/AccountViewerActions'
+import * as AccountActions from '../actions/AccountActions'
 
 
 const mapStateToProps = (state) => {

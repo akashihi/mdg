@@ -1,7 +1,7 @@
 import {checkApiError, dataToMap, parseJSON} from '../util/ApiUtils';
 
 import {GET_SETTING_REQUEST, GET_SETTING_SUCCESS, GET_SETTING_FAILURE} from '../constants/Setting'
-import {loadAccountList} from './AccountViewerActions'
+import {loadAccountList} from './AccountActions'
 import {loadTotalsReport} from './ReportActions'
 
 export function loadSettingList() {

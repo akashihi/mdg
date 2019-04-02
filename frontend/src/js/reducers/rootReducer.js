@@ -3,7 +3,7 @@ import { connectRouter } from 'connected-react-router'
 import BudgetSelectorReducer from './BudgetSelectorReducer'
 import CategoryReducer from './CategoryReducer'
 import CurrencyReducer from './CurrencyReducer'
-import AccountViewReducer from './AccountViewReducer'
+import AccountReducer from './AccountReducer'
 import TransactionReducer from './TransactionReducer'
 import TransactionViewReducer from './TransactionViewReducer'
 import TagReducer from './TagReducer'
@@ -17,7 +17,7 @@ export default (history) => combineReducers({
     budget: BudgetSelectorReducer,
     category: CategoryReducer,
     currency: CurrencyReducer,
-    account: AccountViewReducer,
+    account: AccountReducer,
     transaction: TransactionReducer,
     transactionview: TransactionViewReducer,
     tag: TagReducer,

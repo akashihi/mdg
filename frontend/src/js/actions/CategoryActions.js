@@ -1,7 +1,7 @@
 import {Map} from 'immutable';
 
 import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
-import {loadAccountList} from './AccountViewerActions';
+import {loadAccountList} from './AccountActions';
 
 import {
     GET_CATEGORYLIST_REQUEST,

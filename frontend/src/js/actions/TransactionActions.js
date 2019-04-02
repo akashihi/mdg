@@ -3,7 +3,7 @@ import moment from 'moment';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
-import {loadAccountList} from './AccountViewerActions'
+import {loadAccountList} from './AccountActions'
 import {loadBudgetInfoById} from './BudgetEntryActions';
 import {loadTotalsReport} from './ReportActions'
 

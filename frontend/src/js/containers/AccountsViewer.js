@@ -3,7 +3,7 @@ import { bindActionCreators } from 'redux'
 
 import AccountsPage from '../components/AccountsPage'
 import * as CurrencyActions from '../actions/CurrencyActions'
-import * as AccountActions from '../actions/AccountViewerActions'
+import * as AccountActions from '../actions/AccountActions'
 
 
 const mapStateToProps = (state) => {
