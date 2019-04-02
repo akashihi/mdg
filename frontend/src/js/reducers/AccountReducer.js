@@ -1,3 +1,4 @@
+import {OrderedMap, Map} from 'immutable';
 import {
     GET_ACCOUNTLIST_REQUEST,
     GET_ACCOUNTLIST_FAILURE,
@@ -8,100 +9,94 @@ import {
     ACCOUNT_DIALOG_CHANGE
 } from '../constants/Account'
 
-const initialState = {
-    incomeAccountList: [],
-    assetAccountList: [],
-    expenseAccountList: [],
-    totals: {
+const initialState = Map({
+    incomeAccountList: OrderedMap(),
+    assetAccountList: OrderedMap(),
+    expenseAccountList: OrderedMap(),
+    accountList: OrderedMap(),
+    totals: Map({
         total: 0,
         favorite: 0,
         operational: 0
-    },
-    ui: {
+    }),
+    ui: Map({
         hiddenAccountsVisible: false,
         accountListLoading: true,
         accountListError: false
-    },
-    dialog: {
+    }),
+    dialog: Map({
         open: false,
         full: false,
-        account: {attributes: {}},
+        account: Map(),
         valid: false,
-        errors: { }
-    }
-};
+        errors: Map()
+    })
+});
 
 function validateAccountForm(account) {
-    var attributes = account.attributes;
-    var errors = {};
-    if (!attributes.name) {
-        errors.name = 'Name is empty'
+    var errors = Map();
+    if (!account.get('name')) {
+        errors.set('name', 'Name is empty')
     }
 
-    if (!attributes.account_type) {
-        errors.account_type = 'Type is not selected'
+    if (!account.get('account_type')) {
+        errors.set('account_type', 'Type is not selected')
     }
 
-    if (!attributes.currency_id) {
-        errors.currency_id = 'Currency is not selected'
+    if (!account.get('currency_id')) {
+        errors.set('currency_id', 'Currency is not selected')
     }
 
-    if ((attributes.favorite || attributes.operational) && attributes.account_type != 'asset') {
-        errors.account_type = 'Only asset accounts can be favorite or operational'
+    if ((account.get('favorite') || account.get('operational')) && account.get('account_type') != 'asset') {
+        errors.set('account_type', 'Only asset accounts can be favorite or operational')
     }
 
-    return {valid: Object.keys(errors).length == 0, errors: errors}
+    return Map({valid: errors.isEmpty(), errors: errors})
 }
 
 export default function accountViewReducer(state = initialState, action) {
-    var ui = state.ui;
-    var dialog = state.dialog;
     switch (action.type) {
         case ACCOUNT_DIALOG_OPEN:
             var validInitial = validateAccountForm(action.payload.account);
-            dialog = {...dialog, open: true, full: action.payload.full, account: action.payload.account, valid: validInitial.valid, errors: validInitial.errors};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'open'], true)
+              .setIn(['dialog', 'full'], action.payload.full)
+              .setIn(['dialog', 'account'], action.payload.account)
+              .setIn(['dialog', 'valid'], validInitial.get('valid'))
+              .setIn(['dialog', 'errors'], validInitial.get('errors'))
         case ACCOUNT_DIALOG_CLOSE:
-            dialog = {...dialog, open: false};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'open'], false)
         case ACCOUNT_DIALOG_CHANGE:
-            var valid = validateAccountForm(action.payload);
-            dialog = {...dialog, account: action.payload, valid: valid.valid, errors: valid.errors};
-            return {...state, dialog: dialog};
+          var valid = validateAccountForm(action.payload);
+          return state.setIn(['dialog', 'account'], action.payload)
+            .setIn(['dialog', 'valid'], valid.get('valid'))
+            .setIn(['dialog', 'errors'], valid.get('errors'))
         case GET_ACCOUNTLIST_REQUEST:
-            ui = {...ui, accountListLoading: true, accountListError: false};
-            return {...state, ui: ui};
+            return state.setIn(['ui', 'accountListLoading'], true)
+              .setIn(['ui', 'accountListError'], false);
         case GET_ACCOUNTLIST_SUCCESS:
-            var incomeList = action.payload.filter((item) => item.attributes.account_type == 'income');
-            var assetList = action.payload.filter((item) => item.attributes.account_type == 'asset');
-            var expenseList = action.payload.filter((item) => item.attributes.account_type == 'expense');
-            ui = {...ui, accountListLoading: false, accountListError: false};
-            var totals = {
-                total: assetList.reduce((prev, item) => prev + item.attributes.primary_balance*100, 0)/100,
-                favorite: assetList.filter((item) => item.attributes.favorite).reduce((prev, item) => prev + item.attributes.primary_balance*100, 0)/100,
-                operational: assetList.filter((item) => item.attributes.operational).reduce((prev, item) => prev + item.attributes.primary_balance*100, 0)/100
-            };
-            return {
-                ...state,
-                incomeAccountList: incomeList,
-                assetAccountList: assetList,
-                expenseAccountList: expenseList,
-                totals: totals,
-                ui: ui
-            };
+          var assetAccountList = action.payload.filter((item) => item.get('account_type') == 'asset')
+            var totals = Map({
+                total: assetAccountList.reduce((prev, item) => prev + item.get('primary_balance')*100, 0)/100,
+                favorite: assetAccountList.filter((item) => item.get('favorite')).reduce((prev, item) => prev + item.get('primary_balance')*100, 0)/100,
+                operational: assetAccountList.filter((item) => item.get('operational')).reduce((prev, item) => prev + item.get('primary_balance')*100, 0)/100
+            });
+            return state.set('accountList', action.payload)
+              .set('incomeAccountList', action.payload.filter((item) => item.get('account_type') == 'income'))
+              .set('assetAccountList', assetAccountList)
+              .set('expenseAccountList', action.payload.filter((item) => item.get('account_type') == 'expense'))
+              .set('totals', totals)
+              .setIn(['ui', 'accountListLoading'], false)
+              .setIn(['ui', 'accountListError'], false);
         case GET_ACCOUNTLIST_FAILURE:
-            ui = {...ui, accountListLoading: false, accountListError: true};
-            return {
-                ...state,
-                incomeAccountList: [],
-                assetAccountList: [],
-                expenseAccountList: [],
-                ui: ui,
-                totals: {total: 0, favorite: 0, operational: 0}
-            };
+          return state.set('accountList', OrderedMap())
+            .set('incomeAccountList', OrderedMap())
+            .set('assetAccountList', OrderedMap())
+            .set('expenseAccountList', OrderedMap())
+            .set('totals', Map({total: 0, favorite: 0, operational: 0}))
+            .setIn(['ui', 'accountListLoading'], false)
+            .setIn(['ui', 'accountListError'], true);
         case TOGGLE_HIDDEN_ACCOUNTS:
-            ui = {...ui, hiddenAccountsVisible: action.payload};
-            return {...state, ui: ui};
+            return state.setIn(['ui', 'hiddenAccountsVisible'], action.payload)
         default:
             return state;
     }

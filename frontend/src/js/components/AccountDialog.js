@@ -125,13 +125,13 @@ export default class AccountDialog extends React.Component {
           currencyError = true
         }
 
-        var parents = this.mapCategoryListToMenu(props.categoryList.filter((v) => v.account_type == props.account.attributes.account_type))
+        var parents = this.mapCategoryListToMenu(props.categoryList.filter((v) => v.account_type == props.account.get('account_type')))
 
         return (<Dialog title='Account editing' open={props.open}>
         <DialogContent>
           <FormControl fullWidth={true}>
               <InputLabel htmlFor={'account-type'}>Account type</InputLabel>
-              <Select value={props.account.attributes.account_type}
+              <Select value={props.account.get('account_type')}
                       onChange={::this.onTypeChange}
                       inputProps={{id: 'account-type'}}>
                       <MenuItem key='asset' value='asset'>Asset account</MenuItem>
@@ -141,8 +141,8 @@ export default class AccountDialog extends React.Component {
           </FormControl>
           <FormControl fullWidth={true}>
               <InputLabel htmlFor={'asset-type'}>Asset type</InputLabel>
-              <Select value={props.account.attributes.asset_type}
-                      disabled={props.account.attributes.account_type != 'asset'}
+              <Select value={props.account.get('asset_type')}
+                      disabled={props.account.get('account_type') != 'asset'}
                       onChange={::this.onAssetChange}
                       inputProps={{id: 'asset-type'}}>
                       <MenuItem key='cash' value='cash'>Cash account</MenuItem>
@@ -155,11 +155,11 @@ export default class AccountDialog extends React.Component {
                       <MenuItem key='tradable' value='tradable'>Tradable asset</MenuItem>
               </Select>
           </FormControl>
-          <TextField label={nameLabel} error={nameText} value={props.account.attributes.name} onChange={::this.onNameChange}/>
+          <TextField label={nameLabel} error={nameText} value={props.account.get('name')} onChange={::this.onNameChange}/>
           <br/>
           <FormControl error={currencyError} fullWidth={true}>
                 <InputLabel htmlFor={'currency'}>{currencyLabel}</InputLabel>
-                <Select value={props.account.attributes.currency_id}
+                <Select value={props.account.get('currency_id')}
                         onChange={::this.onCurrencyChange}
                         disabled={!props.full}
                         inputProps={{id: 'currency'}}>
@@ -168,9 +168,9 @@ export default class AccountDialog extends React.Component {
           </FormControl>
           <FormControl fullWidth={true}>
               <InputLabel htmlFor={'parent'}>Category</InputLabel>
-              <Select value={props.account.attributes.category_id}
+              <Select value={props.account.get('category_id')}
                       onChange={::this.onCategoryChange}
-                      disabled={props.account.attributes.account_type == 'asset'}
+                      disabled={props.account.get('account_type') == 'asset'}
                       inputProps={{id: 'parent'}}>
                       {parents}
               </Select>
@@ -178,21 +178,21 @@ export default class AccountDialog extends React.Component {
           <FormGroup row>
             <FormControlLabel label='Favorite'
               control={
-                <Switch checked={props.account.attributes.favorite} onChange={::this.onFavoriteChange} disabled={props.account.attributes.account_type != 'asset'}/>
+                <Switch checked={props.account.get('favorite')} onChange={::this.onFavoriteChange} disabled={props.account.get('account_type') != 'asset'}/>
               }
             />
           </FormGroup>
           <FormGroup row>
             <FormControlLabel label='Operational'
               control={
-                <Switch checked={props.account.attributes.operational} onChange={::this.onOperationalChange} disabled={props.account.attributes.account_type != 'asset'}/>
+                <Switch checked={props.account.get('operational')} onChange={::this.onOperationalChange} disabled={props.account.get('account_type') != 'asset'}/>
               }
             />
           </FormGroup>
           <FormGroup row>
             <FormControlLabel label='Hidden'
               control={
-                <Switch checked={props.account.attributes.hidden} onChange={::this.onHiddenChange} disabled={props.full}/>
+                <Switch checked={props.account.get('hidden')} onChange={::this.onHiddenChange} disabled={props.full}/>
               }
             />
           </FormGroup>

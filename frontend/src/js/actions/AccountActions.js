@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
 import {loadTransactionList} from './TransactionActions';
 import {loadBudgetEntryList} from './BudgetEntryActions';
 
@@ -26,10 +26,11 @@ export function loadAccountList() {
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (data) {
                 dispatch({
                     type: GET_ACCOUNTLIST_SUCCESS,
-                    payload: json.data
+                    payload: data
                 })
             })
             .then(() => dispatch(loadTransactionList()))

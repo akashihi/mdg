@@ -25,17 +25,17 @@ export default class AccountsList extends Component {
             props.actions.editAccount(account)
         };
 
-        var filtered_accounts = props.accounts.filter((item) => item.attributes.hidden === this.props.hiddenVisible)
+        var filtered_accounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible)
 
-        var accounts = filtered_accounts.map(function (item) {
+        var accounts = filtered_accounts.map(function (item, k) {
             return (
-                <div key={item.id}><Account account={item} currencies={props.currencies}
+                <div key={k}><Account account={item} currencies={props.currencies}
                                             switchFavoriteFunc={onSwitchFavoriteClick}
                                             switchOperationalFunc={onSwitchOperationalClick}
                                             switchHiddenFunc={onSwitchHiddenClick}
                                             editAccountFunc={onEditAccountClick}/></div>
             )
-        });
+        }).valueSeq();
         return (
             <Fragment>{accounts}</Fragment>
         )

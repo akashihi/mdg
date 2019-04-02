@@ -80,13 +80,13 @@ export default class AccountsPage extends Component {
                         <Grid fluid>
                             <Row>
                                 <Col xs={12} sm={12} md={4} lg={4}>
-                                    <p>Total: {props.totals.total} {primaryCurrencyName}</p>
+                                    <p>Total: {props.totals.get('total')} {primaryCurrencyName}</p>
                                 </Col>
                                 <Col xs={6} sm={6} md={4} lg={4}>
-                                    <p>Favorite: {props.totals.favorite} {primaryCurrencyName}</p>
+                                    <p>Favorite: {props.totals.get('favorite')} {primaryCurrencyName}</p>
                                 </Col>
                                 <Col xs={6} sm={6} md={4} lg={4}>
-                                    <p>Operational: {props.totals.operational} {primaryCurrencyName}</p>
+                                    <p>Operational: {props.totals.get('operational')} {primaryCurrencyName}</p>
                                 </Col>
                             </Row>
                             <Row>

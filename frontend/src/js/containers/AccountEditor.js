@@ -9,11 +9,11 @@ const mapStateToProps = (state) => {
     return {
         categoryList: state.category.get('categoryList'),
         currencies: state.currency.get('currencies'),
-        open: state.account.dialog.open,
-        full: state.account.dialog.full,
-        account: state.account.dialog.account,
-        valid: state.account.dialog.valid,
-        errors: state.account.dialog.errors
+        open: state.account.getIn(['dialog', 'open']),
+        full: state.account.getIn(['dialog', 'full']),
+        account: state.account.getIn(['dialog', 'account']),
+        valid: state.account.getIn(['dialog', 'valid']),
+        errors: state.account.getIn(['dialog', 'errors'])
     }
 };
 

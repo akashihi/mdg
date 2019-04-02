@@ -12,11 +12,11 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 
 export default class Account extends Component {
     getCurrency = function(account, currencies) {
-        return currencies.find((v, k) => k === account.currency_id).get('name')
+        return currencies.get(account.get('currency_id')).get('name')
     };
 
     render() {
-        var attr = this.props.account.attributes;
+        var account = this.props.account;
         var favIcon;
         var opIcon;
 
@@ -25,39 +25,39 @@ export default class Account extends Component {
             'fontWeight': 'normal'
         };
 
-        if (attr.account_type == 'asset') {
-            if (attr.balance <0 ) {
+        if (account.get('account_type') == 'asset') {
+            if (account.get('balance') <0 ) {
                 balance_style = {
                     'color': 'red',
                     'fontWeight': 'bold'
                 };
             }
-            if (attr.favorite) {
-                favIcon = <Button aria-label='Favorite' onClick={()=>this.props.switchFavoriteFunc(this.props.account, !attr.favorite)}><Favorite/></Button>
+            if (account.get('favorite')) {
+                favIcon = <Button aria-label='Favorite' onClick={()=>this.props.switchFavoriteFunc(this.props.account, !account.get('favorite'))}><Favorite/></Button>
             } else {
-                favIcon = <Button aria-label='Not favorite' onClick={()=>this.props.switchFavoriteFunc(this.props.account, !attr.favorite)}><FavoriteBorder/></Button>
+                favIcon = <Button aria-label='Not favorite' onClick={()=>this.props.switchFavoriteFunc(this.props.account, !account.get('favorite'))}><FavoriteBorder/></Button>
             }
-            if (attr.operational) {
-                opIcon = <Button aria-label='Operational' onClick={()=>this.props.switchOperationalFunc(this.props.account, !attr.operational)}><Star/></Button>
+            if (account.get('operational')) {
+                opIcon = <Button aria-label='Operational' onClick={()=>this.props.switchOperationalFunc(this.props.account, !account.get('operational'))}><Star/></Button>
             } else {
-                opIcon = <Button aria-label='Not operational' onClick={()=>this.props.switchOperationalFunc(this.props.account, !attr.operational)}><StarBorder/></Button>
+                opIcon = <Button aria-label='Not operational' onClick={()=>this.props.switchOperationalFunc(this.props.account, !account.get('operational'))}><StarBorder/></Button>
             }
         }
-        var visibilityIcon = <Button aria-label='Visible' onClick={()=>this.props.switchHiddenFunc(this.props.account, !attr.hidden)}><Visibility/></Button>;
-        if (attr.hidden) {
-            visibilityIcon = <Button aria-label='Hidden' onClick={()=>this.props.switchHiddenFunc(this.props.account, !attr.hidden)}><VisibilityOff/></Button>;
+        var visibilityIcon = <Button aria-label='Visible' onClick={()=>this.props.switchHiddenFunc(this.props.account, !account.get('hidden'))}><Visibility/></Button>;
+        if (account.get('hidden')) {
+            visibilityIcon = <Button aria-label='Hidden' onClick={()=>this.props.switchHiddenFunc(this.props.account, !account.get('hidden'))}><VisibilityOff/></Button>;
         }
 
-        var currency = this.getCurrency(attr, this.props.currencies);
+        var currency = this.getCurrency(account, this.props.currencies);
 
         return (
             <Grid fluid>
                 <Row>
                     <Col xs={12} sm={12} md={4} lg={4}>
-                        <p>{attr.name}</p>
+                        <p>{account.get('name')}</p>
                     </Col>
                     <Col xs={12} sm={12} md={3} lg={3}>
-                        <p style={balance_style}>{attr.balance} {currency}</p>
+                        <p style={balance_style}>{account.get('balance')} {currency}</p>
                     </Col>
                     <Col xs={12} sm={12} md={5} lg={5}>
                         {favIcon}

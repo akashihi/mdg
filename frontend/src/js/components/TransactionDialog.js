@@ -135,7 +135,7 @@ class SimpleOperationsEditor extends OperationsEditor {
                             <Select value={operations[0].account_id}
                                     onChange={(ev) => props.onAccountFunc(0, ev.target.value)}
                                     inputProps={{id: 'source-simple'}}>
-                                {props.accounts.getAccounts()}
+                                {/*props.accounts.getAccounts()*/}
                             </Select>
                         </FormControl>
                     </Col>
@@ -255,7 +255,7 @@ class FullOperationsEditor extends OperationsEditor {
                                 <Select value={item.account_id}
                                         onChange={(ev) => props.onAccountFunc(index, ev.target.value)}
                                         inputProps={{id: 'destination-simple'}}>
-                                    {props.accounts.getAccounts()}
+                                    {/*props.accounts.getAccounts()*/}
                                 </Select>
                             </FormControl>
                         </Col>
@@ -371,12 +371,12 @@ export default class TransactionDialog extends React.Component {
             return false
         }
 
-        var accounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
+        /*var accounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
         var leftCurrency = accounts.filter((item) => item.id === attributes.operations[0].account_id).map((item) => item.attributes.currency_id);
         var rightCurrency = accounts.filter((item) => item.id === attributes.operations[1].account_id).map((item) => item.attributes.currency_id);
         if (leftCurrency.length > 0 && rightCurrency.length > 0) {
             return leftCurrency[0] === rightCurrency[0]
-        }
+        }*/
         return true
     }
 

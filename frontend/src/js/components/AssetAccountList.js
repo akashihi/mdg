@@ -4,18 +4,18 @@ import AccountList from './AccountList'
 
 export default class AccountsList extends Component {
     render() {
-        var props = this.props;
+        const props = this.props;
+        
+        const filtered_accounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible)
 
-        var filtered_accounts = props.accounts.filter((item) => item.attributes.hidden === this.props.hiddenVisible)
-
-        var cash_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'cash')
-        var current_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'current')
-        var savings_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'savings')
-        var deposit_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'deposit')
-        var credit_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'credit')
-        var debt_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'debt')
-        var broker_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'broker')
-        var tradable_accounts = filtered_accounts.filter((item) => item.attributes.asset_type === 'tradable')
+        const cash_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'cash')
+        const current_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'current')
+        const savings_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'savings')
+        const deposit_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'deposit')
+        const credit_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'credit')
+        const debt_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'debt')
+        const broker_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'broker')
+        const tradable_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'tradable')
 
         return (
             <Fragment>
