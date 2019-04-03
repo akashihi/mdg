@@ -53,13 +53,13 @@ export default class Account extends Component {
         return (
             <Grid fluid>
                 <Row>
-                    <Col xs={12} sm={12} md={4} lg={4}>
+                    <Col xs={6} sm={4} md={4} lg={4}>
                         <p>{account.get('name')}</p>
                     </Col>
-                    <Col xs={12} sm={12} md={3} lg={3}>
+                    <Col xs={6} sm={3} md={3} lg={3}>
                         <p style={balance_style}>{account.get('balance')} {currency}</p>
                     </Col>
-                    <Col xs={12} sm={12} md={5} lg={5}>
+                    <Col xs={12} sm={5} md={5} lg={5}>
                         {favIcon}
                         {opIcon}
                         {visibilityIcon}

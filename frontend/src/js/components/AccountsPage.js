@@ -49,7 +49,7 @@ export default class AccountsPage extends Component {
         } else {
           accounts =
             <Fragment>
-              <Tabs value={this.state.tabValue} onChange={::this.switchTab} centered>
+              <Tabs value={this.state.tabValue} onChange={::this.switchTab} centered scrollButtons='auto'>
                   <Tab label='Asset accounts' value='asset'/>
                   <Tab label='Income accounts' value='income'/>
                   <Tab label='Expense accounts' value='expense'/>
@@ -62,9 +62,9 @@ export default class AccountsPage extends Component {
 
         var hiddenButton;
         if (props.hiddenVisible) {
-            hiddenButton = <Button onClick={this.onHiddenAccountsClick.bind(this)}>Hide hidden accounts</Button>
+            hiddenButton = <Button color='primary' onClick={this.onHiddenAccountsClick.bind(this)}>Hide hidden accounts</Button>
         } else {
-            hiddenButton = <Button onClick={this.onHiddenAccountsClick.bind(this)}>Show hidden accounts</Button>
+            hiddenButton = <Button color='primary' onClick={this.onHiddenAccountsClick.bind(this)}>Show hidden accounts</Button>
         }
 
         var primaryCurrencyName = '';
@@ -79,21 +79,21 @@ export default class AccountsPage extends Component {
                     <CardContent>
                         <Grid fluid>
                             <Row>
-                                <Col xs={12} sm={12} md={4} lg={4}>
+                                <Col xs={12} sm={4} md={4} lg={4}>
                                     <p>Total: {props.totals.get('total')} {primaryCurrencyName}</p>
                                 </Col>
-                                <Col xs={6} sm={6} md={4} lg={4}>
+                                <Col xs={6} sm={4} md={4} lg={4} className='hide-on-small hide-on-medium'>
                                     <p>Favorite: {props.totals.get('favorite')} {primaryCurrencyName}</p>
                                 </Col>
-                                <Col xs={6} sm={6} md={4} lg={4}>
+                                <Col xs={6} sm={4} md={4} lg={4} className='hide-on-small hide-on-medium'>
                                     <p>Operational: {props.totals.get('operational')} {primaryCurrencyName}</p>
                                 </Col>
                             </Row>
                             <Row>
-                                <Col xs={12} sm={12} md={3} lg={3}>
-                                    <Button aria-label='Add account' color='primary' onClick={::this.onCreateAccountClick}>Add account</Button>
+                                <Col xs={12} sm={6} md={3} lg={3}>
+                                    <Button aria-label='Add account' color='secondary' onClick={::this.onCreateAccountClick}>Add account</Button>
                                 </Col>
-                                <Col xs={12} sm={12} mdOffset={6} md={3} lgOffset={6} lg={3}>
+                                <Col xs={12} sm={6} mdOffset={6} md={3} lgOffset={6} lg={3}  className='hide-on-small'>
                                     {hiddenButton}
                                 </Col>
                             </Row>
