@@ -33,19 +33,19 @@ export default class Account extends Component {
                 };
             }
             if (account.get('favorite')) {
-                favIcon = <Button aria-label='Favorite' onClick={()=>this.props.switchFavoriteFunc(this.props.account, !account.get('favorite'))}><Favorite/></Button>
+                favIcon = <Button aria-label='Favorite' onClick={()=>this.props.switchFunc('favorite')}><Favorite/></Button>
             } else {
-                favIcon = <Button aria-label='Not favorite' onClick={()=>this.props.switchFavoriteFunc(this.props.account, !account.get('favorite'))}><FavoriteBorder/></Button>
+                favIcon = <Button aria-label='Not favorite' onClick={()=>this.props.switchFunc('favorite')}><FavoriteBorder/></Button>
             }
             if (account.get('operational')) {
-                opIcon = <Button aria-label='Operational' onClick={()=>this.props.switchOperationalFunc(this.props.account, !account.get('operational'))}><Star/></Button>
+                opIcon = <Button aria-label='Operational' onClick={()=>this.props.switchFunc('operational')}><Star/></Button>
             } else {
-                opIcon = <Button aria-label='Not operational' onClick={()=>this.props.switchOperationalFunc(this.props.account, !account.get('operational'))}><StarBorder/></Button>
+                opIcon = <Button aria-label='Not operational' onClick={()=>this.props.switchFunc('operational')}><StarBorder/></Button>
             }
         }
-        var visibilityIcon = <Button aria-label='Visible' onClick={()=>this.props.switchHiddenFunc(this.props.account, !account.get('hidden'))}><Visibility/></Button>;
+        var visibilityIcon = <Button aria-label='Visible' onClick={()=>this.props.switchFunc('hidden')}><Visibility/></Button>;
         if (account.get('hidden')) {
-            visibilityIcon = <Button aria-label='Hidden' onClick={()=>this.props.switchHiddenFunc(this.props.account, !account.get('hidden'))}><VisibilityOff/></Button>;
+            visibilityIcon = <Button aria-label='Hidden' onClick={()=>this.props.switchFunc('hidden')}><VisibilityOff/></Button>;
         }
 
         var currency = this.getCurrency(account, this.props.currencies);

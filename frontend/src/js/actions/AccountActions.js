@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
 import {loadTransactionList} from './TransactionActions';
 import {loadBudgetEntryList} from './BudgetEntryActions';
 
@@ -52,7 +52,8 @@ export function toggleHiddenAccounts(visible) {
     };
 }
 
-export function updateAccount(account) {
+export function updateAccount(id, account) {
+
     return (dispatch, getState) => {
         dispatch({
             type: GET_ACCOUNTLIST_REQUEST,
@@ -64,8 +65,8 @@ export function updateAccount(account) {
 
         var url = '/api/account';
         var method = 'POST';
-        if (account.hasOwnProperty('id') && account['id'] ) {
-            url = url + '/' + account.id;
+        if (id != -1) {
+            url = url + '/' + id;
             method = 'PUT';
         }
 
@@ -74,7 +75,7 @@ export function updateAccount(account) {
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify({data: account})
+            body: JSON.stringify(mapToData(id, account))
         })
             .then(parseJSON)
             .then(checkApiError)

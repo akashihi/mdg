@@ -3,23 +3,18 @@ import React, {Component, Fragment} from 'react';
 import Account from './Account'
 
 export default class AccountsList extends Component {
+  onSwitchClick(id, account){
+    const props = this.props;
+    return function(field) {
+      account = account.set(field, !account.get(field))
+      console.log(account)
+      props.actions.updateAccount(id, account);
+    }
+  }
+
     render() {
-        var props = this.props;
-
-        var onSwitchFavoriteClick = function (account, value) {
-            account.attributes.favorite = value;
-            props.actions.updateAccount(account);
-        };
-
-        var onSwitchOperationalClick = function (account, value) {
-            account.attributes.operational = value;
-            props.actions.updateAccount(account);
-        };
-
-        var onSwitchHiddenClick = function (account, value) {
-            account.attributes.hidden = value;
-            props.actions.updateAccount(account);
-        };
+        const props = this.props;
+        const ths = this
 
         var onEditAccountClick = function (account) {
             props.actions.editAccount(account)
@@ -30,9 +25,7 @@ export default class AccountsList extends Component {
         var accounts = filtered_accounts.map(function (item, k) {
             return (
                 <div key={k}><Account account={item} currencies={props.currencies}
-                                            switchFavoriteFunc={onSwitchFavoriteClick}
-                                            switchOperationalFunc={onSwitchOperationalClick}
-                                            switchHiddenFunc={onSwitchHiddenClick}
+                                            switchFunc={ths.onSwitchClick(k, item)}
                                             editAccountFunc={onEditAccountClick}/></div>
             )
         }).valueSeq();
