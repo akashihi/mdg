@@ -79,21 +79,21 @@ export default class AccountsPage extends Component {
                     <CardContent>
                         <Grid fluid>
                             <Row>
-                                <Col xs={12} sm={4} md={4} lg={4}>
+                                <Col xs={12} sm={12} md={6} lg={4}>
                                     <p>Total: {props.totals.get('total')} {primaryCurrencyName}</p>
                                 </Col>
-                                <Col xs={6} sm={4} md={4} lg={4} className='hide-on-small hide-on-medium'>
+                                <Col xs={6} sm={6} md={6} lg={4} className='hide-on-small'>
                                     <p>Favorite: {props.totals.get('favorite')} {primaryCurrencyName}</p>
                                 </Col>
-                                <Col xs={6} sm={4} md={4} lg={4} className='hide-on-small hide-on-medium'>
+                                <Col xs={6} sm={6} md={4} lg={4} className='hide-on-small hide-on-medium'>
                                     <p>Operational: {props.totals.get('operational')} {primaryCurrencyName}</p>
                                 </Col>
                             </Row>
                             <Row>
-                                <Col xs={12} sm={6} md={3} lg={3}>
+                                <Col xs={12} sm={12} md={6} lg={3}>
                                     <Button aria-label='Add account' color='secondary' onClick={::this.onCreateAccountClick}>Add account</Button>
                                 </Col>
-                                <Col xs={12} sm={6} mdOffset={6} md={3} lgOffset={6} lg={3}  className='hide-on-small'>
+                                <Col xs={12} sm={12} md={6} lgOffset={6} lg={3}  className='hide-on-small'>
                                     {hiddenButton}
                                 </Col>
                             </Row>
