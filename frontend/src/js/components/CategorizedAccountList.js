@@ -44,12 +44,12 @@ export default class CategorizedAccountList extends Component {
 
     var mapEntry = function(category, prefix) {
       var prepend = '-'.repeat(prefix)
-      var entry = <p>{prepend}{category.get('name')}</p>
+      var entry = <p key={'category-'+category.get('id')}>{prepend}{category.get('name')}</p>
       entries.push(entry)
 
       //If we have related accounts - add them
       var category_accounts = accounts.filter((item) => item.get('category_id') === category.get('id'))
-      var category_list = <AccountList actions={props.actions} currencies={props.currencies} accounts={category_accounts} hiddenVisible={props.hiddenVisible}/>
+      var category_list = <AccountList key={'accountlist-'+category.get('id')} actions={props.actions} currencies={props.currencies} accounts={category_accounts} hiddenVisible={props.hiddenVisible}/>
       entries.push(category_list)
 
       if (category.has('children')) {
