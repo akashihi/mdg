@@ -6,8 +6,7 @@ export default class AccountsList extends Component {
   onSwitchClick(id, account){
     const props = this.props;
     return function(field) {
-      account = account.set(field, !account.get(field))
-      console.log(account)
+      account = account.set(field, !account.get(field))      
       props.actions.updateAccount(id, account);
     }
   }

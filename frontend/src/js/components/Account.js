@@ -8,6 +8,7 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Edit from '@material-ui/icons/Edit';
 import {Grid, Row, Col} from 'react-flexbox-grid';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 
 export default class Account extends Component {
@@ -19,6 +20,11 @@ export default class Account extends Component {
         var account = this.props.account;
         var favIcon;
         var opIcon;
+
+        if (account.get('loading')) {
+          // Fast processing
+          return <ClipLoader sizeUnit={'px'} size={15} loading={true}/>
+        }
 
         var balance_style = {
             'color': 'black',

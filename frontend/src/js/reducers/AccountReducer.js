@@ -6,7 +6,9 @@ import {
     TOGGLE_HIDDEN_ACCOUNTS,
     ACCOUNT_DIALOG_OPEN,
     ACCOUNT_DIALOG_CLOSE,
-    ACCOUNT_DIALOG_CHANGE
+    ACCOUNT_DIALOG_CHANGE,
+    ACCOUNT_PARTIAL_UPDATE,
+    ACCOUNT_PARTIAL_SUCCESS
 } from '../constants/Account'
 
 const initialState = Map({
@@ -54,7 +56,15 @@ function validateAccountForm(account) {
     return Map({valid: errors.isEmpty(), errors: errors})
 }
 
+function splitAccountList(state) {
+  const accountList = state.get('accountList')
+  return state.set('incomeAccountList', accountList.filter((item) => item.get('account_type') == 'income'))
+    .set('assetAccountList', accountList.filter((item) => item.get('account_type') == 'asset'))
+    .set('expenseAccountList', accountList.filter((item) => item.get('account_type') == 'expense'))
+}
+
 export default function accountViewReducer(state = initialState, action) {
+    var newAccountState;
     switch (action.type) {
         case ACCOUNT_DIALOG_OPEN:
             var validInitial = validateAccountForm(action.payload.account);
@@ -70,21 +80,23 @@ export default function accountViewReducer(state = initialState, action) {
           return state.setIn(['dialog', 'account'], action.payload)
             .setIn(['dialog', 'valid'], valid.get('valid'))
             .setIn(['dialog', 'errors'], valid.get('errors'))
+        case ACCOUNT_PARTIAL_UPDATE:
+        case ACCOUNT_PARTIAL_SUCCESS:        
+           newAccountState = state.setIn(['accountList', action.payload.id], action.payload.account)
+           return splitAccountList(newAccountState)
         case GET_ACCOUNTLIST_REQUEST:
             return state.setIn(['ui', 'accountListLoading'], true)
               .setIn(['ui', 'accountListError'], false);
         case GET_ACCOUNTLIST_SUCCESS:
-          var assetAccountList = action.payload.filter((item) => item.get('account_type') == 'asset')
+          newAccountState = state.set('accountList', action.payload)
+          newAccountState = splitAccountList(newAccountState)
+          var assetAccountList = newAccountState.get('assetAccountList')
             var totals = Map({
                 total: assetAccountList.reduce((prev, item) => prev + item.get('primary_balance')*100, 0)/100,
                 favorite: assetAccountList.filter((item) => item.get('favorite')).reduce((prev, item) => prev + item.get('primary_balance')*100, 0)/100,
                 operational: assetAccountList.filter((item) => item.get('operational')).reduce((prev, item) => prev + item.get('primary_balance')*100, 0)/100
             });
-            return state.set('accountList', action.payload)
-              .set('incomeAccountList', action.payload.filter((item) => item.get('account_type') == 'income'))
-              .set('assetAccountList', assetAccountList)
-              .set('expenseAccountList', action.payload.filter((item) => item.get('account_type') == 'expense'))
-              .set('totals', totals)
+            return newAccountState.set('totals', totals)
               .setIn(['ui', 'accountListLoading'], false)
               .setIn(['ui', 'accountListError'], false);
         case GET_ACCOUNTLIST_FAILURE:

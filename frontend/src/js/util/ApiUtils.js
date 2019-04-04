@@ -30,6 +30,11 @@ export function dataToMap(json) {
     }, new OrderedMap())
 }
 
+export function singleToMap(json) {
+  const attr = Map(json.data.attributes)
+  return OrderedMap().set(json.data.id, attr)
+}
+
 export function mapToData(id, item) {
     return {
         data: {

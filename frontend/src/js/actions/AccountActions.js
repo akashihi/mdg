@@ -1,6 +1,7 @@
-import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap, mapToData, singleToMap} from '../util/ApiUtils';
 import {loadTransactionList} from './TransactionActions';
 import {loadBudgetEntryList} from './BudgetEntryActions';
+import {loadTotalsReport} from './ReportActions'
 
 import {
     GET_ACCOUNTLIST_REQUEST,
@@ -9,10 +10,11 @@ import {
     TOGGLE_HIDDEN_ACCOUNTS,
     ACCOUNT_DIALOG_OPEN,
     ACCOUNT_DIALOG_CLOSE,
-    ACCOUNT_DIALOG_CHANGE
+    ACCOUNT_DIALOG_CHANGE,
+    ACCOUNT_PARTIAL_UPDATE,
+    ACCOUNT_PARTIAL_SUCCESS
 } from '../constants/Account'
 
-import {loadTotalsReport} from './ReportActions'
 
 export function loadAccountList() {
     return (dispatch) => {
@@ -56,8 +58,11 @@ export function updateAccount(id, account) {
 
     return (dispatch, getState) => {
         dispatch({
-            type: GET_ACCOUNTLIST_REQUEST,
-            payload: true
+            type: ACCOUNT_PARTIAL_UPDATE,
+            payload: {
+              id: id,
+              account: account.set('loading', true)
+            }
         });
 
         var state=getState();
@@ -78,8 +83,15 @@ export function updateAccount(id, account) {
             body: JSON.stringify(mapToData(id, account))
         })
             .then(parseJSON)
+            .then(singleToMap)
             .then(checkApiError)
-            .then(()=>dispatch(loadAccountList()))
+            .then(map => dispatch({
+              type: ACCOUNT_PARTIAL_SUCCESS,
+              payload: {
+                id: id,
+                account: map.first()
+              }
+            }))
             .then(()=>dispatch(loadTotalsReport()))
             .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId))}})
             .catch(()=>dispatch(loadAccountList()))
@@ -128,6 +140,10 @@ export function editAccountSave() {
     return (dispatch, getState) => {
         dispatch({
             type: ACCOUNT_DIALOG_CLOSE,
+            payload: true
+        });
+        dispatch({
+            type: GET_ACCOUNTLIST_REQUEST,
             payload: true
         });
 
