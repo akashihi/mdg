@@ -91,10 +91,10 @@ class SettingEditor extends Component {
 
         return (<Fragment>
             <Row>
-                <Col xs={12} sm={6} md={4} lg={4}>
+                <Col xs={12} sm={6} md={6} lg={4}>
                     <p>Primary currency:</p>
                 </Col>
-                <Col xs={12} sm={6} md={4} lg={4}>
+                <Col xs={12} sm={6} md={6} lg={4}>
                     <Select
                         value={props.primaryCurrency}
                         onChange={(ev) => ::this.onPrimaryCurrencyChange(ev.target.value)}
@@ -104,19 +104,19 @@ class SettingEditor extends Component {
                 </Col>
             </Row>
             <Row>
-                <Col xs={6} sm={6} md={4} lg={4}>
+                <Col xs={6} sm={6} md={6} lg={4}>
                     <p>By default close transaction dialog:</p>
                 </Col>
-                <Col xs={6} sm={6} md={4} lg={4}>
+                <Col xs={6} sm={6} md={6} lg={4}>
                     <Checkbox checked={this.props.closeTransactionDialog}
                               onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
                 </Col>
             </Row>
             <Row>
-                <Col xs={6} sm={6} md={4} lg={4}>
+                <Col xs={6} sm={6} md={6} lg={4}>
                     <p>Reindex transactions search data:</p>
                 </Col>
-                <Col xs={6} sm={6} md={4} lg={4}>
+                <Col xs={6} sm={6} md={6} lg={4}>
                     <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
                 </Col>
             </Row>
@@ -136,10 +136,10 @@ class SettingsPage extends Component {
                                actions={props.actions}/>
                 <Divider/>
                 <Row>
-                    <Col xs={12} sm={6} md={4} lg={4}>
+                    <Col xs={12} sm={6} md={6} lg={4}>
                         <p>Active currencies:</p>
                     </Col>
-                    <Col xs={12} sm={6} md={4} lg={4}>
+                    <Col xs={12} sm={6} md={6} lg={4}>
                         <CurrencyEditor currency={props.currency} currencyActions={this.props.currencyActions}/>
                     </Col>
                 </Row>

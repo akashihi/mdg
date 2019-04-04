@@ -1,16 +1,16 @@
-@media (max-width: 640px) {
+@media (max-width: 576px) {
     .hide-on-small {
         display: none !important;
     }
 }
 
-@media (min-width: 640px) {
+@media (max-width: 768px) {
     .hide-on-medium {
         display: none !important;
     }
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 992px) {
     .hide-on-big {
         display: none !important;
     }
