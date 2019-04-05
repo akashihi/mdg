@@ -30,6 +30,7 @@ const initialState = Map({
         open: false,
         full: false,
         account: Map(),
+        id: -1,
         valid: false,
         errors: Map()
     })
@@ -70,6 +71,7 @@ export default function accountViewReducer(state = initialState, action) {
             var validInitial = validateAccountForm(action.payload.account);
             return state.setIn(['dialog', 'open'], true)
               .setIn(['dialog', 'full'], action.payload.full)
+              .setIn(['dialog', 'id'], action.payload.id)
               .setIn(['dialog', 'account'], action.payload.account)
               .setIn(['dialog', 'valid'], validInitial.get('valid'))
               .setIn(['dialog', 'errors'], validInitial.get('errors'))
@@ -81,7 +83,7 @@ export default function accountViewReducer(state = initialState, action) {
             .setIn(['dialog', 'valid'], valid.get('valid'))
             .setIn(['dialog', 'errors'], valid.get('errors'))
         case ACCOUNT_PARTIAL_UPDATE:
-        case ACCOUNT_PARTIAL_SUCCESS:        
+        case ACCOUNT_PARTIAL_SUCCESS:
            newAccountState = state.setIn(['accountList', action.payload.id], action.payload.account)
            return splitAccountList(newAccountState)
         case GET_ACCOUNTLIST_REQUEST:

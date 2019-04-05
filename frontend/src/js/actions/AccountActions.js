@@ -1,3 +1,4 @@
+import {Map} from 'immutable';
 import {checkApiError, parseJSON, dataToMap, mapToData, singleToMap} from '../util/ApiUtils';
 import {loadTransactionList} from './TransactionActions';
 import {loadBudgetEntryList} from './BudgetEntryActions';
@@ -106,17 +107,19 @@ export function createAccount() {
       type: ACCOUNT_DIALOG_OPEN,
       payload: {
         full: true,
-        account: { attributes: {account_type: 'asset', balance: 0, currency_id: state.setting.primaryCurrency} }
+        id: -1,
+        account: Map({account_type: 'asset', balance: 0, currency_id: state.setting.get('primaryCurrency')})
       }
     })
   }
 }
 
-export function editAccount(account) {
+export function editAccount(id, account) {
     return {
         type: ACCOUNT_DIALOG_OPEN,
         payload: {
             full: false,
+            id: id,
             account: account
         }
     }

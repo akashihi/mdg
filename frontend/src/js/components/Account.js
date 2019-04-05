@@ -69,7 +69,7 @@ export default class Account extends Component {
                         {favIcon}
                         {opIcon}
                         {visibilityIcon}
-                        <Button aria-label='Edit' onClick={()=>this.props.editAccountFunc(this.props.account)}><Edit/></Button>
+                        <Button aria-label='Edit' onClick={this.props.editAccountFunc}><Edit/></Button>
                     </Col>
                 </Row>
             </Grid>
