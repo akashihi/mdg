@@ -4,13 +4,8 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-//import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-//import Switch from '@material-ui/core/Switch';
 import {TextField, Switch} from 'formik-material-ui';
-//import Select from '@material-ui/core/Select';
-//import InputLabel from '@material-ui/core/InputLabel';
-//import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
 import {Formik, Form, Field, ErrorMessage} from 'formik';
 import * as Yup from 'yup';
@@ -24,62 +19,6 @@ export default class AccountDialog extends React.Component {
 
     onCancelClick() {
         this.props.actions.editAccountCancel();
-    }
-
-    onTypeChange(event) {
-        var attr = {...this.props.account.attributes};
-        attr.account_type = event.target.value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
-    onCategoryChange(event) {
-        var attr = {...this.props.account.attributes};
-        attr.category_id = event.target.value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
-    onAssetChange(event) {
-        var attr = {...this.props.account.attributes};
-        attr.asset_type = event.target.value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
-    onNameChange(event) {
-        var attr = {...this.props.account.attributes};
-        attr.name = event.target.value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
-    onCurrencyChange(event) {
-        var attr = {...this.props.account.attributes};
-        attr.currency_id = event.target.value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
-    onFavoriteChange(event, value) {
-        var attr = {...this.props.account.attributes};
-        attr.favorite = value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
-    onOperationalChange(event, value) {
-        var attr = {...this.props.account.attributes};
-        attr.operational = value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
-    }
-
-    onHiddenChange(event, value) {
-        var attr = {...this.props.account.attributes};
-        attr.hidden = value;
-        var account = {...this.props.account, attributes: attr};
-        this.props.actions.editAccountChange(account);
     }
 
     mapCategoryListToMenu(categoryList) {

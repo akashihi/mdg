@@ -6,7 +6,6 @@ import {
     TOGGLE_HIDDEN_ACCOUNTS,
     ACCOUNT_DIALOG_OPEN,
     ACCOUNT_DIALOG_CLOSE,
-    ACCOUNT_DIALOG_CHANGE,
     ACCOUNT_PARTIAL_UPDATE,
     ACCOUNT_PARTIAL_SUCCESS
 } from '../constants/Account'
@@ -30,32 +29,9 @@ const initialState = Map({
         open: false,
         full: false,
         account: Map(),
-        id: -1,
-        valid: false,
-        errors: Map()
+        id: -1
     })
 });
-
-function validateAccountForm(account) {
-    var errors = Map();
-    if (!account.get('name')) {
-        errors.set('name', 'Name is empty')
-    }
-
-    if (!account.get('account_type')) {
-        errors.set('account_type', 'Type is not selected')
-    }
-
-    if (!account.get('currency_id')) {
-        errors.set('currency_id', 'Currency is not selected')
-    }
-
-    if ((account.get('favorite') || account.get('operational')) && account.get('account_type') != 'asset') {
-        errors.set('account_type', 'Only asset accounts can be favorite or operational')
-    }
-
-    return Map({valid: errors.isEmpty(), errors: errors})
-}
 
 function splitAccountList(state) {
   const accountList = state.get('accountList')
@@ -68,20 +44,12 @@ export default function accountViewReducer(state = initialState, action) {
     var newAccountState;
     switch (action.type) {
         case ACCOUNT_DIALOG_OPEN:
-            var validInitial = validateAccountForm(action.payload.account);
             return state.setIn(['dialog', 'open'], true)
               .setIn(['dialog', 'full'], action.payload.full)
               .setIn(['dialog', 'id'], action.payload.id)
               .setIn(['dialog', 'account'], action.payload.account)
-              .setIn(['dialog', 'valid'], validInitial.get('valid'))
-              .setIn(['dialog', 'errors'], validInitial.get('errors'))
         case ACCOUNT_DIALOG_CLOSE:
             return state.setIn(['dialog', 'open'], false)
-        case ACCOUNT_DIALOG_CHANGE:
-          var valid = validateAccountForm(action.payload);
-          return state.setIn(['dialog', 'account'], action.payload)
-            .setIn(['dialog', 'valid'], valid.get('valid'))
-            .setIn(['dialog', 'errors'], valid.get('errors'))
         case ACCOUNT_PARTIAL_UPDATE:
         case ACCOUNT_PARTIAL_SUCCESS:
            newAccountState = state.setIn(['accountList', action.payload.id], action.payload.account)

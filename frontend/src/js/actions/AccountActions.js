@@ -11,7 +11,6 @@ import {
     TOGGLE_HIDDEN_ACCOUNTS,
     ACCOUNT_DIALOG_OPEN,
     ACCOUNT_DIALOG_CLOSE,
-    ACCOUNT_DIALOG_CHANGE,
     ACCOUNT_PARTIAL_UPDATE,
     ACCOUNT_PARTIAL_SUCCESS
 } from '../constants/Account'
@@ -108,7 +107,7 @@ export function createAccount() {
       payload: {
         full: true,
         id: -1,
-        account: Map({account_type: 'asset', balance: 0, currency_id: state.setting.get('primaryCurrency')})
+        account: Map({name:'', account_type: 'asset', balance: 0, currency_id: state.setting.get('primaryCurrency')})
       }
     })
   }
@@ -129,13 +128,6 @@ export function editAccountCancel() {
     return {
         type: ACCOUNT_DIALOG_CLOSE,
         payload: true
-    }
-}
-
-export function editAccountChange(account) {
-    return {
-        type: ACCOUNT_DIALOG_CHANGE,
-        payload: account
     }
 }
 
