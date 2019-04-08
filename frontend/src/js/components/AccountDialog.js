@@ -45,11 +45,9 @@ export default class AccountDialog extends React.Component {
             .map((v,k) => (<MenuItem value={k} key={k}>{v.get('name')}</MenuItem>))
             .valueSeq();
 
-        var parents = this.mapCategoryListToMenu(props.categoryList.filter((v) => v.get('account_type') == props.account.get('account_type')))
-
         var initialValues = {
           account_type: props.account.get('account_type'),
-          asset_type: props.account.get('asset_type') ? props.account.get('asset_type') : -1,
+          asset_type: props.account.get('asset_type') ? props.account.get('asset_type') : 'current',
           name: props.account.get('name'),
           currency_id: props.account.get('currency_id'),
           category_id: props.account.get('category_id') ? props.account.get('category_id') : -1,
@@ -61,7 +59,7 @@ export default class AccountDialog extends React.Component {
         const validationSchema = Yup.object().shape({
             name: Yup.string().required('Required!'),
             currency_id: Yup.number().required('Required!').positive().integer(),
-            account_type: Yup.number().required('Required!').positive().integer(),
+            account_type: Yup.string().required('Required!'),
         });
 
         return (<Dialog title='Account editing' open={props.open}>
@@ -128,9 +126,10 @@ export default class AccountDialog extends React.Component {
                   select
                   helperText='Please select owning category'
                   margin='normal'
+                  disabled={values.account_type === 'asset'}
                   component={TextField}
                   className='common-field-width'>
-                  {parents}
+                  {::this.mapCategoryListToMenu(props.categoryList.filter((v) => v.get('account_type') == values.account_type))}
               </Field>
             <br/>
             <FormControlLabel label='Favorite' control={
@@ -145,7 +144,7 @@ export default class AccountDialog extends React.Component {
                 />
               }/>
               <br/>
-              <FormControlLabel label='Favorite' control={
+              <FormControlLabel label='Operational' control={
                 <Field
                   label='Operational'
                   type='checkbox'
@@ -157,14 +156,14 @@ export default class AccountDialog extends React.Component {
                   />
                 }/>
                 <br/>
-                <FormControlLabel label='Favorite' control={
+                <FormControlLabel label='Hidden' control={
                   <Field
                     label='Hidden'
                     type='checkbox'
                     name='hidden'
                     checked={values.hidden}
                     value={values.hidden}
-                    disabled={!props.full}
+                    disabled={props.full}
                     component={Switch}
                     />
                   }/>

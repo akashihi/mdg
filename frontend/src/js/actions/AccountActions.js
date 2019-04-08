@@ -85,13 +85,19 @@ export function updateAccount(id, account) {
             .then(parseJSON)
             .then(singleToMap)
             .then(checkApiError)
-            .then(map => dispatch({
-              type: ACCOUNT_PARTIAL_SUCCESS,
-              payload: {
-                id: id,
-                account: map.first()
+            .then(map => {
+              if (id == -1) {
+                dispatch(loadAccountList())
+              } else {
+                dispatch({
+                  type: ACCOUNT_PARTIAL_SUCCESS,
+                  payload: {
+                    id: id,
+                    account: map.first()
+                  }
+                })
               }
-            }))
+            })
             .then(()=>dispatch(loadTotalsReport()))
             .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId))}})
             .catch(()=>dispatch(loadAccountList()))
@@ -131,7 +137,7 @@ export function editAccountCancel() {
     }
 }
 
-export function editAccountSave() {
+export function editAccountSave(account) {
     return (dispatch, getState) => {
         dispatch({
             type: ACCOUNT_DIALOG_CLOSE,
@@ -141,9 +147,8 @@ export function editAccountSave() {
             type: GET_ACCOUNTLIST_REQUEST,
             payload: true
         });
-
-        var state = getState();
-        var account = state.account.dialog.account;
-        dispatch(updateAccount(account));
+        const state = getState();
+        const id = state.account.getIn(['dialog', 'id']);
+        dispatch(updateAccount(id, account));
     }
 }

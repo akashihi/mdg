@@ -13,7 +13,11 @@ import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class Account extends Component {
     getCurrency = function(account, currencies) {
+      if (currencies.has(account.get('currency_id'))) {
         return currencies.get(account.get('currency_id')).get('name')
+      } else {
+        return ''
+      }
     };
 
     render() {
