@@ -53,6 +53,7 @@ export default function accountViewReducer(state = initialState, action) {
         case ACCOUNT_PARTIAL_UPDATE:
         case ACCOUNT_PARTIAL_SUCCESS:
            newAccountState = state.setIn(['accountList', action.payload.id], action.payload.account)
+              .setIn(['ui', 'accountListLoading'], false)
            return splitAccountList(newAccountState)
         case GET_ACCOUNTLIST_REQUEST:
             return state.setIn(['ui', 'accountListLoading'], true)
