@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import AddCirce from '@material-ui/icons/AddCircleOutline';
+import Fab from '@material-ui/core/Fab';
 
 const styles = {
   button: {
@@ -19,7 +19,7 @@ class TransactionCreateButton extends Component {
     }
 
     render() {
-      return (<Button variant='fab' color='secondary' aria-label='Add transaction' className={this.props.classes.button} onClick={::this.onCreate}><AddCirce/></Button>)
+      return (<Fab color='secondary' aria-label='Add transaction' className={this.props.classes.button} onClick={::this.onCreate}><AddCirce/></Fab>)
     }
 }
 
