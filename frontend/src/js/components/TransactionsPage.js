@@ -41,15 +41,9 @@ class TransactionsPage extends Component {
       this.setState(state => ({ expanded: !state.expanded }));
     };
 
-    makeAccountsList(props) {
-        return props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts)
-    }
-
     render() {
         var { classes } = this.props;
         var props = this.props;
-
-        var accounts = ::this.makeAccountsList(props);
 
         var title = 'Showing transactions from ' + props.periodBeginning.format('DD-MM-YYYY') + ' till ' + props.periodEnd.format('DD-MM-YYYY');
 
@@ -61,7 +55,7 @@ class TransactionsPage extends Component {
         } else {
             transactions = props.transactions.map(function (item) {
                 return (
-                    <GridListTile key={item.id}><Transaction transaction={item} accounts={accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
+                    <GridListTile key={item.id}><Transaction transaction={item} accounts={props.accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
                 )
             });
         }

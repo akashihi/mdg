@@ -47,11 +47,11 @@ class Transaction extends Component {
         var opAcounts = operations.map((item) => item.account_id);
         var usedAccounts = accounts.filter((item) => opAcounts.includes(item.id));
 
-        var nonAssetAccounts = usedAccounts.filter((item) => item.attributes.account_type != 'asset');
+        var nonAssetAccounts = usedAccounts.filter((item) => item.get('account_type') != 'asset');
         if (nonAssetAccounts.length > 0) {
-            return nonAssetAccounts.map((item) => item.attributes.name).join(', ')
+            return nonAssetAccounts.map((item) => item.get('name')).valueSeq().join(', ')
         } else {
-            return usedAccounts.map((item) => item.attributes.name).join(', ')
+            return usedAccounts.map((item) => item.get('name')).valueSeq().join(', ')
         }
     }
 
@@ -80,8 +80,8 @@ class Transaction extends Component {
         //In other cases it's a 'transfer' transaction.
 
         var summary = tx.attributes.operations.map((op) => {
-            var opAccount = accounts.filter((item) => item.id == op.account_id)[0];
-            return {amount: op.amount, rate: op.rate, type: opAccount.attributes.account_type}
+            var opAccount = accounts.get(op.account_id);
+            return {amount: op.amount, rate: op.rate, type: opAccount.get('account_type')}
         }).reduce((acc, item) => {
           var amount = item.amount
           if (item.rate) {
@@ -104,8 +104,8 @@ class Transaction extends Component {
         }
 
         var positives = tx.attributes.operations.map((op) => {
-            var opAccount = accounts.filter((item) => item.id == op.account_id)[0];
-            return {amount: op.amount, rate: op.rate, type: opAccount.attributes.account_type}
+            var opAccount = accounts.get(op.account_id);
+            return {amount: op.amount, rate: op.rate, type: opAccount.get('account_type')}
         }).filter((item) => item.amount > 0)
             .reduce((acc, item) => {
               var amount = item.amount

@@ -9,9 +9,10 @@ const mapStateToProps = (state) => {
     return {
         waiting: state.transaction.ui.transactionListLoading,
         error: state.transaction.ui.transactionListError,
-        assetAccounts: state.account.assetAccountList,
-        incomeAccounts: state.account.incomeAccountList,
-        expenseAccounts: state.account.expenseAccountList,
+        assetAccounts: state.account.get('assetAccountList'),
+        incomeAccounts: state.account.get('incomeAccountList'),
+        expenseAccounts: state.account.get('expenseAccountList'),
+        accounts: state.account.get('accountList'),
         transactions: state.transaction.transactionList,
         periodBeginning: state.transactionview.periodBeginning,
         periodEnd: state.transactionview.periodEnd
