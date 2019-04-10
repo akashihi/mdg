@@ -89,8 +89,6 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
   def create(dto: Option[AccountDTO]): ErrorF[AccountDTO] = {
     val validDto = dto
       .fromOption("ACCOUNT_DATA_INVALID")
-      .map(a => if(a.account_type == AssetAccount) {a.copy(category_id = Option.empty)} else a)
-      .map(a => if(a.account_type != AssetAccount) {a.copy(asset_type = Option.empty)} else a)
       .map(_.copy(balance = 0)) // Accounts can only be created with 0 balance.
       .map(validate)
       .flatMap(validationToXor)
@@ -156,8 +154,6 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
   def edit(id: Long,
            dto: Option[AccountDTO]): ErrorF[AccountDTO] = {
     val validDto = dto.fromOption("ACCOUNT_DATA_INVALID")
-      .map(a => if(a.account_type == AssetAccount) {a.copy(category_id = Option.empty)} else a)
-      .map(a => if(a.account_type != AssetAccount) {a.copy(asset_type = Option.empty)} else a)
       .map(validate)
       .flatMap(validationToXor)
 
