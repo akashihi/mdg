@@ -65,6 +65,13 @@ export function updateAccount(id, account) {
             }
         });
 
+        //account needs to be cleaned first
+        if (account.get('account_type') === 'asset') {
+          account = account.delete('category_id')
+        } else {
+          account = account.delete('asset_type')
+        }
+
         var state=getState();
         var selectedBudgetId = state.budgetentry.currentBudget.id;
 
