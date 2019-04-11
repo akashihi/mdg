@@ -46,7 +46,6 @@ class Transaction extends Component {
         //they should be used
         var opAccounts = operations.map((item) => item.account_id);
         var usedAccounts = accounts.filter((item, key) => opAccounts.includes(key));
-        console.log(usedAccounts)
 
         var nonAssetAccounts = usedAccounts.filter((item) => item.get('account_type') != 'asset');
         if (!nonAssetAccounts.isEmpty()) {

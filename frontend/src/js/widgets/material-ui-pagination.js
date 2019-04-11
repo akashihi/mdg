@@ -45,7 +45,7 @@ const getStateFromProps = props => {
 
 const Page = ({ value, isActive, onClick, styleButton, stylePrimary }) => {
   return !styleButton ? (<Button
-    variant='flat'
+    variant='text'
     style = { flatButtonStyle }
     color = { isActive ? 'primary' : 'default'}
     onClick = { onClick }
@@ -69,7 +69,7 @@ Page.propTypes = {
 
 const FirstPageLink = ({ onClick, styleFirstPageLink }) => {
   return !styleFirstPageLink ? (<Button
-    variant='flat'
+    variant='text'
     style = { flatButtonStyle }
     onClick = { onClick }
   ><NavigationFirstPage/></Button>) : (<div
@@ -85,7 +85,7 @@ FirstPageLink.propTypes = {
 
 const LastPageLink = ({ onClick, styleLastPageLink }) => {
   return !styleLastPageLink ? (<Button
-    variant='flat'
+    variant='text'
     style = { flatButtonStyle }
     onClick = { onClick }
   ><NavigationLastPage/></Button>) : (<div
