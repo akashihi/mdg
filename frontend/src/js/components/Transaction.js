@@ -44,11 +44,12 @@ class Transaction extends Component {
         //account.
         //If transaction is built only of asset accounts,
         //they should be used
-        var opAcounts = operations.map((item) => item.account_id);
-        var usedAccounts = accounts.filter((item) => opAcounts.includes(item.id));
+        var opAccounts = operations.map((item) => item.account_id);
+        var usedAccounts = accounts.filter((item, key) => opAccounts.includes(key));
+        console.log(usedAccounts)
 
         var nonAssetAccounts = usedAccounts.filter((item) => item.get('account_type') != 'asset');
-        if (nonAssetAccounts.length > 0) {
+        if (!nonAssetAccounts.isEmpty()) {
             return nonAssetAccounts.map((item) => item.get('name')).valueSeq().join(', ')
         } else {
             return usedAccounts.map((item) => item.get('name')).valueSeq().join(', ')
