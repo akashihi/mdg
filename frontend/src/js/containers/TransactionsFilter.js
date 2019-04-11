@@ -10,12 +10,12 @@ const mapStateToProps = (state) => {
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
-        pageSize: state.transactionview.pageSize,
-        periodBeginning: state.transactionview.periodBeginning,
-        periodEnd: state.transactionview.periodEnd,
-        accountFilter: state.transactionview.accountFilter,
-        tagFilter: state.transactionview.tagFilter,
-        commentFilter: state.transactionview.commentFilter
+        pageSize: state.transactionview.get('pageSize'),
+        periodBeginning: state.transactionview.get('periodBeginning'),
+        periodEnd: state.transactionview.get('periodEnd'),
+        accountFilter: state.transactionview.get('accountFilter'),
+        tagFilter: state.transactionview.get('tagFilter'),
+        commentFilter: state.transactionview.get('commentFilter')
     }
 };
 

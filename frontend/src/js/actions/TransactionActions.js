@@ -69,17 +69,17 @@ export function loadTransactionList() {
         var state = getState();
 
         var paginationParams = {
-            pageSize: state.transactionview.pageSize,
-            pageNumber: state.transactionview.pageNumber
+            pageSize: state.transactionview.get('pageSize'),
+            pageNumber: state.transactionview.get('pageNumber')
         };
         var periodParams = {
-            notLater: state.transactionview.periodEnd.format('YYYY-MM-DDT23:59:59'),
-            notEarlier: state.transactionview.periodBeginning.format('YYYY-MM-DDT00:00:00')
+            notLater: state.transactionview.get('periodEnd').format('YYYY-MM-DDT23:59:59'),
+            notEarlier: state.transactionview.get('periodBeginning').format('YYYY-MM-DDT00:00:00')
         };
         var filter = {
-            comment: state.transactionview.commentFilter,
-            tag: state.transactionview.tagFilter,
-            account_id: state.transactionview.accountFilter,
+            comment: state.transactionview.get('commentFilter'),
+            tag: state.transactionview.get('tagFilter'),
+            account_id: state.transactionview.get('accountFilter'),
         };
         var filterParams = {filter: JSON.stringify(filter)};
 

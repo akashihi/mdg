@@ -14,8 +14,8 @@ const mapStateToProps = (state) => {
         expenseAccounts: state.account.get('expenseAccountList'),
         accounts: state.account.get('accountList'),
         transactions: state.transaction.transactionList,
-        periodBeginning: state.transactionview.periodBeginning,
-        periodEnd: state.transactionview.periodEnd
+        periodBeginning: state.transactionview.get('periodBeginning'),
+        periodEnd: state.transactionview.get('periodEnd')
     }
 };
 
