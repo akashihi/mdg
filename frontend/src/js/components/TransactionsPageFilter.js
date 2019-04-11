@@ -56,19 +56,19 @@ export default class TransactionsPageFilter extends Component {
     render() {
         var props = this.props;
 
-        var accounts = ::this.makeAccountsList(props);
+        //var accounts = ::this.makeAccountsList(props);
 
         var buttonStyle = {
             'textDecorationLine': 'underline',
             'textDecorationStyle': 'dashed'
         };
 
-        var accountItems = accounts.map((acc) => {
+        /*var accountItems = accounts.map((acc) => {
             return <MenuItem key={acc.id} value={acc.id}>
               <Checkbox checked={props.accountFilter.indexOf(acc.id) > -1} />
               <ListItemText primary={acc.attributes.name}/>
             </MenuItem>
-        });
+        });*/
 
         var tagItems = props.tags.map((tag) => {
             return <MenuItem key={tag.attributes.txtag} value={tag.attributes.txtag}>
@@ -77,16 +77,30 @@ export default class TransactionsPageFilter extends Component {
             </MenuItem>
         });
 
-        return <Grid fluid>
+        return <Grid fluid  style={{'height': '340px'}}>
+          <Row>
+            <Col xs={6} sm={6} md={6} lg={6}>
+                Period beginning
+            </Col>
+            <Col xs={6} sm={6} md={6} lg={6}>
+              <DatePicker value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
+            </Col>
+            <Col xs={6} sm={6} md={6} lg={6}>
+                Period end
+            </Col>
+            <Col xs={6} sm={6} md={6} lg={6}>
+              <DatePicker value={props.periodEnd.toDate()} onChange={::this.setEnd}/>
+            </Col>
+          </Row>
             <Row>
-                <Col xs={6} sm={6} md={4} lg={4}>
-                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(0)}>Today</Button>
-                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(7)}>Week</Button>
-                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(30)}>Month</Button>
-                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(90)}>Three months</Button>
-                    <Button variant='flat' style={buttonStyle} onClick={() => ::this.setPeriodDays(365)}>Year</Button>
+                <Col xs={12} sm={6} md={6} lg={6}>
+                    <Button variant='text' style={buttonStyle} onClick={() => ::this.setPeriodDays(0)}>Today</Button>
+                    <Button variant='text' style={buttonStyle} onClick={() => ::this.setPeriodDays(7)}>Week</Button>
+                    <Button variant='text' style={buttonStyle} onClick={() => ::this.setPeriodDays(30)}>Month</Button>
+                    <Button variant='text' style={buttonStyle} onClick={() => ::this.setPeriodDays(90)}>Three months</Button>
+                    <Button variant='text' style={buttonStyle} onClick={() => ::this.setPeriodDays(365)}>Year</Button>
                 </Col>
-                <Col xs={6} sm={6} md={2} mdOffset={6} lg={2} lgOffset={6}>
+                <Col xs={12} sm={6} md={6} lg={6}>
                   <FormControl fullWidth={true}>
                       <InputLabel htmlFor={'tx-on-page'}>Transactions on page</InputLabel>
                       <Select value={props.pageSize}
@@ -103,33 +117,31 @@ export default class TransactionsPageFilter extends Component {
                 </Col>
             </Row>
             <Row>
-                <Col xs={6} sm={6} md={2} lg={2}>
-                    Period beginning
-                </Col>
-                <Col xs={6} sm={6} md={1} lg={1}>
-                  <DatePicker value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
-                </Col>
-                <Col xsOffset={1} xs={2} sm={2} md={3} lg={2}>
-                    <TextField label='Comment contains...' onChange={::this.setFilterComment}
-                               value={props.commentFilter}/>
-                </Col>
-                <Col xs={2} sm={2} md={3} lg={2}>
+              <Col xs={12} sm={12} md={12} lg={12}>
+                <FormControl fullWidth={true}>
+                  <TextField label='Comment contains...' onChange={::this.setFilterComment}
+                             value={props.commentFilter}/>
+                </FormControl>
+              </Col>
+            </Row>
+            <Row>
+                <Col xs={6} sm={6} md={6} lg={6}>
                   <FormControl fullWidth={true}>
                       <InputLabel htmlFor={'accounts-filter'}>Select accounts</InputLabel>
                       <Select multiple={true}
                               value={props.accountFilter}
                               onChange={::this.setFilterAccounts}
                               inputProps={{id: 'accounts-filter'}}
-                              renderValue={selected => selected.map((item) => accounts.filter((acc) => acc.id == item)[0].attributes.name+';')}>
-                              {accountItems}
+                              renderValue={() => 'r'/*selected => selected.map((item) => accounts.filter((acc) => acc.id == item)[0].attributes.name+';')*/}>
+                              {/*accountItems*/}
                       </Select>
                   </FormControl>
                 </Col>
-                <Col xs={2} sm={2} md={3} lg={2}>
+                <Col xs={6} sm={6} md={6} lg={6}>
                   <FormControl fullWidth={true}>
                       <InputLabel htmlFor={'tags-filter'}>Select tags</InputLabel>
                       <Select multiple={true}
-                              value={props.tagFilter}
+                              value={props.tagFilter.toJS()}
                               onChange={::this.setFilterTags}
                               inputProps={{id: 'tags-filter'}}
                               renderValue={selected => selected.map((item) => item+',')}>>
@@ -137,17 +149,11 @@ export default class TransactionsPageFilter extends Component {
                       </Select>
                   </FormControl>
                 </Col>
-                <Col xs={1} sm={1} md={1} lg={1}>
-                  <Button aria-label='Done' onClick={::this.applyFilter}><Done/></Button>
-                  <Button aria-label='Clear' onClick={::this.clearFilter}><Clear/></Button>
-                </Col>
             </Row>
             <Row>
-              <Col xs={6} sm={6} md={2} lg={2}>
-                  Period end
-              </Col>
-              <Col xs={6} sm={6} md={1} lg={1}>
-                <DatePicker value={props.periodEnd.toDate()} onChange={::this.setEnd}/>
+              <Col xsOffset={8} xs={4} smOffset={8} sm={4} mdOffset={8} md={4} lgOffset={8} lg={4}>
+                <Button aria-label='Done' onClick={::this.applyFilter}><Done/></Button>
+                <Button aria-label='Clear' onClick={::this.clearFilter}><Clear/></Button>
               </Col>
             </Row>
         </Grid>;

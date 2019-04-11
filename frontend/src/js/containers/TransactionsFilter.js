@@ -7,7 +7,7 @@ import * as TransactionActions from '../actions/TransactionActions'
 const mapStateToProps = (state) => {
     return {
         tags: state.tag.tagList,
-        assetAccounts: state.account.assetAccountList,
+        accounts: state.account.accountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
         pageSize: state.transactionview.get('pageSize'),
