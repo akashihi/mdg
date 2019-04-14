@@ -9,7 +9,7 @@ const mapStateToProps = (state) => {
     return {
         primaryCurrency: state.setting.primaryCurrency,
         currencies: state.currency.get('currencies'),
-        tags: state.tag.tagList,
+        tags: state.tag.get('tagList'),
         assetAccounts: state.account.assetAccountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,

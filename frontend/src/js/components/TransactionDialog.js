@@ -424,7 +424,7 @@ export default class TransactionDialog extends React.Component {
             props.actions.editTransactionChange(account);
         };
 
-        var tags = props.tags.map((item) => item.attributes.txtag);
+        var tags = props.tags.map((item) => item.get('txtag'));
 
         var ts = moment(attributes.timestamp);
 

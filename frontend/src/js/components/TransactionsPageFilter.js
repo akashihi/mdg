@@ -71,11 +71,11 @@ export default class TransactionsPageFilter extends Component {
         });*/
 
         var tagItems = props.tags.map((tag) => {
-            return <MenuItem key={tag.attributes.txtag} value={tag.attributes.txtag}>
-              <Checkbox checked={props.tagFilter.indexOf(tag.attributes.txtag) > -1}/>
-              <ListItemText primary={tag.attributes.txtag}/>
+            return <MenuItem key={tag.get('txtag')} value={tag.get('txtag')}>
+              <Checkbox checked={props.tagFilter.indexOf(tag.get('txtag')) > -1}/>
+              <ListItemText primary={tag.get('txtag')}/>
             </MenuItem>
-        });
+        }).valueSeq();
 
         return <Grid fluid  style={{'height': '340px'}}>
           <Row>

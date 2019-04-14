@@ -6,7 +6,7 @@ import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {
     return {
-        tags: state.tag.tagList,
+        tags: state.tag.get('tagList'),
         accounts: state.account.accountList,
         incomeAccounts: state.account.incomeAccountList,
         expenseAccounts: state.account.expenseAccountList,
