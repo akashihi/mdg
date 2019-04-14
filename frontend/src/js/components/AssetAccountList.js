@@ -6,16 +6,16 @@ export default class AccountsList extends Component {
     render() {
         const props = this.props;
         
-        const filtered_accounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible)
+        const filtered_accounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible);
 
-        const cash_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'cash')
-        const current_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'current')
-        const savings_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'savings')
-        const deposit_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'deposit')
-        const credit_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'credit')
-        const debt_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'debt')
-        const broker_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'broker')
-        const tradable_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'tradable')
+        const cash_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'cash');
+        const current_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'current');
+        const savings_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'savings');
+        const deposit_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'deposit');
+        const credit_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'credit');
+        const debt_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'debt');
+        const broker_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'broker');
+        const tradable_accounts = filtered_accounts.filter((item) => item.get('asset_type') === 'tradable');
 
         return (
             <Fragment>

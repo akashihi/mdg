@@ -32,37 +32,37 @@ const initialState = Map({
 export default function transactionViewReducer(state = initialState, action) {
     switch (action.type) {
         case APPLY_TRANSACTION_FILTER:
-          return state.set('pageNumber', 1)
+          return state.set('pageNumber', 1);
         case CLEAR_TRANSACTION_FILTER:
           return state.set('accountFilter', List())
             .set('tagFilter', List())
             .set('commentFilter', '')
-            .set('pageNumber', 1)
+            .set('pageNumber', 1);
         case SET_TRANSACTION_FILTER_TAG:
-          return state.set('tagFilter', action.payload)
+          return state.set('tagFilter', action.payload);
         case SET_TRANSACTION_FILTER_ACCOUNT:
-          return state.set('accountFilter', action.payload)
+          return state.set('accountFilter', action.payload);
         case SET_TRANSACTION_FILTER_COMMENT:
-          return state.set('commentFilter', action.payload)
+          return state.set('commentFilter', action.payload);
         case SET_TRANSACTION_VIEW_PERIOD:
           return state.set('periodBeginning', action.payload.beginning)
             .set('periodEnd', action.payload.end)
-            .set('pageNumber', 1)
+            .set('pageNumber', 1);
         case SET_TRANSACTION_VIEW_BEGINNING:
-          return state.set('periodBeginning', action.payload)
+          return state.set('periodBeginning', action.payload);
         case SET_TRANSACTION_VIEW_END:
-          return state.set('periodEnd', action.payload)
+          return state.set('periodEnd', action.payload);
         case SET_TRANSACTION_PAGENO:
-          return state.set('pageNumber', action.payload)
+          return state.set('pageNumber', action.payload);
         case SET_TRANSACTION_PAGESIZE:
-          return state.set('pageSize', action.payload)
+          return state.set('pageSize', action.payload);
         case GET_TRANSACTIONLIST_REQUEST:
-          return state.set('count', 0)
+          return state.set('count', 0);
         case GET_TRANSACTIONLIST_SUCCESS:
-          return state.set('count', action.payload.count)
+          return state.set('count', action.payload.count);
         case GET_TRANSACTIONLIST_FAILURE:
           return state.set('count', 0)
-            .set('pageNumber', 1)
+            .set('pageNumber', 1);
         default:
             return state;
     }

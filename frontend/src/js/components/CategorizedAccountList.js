@@ -1,42 +1,9 @@
 import React, {Component, Fragment} from 'react';
-import {OrderedMap} from 'immutable';
 
 import AccountList from './AccountList'
+import {filterNonListedCategories} from '../util/AccountUtils'
 
 export default class CategorizedAccountList extends Component {
-
-  filterNonListedCategories(categories_ids, categoryList) {
-    const filterCategory = function(category) {
-      var kids = OrderedMap();
-
-      if (category.has('children')) {
-        category.get('children').forEach((item, k) => {
-          const filtered = filterCategory(item);
-          if (filtered != null) {
-              kids = kids.set(k, filtered)
-          }
-        })
-      }
-
-      category = category.set('children', kids);
-
-      if (categories_ids.includes(category.get('id')) || !kids.isEmpty()) {
-          return category
-      }
-
-
-      return null
-    };
-
-    const entries = [];
-    categoryList.forEach(item => {
-      const c = filterCategory(item);
-      if (c != null) {
-        entries.push(c)
-      }
-    });
-    return entries
-  }
 
   renderCategorizedList(accounts, categoryList) {
     const props = this.props;
@@ -72,7 +39,7 @@ export default class CategorizedAccountList extends Component {
         const categories_ids = filtered_accounts.map((item) => item.get('category_id')).valueSeq();
 
         //Recursively remove categories, that are not in categories_ids
-        const categories = this.filterNonListedCategories(categories_ids, props.categoryList);
+        const categories = filterNonListedCategories(categories_ids, props.categoryList);
 
         //Recursively draw categories and related accounts
         const categorized_accounts = this.renderCategorizedList(filtered_accounts, categories);
