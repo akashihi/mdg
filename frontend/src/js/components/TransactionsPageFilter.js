@@ -37,7 +37,7 @@ export default class TransactionsPageFilter extends Component {
     mapAccountEntry(acc, id) {
         const props = this.props;
         return <MenuItem key={id} value={id}>
-            <Checkbox checked={props.accountFilter.indexOf(acc.id) > -1} />
+            <Checkbox checked={props.accountFilter.includes(id)} />
             <ListItemText primary={acc.get('name')}/>
         </MenuItem>
     }
@@ -195,7 +195,7 @@ export default class TransactionsPageFilter extends Component {
                               value={props.accountFilter.toJS()}
                               onChange={(ev) => edit('accountFilter', List(ev.target.value), false)}
                               inputProps={{id: 'accounts-filter'}}
-                              renderValue={() => 'r'/*selected => selected.map((item) => accounts.filter((acc) => acc.id == item)[0].attributes.name+';')*/}>
+                              renderValue={selected => selected.map((item) => props.accounts.get(item).get('name')).join(';')}>
                               {accountItems}
                       </Select>
                   </FormControl>
