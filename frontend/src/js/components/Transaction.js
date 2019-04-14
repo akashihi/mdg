@@ -142,15 +142,15 @@ class Transaction extends Component {
             <CardContent>
                 <Grid>
                     <Row>
-                        {!props.preview && <Col xs={1}><Checkbox color='default'/></Col>}
-                        <Col xs={1}>{timestampToFormattedDate(attributes.timestamp)}</Col>
-                        <Col xs={3}>{attributes.comment}</Col>
-                        <Col xs={1}>
+                        {!props.preview && <Col xs={1} className='hide-on-small'><Checkbox color='default'/></Col>}
+                        <Col xs={3} sm={2} md={1} lg={1}>{timestampToFormattedDate(attributes.timestamp)}</Col>
+                        <Col xs={6} sm={3} md={3} lg={3}>{attributes.comment}</Col>
+                        <Col xs={3} sm={1} md={1} lg={1}>
                             <div style={{color: totals.color}}>{totals.total}</div>
                         </Col>
-                        <Col xs={2}>{::this.renderTransactionAccountList(attributes.operations, props.accounts)}</Col>
-                        <Col xs={2}>{attributes.tags.join(', ')}</Col>
-                        <Col xs={2}>
+                        <Col xs={7} sm={3} md={2} lg={2}>{::this.renderTransactionAccountList(attributes.operations, props.accounts)}</Col>
+                        <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{attributes.tags.join(', ')}</Col>
+                        <Col xs={5} sm={3} md={2} lg={2}>
                           <Button aria-label='Edit' onClick={() => props.editAction(props.transaction)}><Edit/></Button>
                           <Button aria-label='Delete' onClick={() => props.deleteAction(props.transaction)}><Delete/></Button>
                           {!props.preview && <IconButton className={classnames(classes.expand, {[classes.expandOpen]: this.state.expanded,})} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
