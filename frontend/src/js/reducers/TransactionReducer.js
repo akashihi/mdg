@@ -1,4 +1,4 @@
-import {OrderedMap, Map} from 'immutable';
+import {OrderedMap, Map, List} from 'immutable';
 import mathjs from 'mathjs'
 import {
     GET_TRANSACTIONLIST_REQUEST,
@@ -34,26 +34,25 @@ const initialState = Map({
         closeOnSave: false,
         transaction: Map({comment: '', tags: [], operations: [{amount: 0}, {amount: 0}]}),
         valid: false,
-        errors: Map({operations: OrderedMap()})
+        errors: Map({valid: true, errors: List(), operations: List()})
     })
 });
 
 function validateTransactionForm(tx) {
-    var attributes = tx.attributes;
-    var errors = {};
-    var operationErrors = [];
+    var errors = Map();
+    var operationErrors = List();
 
     var easeForMultiCurrency = false;
 
     var valid = true;
 
-    attributes.operations.forEach((item) => {
-        var operationError = {};
+    tx.get('operations').forEach((item) => {
+        var operationError = Map();
 
         if (item.amount) {
-            var strAmount = item.amount.toString()
+            var strAmount = item.amount.toString();
             if (strAmount.slice(-1) === '=') { //If it ends with =
-                var expr = strAmount.slice(0, -1) //Strip the = and evaluate mathematical expression
+                var expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
                 try {
                     item.amount = mathjs.eval(expr)
                 } catch (e) {
@@ -63,39 +62,39 @@ function validateTransactionForm(tx) {
         }
 
         if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(item.amount)) {
-            operationError.amount = 'Amount is invalid';
+            operationError = operationError.set('amount', 'Amount is invalid');
             valid = false;
         }
 
         if (!item.account_id) {
-            operationError.account_id = 'Account is not selected';
+            operationError = operationError.set(['account_id'], 'Account is not selected');
             valid = false;
         }
 
         operationErrors.push(operationError);
     });
-    errors.operations = operationErrors;
+    errors = errors.set('operations', operationErrors);
 
 
-    var ops = attributes.operations.filter((item) => parseFloat(item.amount) != 0);
-    if (ops.length == 0) {
-        errors.transaction = 'Empty transaction';
+    var ops = tx.get('operations').filter((item) => parseFloat(item.amount) !== 0);
+    if (ops.length === 0) {
+        errors.set('transaction', 'Empty transaction');
         valid = false;
     }
     var sum = ops.reduce((acc, item) => {
-        var amount = parseFloat(item.amount)
+        var amount = parseFloat(item.amount);
         if (item.rate) {
-            easeForMultiCurrency = true
+            easeForMultiCurrency = true;
             amount = amount * parseFloat(item.rate)
         }
         return acc + amount
     }, 0);
-    if (!(-1 < sum && sum < 1) || (sum != 0 && !easeForMultiCurrency)) {
-        errors.transaction = 'Transaction not balanced';
+    if (!(-1 < sum && sum < 1) || (sum !== 0 && !easeForMultiCurrency)) {
+        errors.set('transaction', 'Transaction not balanced');
         valid = false;
     }
 
-    return {valid: valid, errors: errors}
+    return Map({valid: valid, errors: errors})
 }
 
 export default function transactionReducer(state = initialState, action) {

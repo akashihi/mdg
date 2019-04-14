@@ -39,37 +39,37 @@ class AccountMapper {
 
     sortAssets() {
         var assetCompare = function(l, r) {
-          if (l.attributes.asset_type === r.attributes.asset_type) {
-            return l.attributes.name-r.attributes.name;
+          if (l.get('asset_type') === r.get('asset_type')) {
+            return l.get('name')-r.get('name' );
           }
-          var typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable']
-          return typesInOrder.indexOf(l.attributes.asset_type) - typesInOrder.indexOf(r.attributes.asset_type)
-        }
+          var typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable'];
+          return typesInOrder.indexOf(l.get('asset_type')) - typesInOrder.indexOf(r.get('asset_type'))
+        };
 
         var flagsCompare = function(l,r) {
-          if (l.attributes.operational === r.attributes.operational || l.attributes.favorite === r.attributes.favorite) {
+          if (l.get('operational') === r.get('operational') || l.get('favorite') === r.get('favorite')) {
             return  assetCompare(l,r)
           }
-          if (l.attributes.operational) {
+          if (l.get('operational')) {
               return -1;
           }
-          if (r.attributes.operational) {
+          if (r.get('operational')) {
               return 1;
           }
 
-          if (l.attributes.favorite) {
+          if (l.get('favorite')) {
               return -1;
           }
-          if (r.attributes.favorite) {
+          if (r.get('favorite')) {
               return 1;
           }
-        }
+        };
 
         return this.assetAccounts.sort(flagsCompare)
     }
 
     combineAccounts() {
-        return this.sortAssets().concat(this.expenseAccounts, this.incomeAccounts).filter((item) => !item.attributes.hidden);
+        return this.sortAssets().concat(this.expenseAccounts, this.incomeAccounts).filter((item) => !item.get('hidden'));
     }
 
     getAccounts() {
@@ -78,9 +78,9 @@ class AccountMapper {
         return combinedAccounts.map(::this.accountToMenuItem);
     }
 
-    getLimitedAccounts(operation) {
-        //operation = attributes.operations[0]
-        var limitedAccounts = ::this.combineAccounts();
+    getLimitedAccounts(/*operation*/) {
+
+        /*var limitedAccounts = ::this.combineAccounts();
         if (operation.account_id) {
             var leftAccountsIndex = limitedAccounts.map((c) => c.id).indexOf(operation.account_id);
             if (leftAccountsIndex > -1) {
@@ -91,7 +91,7 @@ class AccountMapper {
                 })
             }
         }
-        return limitedAccounts.map(::this.accountToMenuItem);
+        return limitedAccounts.map(::this.accountToMenuItem);*/
     }
 }
 
@@ -102,29 +102,29 @@ class SimpleOperationsEditor extends OperationsEditor {
     render() {
         const props = this.props;
 
-        const errors = props.errors;
+        //const errors = props.errors;
         const operations = props.operations;
 
         var textLabel = 'Amount';
         var textError = false;
-        if (errors.operations[1].amount) {
-            textLabel = errors.operations[1].amount;
+        /*if (errors.get('operations')[1].amount) {
+            textLabel = errors.get('operations')[1].amount;
             textError = true
-        }
+        }*/
 
         var textLeftLabel = 'Source';
         var textLeftError = false;
-        if (errors.operations[0].account_id) {
-            textLeftLabel = errors.operations[0].account_id;
+        /*if (errors.get('operations')[0].account_id) {
+            textLeftLabel = errors.get('operations')[0].account_id;
             textLeftError = true
-        }
+        }*/
 
         var textRightLabel = 'Destination';
         var textRightError = false;
-        if (errors.operations[1].account_id) {
-            textRightLabel = errors.operations[1].account_id;
+        /*if (errors.get('operations')[1].account_id) {
+            textRightLabel = errors.get('operations')[1].account_id;
             textRightError = true
-        }
+        }*/
 
         return (
             <Grid fluid>
@@ -218,22 +218,22 @@ class FullOperationsEditor extends OperationsEditor {
         var ops = this.props.operations.map(function (item, index) {
             var textLabel = 'Amount';
             var textError = false;
-            if (errors.operations[index].amount) {
-                textLabel = errors.operations[index].amount;
+            if (errors.get('operations')[index].amount) {
+                textLabel = errors.get('operations')[index].amount;
                 textError = true
             }
 
             var textRateLabel = 'Rate';
             var textRateError = false;
-            if (errors.operations[index].rate) {
-                textRateLabel = errors.operations[index].rate;
+            if (errors.get('operations')[index].rate) {
+                textRateLabel = errors.get('operations')[index].rate;
                 textRateError = true
             }
 
             var textAccountLabel = 'Account';
             var textAccountError = false;
-            if (errors.operations[index].account_id) {
-                textAccountLabel = errors.operations[index].account_id;
+            if (errors.get('operations')[index].account_id) {
+                textAccountLabel = errors.get('operations')[index].account_id;
                 textAccountError = true
             }
 
@@ -479,7 +479,7 @@ export default class TransactionDialog extends React.Component {
                 <Grid fluid>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
-                            <div style={validationErrorStyle}>{errors.transaction}</div>
+                            <div style={validationErrorStyle}>{errors.get('transaction')}</div>
                         </Col>
                     </Row>
                 </Grid>

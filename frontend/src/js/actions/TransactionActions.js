@@ -1,5 +1,6 @@
 import jQuery from 'jquery';
 import moment from 'moment';
+import {Map} from 'immutable';
 
 import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
 
@@ -189,7 +190,11 @@ export function setCloseOnSave(value) {
 export function createTransaction() {
     return {
         type: TRANSACTION_DIALOG_OPEN,
-        payload: { type: 'transaction', attributes: {comment: '', timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'), tags: [], operations: [ {amount: 0, account_id: -1}, {amount: 0, account_id: -1}]} }
+        payload: Map({
+            comment: '',
+            timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'),
+            tags: [],
+            operations: [ {amount: 0, account_id: -1}, {amount: 0, account_id: -1}]})
     }
 }
 
