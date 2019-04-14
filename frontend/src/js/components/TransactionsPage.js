@@ -53,11 +53,11 @@ class TransactionsPage extends Component {
         } else if (props.error) {
             transactions = <h1>Unable to load transactions list</h1>
         } else {
-            transactions = props.transactions.map(function (item) {
+            transactions = props.transactions.map(function (item, id) {
                 return (
-                    <GridListTile key={item.id}><Transaction transaction={item} accounts={props.accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
+                    <GridListTile key={id}><Transaction transaction={item} accounts={props.accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
                 )
-            });
+            }).valueSeq();
         }
 
         return <div>

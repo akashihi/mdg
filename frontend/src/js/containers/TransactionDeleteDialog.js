@@ -6,9 +6,9 @@ import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {
     return {
-        transaction: state.transaction.delete.transaction,
-        visible: state.transaction.delete.approvementDialogVisible,
-        loading: state.transaction.delete.loading
+        transaction: state.transaction.get('delete').get('transaction'),
+        visible: state.transaction.get('delete').get('approvementDialogVisible'),
+        loading: state.transaction.get('delete').get('loading')
     }
 };
 

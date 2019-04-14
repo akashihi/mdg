@@ -13,25 +13,25 @@ export function dataToMap(json) {
     function mapChildren(content) {
       if (content.has('children')) {
         var children = content.get('children').reduce((subacc, item) => {
-          const mapItem = Map(item)
+          const mapItem = Map(item);
           return subacc.set(item.id, mapChildren(mapItem))
-        }, new OrderedMap())
+        }, new OrderedMap());
         content = content.set('children', children)
       }
       return content
     }
 
     return json.data.reduce((acc, item) => {
-        var content = Map(item.attributes)
+        var content = Map(item.attributes);
 
         // Special handling for tree structures, like Category
-        content = mapChildren(content)
+        content = mapChildren(content);
         return acc.set(item.id, content)
     }, new OrderedMap())
 }
 
 export function singleToMap(json) {
-  const attr = Map(json.data.attributes)
+  const attr = Map(json.data.attributes);
   return OrderedMap().set(json.data.id, attr)
 }
 

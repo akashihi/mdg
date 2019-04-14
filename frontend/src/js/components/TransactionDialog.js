@@ -366,8 +366,8 @@ export default class TransactionDialog extends React.Component {
     validForSimpleEditing() {
         var props = this.props;
         var transaction = props.transaction;
-        var attributes = transaction.attributes;
-        if (attributes.operations.length > 2) {
+
+        if (transaction.get('operations').length > 2) {
             return false
         }
 
@@ -392,7 +392,6 @@ export default class TransactionDialog extends React.Component {
     render() {
         var props = this.props;
         var transaction = props.transaction;
-        var attributes = transaction.attributes;
         var errors = props.errors;
 
         var validationErrorStyle = {
@@ -407,26 +406,26 @@ export default class TransactionDialog extends React.Component {
         var enableSimpleEditor = this.validForSimpleEditing(transaction);
 
         var onAmountChange = function (index, value) {
-            attributes.operations[index].amount = value;
-            var account = {...transaction, attributes: attributes};
-            props.actions.editTransactionChange(account);
+            transaction.get('operations')[index].amount = value;
+            //var account = {...transaction, attributes: attributes};
+            //props.actions.editTransactionChange(account);
         };
 
-        var onRateChange = function (index, value) {
-            attributes.operations[index].rate = value;
-            var account = {...transaction, attributes: attributes};
-            props.actions.editTransactionChange(account);
+        var onRateChange = function (/*index, value*/) {
+            //attributes.operations[idex].rate = value;
+            //var account = {...transaction, attributes: attributes};
+            //props.actions.editTransactionChange(account);
         };
 
-        var onAccountChange = function (index, value) {
-            attributes.operations[index].account_id = value;
-            var account = {...transaction, attributes: attributes};
-            props.actions.editTransactionChange(account);
+        var onAccountChange = function (/*index, value*/) {
+            //attributes.operations[index].account_id = value;
+            //var account = {...transaction, attributes: attributes};
+            //props.actions.editTransactionChange(account);
         };
 
         var tags = props.tags.map((item) => item.get('txtag'));
 
-        var ts = moment(attributes.timestamp);
+        var ts = moment(transaction.get('timestamp'));
 
         var accounts = new AccountMapper(props.currencies, props.assetAccounts, props.expenseAccounts, props.incomeAccounts);
 
@@ -444,7 +443,7 @@ export default class TransactionDialog extends React.Component {
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
                             <ChipInput
-                                value={attributes.tags}
+                                value={transaction.get('tags')}
                                 dataSource={tags}
                                 onAdd={::this.onTagAdd}
                                 onDelete={::this.onTagDelete}
@@ -455,7 +454,7 @@ export default class TransactionDialog extends React.Component {
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
                             <TextField label='Comment on transaction' fullWidth={true} multiline={true} rows={4}
-                                       value={attributes.comment} onChange={::this.onCommentChange}/>
+                                       value={transaction.get('comment')} onChange={::this.onCommentChange}/>
                         </Col>
                     </Row>
                 </Grid>
@@ -466,12 +465,12 @@ export default class TransactionDialog extends React.Component {
                 </Tabs>
                 {this.state.tabValue === 'simple' &&
                 <SimpleOperationsEditor errors={errors}
-                                        operations={attributes.operations}
+                                        operations={transaction.get('operations')}
                                         onAmountFunc={::this.onCombinedAmountChange}
                                         onAccountFunc={onAccountChange}
                                         accounts={accounts}/>}
                 {this.state.tabValue === 'multi' && <FullOperationsEditor errors={errors}
-                                                                          operations={attributes.operations}
+                                                                          operations={transaction.get('operations')}
                                                                           onAmountFunc={onAmountChange}
                                                                           onAccountFunc={onAccountChange}
                                                                           onRateFunc={onRateChange}

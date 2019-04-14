@@ -1,7 +1,7 @@
 import jQuery from 'jquery';
 import moment from 'moment';
 
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
 
 import {loadAccountList} from './AccountActions'
 import {loadBudgetInfoById} from './BudgetEntryActions';
@@ -43,10 +43,11 @@ export function loadLastTransactions() {
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_LASTTRANSACTION_SUCCESS,
-                    payload: json
+                    payload: map
                 })
             });
     }
@@ -83,10 +84,11 @@ export function loadTransactionList() {
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_TRANSACTIONLIST_SUCCESS,
-                    payload: json
+                    payload: map
                 });
                 dispatch(loadLastTransactions())
             })

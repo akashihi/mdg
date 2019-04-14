@@ -13,7 +13,7 @@ export default class TransactionDeleteConfirmation extends Component {
             actions = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
         } else {
             actions = [
-                <Button key='cancel-button' color='primary'onClick={props.actions.deleteTransactionCancel}>Cancel</Button>,
+                <Button key='cancel-button' color='primary' onClick={props.actions.deleteTransactionCancel}>Cancel</Button>,
                 <Button key='delete-button' color='secondary' onClick={() => props.actions.deleteTransaction(props.transaction)}>Delete</Button>,
             ];
         }
@@ -25,7 +25,7 @@ export default class TransactionDeleteConfirmation extends Component {
                     onExit={props.actions.deleteTransactionCancel}
                 >
                   <DialogContent>
-                    Please confirm transaction '{props.transaction.attributes.comment}' deletion
+                    Please confirm transaction '{props.transaction.get('comment')}' deletion
                   </DialogContent>
                   <DialogActions>{actions}</DialogActions>
                 </Dialog>

@@ -1,3 +1,4 @@
+import {OrderedMap, Map} from 'immutable';
 import mathjs from 'mathjs'
 import {
     GET_TRANSACTIONLIST_REQUEST,
@@ -16,26 +17,26 @@ import {
 } from '../constants/Transaction'
 import {GET_SETTING_SUCCESS} from '../constants/Setting'
 
-const initialState = {
-    transactionList: [],
-    lastTransactionList: [],
-    ui: {
+const initialState = Map({
+    transactionList: OrderedMap(),
+    lastTransactionList: OrderedMap(),
+    ui: Map({
         transactionListLoading: true,
         transactionListError: false,
-    },
-    delete: {
-        transaction: {attributes: {comment: ''}},
+    }),
+    delete: Map({
+        transaction: Map({comment: ''}),
         approvementDialogVisible: false,
         loading: false
-    },
-    dialog: {
+    }),
+    dialog: Map({
         open: false,
         closeOnSave: false,
-        transaction: {attributes: {comment: '', tags: [], operations: [ {amount: 0}, {amount: 0}]}},
+        transaction: Map({comment: '', tags: [], operations: [{amount: 0}, {amount: 0}]}),
         valid: false,
-        errors: { operations: [{}, {}]}
-    }
-};
+        errors: Map({operations: OrderedMap()})
+    })
+});
 
 function validateTransactionForm(tx) {
     var attributes = tx.attributes;
@@ -50,15 +51,15 @@ function validateTransactionForm(tx) {
         var operationError = {};
 
         if (item.amount) {
-          var strAmount = item.amount.toString()
-          if ( strAmount.slice(-1) === '=') { //If it ends with =
-            var expr = strAmount.slice(0, -1) //Strip the = and evaluate mathematical expression
-            try {
-              item.amount = mathjs.eval(expr)
-            } catch(e) {
-              item.amount = expr
+            var strAmount = item.amount.toString()
+            if (strAmount.slice(-1) === '=') { //If it ends with =
+                var expr = strAmount.slice(0, -1) //Strip the = and evaluate mathematical expression
+                try {
+                    item.amount = mathjs.eval(expr)
+                } catch (e) {
+                    item.amount = expr
+                }
             }
-          }
         }
 
         if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(item.amount)) {
@@ -76,20 +77,20 @@ function validateTransactionForm(tx) {
     errors.operations = operationErrors;
 
 
-    var ops = attributes.operations.filter((item) => parseFloat(item.amount) !=0);
-    if (ops.length == 0 ) {
+    var ops = attributes.operations.filter((item) => parseFloat(item.amount) != 0);
+    if (ops.length == 0) {
         errors.transaction = 'Empty transaction';
         valid = false;
     }
     var sum = ops.reduce((acc, item) => {
-      var amount = parseFloat(item.amount)
-      if (item.rate) {
-        easeForMultiCurrency = true
-        amount = amount * parseFloat(item.rate)
-      }
-      return acc+amount
+        var amount = parseFloat(item.amount)
+        if (item.rate) {
+            easeForMultiCurrency = true
+            amount = amount * parseFloat(item.rate)
+        }
+        return acc + amount
     }, 0);
-    if ( !(-1 < sum && sum < 1) || ( sum!= 0 && !easeForMultiCurrency)) {
+    if (!(-1 < sum && sum < 1) || (sum != 0 && !easeForMultiCurrency)) {
         errors.transaction = 'Transaction not balanced';
         valid = false;
     }
@@ -98,59 +99,53 @@ function validateTransactionForm(tx) {
 }
 
 export default function transactionReducer(state = initialState, action) {
-    var deleteUi = state.delete;
-    var dialog = state.dialog;
-    var ui = state.ui;
     switch (action.type) {
         case GET_LASTTRANSACTION_SUCCESS:
-            return {...state, lastTransactionList: action.payload};
+            return state.set('lastTransactionList', action.payload);
         case TRANSACTION_DIALOG_CHANGE:
             var valid = validateTransactionForm(action.payload);
-            dialog = {...dialog, transaction: action.payload, valid: valid.valid, errors: valid.errors};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'transaction'], action.payload)
+                .setIn(['dialog', 'valid'], valid.get('valid'))
+                .setIn(['dialog', 'errors'], valid.get('errors'));
         case TRANSACTION_DIALOG_CLOSE:
-            dialog = {...dialog, open: false};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'open'], false);
         case TRANSACTION_DIALOG_OPEN:
             var validInitial = validateTransactionForm(action.payload);
-            dialog = {...dialog, open: true, transaction: action.payload, valid: validInitial.valid, errors: validInitial.errors};
-            dialog = {...dialog, open: true, transaction: action.payload};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'transaction'], action.payload)
+                .setIn(['dialog', 'open'], true)
+                .setIn(['dialog', 'valid'], validInitial.get('valid'))
+                .setIn(['dialog', 'errors'], validInitial.get('errors'));
         case TRANSACTION_DIALOG_CLOSESAVE_SET:
-            dialog = {...dialog, closeOnSave: action.payload};
-            return {...state, dialog: dialog};
-       case GET_SETTING_SUCCESS:
+            return state.setIn(['dialog', 'closeOnSave'], action.payload);
+        case GET_SETTING_SUCCESS:
             var closeTransactionDialog = action.payload.get('ui.transaction.closedialog').get('value') === 'true';
-
-            dialog = {...dialog, closeOnSave: closeTransactionDialog};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'closeOnSave'], closeTransactionDialog);
         case DELETE_TRANSACTION_REQUEST:
-            deleteUi = {...deleteUi, approvementDialogVisible: true, transaction: action.payload};
-            return {...state, delete: deleteUi};
+            return state.setIn(['delete', 'approvementDialogVisible'], true)
+                .setIn(['delete', 'transaction'], action.payload);
         case DELETE_TRANSACTION_CANCEL:
-            deleteUi = {...deleteUi, approvementDialogVisible: false, transaction: {attributes: {comment: ''}}};
-            return {...state, delete: deleteUi};
+            return state.setIn(['delete', 'approvementDialogVisible'], false)
+                .setIn(['delete', 'transaction'], Map({comment: ''}));
         case DELETE_TRANSACTION_APPROVE:
-            deleteUi = {...deleteUi, loading: true};
-            return {...state, delete: deleteUi};
+            return state.setIn(['delete', 'loading'], true);
         case DELETE_TRANSACTION_FAILURE:
-            deleteUi = {...deleteUi, loading: false};
-            return {...state, delete: deleteUi};
+            return state.setIn(['delete', 'loading'], false);
         case DELETE_TRANSACTION_SUCCESS:
-            var deletedTransactionIndex = state.transactionList.map((i) => i.id).indexOf(action.payload.id);
-            var listToClean = state.transactionList.slice();
-            listToClean.splice(deletedTransactionIndex, 1);
-            deleteUi = {...deleteUi, approvementDialogVisible: false, loading: false, transaction: {attributes: {comment: ''}}};
-            return {...state, delete: deleteUi, transactionList: listToClean};
+            var removed = state.get('transactionList').remove(action.payload.id);
+            return state.setIn(['delete', 'approvementDialogVisible'], false)
+                .setIn(['delete', 'loading'], false)
+                .setIn(['delete', 'transaction'], Map({comment: ''}))
+                .set('transactionList', removed);
         case GET_TRANSACTIONLIST_REQUEST:
-            ui = {...ui, transactionListLoading: true, transactionListError: false};
-            return {...state, ui: ui};
+            return state.setIn(['ui', 'transactionListLoading'], true)
+                .setIn(['ui', 'transactionListError'], false);
         case GET_TRANSACTIONLIST_SUCCESS:
-            ui = {...ui, transactionListLoading: false, transactionListError: false};
-            return {...state, transactionList: action.payload.data, ui: ui};
+            return state.setIn(['ui', 'transactionListLoading'], false)
+                .setIn(['ui', 'transactionListError'], false)
+                .set('transactionList', action.payload);
         case GET_TRANSACTIONLIST_FAILURE:
-            ui = {...ui, transactionListLoading: false, transactionListError: true};
-            return {...state, transactionList: [], ui: ui};
+            return state.setIn(['ui', 'transactionListLoading'], false)
+                .setIn(['ui', 'transactionListError'], true);
         default:
             return state;
     }

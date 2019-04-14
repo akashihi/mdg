@@ -56,7 +56,7 @@ class Transaction extends Component {
     }
 
     renderOperations(tx, accounts) {
-        return tx.attributes.operations.map(function (item) {
+        return tx.get('operations').map(function (item) {
             return (
                 <Fragment key={tx.id + '-' + item.account_id}><Operation operation={item} accounts={accounts}/></Fragment>
             )
@@ -79,7 +79,7 @@ class Transaction extends Component {
         //
         //In other cases it's a 'transfer' transaction.
 
-        var summary = tx.attributes.operations.map((op) => {
+        var summary = tx.get('operations').map((op) => {
             var opAccount = accounts.get(op.account_id);
             return {amount: op.amount, rate: op.rate, type: opAccount.get('account_type')}
         }).reduce((acc, item) => {
@@ -103,7 +103,7 @@ class Transaction extends Component {
             return {color: 'red', total: summary['expense'].toFixed(2)};
         }
 
-        var positives = tx.attributes.operations.map((op) => {
+        var positives = tx.get('operations').map((op) => {
             var opAccount = accounts.get(op.account_id);
             return {amount: op.amount, rate: op.rate, type: opAccount.get('account_type')}
         }).filter((item) => item.amount > 0)
@@ -131,25 +131,25 @@ class Transaction extends Component {
     }
 
     render() {
-        var { classes } = this.props;
-        var props = this.props;
-        var attributes = props.transaction.attributes;
+        const { classes } = this.props;
+        const props = this.props;
+        var transaction = props.transaction
 
-        var operations = ::this.renderOperations(props.transaction, props.accounts);
-        var totals = ::this.getTotalChange(props.transaction, props.accounts);
+        const operations = ::this.renderOperations(props.transaction, props.accounts);
+        const totals = ::this.getTotalChange(props.transaction, props.accounts);
 
         return <Card>
             <CardContent>
                 <Grid>
                     <Row>
                         {!props.preview && <Col xs={1} className='hide-on-small'><Checkbox color='default'/></Col>}
-                        <Col xs={3} sm={2} md={1} lg={1}>{timestampToFormattedDate(attributes.timestamp)}</Col>
-                        <Col xs={6} sm={3} md={3} lg={3}>{attributes.comment}</Col>
+                        <Col xs={3} sm={2} md={1} lg={1}>{timestampToFormattedDate(transaction.get('timestamp'))}</Col>
+                        <Col xs={6} sm={3} md={3} lg={3}>{transaction.get('comment')}</Col>
                         <Col xs={3} sm={1} md={1} lg={1}>
                             <div style={{color: totals.color}}>{totals.total}</div>
                         </Col>
-                        <Col xs={7} sm={3} md={2} lg={2}>{::this.renderTransactionAccountList(attributes.operations, props.accounts)}</Col>
-                        <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{attributes.tags.join(', ')}</Col>
+                        <Col xs={7} sm={3} md={2} lg={2}>{::this.renderTransactionAccountList(transaction.get('operations'), props.accounts)}</Col>
+                        <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{transaction.get('tags').join(', ')}</Col>
                         <Col xs={5} sm={3} md={2} lg={2}>
                           <Button aria-label='Edit' onClick={() => props.editAction(props.transaction)}><Edit/></Button>
                           <Button aria-label='Delete' onClick={() => props.deleteAction(props.transaction)}><Delete/></Button>
