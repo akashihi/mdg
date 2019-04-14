@@ -3,12 +3,12 @@ import Pagination from '../widgets/material-ui-pagination';
 
 export default class TransactionsPagePager extends Component {
     setPage(no) {
-        this.props.actions.setTransactionPage(no)
+        this.props.actions.setTransactionFilter('pageNumber', no, true)
     }
 
     render() {
         var props = this.props;
-        if (props.count ==0) {
+        if (props.count === 0) {
             return <div/>
         }
 

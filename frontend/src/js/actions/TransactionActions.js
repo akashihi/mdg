@@ -11,14 +11,6 @@ import {
     GET_TRANSACTIONLIST_REQUEST,
     GET_TRANSACTIONLIST_SUCCESS,
     GET_TRANSACTIONLIST_FAILURE,
-    SET_TRANSACTION_PAGESIZE,
-    SET_TRANSACTION_PAGENO,
-    SET_TRANSACTION_VIEW_PERIOD,
-    SET_TRANSACTION_VIEW_BEGINNING,
-    SET_TRANSACTION_VIEW_END,
-    SET_TRANSACTION_FILTER_ACCOUNT,
-    SET_TRANSACTION_FILTER_TAG,
-    SET_TRANSACTION_FILTER_COMMENT,
     CLEAR_TRANSACTION_FILTER,
     APPLY_TRANSACTION_FILTER,
     DELETE_TRANSACTION_REQUEST,
@@ -30,7 +22,8 @@ import {
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
     TRANSACTION_DIALOG_CLOSESAVE_SET,
-    GET_LASTTRANSACTION_SUCCESS
+    GET_LASTTRANSACTION_SUCCESS,
+    SET_TRANSACTION_FILTER
 } from '../constants/Transaction'
 
 export function loadLastTransactions() {
@@ -106,77 +99,16 @@ export function loadTransactionList() {
     }
 }
 
-export function setTransactionPageSize(size) {
+export function setTransactionFilter(key, value, reload) {
     return (dispatch) => {
         dispatch({
-            type: SET_TRANSACTION_PAGESIZE,
-            payload: size
+            type: SET_TRANSACTION_FILTER,
+            key: key,
+            payload: value
         });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionPage(page) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_PAGENO,
-            payload: page
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionViewPeriod(days) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_VIEW_PERIOD,
-            payload: {
-                beginning: moment().subtract(days, 'days'),
-                end: moment()
-            }
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionViewBeginning(value) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_VIEW_BEGINNING,
-            payload: moment(value)
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionViewEnd(value) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_VIEW_END,
-            payload: moment(value)
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionFilterAccount(values) {
-    return {
-        type: SET_TRANSACTION_FILTER_ACCOUNT,
-        payload: values
-    }
-}
-
-export function setTransactionFilterTag(values) {
-    return {
-        type: SET_TRANSACTION_FILTER_TAG,
-        payload: values
-    }
-}
-
-export function setTransactionFilterComment(values) {
-    return {
-        type: SET_TRANSACTION_FILTER_COMMENT,
-        payload: values
+        if (reload) {
+            dispatch(loadTransactionList())
+        }
     }
 }
 

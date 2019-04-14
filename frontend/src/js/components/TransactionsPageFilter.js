@@ -13,36 +13,17 @@ import TextField from '@material-ui/core/TextField';
 import Done from '@material-ui/icons/Done';
 import Clear from '@material-ui/icons/Clear';
 import Divider from '@material-ui/core/Divider';
+import {List} from 'immutable';
+import moment from 'moment';
 
 import {filterNonListedCategories} from '../util/AccountUtils'
 
 export default class TransactionsPageFilter extends Component {
-    pageSizeChange(ev) {
-        this.props.actions.setTransactionPageSize(ev.target.value);
-    }
 
     setPeriodDays(days) {
-        this.props.actions.setTransactionViewPeriod(days)
-    }
-
-    setBeginning(value) {
-        this.props.actions.setTransactionViewBeginning(value)
-    }
-
-    setEnd(value) {
-        this.props.actions.setTransactionViewEnd(value)
-    }
-
-    setFilterAccounts(ev) {
-        this.props.actions.setTransactionFilterAccount(ev.target.value)
-    }
-
-    setFilterTags(ev) {
-        this.props.actions.setTransactionFilterTag(ev.target.value)
-    }
-
-    setFilterComment(ev) {
-        this.props.actions.setTransactionFilterComment(ev.target.value)
+        this.props.actions.setTransactionFilter('periodBeginning', moment().subtract(days, 'days'), false);
+        this.props.actions.setTransactionFilter('periodEnds', moment(), false);
+        this.props.actions.setTransactionFilter('pageNumber', 1, true);
     }
 
     clearFilter() {
@@ -143,18 +124,12 @@ export default class TransactionsPageFilter extends Component {
 
     render() {
         var props = this.props;
+        const edit = this.props.actions.setTransactionFilter;
 
         var buttonStyle = {
             'textDecorationLine': 'underline',
             'textDecorationStyle': 'dashed'
         };
-
-        /*var accountItems = accounts.map((acc) => {
-            return <MenuItem key={acc.id} value={acc.id}>
-              <Checkbox checked={props.accountFilter.indexOf(acc.id) > -1} />
-              <ListItemText primary={acc.attributes.name}/>
-            </MenuItem>
-        });*/
 
         const accountItems = this.renderAccounts();
 
@@ -171,13 +146,13 @@ export default class TransactionsPageFilter extends Component {
                 Period beginning
             </Col>
             <Col xs={6} sm={6} md={6} lg={6}>
-              <DatePicker value={props.periodBeginning.toDate()} onChange={::this.setBeginning}/>
+              <DatePicker value={props.periodBeginning.toDate()} onChange={(v) => edit('periodBeginning', moment(v), false)}/>
             </Col>
             <Col xs={6} sm={6} md={6} lg={6}>
                 Period end
             </Col>
             <Col xs={6} sm={6} md={6} lg={6}>
-              <DatePicker value={props.periodEnd.toDate()} onChange={::this.setEnd}/>
+              <DatePicker value={props.periodEnd.toDate()} onChange={(v) => edit('periodEnd', moment(v), false)}/>
             </Col>
           </Row>
             <Row>
@@ -192,7 +167,7 @@ export default class TransactionsPageFilter extends Component {
                   <FormControl fullWidth={true}>
                       <InputLabel htmlFor={'tx-on-page'}>Transactions on page</InputLabel>
                       <Select value={props.pageSize}
-                              onChange={::this.pageSizeChange}
+                              onChange={(ev) => edit('pageSize', ev.target.value, true)}
                               inputProps={{id: 'tx-on-page'}}>
                               <MenuItem value={10}>10</MenuItem>
                               <MenuItem value={25}>25</MenuItem>
@@ -207,7 +182,7 @@ export default class TransactionsPageFilter extends Component {
             <Row>
               <Col xs={12} sm={12} md={12} lg={12}>
                 <FormControl fullWidth={true}>
-                  <TextField label='Comment contains...' onChange={::this.setFilterComment}
+                  <TextField label='Comment contains...' onChange={(ev) => edit('commentFilter', ev.target.value, false)}
                              value={props.commentFilter}/>
                 </FormControl>
               </Col>
@@ -218,7 +193,7 @@ export default class TransactionsPageFilter extends Component {
                       <InputLabel htmlFor={'accounts-filter'}>Select accounts</InputLabel>
                       <Select multiple={true}
                               value={props.accountFilter.toJS()}
-                              onChange={::this.setFilterAccounts}
+                              onChange={(ev) => edit('accountFilter', List(ev.target.value), false)}
                               inputProps={{id: 'accounts-filter'}}
                               renderValue={() => 'r'/*selected => selected.map((item) => accounts.filter((acc) => acc.id == item)[0].attributes.name+';')*/}>
                               {accountItems}
@@ -230,9 +205,9 @@ export default class TransactionsPageFilter extends Component {
                       <InputLabel htmlFor={'tags-filter'}>Select tags</InputLabel>
                       <Select multiple={true}
                               value={props.tagFilter.toJS()}
-                              onChange={::this.setFilterTags}
+                              onChange={(ev) => edit('tagFilter', List(ev.target.value), false)}
                               inputProps={{id: 'tags-filter'}}
-                              renderValue={selected => selected.map((item) => item+',')}>>
+                              renderValue={selected => selected.join(',')}>>
                               {tagItems}
                       </Select>
                   </FormControl>
