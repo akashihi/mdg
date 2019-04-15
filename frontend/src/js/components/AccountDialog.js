@@ -22,16 +22,16 @@ export default class AccountDialog extends React.Component {
     }
 
     mapCategoryListToMenu(categoryList) {
-      var entries = []
+      var entries = [];
 
       var mapEntry = function(category, prefix) {
-          var prepend = '-'.repeat(prefix)
-          var entry = <MenuItem key={category.get('id')} value={category.get('id')}>{prepend}{category.get('name')}</MenuItem>
-          entries.push(entry)
+          var prepend = '-'.repeat(prefix);
+          var entry = <MenuItem key={category.get('id')} value={category.get('id')}>{prepend}{category.get('name')}</MenuItem>;
+          entries.push(entry);
           if (category.has('children')) {
             category.get('children').forEach(item => mapEntry(item, prefix+1))
           }
-      }
+      };
 
       categoryList.forEach(item => mapEntry(item, 0))
 
@@ -54,7 +54,7 @@ export default class AccountDialog extends React.Component {
           favorite: props.account.get('favorite'),
           operational: props.account.get('operational'),
           hidden: props.account.get('hidden')
-        }
+        };
 
         const validationSchema = Yup.object().shape({
             name: Yup.string().required('Required!'),
@@ -89,7 +89,7 @@ export default class AccountDialog extends React.Component {
                   label='Asset type'
                   value={values.asset_type}
                   select
-                  disabled={values.account_type != 'asset'}
+                  disabled={values.account_type !== 'asset'}
                   helperText='Please select asset type'
                   margin='normal'
                   component={TextField}
@@ -129,7 +129,7 @@ export default class AccountDialog extends React.Component {
                   disabled={values.account_type === 'asset'}
                   component={TextField}
                   className='common-field-width'>
-                  {::this.mapCategoryListToMenu(props.categoryList.filter((v) => v.get('account_type') == values.account_type))}
+                  {::this.mapCategoryListToMenu(props.categoryList.filter((v) => v.get('account_type') === values.account_type))}
               </Field>
             <br/>
             <FormControlLabel label='Favorite' control={
@@ -139,7 +139,7 @@ export default class AccountDialog extends React.Component {
                 name='favorite'
                 checked={values.favorite}
                 value={values.favorite}
-                disabled={values.account_type != 'asset'}
+                disabled={values.account_type !== 'asset'}
                 component={Switch}
                 />
               }/>
@@ -151,7 +151,7 @@ export default class AccountDialog extends React.Component {
                   name='operational'
                   checked={values.operational}
                   value={values.operational}
-                  disabled={values.account_type != 'asset'}
+                  disabled={values.account_type !== 'asset'}
                   component={Switch}
                   />
                 }/>
