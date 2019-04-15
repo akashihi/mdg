@@ -13,133 +13,13 @@ import moment from 'moment';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
-import MenuItem from '@material-ui/core/MenuItem';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import DatePicker from 'react-date-picker'
 import TimePicker from 'react-time-picker';
 import Checkbox from '@material-ui/core/Checkbox';
 
-import {filterNonListedCategories} from '../util/AccountUtils'
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
-
-class AccountMapper {
-    constructor(currencies, categories, accounts) {
-        this.currencies = currencies;
-        this.categories = categories;
-        this.accounts = accounts;
-    }
-
-    mapAccountEntry(acc, id) {
-        var currencyName = '';
-        if (this.currencies.has(acc.get('currency_id'))) {
-            currencyName = '(' + this.currencies.get(acc.get('currency_id')).get('name') + ')'
-        }
-
-        return (<MenuItem key={id} value={id}>{acc.get('name') + currencyName}</MenuItem>)
-    }
-
-    renderCategorizedList(accounts, categoryList) {
-        const ths = this;
-        var entries = [];
-
-        const mapEntry = function(category, prefix) {
-            const prepend = '-'.repeat(prefix);
-            const entry = <ListItemText key={'category-'+category.get('id')} primary={prepend+category.get('name')}/>;
-            entries.push(entry);
-
-            //If we have related accounts - add them
-            const category_accounts = accounts.filter((item) => item.get('category_id') === category.get('id')).map(::ths.mapAccountEntry);
-            entries = entries.concat(category_accounts.valueSeq().toJS());
-
-            if (category.has('children')) {
-                category.get('children').forEach((item) => mapEntry(item, prefix+1))
-            }
-        };
-
-        categoryList.forEach((item) => mapEntry(item, 0));
-
-        return entries
-    }
-
-    categorizeAccounts(type, accounts) {
-        var result = [];
-
-        const filtered_accounts = accounts.filter((item) => !item.get('hidden'));
-
-        const typed_accounts = filtered_accounts.filter(item => item.get('account_type') === type);
-        const categories_ids = typed_accounts.map((item) => item.get('category_id')).valueSeq();
-        const categories = filterNonListedCategories(categories_ids, this.categories);
-        result = result.concat(this.renderCategorizedList(typed_accounts, categories));
-        result.push(<Divider key={'noncategorized-divider-'+type}/>);
-        result = result.concat(typed_accounts.filter((item) => !item.get('category_id')).map(::this.mapAccountEntry).valueSeq().toJS());
-
-        return result
-    }
-
-    renderAccounts(accounts) {
-        var result = [];
-
-        //First asset accounts are manually categorized and rendered
-        result.push(<ListSubheader key='asset-header'>Asset accounts</ListSubheader>);
-        result.push(<Divider key='asset-divider'/>);
-
-        const filtered_accounts = accounts.filter((item) => !item.get('hidden'));
-
-        //Before all of that - Favorite and Operational
-        result.push(<ListItemText key='asset-favorite' primary='Favorite'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('favorite')).map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-favorite' primary='Operational'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('operational')).map(::this.mapAccountEntry).valueSeq().toJS());
-
-        const nonFavOpsAccounts = filtered_accounts.filter((item) => !item.get('favorite') || !item.get('operational'));
-
-        result.push(<ListItemText key='asset-cash' primary='Cash'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'cash').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-current' primary='Current'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'current').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-savings' primary='Savings'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'savings').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-deposit' primary='Deposit'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'deposit').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-credit' primary='Credit'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'credit').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-debt' primary='Debt'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'debt').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-broker' primary='Broker'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'broker').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-tradable' primary='Tradable'/>);
-        result = result.concat(nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'tradable').map(::this.mapAccountEntry).valueSeq().toJS());
-
-        //Categorized expenses go next
-        result.push(<ListSubheader key='expense-header'>Expense accounts</ListSubheader>);
-        result.push(<Divider key='expense-divider'/>);
-        result = result.concat(this.categorizeAccounts('expense', filtered_accounts));
-
-        //Finally categorized incomes
-        result.push(<ListSubheader key='income-header'>Income accounts</ListSubheader>);
-        result.push(<Divider key='income-divider'/>);
-        result = result.concat(this.categorizeAccounts('income', filtered_accounts));
-
-        return result;
-    }
-
-    getAccounts() {
-        return this.renderAccounts(this.accounts)
-    }
-
-    getLimitedAccounts(operation) {
-        if (operation.account_id) {
-            if (this.accounts.has(operation.account_id)) {
-                const leftAccount = this.accounts.has(operation.account_id);
-                const limitedAccounts = this.accounts.filter((item) => item.get('currency_id') === leftAccount.get('currency_id'));
-                return this.renderAccounts(limitedAccounts)
-            }
-        }
-        return this.renderAccounts(this.accounts)
-    }
-}
+import {AccountMapper} from '../util/AccountUtils'
 
 class OperationsEditor extends React.Component {
 }

@@ -4,7 +4,6 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import DatePicker from 'react-date-picker'
@@ -12,11 +11,10 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Done from '@material-ui/icons/Done';
 import Clear from '@material-ui/icons/Clear';
-import Divider from '@material-ui/core/Divider';
 import {List} from 'immutable';
 import moment from 'moment';
 
-import {filterNonListedCategories} from '../util/AccountUtils'
+import {AccountMapper} from '../util/AccountUtils'
 
 export default class TransactionsPageFilter extends Component {
 
@@ -34,94 +32,6 @@ export default class TransactionsPageFilter extends Component {
         this.props.actions.transactionFilterApply()
     }
 
-    mapAccountEntry(acc, id) {
-        const props = this.props;
-        return <MenuItem key={id} value={id}>
-            <Checkbox checked={props.accountFilter.includes(id)} />
-            <ListItemText primary={acc.get('name')}/>
-        </MenuItem>
-    }
-
-    renderCategorizedList(accounts, categoryList) {
-        const ths = this;
-        var entries = [];
-
-        const mapEntry = function(category, prefix) {
-            const prepend = '-'.repeat(prefix);
-            const entry = <ListItemText key={'category-'+category.get('id')} primary={prepend+category.get('name')}/>;
-            entries.push(entry);
-
-            //If we have related accounts - add them
-            const category_accounts = accounts.filter((item) => item.get('category_id') === category.get('id')).map(::ths.mapAccountEntry);
-            entries = entries.concat(category_accounts.valueSeq().toJS());
-
-            if (category.has('children')) {
-                category.get('children').forEach((item) => mapEntry(item, prefix+1))
-            }
-        };
-
-        categoryList.forEach((item) => mapEntry(item, 0));
-
-        return entries
-    }
-
-    categorizeAccounts(type) {
-        const props = this.props;
-        var result = [];
-
-        const filtered_accounts = props.accounts.filter((item) => !item.get('hidden'));
-
-        const accounts = filtered_accounts.filter(item => item.get('account_type') === type);
-        const categories_ids = accounts.map((item) => item.get('category_id')).valueSeq();
-        const categories = filterNonListedCategories(categories_ids, props.categories);
-        result = result.concat(this.renderCategorizedList(accounts, categories));
-        result.push(<Divider key={'noncategorized-divider-'+type}/>);
-        result = result.concat(accounts.filter((item) => !item.get('category_id')).map(::this.mapAccountEntry).valueSeq().toJS());
-
-        return result
-    }
-
-    renderAccounts() {
-        const props = this.props;
-
-        var result = [];
-
-        //First asset accounts are manually categorized and rendered
-        result.push(<ListSubheader key='asset-header'>Asset accounts</ListSubheader>);
-        result.push(<Divider key='asset-divider'/>);
-
-        const filtered_accounts = props.accounts.filter((item) => !item.get('hidden'));
-
-        result.push(<ListItemText key='asset-cash' primary='Cash'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'cash').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-current' primary='Current'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'current').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-savings' primary='Savings'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'savings').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-deposit' primary='Deposit'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'deposit').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-credit' primary='Credit'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'credit').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-debt' primary='Debt'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'debt').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-broker' primary='Broker'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'broker').map(::this.mapAccountEntry).valueSeq().toJS());
-        result.push(<ListItemText key='asset-tradable' primary='Tradable'/>);
-        result = result.concat(filtered_accounts.filter((item) => item.get('asset_type') === 'tradable').map(::this.mapAccountEntry).valueSeq().toJS());
-
-        //Categorized expenses go next
-        result.push(<ListSubheader key='expense-header'>Expense accounts</ListSubheader>);
-        result.push(<Divider key='expense-divider'/>);
-        result = result.concat(this.categorizeAccounts('expense'));
-
-        //Finally categorized incomes
-        result.push(<ListSubheader key='income-header'>Income accounts</ListSubheader>);
-        result.push(<Divider key='income-divider'/>);
-        result = result.concat(this.categorizeAccounts('income'));
-
-        return result;
-    }
-
     render() {
         var props = this.props;
         const edit = this.props.actions.setTransactionFilter;
@@ -131,7 +41,7 @@ export default class TransactionsPageFilter extends Component {
             'textDecorationStyle': 'dashed'
         };
 
-        const accountItems = this.renderAccounts();
+        const accountItems = new AccountMapper(props.currencies, props.categories, props.accounts).getAccounts();
 
         const tagItems = props.tags.map((tag) => {
             return <MenuItem key={tag.get('txtag')} value={tag.get('txtag')}>
