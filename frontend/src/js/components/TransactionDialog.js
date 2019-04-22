@@ -4,7 +4,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import ChipInput from 'material-ui-chip-input'
 import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
@@ -18,6 +17,7 @@ import Tab from '@material-ui/core/Tab';
 import DatePicker from 'react-date-picker'
 import TimePicker from 'react-time-picker';
 import Checkbox from '@material-ui/core/Checkbox';
+import RSelect from 'react-select';
 
 import {AccountMapper} from '../util/AccountUtils'
 
@@ -235,18 +235,9 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionChange(tx);
     }
 
-    onTagAdd(tag) {
-        var tags = this.props.transaction.get('tags');
-        tags.push(tag);
-        const tx = this.props.transaction.set('tags', tags);
-        this.props.actions.editTransactionChange(tx);
-    }
-
-    onTagDelete(tag, index) {
-        var tags = this.props.transaction.get('tags');
-        tags.splice(index, 1);
-        const tx = this.props.transaction.set('tags', tags);
-        this.props.actions.editTransactionChange(tx);
+    onTagEdit(value) {
+        const tags = value.map((item) => item.value);
+        this.onChange('tags', tags)
     }
 
     onDateChange(date) {
@@ -346,8 +337,9 @@ export default class TransactionDialog extends React.Component {
             //props.actions.editTransactionChange(account);
         };
 
-        const tags = props.tags.map((item) => item.get('txtag')).valueSeq().toJS();
-
+        const tags = props.tags.map((item) => {return {label: item.get('txtag'), value: item.get('txtag')}}).valueSeq().toJS();
+        const selectedTags = transaction.get('tags').map((item) => {return {label: item, value: item}});
+        console.log(transaction)
         const ts = moment(transaction.get('timestamp'));
 
         const accounts = new AccountMapper(props.currencies, props.categories, props.accounts);
@@ -365,13 +357,7 @@ export default class TransactionDialog extends React.Component {
                     </Row>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
-                            <ChipInput
-                                value={transaction.get('tags')}
-                                dataSource={tags}
-                                onAdd={::this.onTagAdd}
-                                onDelete={::this.onTagDelete}
-                                label={<InputLabel>Tags</InputLabel>}
-                             classes={{}}/>
+                            <RSelect options={tags} isMulti={true} onChange={::this.onTagEdit} value={selectedTags}/>
                         </Col>
                     </Row>
                     <Row>
