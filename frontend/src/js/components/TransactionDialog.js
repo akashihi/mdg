@@ -222,14 +222,6 @@ export default class TransactionDialog extends React.Component {
       this.props.actions.setCloseOnSave(value)
     }
 
-    onSaveClick() {
-        this.props.actions.editTransactionSave();
-    }
-
-    onCancelClick() {
-        this.props.actions.editTransactionCancel();
-    }
-
     onChange(field, value) {
         const tx = this.props.transaction.set(field, value);
         this.props.actions.editTransactionChange(tx);
@@ -241,24 +233,25 @@ export default class TransactionDialog extends React.Component {
     }
 
     onDateChange(date) {
-        var attr = {...this.props.transaction.attributes};
-        var newDate = moment(date);
-        var dt = moment(attr.timestamp);
+        const newDate = moment(date);
+        const dt = moment(this.props.transaction.get('timestamp'));
         dt.set({
             year: newDate.get('year'),
             month: newDate.get('month'),
             date: newDate.get('date')
         });
-        attr.timestamp = dt.format('YYYY-MM-DDTHH:mm:ss');
-        var tx = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(tx);
+        this.onChange('timestamp', dt.format('YYYY-MM-DDTHH:mm:ss'));
     }
 
-    onTimeChange(date) {
-        var attr = {...this.props.transaction.attributes};
-        attr.timestamp = moment(date).format('YYYY-MM-DDTHH:mm:ss');
-        var tx = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(tx);
+    onTimeChange(time) {
+        const newDate = moment(time, 'HH:mm');
+        const dt = moment(this.props.transaction.get('timestamp'));
+        dt.set({
+            hour: newDate.get('hour'),
+            minute: newDate.get('minute')
+        });
+        this.onChange('timestamp', dt.format('YYYY-MM-DDTHH:mm:ss'));
+
     }
 
     onOperationAdd() {
@@ -339,7 +332,7 @@ export default class TransactionDialog extends React.Component {
 
         const tags = props.tags.map((item) => {return {label: item.get('txtag'), value: item.get('txtag')}}).valueSeq().toJS();
         const selectedTags = transaction.get('tags').map((item) => {return {label: item, value: item}});
-        console.log(transaction)
+
         const ts = moment(transaction.get('timestamp'));
 
         const accounts = new AccountMapper(props.currencies, props.categories, props.accounts);
@@ -396,8 +389,8 @@ export default class TransactionDialog extends React.Component {
             <DialogActions>
                   <InputLabel htmlFor={'close-dialog'}>Close dialog on save</InputLabel>
                   <Checkbox checked={props.closeOnSave} inputProps={{id: 'close-dialog'}} onChange={(ev, value) => ::this.onSaveCloseOnSave(value)}/>
-                <Button color='primary' disabled={!props.valid} onClick={::this.onSaveClick}>Save</Button>
-                <Button color='secondary' onClick={::this.onCancelClick}>Cancel</Button>
+                <Button color='primary' disabled={!props.valid} onClick={::this.props.actions.editTransactionSave}>Save</Button>
+                <Button color='secondary' onClick={::this.props.actions.editTransactionCancel}>Cancel</Button>
             </DialogActions>
         </Dialog>)
     }
