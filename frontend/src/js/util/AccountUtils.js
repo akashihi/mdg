@@ -60,7 +60,7 @@ export class AccountMapper {
 
         const mapEntry = function(category, prefix) {
             const prepend = '-'.repeat(prefix);
-            const entry = <ListItemText key={'category-'+category.get('id')} primary={prepend+category.get('name')}/>;
+            const entry = <ListItemText key={'category-'+category.get('id')} primary={prepend+category.get('name')} style={{fontStyle: 'italic'}}/>;
             entries.push(entry);
 
             //If we have related accounts - add them
@@ -104,12 +104,12 @@ export class AccountMapper {
         //Before all of that - Favorite and Operational
         const favAcc = filtered_accounts.filter((item) => item.get('favorite')).map(::this.mapAccountEntry);
         if (!favAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-favorite' primary='Favorite'/>);
+            result.push(<ListItemText key='asset-favorite' primary='Favorite' style={{fontStyle: 'italic'}}/>);
             result = result.concat(favAcc.valueSeq().toJS());
         }
         const opsAcc = filtered_accounts.filter((item) => item.get('operational') && !item.get('favorite')).map(::this.mapAccountEntry);
         if (!opsAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-operational' primary='Operational'/>);
+            result.push(<ListItemText key='asset-operational' primary='Operational' style={{fontStyle: 'italic'}}/>);
             result = result.concat(opsAcc.valueSeq().toJS());
         }
 
@@ -117,42 +117,42 @@ export class AccountMapper {
 
         const cashAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'cash').map(::this.mapAccountEntry);
         if (!cashAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-cash' primary='Cash'/>);
+            result.push(<ListItemText key='asset-cash' primary='Cash' style={{fontStyle: 'italic'}}/>);
             result = result.concat(cashAcc.valueSeq().toJS());
         }
         const currAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'current').map(::this.mapAccountEntry);
         if (!currAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-current' primary='Current'/>);
+            result.push(<ListItemText key='asset-current' primary='Current' style={{fontStyle: 'italic'}}/>);
             result = result.concat(currAcc.valueSeq().toJS());
         }
         const savAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'savings').map(::this.mapAccountEntry);
         if (!savAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-savings' primary='Savings'/>);
+            result.push(<ListItemText key='asset-savings' primary='Savings' style={{fontStyle: 'italic'}}/>);
             result = result.concat(savAcc.valueSeq().toJS());
         }
         const depAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'deposit').map(::this.mapAccountEntry);
         if (!depAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-deposit' primary='Deposit'/>);
+            result.push(<ListItemText key='asset-deposit' primary='Deposit' style={{fontStyle: 'italic'}}/>);
             result = result.concat(depAcc.valueSeq().toJS());
         }
         const credAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'credit').map(::this.mapAccountEntry);
         if (!credAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-credit' primary='Credit'/>);
+            result.push(<ListItemText key='asset-credit' primary='Credit' style={{fontStyle: 'italic'}}/>);
             result = result.concat(credAcc.valueSeq().toJS());
         }
         const debtAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'debt').map(::this.mapAccountEntry);
         if (!debtAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-debt' primary='Debt'/>);
+            result.push(<ListItemText key='asset-debt' primary='Debt' style={{fontStyle: 'italic'}}/>);
             result = result.concat(debtAcc.valueSeq().toJS());
         }
         const broAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'broker').map(::this.mapAccountEntry);
         if (!broAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-broker' primary='Broker'/>);
+            result.push(<ListItemText key='asset-broker' primary='Broker' style={{fontStyle: 'italic'}}/>);
             result = result.concat(broAcc.valueSeq().toJS());
         }
         const tradAcc = nonFavOpsAccounts.filter((item) => item.get('asset_type') === 'tradable').map(::this.mapAccountEntry);
         if (!tradAcc.isEmpty()) {
-            result.push(<ListItemText key='asset-tradable' primary='Tradable'/>);
+            result.push(<ListItemText key='asset-tradable' primary='Tradable' style={{fontStyle: 'italic'}}/>);
             result = result.concat(tradAcc.valueSeq().toJS());
         }
 

@@ -71,6 +71,11 @@ export function updateAccount(id, account) {
         } else {
           account = account.delete('asset_type')
         }
+        if (account.get('category_id') === -1) {
+            //We use -1 as a fake default value to make MUI happy
+            //mdg have no idea on that
+            account = account.delete('category_id')
+        }
 
         var state=getState();
         var selectedBudgetId = state.budgetentry.currentBudget.id;
