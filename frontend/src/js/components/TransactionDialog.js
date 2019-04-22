@@ -21,10 +21,7 @@ import RSelect from 'react-select';
 
 import {AccountMapper} from '../util/AccountUtils'
 
-class OperationsEditor extends React.Component {
-}
-
-class SimpleOperationsEditor extends OperationsEditor {
+class SimpleOperationsEditor extends React.Component {
     render() {
         const props = this.props;
 
@@ -85,7 +82,7 @@ class SimpleOperationsEditor extends OperationsEditor {
     }
 }
 
-class FullOperationsEditor extends OperationsEditor {
+class FullOperationsEditor extends React.Component {
     checkRateDisabled(operation) {
         const props = this.props;
         // First check - if we only have ops in same currency, rate should be definitely disabled.
@@ -296,6 +293,13 @@ export default class TransactionDialog extends React.Component {
         });
     }
 
+    onAccountChange(index, value) {
+        const ops = this.props.transaction.get('operations');
+        ops[index].account_id = value;
+        this.onChange('operations', ops)
+    }
+
+
     render() {
         var props = this.props;
         var transaction = props.transaction;
@@ -320,12 +324,6 @@ export default class TransactionDialog extends React.Component {
 
         var onRateChange = function (/*index, value*/) {
             //attributes.operations[idex].rate = value;
-            //var account = {...transaction, attributes: attributes};
-            //props.actions.editTransactionChange(account);
-        };
-
-        var onAccountChange = function (/*index, value*/) {
-            //attributes.operations[index].account_id = value;
             //var account = {...transaction, attributes: attributes};
             //props.actions.editTransactionChange(account);
         };
@@ -369,12 +367,12 @@ export default class TransactionDialog extends React.Component {
                 <SimpleOperationsEditor errors={errors}
                                         operations={transaction.get('operations')}
                                         onAmountFunc={::this.onCombinedAmountChange}
-                                        onAccountFunc={onAccountChange}
+                                        onAccountFunc={::this.onAccountChange}
                                         accounts={accounts}/>}
                 {this.state.tabValue === 'multi' && <FullOperationsEditor errors={errors}
                                                                           operations={transaction.get('operations')}
                                                                           onAmountFunc={onAmountChange}
-                                                                          onAccountFunc={onAccountChange}
+                                                                          onAccountFunc={::this.onAccountChange}
                                                                           onRateFunc={onRateChange}
                                                                           operationAddFunc={::this.onOperationAdd}
                                                                           accounts={accounts}/>}

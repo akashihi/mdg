@@ -176,9 +176,10 @@ export class AccountMapper {
     getLimitedAccounts(operation) {
         if (operation.account_id) {
             if (this.accounts.has(operation.account_id)) {
-                const leftAccount = this.accounts.has(operation.account_id);
+                const leftAccount = this.accounts.get(operation.account_id);
                 const limitedAccounts = this.accounts.filter((item) => item.get('currency_id') === leftAccount.get('currency_id'));
-                return this.renderAccounts(limitedAccounts)
+                const excludeSameAccount = limitedAccounts.delete(operation.account_id);
+                return this.renderAccounts(excludeSameAccount)
             }
         }
         return this.renderAccounts(this.accounts)
