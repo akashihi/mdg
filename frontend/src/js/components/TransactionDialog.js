@@ -1,4 +1,5 @@
 import React,{Fragment} from 'react';
+import mathjs from 'mathjs';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -259,12 +260,24 @@ export default class TransactionDialog extends React.Component {
     }
 
     onCombinedAmountChange(ev) {
-        const value = ev.target.value;
-        var attr = {...this.props.transaction.attributes};
-        attr.operations[0].amount = -1 * value;
-        attr.operations[1].amount = value;
-        var account = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(account);
+        var value = ev.target.value;
+
+        if (value) {
+            const strAmount = value.toString();
+            if (strAmount.slice(-1) === '=') { //If it ends with =
+                var expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
+                try {
+                    value = mathjs.eval(expr).toFixed(2)
+                } catch (e) {
+                    value = expr
+                }
+            }
+        }
+
+        const ops = this.props.transaction.get('operations');
+        ops[0].amount = -1 * value;
+        ops[1].amount = value;
+        this.onChange('operations', ops);
     }
 
     validForSimpleEditing() {
