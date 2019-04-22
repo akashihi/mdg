@@ -230,25 +230,22 @@ export default class TransactionDialog extends React.Component {
         this.props.actions.editTransactionCancel();
     }
 
-    onCommentChange(event) {
-        var value = event.target.value
-        var attr = {...this.props.transaction.attributes};
-        attr.comment = value;
-        var tx = {...this.props.transaction, attributes: attr};
+    onChange(field, value) {
+        const tx = this.props.transaction.set(field, value);
         this.props.actions.editTransactionChange(tx);
     }
 
     onTagAdd(tag) {
-        var attr = {...this.props.transaction.attributes};
-        attr.tags.push(tag);
-        var tx = {...this.props.transaction, attributes: attr};
+        var tags = this.props.transaction.get('tags');
+        tags.push(tag);
+        const tx = this.props.transaction.set('tags', tags);
         this.props.actions.editTransactionChange(tx);
     }
 
     onTagDelete(tag, index) {
-        var attr = {...this.props.transaction.attributes};
-        attr.tags.splice(index, 1);
-        var tx = {...this.props.transaction, attributes: attr};
+        var tags = this.props.transaction.get('tags');
+        tags.splice(index, 1);
+        const tx = this.props.transaction.set('tags', tags);
         this.props.actions.editTransactionChange(tx);
     }
 
@@ -349,11 +346,11 @@ export default class TransactionDialog extends React.Component {
             //props.actions.editTransactionChange(account);
         };
 
-        var tags = props.tags.map((item) => item.get('txtag'));
+        const tags = props.tags.map((item) => item.get('txtag')).valueSeq().toJS();
 
-        var ts = moment(transaction.get('timestamp'));
+        const ts = moment(transaction.get('timestamp'));
 
-        var accounts = new AccountMapper(props.currencies, props.categories, props.accounts);
+        const accounts = new AccountMapper(props.currencies, props.categories, props.accounts);
 
         return (<Dialog title='Transaction editing' open={props.open} scroll={'paper'} maxWidth={'md'} fullWidth={true}>
             <DialogContent>
@@ -374,13 +371,13 @@ export default class TransactionDialog extends React.Component {
                                 onAdd={::this.onTagAdd}
                                 onDelete={::this.onTagDelete}
                                 label={<InputLabel>Tags</InputLabel>}
-                            />
+                             classes={{}}/>
                         </Col>
                     </Row>
                     <Row>
                         <Col xs={12} sm={12} md={12} lg={12}>
                             <TextField label='Comment on transaction' fullWidth={true} multiline={true} rows={4}
-                                       value={transaction.get('comment')} onChange={::this.onCommentChange}/>
+                                       value={transaction.get('comment')} onChange={(event) => ::this.onChange('comment', event.target.value)}/>
                         </Col>
                     </Row>
                 </Grid>
