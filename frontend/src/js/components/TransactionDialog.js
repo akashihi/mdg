@@ -87,25 +87,23 @@ class FullOperationsEditor extends React.Component {
     checkRateDisabled(operation) {
         const props = this.props;
         // First check - if we only have ops in same currency, rate should be definitely disabled.
-        var accounts = props.accounts.combineAccounts();
+        var accounts = props.accounts.accounts;
         var currencies = props.operations
             .map((item) => item.account_id)
             .filter((item) => !(item === undefined))
-            .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
+            .map((acc_id) => accounts.get(acc_id))
             .filter((item) => !(item === undefined))
-            .map((item) => item.attributes.currency_id)
+            .map((item) => item.get('currency_id'))
             .filter((value, index, self) => self.indexOf(value) === index);
         if (currencies.length <= 1) {
             return true
         }
 
         //Second check - in case our currency is the primary currency
-        var myAccount = accounts.filter((item) => item.id === operation.account_id);
-        if (myAccount.length > 0) {
-            var myCurrency = myAccount[0].attributes.currency_id
-        }
-        if (myCurrency === props.primaryCurrency) {
-            return true
+        if (accounts.has(operation.account_id)) {
+            if (accounts.get(operation.account_id).get('currency_id') === props.primaryCurrency) {
+                return true;
+            }
         }
 
         //Third check - in case we don't have any op with primary currency
@@ -113,18 +111,17 @@ class FullOperationsEditor extends React.Component {
         //op of the transaction
         var txCurrencies = props.operations
             .map((item) => item.account_id)
-            .filter((item) => !(item === undefined))
-            .map((acc_id) => accounts.filter((item) => item.id === acc_id)[0])
-            .map((item) => item.attributes.currency_id)
+            .filter((item) => !(item === undefined || item === -1))
+            .map((acc_id) => accounts.get(acc_id))
+            .map((item) => item.get('currency_id'))
             .filter((value, index, self) => self.indexOf(value) === index)
             .filter((item) => item === props.primaryCurrency);
         if (txCurrencies.length === 0) {
             //Ok, we do not have primary currency at the transaction
             if (props.operations.length > 0) {
-                var firstAccount = accounts.filter((item) => item.id === props.operations[0].account_id);
-                if (firstAccount.length > 0) {
-                    var firstCurrency = firstAccount[0].attributes.currency_id;
-                    if (firstCurrency === myCurrency) {
+                if (accounts.has(props.operations[0].account_id)) {
+                    var firstCurrency = accounts.get(props.operations[0].account_id);
+                    if (firstCurrency === accounts.get(operation.account_id)) {
                         return true
                     }
                 }
@@ -137,32 +134,32 @@ class FullOperationsEditor extends React.Component {
     render() {
         const parent = this;
         const props = this.props;
-        const errors = props.errors;
+        //const errors = props.errors;
 
         var ops = this.props.operations.map(function (item, index) {
             var textLabel = 'Amount';
             var textError = false;
-            if (errors.get('operations')[index].amount) {
+            /*if (errors.get('operations')[index].amount) {
                 textLabel = errors.get('operations')[index].amount;
                 textError = true
-            }
+            }*/
 
             var textRateLabel = 'Rate';
             var textRateError = false;
-            if (errors.get('operations')[index].rate) {
+            /*if (errors.get('operations')[index].rate) {
                 textRateLabel = errors.get('operations')[index].rate;
                 textRateError = true
-            }
+            }*/
 
             var textAccountLabel = 'Account';
             var textAccountError = false;
-            if (errors.get('operations')[index].account_id) {
+            /*if (errors.get('operations')[index].account_id) {
                 textAccountLabel = errors.get('operations')[index].account_id;
                 textAccountError = true
-            }
+            }*/
 
             return (
-                <Grid fluid>
+                <Grid fluid key={'op'+index}>
                     <Row>
                         <Col xs={4} sm={4} md={4} lg={4}>
                             <TextField label={textLabel} error={textError} value={item.amount}
@@ -253,15 +250,12 @@ export default class TransactionDialog extends React.Component {
     }
 
     onOperationAdd() {
-        var attr = {...this.props.transaction.attributes};
-        attr.operations.push({amount: 0});
-        var tx = {...this.props.transaction, attributes: attr};
-        this.props.actions.editTransactionChange(tx);
+        const ops = this.props.transaction.get('operations');
+        ops.push({amount: 0, account_id: -1});
+        this.onChange('operations', ops);
     }
 
-    onCombinedAmountChange(ev) {
-        var value = ev.target.value;
-
+    static evaluateEquation(value) {
         if (value) {
             const strAmount = value.toString();
             if (strAmount.slice(-1) === '=') { //If it ends with =
@@ -273,12 +267,24 @@ export default class TransactionDialog extends React.Component {
                 }
             }
         }
+        return value
+    }
+
+    onCombinedAmountChange(ev) {
+        const value = TransactionDialog.evaluateEquation(ev.target.value);
 
         const ops = this.props.transaction.get('operations');
         ops[0].amount = -1 * value;
         ops[1].amount = value;
         this.onChange('operations', ops);
     }
+
+    onAmountChange(index, value) {
+        const ops = this.props.transaction.get('operations');
+        ops[index].amount = TransactionDialog.evaluateEquation(value);
+        this.onChange('operations', ops);
+    }
+
 
     validForSimpleEditing() {
         var props = this.props;
@@ -329,12 +335,6 @@ export default class TransactionDialog extends React.Component {
 
         var enableSimpleEditor = this.validForSimpleEditing(transaction);
 
-        var onAmountChange = function (index, value) {
-            transaction.get('operations')[index].amount = value;
-            //var account = {...transaction, attributes: attributes};
-            //props.actions.editTransactionChange(account);
-        };
-
         var onRateChange = function (/*index, value*/) {
             //attributes.operations[idex].rate = value;
             //var account = {...transaction, attributes: attributes};
@@ -384,10 +384,11 @@ export default class TransactionDialog extends React.Component {
                                         accounts={accounts}/>}
                 {this.state.tabValue === 'multi' && <FullOperationsEditor errors={errors}
                                                                           operations={transaction.get('operations')}
-                                                                          onAmountFunc={onAmountChange}
+                                                                          onAmountFunc={::this.onAmountChange}
                                                                           onAccountFunc={::this.onAccountChange}
                                                                           onRateFunc={onRateChange}
                                                                           operationAddFunc={::this.onOperationAdd}
+                                                                          primaryCurrency={props.primaryCurrency}
                                                                           accounts={accounts}/>}
                 <Grid fluid>
                     <Row>
