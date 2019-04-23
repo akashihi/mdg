@@ -287,19 +287,20 @@ export default class TransactionDialog extends React.Component {
 
 
     validForSimpleEditing() {
-        var props = this.props;
-        var transaction = props.transaction;
+        const props = this.props;
+        const transaction = props.transaction;
+        const ops = transaction.get('operations');
 
-        if (transaction.get('operations').length > 2) {
+        if (ops.length > 2) {
             return false
         }
 
-        /*var accounts = props.assetAccounts.concat(props.expenseAccounts, props.incomeAccounts);
-        var leftCurrency = accounts.filter((item) => item.id === attributes.operations[0].account_id).map((item) => item.attributes.currency_id);
-        var rightCurrency = accounts.filter((item) => item.id === attributes.operations[1].account_id).map((item) => item.attributes.currency_id);
-        if (leftCurrency.length > 0 && rightCurrency.length > 0) {
-            return leftCurrency[0] === rightCurrency[0]
-        }*/
+        const accounts = props.accounts;
+        if (accounts.has(ops[0].account_id) && accounts.has(ops[1].account_id)) {
+            const leftCurrency = accounts.get(ops[0].account_id).get('currency_id');
+            const rightCurrency = accounts.get(ops[1].account_id).get('currency_id');
+            return leftCurrency === rightCurrency
+        }
         return true
     }
 
@@ -318,13 +319,18 @@ export default class TransactionDialog extends React.Component {
         this.onChange('operations', ops)
     }
 
+    onRateChange(index, value) {
+        const ops = this.props.transaction.get('operations');
+        ops[index].rate = value;
+        this.onChange('operations', ops)
+    }
 
     render() {
-        var props = this.props;
-        var transaction = props.transaction;
-        var errors = props.errors;
+        const props = this.props;
+        const transaction = props.transaction;
+        const errors = props.errors;
 
-        var validationErrorStyle = {
+        const validationErrorStyle = {
             'position': 'relative',
             'bottom': '-2px',
             'fontSize': '12px',
@@ -333,13 +339,7 @@ export default class TransactionDialog extends React.Component {
             'transition': 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms'
         };
 
-        var enableSimpleEditor = this.validForSimpleEditing(transaction);
-
-        var onRateChange = function (/*index, value*/) {
-            //attributes.operations[idex].rate = value;
-            //var account = {...transaction, attributes: attributes};
-            //props.actions.editTransactionChange(account);
-        };
+        const enableSimpleEditor = this.validForSimpleEditing(transaction);
 
         const tags = props.tags.map((item) => {return {label: item.get('txtag'), value: item.get('txtag')}}).valueSeq().toJS();
         const selectedTags = transaction.get('tags').map((item) => {return {label: item, value: item}});
@@ -386,7 +386,7 @@ export default class TransactionDialog extends React.Component {
                                                                           operations={transaction.get('operations')}
                                                                           onAmountFunc={::this.onAmountChange}
                                                                           onAccountFunc={::this.onAccountChange}
-                                                                          onRateFunc={onRateChange}
+                                                                          onRateFunc={::this.onRateChange}
                                                                           operationAddFunc={::this.onOperationAdd}
                                                                           primaryCurrency={props.primaryCurrency}
                                                                           accounts={accounts}/>}
