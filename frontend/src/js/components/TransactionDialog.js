@@ -26,29 +26,29 @@ class SimpleOperationsEditor extends React.Component {
     render() {
         const props = this.props;
 
-        //const errors = props.errors;
+        const errors = props.errors;
         const operations = props.operations;
 
-        var textLabel = 'Amount';
-        var textError = false;
-        /*if (errors.get('operations')[1].amount) {
-            textLabel = errors.get('operations')[1].amount;
+        let textLabel = 'Amount';
+        let textError = false;
+        if (errors.get('operations').get(1).has('amount')) {
+            textLabel = errors.get('operations').get(1).get('amount');
             textError = true
-        }*/
+        }
 
-        var textLeftLabel = 'Source';
-        var textLeftError = false;
-        /*if (errors.get('operations')[0].account_id) {
-            textLeftLabel = errors.get('operations')[0].account_id;
+        let textLeftLabel = 'Source';
+        let textLeftError = false;
+        if (errors.get('operations').get(0).has('account_id')) {
+            textLeftLabel = errors.get('operations').get(0).get('account_id');
             textLeftError = true
-        }*/
+        }
 
-        var textRightLabel = 'Destination';
-        var textRightError = false;
-        /*if (errors.get('operations')[1].account_id) {
-            textRightLabel = errors.get('operations')[1].account_id;
+        let textRightLabel = 'Destination';
+        let textRightError = false;
+        if (errors.get('operations').get(1).has('account_id')) {
+            textRightLabel = errors.get('operations').get(1).get('account_id');
             textRightError = true
-        }*/
+        }
 
         return (
             <Grid fluid>
@@ -134,29 +134,29 @@ class FullOperationsEditor extends React.Component {
     render() {
         const parent = this;
         const props = this.props;
-        //const errors = props.errors;
+        const errors = props.errors;
 
         var ops = this.props.operations.map(function (item, index) {
             var textLabel = 'Amount';
             var textError = false;
-            /*if (errors.get('operations')[index].amount) {
-                textLabel = errors.get('operations')[index].amount;
+            if (errors.get('operations').get(index).has('amount')) {
+                textLabel = errors.get('operations').get(index).get('amount');
                 textError = true
-            }*/
+            }
 
             var textRateLabel = 'Rate';
             var textRateError = false;
-            /*if (errors.get('operations')[index].rate) {
-                textRateLabel = errors.get('operations')[index].rate;
+            if (errors.get('operations').get(index).has('rate')) {
+                textRateLabel = errors.get('operations').get(index).get('rate');
                 textRateError = true
-            }*/
+            }
 
             var textAccountLabel = 'Account';
             var textAccountError = false;
-            /*if (errors.get('operations')[index].account_id) {
-                textAccountLabel = errors.get('operations')[index].account_id;
+            if (errors.get('operations').get(index).has('account_id')) {
+                textAccountLabel = errors.get('operations').get(index).get('account_id');
                 textAccountError = true
-            }*/
+            }
 
             return (
                 <Grid fluid key={'op'+index}>
@@ -321,7 +321,7 @@ export default class TransactionDialog extends React.Component {
 
     onRateChange(index, value) {
         const ops = this.props.transaction.get('operations');
-        ops[index].rate = value;
+        ops[index].rate = TransactionDialog.evaluateEquation(value);
         this.onChange('operations', ops)
     }
 
