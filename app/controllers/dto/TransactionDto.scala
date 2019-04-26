@@ -32,14 +32,14 @@ object TransactionDto {
     .removeField("id")
 }
 
-case class TransactionAttributeDto(`type`: String, attributes: TransactionDto)
+case class TransactionAttributeDto(`type`: Option[String], attributes: TransactionDto)
 object TransactionAttributeDto {
   implicit val transactionAttributesRead = Json.reads[TransactionAttributeDto]
   implicit val transactionAttributesWrites =
     Json.writes[TransactionAttributeDto]
 }
 
-case class TransactionWrapperDto(data: TransactionAttributeDto)
+case class TransactionWrapperDto( data: TransactionAttributeDto)
 
 object TransactionWrapperDto {
   implicit val transactionWrapperRead = Json.reads[TransactionWrapperDto]
