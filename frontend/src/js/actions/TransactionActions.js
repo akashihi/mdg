@@ -62,26 +62,26 @@ export function loadTransactionList() {
             payload: true
         });
 
-        var state = getState();
+        const state = getState();
 
-        var paginationParams = {
+        const paginationParams = {
             pageSize: state.transactionview.get('pageSize'),
             pageNumber: state.transactionview.get('pageNumber')
         };
-        var periodParams = {
+        const periodParams = {
             notLater: state.transactionview.get('periodEnd').format('YYYY-MM-DDT23:59:59'),
             notEarlier: state.transactionview.get('periodBeginning').format('YYYY-MM-DDT00:00:00')
         };
-        var filter = {
+        const filter = {
             comment: state.transactionview.get('commentFilter'),
             tag: state.transactionview.get('tagFilter'),
             account_id: state.transactionview.get('accountFilter'),
         };
-        var filterParams = {filter: JSON.stringify(filter)};
+        const filterParams = {filter: JSON.stringify(filter)};
 
-        var params = Object.assign({}, paginationParams, periodParams, filterParams);
+        const params = Object.assign({}, paginationParams, periodParams, filterParams);
 
-        var url = '/api/transaction' + '?' + jQuery.param(params);
+        const url = '/api/transaction' + '?' + jQuery.param(params);
 
         fetch(url)
             .then(parseJSON)

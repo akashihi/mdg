@@ -340,6 +340,11 @@ export default class TransactionDialog extends React.Component {
         };
 
         const enableSimpleEditor = this.validForSimpleEditing(transaction);
+        let activeTab = this.state.tabValue;
+
+        if (!enableSimpleEditor) {
+             activeTab = 'multi';
+        }
 
         const tags = props.tags.map((item) => {return {label: item.get('txtag'), value: item.get('txtag')}}).valueSeq().toJS();
         const selectedTags = transaction.get('tags').map((item) => {return {label: item, value: item}});
@@ -372,17 +377,17 @@ export default class TransactionDialog extends React.Component {
                     </Row>
                 </Grid>
                 <Divider/>
-                <Tabs value={this.state.tabValue} onChange={::this.switchTab}>
+                <Tabs value={activeTab} onChange={::this.switchTab}>
                     <Tab label='Simple' value='simple' disabled={!enableSimpleEditor}/>
                     <Tab label='Multiple operations' value='multi'/>
                 </Tabs>
-                {this.state.tabValue === 'simple' &&
+                {activeTab === 'simple' &&
                 <SimpleOperationsEditor errors={errors}
                                         operations={transaction.get('operations')}
                                         onAmountFunc={::this.onCombinedAmountChange}
                                         onAccountFunc={::this.onAccountChange}
                                         accounts={accounts}/>}
-                {this.state.tabValue === 'multi' && <FullOperationsEditor errors={errors}
+                {activeTab === 'multi' && <FullOperationsEditor errors={errors}
                                                                           operations={transaction.get('operations')}
                                                                           onAmountFunc={::this.onAmountChange}
                                                                           onAccountFunc={::this.onAccountChange}

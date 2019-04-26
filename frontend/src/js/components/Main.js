@@ -40,7 +40,7 @@ export default class Main extends Component {
               </Row>
             </Grid>
             <TransactionCreate/>
-            <TransactionEditor/>
+            <TransactionEditor unmountOnExit/>
             <NotificationSystem ref={e => (window.notification = e)} />
         </div>
       )
