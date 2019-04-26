@@ -4,7 +4,7 @@ import moment from 'moment'
 
 import {
     GET_TRANSACTIONLIST_REQUEST,
-    GET_TRANSACTIONLIST_SUCCESS,
+    GET_TRANSACTIONLIST_COUNT,
     GET_TRANSACTIONLIST_FAILURE,
     APPLY_TRANSACTION_FILTER,
     CLEAR_TRANSACTION_FILTER,
@@ -35,8 +35,8 @@ export default function transactionViewReducer(state = initialState, action) {
             return state.set(action.key, action.payload);
         case GET_TRANSACTIONLIST_REQUEST:
           return state.set('count', 0);
-        case GET_TRANSACTIONLIST_SUCCESS:
-          return state.set('count', action.payload.count);
+        case GET_TRANSACTIONLIST_COUNT:
+          return state.set('count', action.payload);
         case GET_TRANSACTIONLIST_FAILURE:
           return state.set('count', 0)
             .set('pageNumber', 1);

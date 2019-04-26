@@ -10,6 +10,7 @@ import {loadTotalsReport} from './ReportActions'
 
 import {
     GET_TRANSACTIONLIST_REQUEST,
+    GET_TRANSACTIONLIST_COUNT,
     GET_TRANSACTIONLIST_SUCCESS,
     GET_TRANSACTIONLIST_FAILURE,
     CLEAR_TRANSACTION_FILTER,
@@ -85,6 +86,13 @@ export function loadTransactionList() {
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
+            .then(function(json) {
+                dispatch({
+                    type: GET_TRANSACTIONLIST_COUNT,
+                    payload: json.count
+                });
+                return json
+            })
             .then(dataToMap)
             .then(function (map) {
                 dispatch({
