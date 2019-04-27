@@ -143,10 +143,13 @@ export function transactionFilterApply() {
     }
 }
 
-export function deleteTransactionRequest(tx) {
+export function deleteTransactionRequest(id, tx) {
     return {
         type: DELETE_TRANSACTION_REQUEST,
-        payload: tx
+        payload: {
+            id: id,
+            tx: tx
+        }
     }
 }
 
@@ -157,21 +160,21 @@ export function deleteTransactionCancel() {
     }
 }
 
-export function deleteTransaction(tx) {
+export function deleteTransaction(id) {
     return (dispatch) => {
         dispatch({
             type: DELETE_TRANSACTION_APPROVE,
-            payload: tx
+            payload: id
         });
 
-        var url = '/api/transaction/' + tx.id;
+        var url = '/api/transaction/' + id;
 
         fetch(url, {method: 'DELETE'})
             .then(function(response) {
-                if (response.status == 204) {
+                if (response.status === 204) {
                     dispatch({
                         type: DELETE_TRANSACTION_SUCCESS,
-                        payload: tx
+                        payload: id
                     })
                 }
             })

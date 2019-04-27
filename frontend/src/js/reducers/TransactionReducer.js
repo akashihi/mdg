@@ -25,6 +25,7 @@ const initialState = Map({
     }),
     delete: Map({
         transaction: Map({comment: ''}),
+        id: -1,
         approvementDialogVisible: false,
         loading: false
     }),
@@ -121,7 +122,8 @@ export default function transactionReducer(state = initialState, action) {
             return state.setIn(['dialog', 'closeOnSave'], closeTransactionDialog);
         case DELETE_TRANSACTION_REQUEST:
             return state.setIn(['delete', 'approvementDialogVisible'], true)
-                .setIn(['delete', 'transaction'], action.payload);
+                .setIn(['delete', 'transaction'], action.payload.tx)
+                .setIn(['delete', 'id'], action.payload.id);
         case DELETE_TRANSACTION_CANCEL:
             return state.setIn(['delete', 'approvementDialogVisible'], false)
                 .setIn(['delete', 'transaction'], Map({comment: ''}));
@@ -134,6 +136,7 @@ export default function transactionReducer(state = initialState, action) {
             return state.setIn(['delete', 'approvementDialogVisible'], false)
                 .setIn(['delete', 'loading'], false)
                 .setIn(['delete', 'transaction'], Map({comment: ''}))
+                .setIn(['delete', 'id'], -1)
                 .set('transactionList', removed);
         case GET_TRANSACTIONLIST_REQUEST:
             return state.setIn(['ui', 'transactionListLoading'], true)

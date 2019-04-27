@@ -14,7 +14,7 @@ export default class TransactionDeleteConfirmation extends Component {
         } else {
             actions = [
                 <Button key='cancel-button' color='primary' onClick={props.actions.deleteTransactionCancel}>Cancel</Button>,
-                <Button key='delete-button' color='secondary' onClick={() => props.actions.deleteTransaction(props.transaction)}>Delete</Button>,
+                <Button key='delete-button' color='secondary' onClick={() => props.actions.deleteTransaction(props.id)}>Delete</Button>,
             ];
         }
 
