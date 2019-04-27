@@ -31,6 +31,7 @@ const initialState = Map({
     dialog: Map({
         open: false,
         closeOnSave: false,
+        id: -1,
         transaction: Map({comment: '', tags: [], operations: [{amount: 0}, {amount: 0}]}),
         valid: false,
         errors: Map({valid: true, errors: List(), operations: List()})
@@ -107,8 +108,9 @@ export default function transactionReducer(state = initialState, action) {
         case TRANSACTION_DIALOG_CLOSE:
             return state.setIn(['dialog', 'open'], false);
         case TRANSACTION_DIALOG_OPEN:
-            var validInitial = validateTransactionForm(action.payload);
-            return state.setIn(['dialog', 'transaction'], action.payload)
+            var validInitial = validateTransactionForm(action.payload.tx);
+            return state.setIn(['dialog', 'transaction'], action.payload.tx)
+                .setIn(['dialog', 'id'], action.payload.id)
                 .setIn(['dialog', 'open'], true)
                 .setIn(['dialog', 'valid'], validInitial.get('valid'))
                 .setIn(['dialog', 'errors'], validInitial.get('errors'));

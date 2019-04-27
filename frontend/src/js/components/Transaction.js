@@ -133,7 +133,7 @@ class Transaction extends Component {
     render() {
         const { classes } = this.props;
         const props = this.props;
-        var transaction = props.transaction
+        const transaction = props.transaction;
 
         const operations = ::this.renderOperations(props.transaction, props.accounts);
         const totals = ::this.getTotalChange(props.transaction, props.accounts);
@@ -151,7 +151,7 @@ class Transaction extends Component {
                         <Col xs={7} sm={3} md={2} lg={2}>{::this.renderTransactionAccountList(transaction.get('operations'), props.accounts)}</Col>
                         <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{transaction.get('tags').join(', ')}</Col>
                         <Col xs={5} sm={3} md={2} lg={2}>
-                          <Button aria-label='Edit' onClick={() => props.editAction(props.transaction)}><Edit/></Button>
+                          <Button aria-label='Edit' onClick={() => props.editAction(props.id, props.transaction)}><Edit/></Button>
                           <Button aria-label='Delete' onClick={() => props.deleteAction(props.transaction)}><Delete/></Button>
                           {!props.preview && <IconButton className={classnames(classes.expand, {[classes.expandOpen]: this.state.expanded,})} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
                             <ExpandMoreIcon />

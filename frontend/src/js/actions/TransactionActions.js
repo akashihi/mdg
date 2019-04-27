@@ -2,7 +2,7 @@ import jQuery from 'jquery';
 import moment from 'moment';
 import {Map} from 'immutable';
 
-import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
 
 import {loadAccountList} from './AccountActions'
 import {loadBudgetInfoById} from './BudgetEntryActions';
@@ -198,18 +198,24 @@ export function setCloseOnSave(value) {
 export function createTransaction() {
     return {
         type: TRANSACTION_DIALOG_OPEN,
-        payload: Map({
-            comment: '',
-            timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'),
-            tags: [],
-            operations: [ {amount: 0, account_id: -1}, {amount: 0, account_id: -1}]})
+        payload: {
+            id: -1,
+            tx: Map({
+                comment: '',
+                timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'),
+                tags: [],
+                operations: [ {amount: 0, account_id: -1}, {amount: 0, account_id: -1}]})
+        }
     }
 }
 
-export function editTransaction(tx) {
+export function editTransaction(id, tx) {
     return {
         type: TRANSACTION_DIALOG_OPEN,
-        payload: tx
+        payload: {
+            id: id,
+            tx: tx
+        }
     }
 }
 
@@ -229,22 +235,23 @@ export function editTransactionChange(tx) {
 
 export function editTransactionSave() {
     return (dispatch, getState) => {
-      var state = getState();
-      if (state.transaction.dialog.closeOnSave) {
+      const state = getState();
+      if (state.transaction.getIn(['dialog', 'closeOnSave'])) {
         dispatch({
             type: TRANSACTION_DIALOG_CLOSE,
             payload: true
         });
       }
-        var transaction = state.transaction.dialog.transaction;
-        dispatch(updateTransaction(transaction));
-        if (!state.transaction.dialog.closeOnSave) {
+        const id = state.transaction.getIn(['dialog', 'id']);
+        const transaction = state.transaction.getIn(['dialog', 'transaction']);
+        dispatch(updateTransaction(id, transaction));
+        if (!state.transaction.getIn(['dialog', 'closeOnSave'])) {
           dispatch(createTransaction())
         }
     }
 }
 
-export function updateTransaction(tx) {
+export function updateTransaction(id, tx) {
     return (dispatch, getState) => {
         dispatch({
             type: GET_TRANSACTIONLIST_REQUEST,
@@ -256,8 +263,8 @@ export function updateTransaction(tx) {
 
         var url = '/api/transaction';
         var method = 'POST';
-        if (tx.hasOwnProperty('id') && tx['id'] ) {
-            url = url + '/' + tx.id;
+        if (id != -1) {
+            url = url + '/' + id;
             method = 'PUT';
         }
 
@@ -266,7 +273,7 @@ export function updateTransaction(tx) {
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify({data: tx})
+            body: JSON.stringify(mapToData(id, tx))
         })
             .then(parseJSON)
             .then(checkApiError)

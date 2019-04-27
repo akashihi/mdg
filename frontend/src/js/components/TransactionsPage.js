@@ -55,7 +55,7 @@ class TransactionsPage extends Component {
         } else {
             transactions = props.transactions.map(function (item, id) {
                 return (
-                    <GridListTile key={id}><Transaction transaction={item} accounts={props.accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
+                    <GridListTile key={id}><Transaction id={id} transaction={item} accounts={props.accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
                 )
             }).valueSeq();
         }
