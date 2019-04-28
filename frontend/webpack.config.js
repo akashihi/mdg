@@ -56,7 +56,7 @@ var development = {
         historyApiFallback: true,
         proxy: {
             '/api': {
-                target: 'http://127.0.0.1/api',
+                target: 'http://172.20.215.252/api',
                 pathRewrite: {'^/api' : ''}
             }
         }

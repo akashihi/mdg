@@ -267,7 +267,7 @@ export default class TransactionDialog extends React.Component {
                 }
             }
         }
-        return parseFloat(value)
+        return value
     }
 
     onCombinedAmountChange(ev) {
