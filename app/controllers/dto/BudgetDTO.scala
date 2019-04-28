@@ -10,21 +10,21 @@ import models.Budget
 /**
   * Budget wrapper.
   */
-case class BudgetPairedAmount(expected: BigDecimal, actual: BigDecimal)
-case class BudgetState(income: BudgetPairedAmount,
-                       expense: BudgetPairedAmount,
-                       change: BudgetPairedAmount)
+case class BudgetPair(expected: BigDecimal, actual: BigDecimal)
+case class BudgetState(income: BudgetPair,
+                       expense: BudgetPair,
+                       change: BudgetPair)
 case class BudgetDTO(
     id: Option[Long],
     term_beginning: LocalDate,
     term_end: LocalDate,
     incoming_amount: BigDecimal,
-    outgoing_amount: BudgetPairedAmount,
+    outgoing_amount: BudgetPair,
     state: BudgetState
 ) extends LongIdentifiable
 
 object BudgetDTO {
-  implicit val budgetPairedWrites = Json.writes[BudgetPairedAmount]
+  implicit val budgetPairWrites = Json.writes[BudgetPair]
   implicit val budgetStateWrites = Json.writes[BudgetState]
   implicit val budgetWrites = Json
     .writes[BudgetDTO]
@@ -131,13 +131,13 @@ object BudgetDTO {
         val outgoing_expected = builder.incoming.get + builder.expected_income.get - builder.expected_expense.get
         val outgoing_actual = builder.incoming.get + builder.income_actual.get - builder.expense_actual.get
         val outgoing_amount =
-          BudgetPairedAmount(outgoing_expected, outgoing_actual)
+          BudgetPair(outgoing_expected, outgoing_actual)
 
-        val stateIncome = BudgetPairedAmount(builder.expected_income.get,
+        val stateIncome = BudgetPair(builder.expected_income.get,
                                              builder.income_actual.get)
-        val stateExpense = BudgetPairedAmount(builder.expected_expense.get,
+        val stateExpense = BudgetPair(builder.expected_expense.get,
                                               builder.expense_actual.get)
-        val stateChange = BudgetPairedAmount(builder.state_change_expected.get,
+        val stateChange = BudgetPair(builder.state_change_expected.get,
                                              builder.state_change_actual.get)
         val state = BudgetState(stateIncome, stateExpense, stateChange)
         new BudgetDTO(budget.id,
