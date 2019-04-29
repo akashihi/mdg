@@ -154,7 +154,7 @@ class BudgetService @Inject() (protected val ts: TransactionService, protected v
     implicit val am: ActorMaterializer = ActorMaterializer()
 
     val budgets = Source.fromPublisher(sql.stream(BudgetQuery.list()))
-    budgets.mapAsync(1)(budgetToDTO).runWith(Sink.seq)
+    budgets.map (b => BudgetDTO.builder().withBudget(b).build()).runWith(Sink.seq)
   }
 
   /**
