@@ -1,26 +1,27 @@
+import {OrderedMap, Map} from 'immutable';
 import {
     TOGGLE_BUDGET_SELECTOR,
     GET_BUDGETLIST_REQUEST,
     GET_BUDGETLIST_SUCCESS,
     GET_BUDGETLIST_FAILURE,
-    SET_NEWBUDGET_BEGIN,
-    SET_NEWBUDGET_END
+    //SET_NEWBUDGET_BEGIN,
+    //SET_NEWBUDGET_END
 } from '../constants/Budget'
 
-const initialState = {
-    ui: {
+const initialState = Map({
+    ui: Map({
         budgetListVisible: false,
         budgetListLoading: false,
         budgetListError: false
-    },
-    budgetList: [],
+    }),
+    budgetList: OrderedMap(),
     newBudgetValid: false,
     newBudgetError: '',
     newBudgetBegin: undefined,
     newBudgetEnd: undefined
-};
+});
 
-function validateBudgetForm(state) {
+/*function validateBudgetForm(state) {
     if (state.newBudgetBegin===undefined || state.newBudgetEnd===undefined) {
         return {valid: false, error: ''}
     }
@@ -44,31 +45,31 @@ function validateBudgetForm(state) {
         }
     });
     return {valid: true, error:''}
-}
+}*/
 
 export default function budgetSelector(state = initialState, action) {
-    var ui = state.ui;
     switch (action.type) {
         case TOGGLE_BUDGET_SELECTOR:
-            ui = {...ui, budgetListVisible: action.payload};
-            return {...state, ui: ui};
+            return state.setIn(['ui', 'budgetListVisible'], action.payload);
         case GET_BUDGETLIST_REQUEST:
-            ui = {...ui, budgetListLoading: true, budgetListError: false};
-            return {...state, ui: ui};
+            return state.setIn(['ui', 'budgetListLoading'], true)
+                .setIn(['ui', 'budgetListError'], false);
         case GET_BUDGETLIST_SUCCESS:
-            ui = {...ui, budgetListLoading: false, budgetListError: false};
-            return {...state, budgetList: action.payload, ui: ui};
+            return state.setIn(['ui', 'budgetListLoading'], false)
+                .setIn(['ui', 'budgetListError'], false)
+                .set('budgetList', action.payload);
         case GET_BUDGETLIST_FAILURE:
-            ui = {...ui, budgetListLoading: false, budgetListError: true};
-            return {...state, budgetList: [], ui: ui};
-        case SET_NEWBUDGET_BEGIN:
+            return state.setIn(['ui', 'budgetListLoading'], false)
+                .setIn(['ui', 'budgetListError'], true)
+                .set('budgetList', OrderedMap());
+        /*case SET_NEWBUDGET_BEGIN:
             var bst = {...state, newBudgetBegin: action.payload};
             var b = validateBudgetForm(bst);
             return {...bst, newBudgetValid: b.valid, newBudgetError: b.error};
         case SET_NEWBUDGET_END:
             var est = {...state, newBudgetEnd: action.payload};
             var e = validateBudgetForm(est);
-            return {...est, newBudgetValid: e.valid, newBudgetError: e.error};
+            return {...est, newBudgetValid: e.valid, newBudgetError: e.error};*/
         default:
             return state
     }

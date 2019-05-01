@@ -7,7 +7,7 @@ import * as BudgetEntryActions from '../actions/BudgetEntryActions'
 
 const mapStateToProps = (state) => {
     return {
-        drawerVisible: state.budget.ui.budgetListVisible,
+        drawerVisible: state.budget.get('ui').get('budgetListVisible'),
         budget: state.budgetentry.currentBudget,
         entries: state.budgetentry.entryList,
         loading: state.budgetentry.ui.entryListLoading,

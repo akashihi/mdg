@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {checkApiError, parseJSON, dateToYMD} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dateToYMD, dataToMap} from '../util/ApiUtils';
 
 import {
     TOGGLE_BUDGET_SELECTOR,
@@ -41,10 +41,11 @@ export function loadBudgetList() {
         fetch('/api/budget')
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_BUDGETLIST_SUCCESS,
-                    payload: json.data
+                    payload: map
                 });
                 dispatch(getCurrentBudget());
             })
