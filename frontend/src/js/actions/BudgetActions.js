@@ -49,6 +49,7 @@ export function loadBudgetList() {
                 dispatch(getCurrentBudget());
             })
             .catch(function (response) {
+                console.log(response);
                 dispatch({
                     type: GET_BUDGETLIST_FAILURE,
                     payload: response.json

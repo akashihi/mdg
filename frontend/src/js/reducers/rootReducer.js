@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
-import BudgetSelectorReducer from './BudgetSelectorReducer'
+import BudgetSelectorReducer from './BudgetReducer'
 import CategoryReducer from './CategoryReducer'
 import CurrencyReducer from './CurrencyReducer'
 import AccountReducer from './AccountReducer'

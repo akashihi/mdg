@@ -38,20 +38,11 @@ export default class BudgetPage extends Component {
     }
 
     mapEntry(item) {
-        var props = this.props;
+        const props = this.props;
 
-        var account;
-        var accountIndex = props.incomeAccounts.map((item) => item.id).indexOf(item.attributes.account_id);
-        if (accountIndex != -1) {
-            account = props.incomeAccounts[accountIndex]
-        } else {
-            accountIndex = props.expenseAccounts.map((item) => item.id).indexOf(item.attributes.account_id);
-            if (accountIndex != -1) {
-                account = props.expenseAccounts[accountIndex]
-            }
-        }
+        const account = props.accounts.get(item.attributes.account_id);
 
-        var currency = props.currencies.find((v,k) => k === account.attributes.currency_id);
+        const currency = props.currencies.get(account.get('currency_id'));
 
         return (
             <BudgetEntry entry={item} key={item.id} currency={currency}
@@ -83,15 +74,15 @@ export default class BudgetPage extends Component {
             if (!props.emptyVisible) {
                 nonEmptyEntries = props.entries.filter((item) => item.attributes.actual_amount !== 0 || item.attributes.expected_amount !== 0);
             }
-            var incomeEntries = nonEmptyEntries.filter((item) => props.incomeAccounts.map((item) => item.id).includes(item.attributes.account_id)).map(::this.mapEntry);
-            var expenseEntries = nonEmptyEntries.filter((item) => props.expenseAccounts.map((item) => item.id).includes(item.attributes.account_id)).map(::this.mapEntry);
+            var incomeEntries = nonEmptyEntries.filter((item) => props.accounts.filter((item) => item.get('account_type') === 'income').map((item) => item.get('id')).includes(item.attributes.account_id)).map(::this.mapEntry);
+            var expenseEntries = nonEmptyEntries.filter((item) => props.accounts.filter((item) => item.get('account_type') === 'expense').map((item) => item.get('id')).includes(item.attributes.account_id)).map(::this.mapEntry);
 
             incomeCard = (
               <Card>
                 <CardHeader title='Incomes'/>
                 <CardContent>{incomeEntries}</CardContent>
               </Card>
-            )
+            );
 
             expenseCard = (
               <Card>

@@ -49,15 +49,15 @@ const initialState = {
    granularity: 7
 };
 
-function prepareBudgetExecutionReport(budgetList) {
+function prepareBudgetExecutionReport(/*budgetList*/) {
   var dates = [];
   var aIncome = [];
   var eIncome = [];
   var aExpense = [];
   var eExpense = [];
   var profit = [];
-  var entries = [...budgetList].reverse()
-  entries.forEach((item) => {
+  //var entries = [...budgetList].reverse()
+  /*entries.forEach((item) => {
     var attr = item.attributes;
     dates.push(attr.term_beginning)
     aIncome.push(attr.state.income.actual)
@@ -65,7 +65,7 @@ function prepareBudgetExecutionReport(budgetList) {
     aExpense.push(-1 * attr.state.expense.actual)
     eExpense.push(-1 * attr.state.expense.expected)
     profit.push(attr.outgoing_amount.actual-attr.incoming_amount)
-  })
+  })*/
   return {dates: dates, aIncome: aIncome, eIncome: eIncome, aExpense: aExpense, eExpense: eExpense, profit: profit}
 }
 
