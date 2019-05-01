@@ -2,23 +2,13 @@ import moment from 'moment';
 import {checkApiError, parseJSON, dateToYMD, dataToMap} from '../util/ApiUtils';
 
 import {
-    TOGGLE_BUDGET_SELECTOR,
     GET_BUDGETLIST_REQUEST,
     GET_BUDGETLIST_SUCCESS,
     GET_BUDGETLIST_FAILURE,
-    SET_NEWBUDGET_BEGIN,
-    SET_NEWBUDGET_END,
     TOGGLE_HIDDEN_ENTRIES
 } from '../constants/Budget'
 
 import {loadBudgetInfoById} from './BudgetEntryActions'
-
-export function toggleBudgetSelector(visible) {
-    return {
-        type: TOGGLE_BUDGET_SELECTOR,
-        payload: visible
-    }
-}
 
 export function toggleHiddenEntries(visible) {
     return (dispatch) => {
@@ -74,35 +64,19 @@ export function deleteBudget(id) {
     }
 }
 
-export function budgetSetNewBegin(dt) {
-    return {
-        type: SET_NEWBUDGET_BEGIN,
-        payload: dt
-    };
-}
-
-export function budgetSetNewEnd(dt) {
-    return {
-        type: SET_NEWBUDGET_END,
-        payload: dt
-    }
-}
-
-export function budgetCreate() {
-    return (dispatch, getState) => {
+export function budgetCreate(begin, end) {
+    return (dispatch) => {
         dispatch({
             type: GET_BUDGETLIST_REQUEST,
             payload: true
         });
 
-        var state = getState();
-
-        var json = {
+        const json = {
             data: {
                 type: 'budget',
                 attributes: {
-                    term_beginning: dateToYMD(state.budget.newBudgetBegin),
-                    term_end: dateToYMD(state.budget.newBudgetEnd)
+                    term_beginning: dateToYMD(begin),
+                    term_end: dateToYMD(end)
                 }
             }
         };
@@ -128,8 +102,8 @@ export function getCurrentBudget() {
     }
 }
 
-export function selectBudget(budget) {
+export function selectBudget(id) {
     return (dispatch) => {
-        dispatch(loadBudgetInfoById(budget.id));
+        dispatch(loadBudgetInfoById(id));
     }
 }

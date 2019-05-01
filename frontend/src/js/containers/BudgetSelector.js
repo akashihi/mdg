@@ -7,14 +7,10 @@ import * as BudgetViewerActions from '../actions/BudgetActions'
 
 const mapStateToProps = (state) => {
     return {
-        visible: state.budget.get('ui').get('budgetListVisible'),
-        waiting: state.budget.get('ui').get('budgetListLoading'),
-        error: state.budget.get('ui').get('budgetListError'),
+        budget: state.budgetentry.currentBudget,
         budgets: state.budget.get('budgetList'),
-        valid: state.budget.get('newBudgetValid'),
-        formError: state.budget.get('newBudgetError'),
-        begin: state.budget.get('newBudgetBegin'),
-        end:state.budget.get('newBudgetEnd'),
+        waiting: state.budget.get('ui').get('budgetListLoading'),
+        error: state.budget.get('ui').get('budgetListError')
     }
 };
 

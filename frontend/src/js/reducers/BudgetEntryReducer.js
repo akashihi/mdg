@@ -11,6 +11,7 @@ import {
 
 const initialState = {
     currentBudget: {
+        id: '',
         attributes: {
             incoming_amount: 0,
             outgoing_amount: {

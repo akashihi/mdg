@@ -4,11 +4,9 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import IconButton from '@material-ui/core/IconButton';
 import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import ClipLoader from 'react-spinners/ClipLoader';
-import ChevronLeft from '@material-ui/icons/ChevronLeft';
 
 import BudgetEntry from './BudgetEntry'
 import BudgetSelector from '../containers/BudgetSelector'
@@ -29,10 +27,6 @@ class HiddenEntriesButtonStyle extends Component {
 var HiddenEntriesButton = withStyles(styles)(HiddenEntriesButtonStyle)
 
 export default class BudgetPage extends Component {
-    onOpenBudgetListClick() {
-        this.props.actions.toggleBudgetSelector(true)
-    }
-
     onHiddenEntriesClick() {
         this.props.actions.toggleHiddenEntries(!this.props.emptyVisible)
     }
@@ -105,7 +99,6 @@ export default class BudgetPage extends Component {
                 <BudgetSelector/>
                 <Card>
                     <CardActions>
-                      <IconButton onClick={this.onOpenBudgetListClick.bind(this)}><ChevronLeft/></IconButton>
                         {hiddenButton}
                     </CardActions>
                     <BudgetOverviewPanel budget={props.budget}/>
