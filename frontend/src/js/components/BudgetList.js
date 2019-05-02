@@ -7,6 +7,7 @@ import DatePicker from 'react-date-picker'
 import {Formik, Form, Field, ErrorMessage} from 'formik';
 import Button from '@material-ui/core/Button';
 import ClipLoader from 'react-spinners/ClipLoader';
+import {Grid, Row, Col} from 'react-flexbox-grid';
 
 class FormikDatePicker extends React.Component {
     constructor(props) {
@@ -102,13 +103,29 @@ export default class BudgetList extends Component {
                        onSubmit={::this.onCreateBudget}>
             {({submitForm, isSubmitting, values}) => (
                 <Form>
-                    <Field type='text' name='begin' label='First budget day' value={values.begin}
-                           component={FormikDatePicker}/>
-                    <ErrorMessage name='begin' component='div'/>
-                    <Field type='text' name='end' label='Last budget day' value={values.end}
-                           component={FormikDatePicker}/>
-                    <ErrorMessage name='end' component='div'/>
-                    <Button color='primary' disabled={isSubmitting} onClick={submitForm}>Create new budget</Button>
+                    <Grid>
+                        <Row>
+                            <Col xs={4} lg={3}>
+                                <Field type='text' name='begin' label='First budget day' value={values.begin}
+                                       component={FormikDatePicker}/>
+                            </Col>
+                            <Col xs={4} lg={2}>
+                                <Field type='text' name='end' label='Last budget day' value={values.end}
+                                       component={FormikDatePicker}/>
+                            </Col>
+                            <Col xs={4} lg={2}>
+                                <Button color='primary' disabled={isSubmitting} onClick={submitForm}>Create budget</Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col xs={4} lg={3}>
+                                <ErrorMessage name='begin' component='div'/>
+                            </Col>
+                            <Col xs={4} lg={2}>
+                                <ErrorMessage name='end' component='div'/>
+                            </Col>
+                        </Row>
+                    </Grid>
                 </Form>
             )}
         </Formik>;

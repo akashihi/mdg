@@ -16,8 +16,6 @@ export function toggleHiddenEntries(visible) {
             type: TOGGLE_HIDDEN_ENTRIES,
             payload: visible
         });
-
-        //dispatch(()=>dispatch(getCurrentBudget()))
     };
 }
 
