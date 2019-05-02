@@ -1,5 +1,5 @@
 import React, {Component, Fragment} from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
@@ -13,15 +13,15 @@ import BudgetSelector from '../containers/BudgetSelector'
 import BudgetOverviewPanel from './BudgetOverviewPanel'
 
 const styles = {
-  hiddenButtonStyle: {
-      'float': 'right'
-  }
+    hiddenButtonStyle: {
+        'float': 'right'
+    }
 };
 
 class HiddenEntriesButtonStyle extends Component {
-  render() {
-    return (<Button onClick={this.props.handlerFunc}>{this.props.text}</Button>)
-  }
+    render() {
+        return (<Button onClick={this.props.handlerFunc}>{this.props.text}</Button>)
+    }
 }
 
 var HiddenEntriesButton = withStyles(styles)(HiddenEntriesButtonStyle)
@@ -44,55 +44,56 @@ export default class BudgetPage extends Component {
         )
     }
 
-    render() {
-        var props = this.props;
+    renderEntries(entries, type) {
+        const props = this.props;
+        const mappedEntries = entries.filter((item) => props.accounts.filter((v) => v.get('account_type') === type).keySeq().toJS().includes(item.attributes.account_id)).map(::this.mapEntry);
 
-        var hiddenButton;
-        if (props.emptyVisible) {
-            hiddenButton = <HiddenEntriesButton text='Hide empty entries' handlerFunc={this.onHiddenEntriesClick.bind(this)}/>
-        } else {
-            hiddenButton = <HiddenEntriesButton text='Show empty entries' handlerFunc={this.onHiddenEntriesClick.bind(this)}/>
-        }
-
-
-        var loader;
-        var errorMessage;
-        var incomeCard;
-        var expenseCard;
-        if (props.loading) {
-            loader = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
-        } else if (props.error) {
-            errorMessage = <h1>Unable to load budget entries</h1>
-        } else {
-            var nonEmptyEntries = props.entries
-            if (!props.emptyVisible) {
-                nonEmptyEntries = props.entries.filter((item) => item.attributes.actual_amount !== 0 || item.attributes.expected_amount !== 0);
-            }
-            var incomeEntries = nonEmptyEntries.filter((item) => props.accounts.filter((item) => item.get('account_type') === 'income').map((item) => item.get('id')).includes(item.attributes.account_id)).map(::this.mapEntry);
-            var expenseEntries = nonEmptyEntries.filter((item) => props.accounts.filter((item) => item.get('account_type') === 'expense').map((item) => item.get('id')).includes(item.attributes.account_id)).map(::this.mapEntry);
-
-            incomeCard = (
-              <Card>
+        return  (
+            <Card>
                 <CardHeader title='Incomes'/>
-                <CardContent>{incomeEntries}</CardContent>
-              </Card>
-            );
+                <CardContent>{mappedEntries}</CardContent>
+            </Card>
+        );
 
-            expenseCard = (
-              <Card>
-                <CardHeader title='Expenses'/>
-                <CardContent>{expenseEntries}</CardContent>
-              </Card>
-            )
+    }
+
+    renderBudget() {
+        const props = this.props;
+
+        if (props.loading) {
+            return <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
         }
 
-        var content =
-        (<Fragment>
-            {loader}
-            {errorMessage}
+        if (props.error) {
+            return <h1>Unable to load budget entries</h1>
+        }
+
+        let nonEmptyEntries = props.entries;
+        if (!props.emptyVisible) {
+            nonEmptyEntries = props.entries.filter((item) => item.attributes.actual_amount !== 0 || item.attributes.expected_amount !== 0);
+        }
+
+        const incomeCard = this.renderEntries(nonEmptyEntries, 'income');
+        const expenseCard = this.renderEntries(nonEmptyEntries, 'expense');
+
+        return (<Fragment>
             {incomeCard}
             {expenseCard}
-        </Fragment>)
+        </Fragment>);
+
+    }
+
+    render() {
+        const props = this.props;
+
+        let hiddenButton;
+        if (props.emptyVisible) {
+            hiddenButton =
+                <HiddenEntriesButton text='Hide empty entries' handlerFunc={this.onHiddenEntriesClick.bind(this)}/>
+        } else {
+            hiddenButton =
+                <HiddenEntriesButton text='Show empty entries' handlerFunc={this.onHiddenEntriesClick.bind(this)}/>
+        }
 
         return (
             <div>
@@ -104,7 +105,7 @@ export default class BudgetPage extends Component {
                     <BudgetOverviewPanel budget={props.budget}/>
                 </Card>
                 <Divider/>
-                {content}
+                {::this.renderBudget()}
             </div>
         )
     }
