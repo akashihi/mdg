@@ -27,7 +27,7 @@ export default class BudgetOverviewPanel extends Component {
         if (totalChange > 0) {
             percentActualChange = Math.round((attrs.state.change.actual / totalChange) * 100);
         }
-        console.log(attrs.state.change.actual / totalChange);
+        
         let incomePercentage;
         if (attrs.state.income.expected) {
             incomePercentage = Math.round(attrs.state.income.actual / attrs.state.income.expected * 100);
