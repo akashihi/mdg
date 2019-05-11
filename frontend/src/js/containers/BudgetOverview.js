@@ -4,7 +4,7 @@ import BudgetOverviewPanel from '../components/BudgetOverviewPanel'
 
 const mapStateToProps = (state) => {
     return {
-        budget: state.budgetentry.currentBudget,
+        budget: state.budgetentry.get('currentBudget'),
     }
 };
 

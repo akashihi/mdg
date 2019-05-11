@@ -24,29 +24,29 @@ class HiddenEntriesButtonStyle extends Component {
     }
 }
 
-var HiddenEntriesButton = withStyles(styles)(HiddenEntriesButtonStyle)
+const HiddenEntriesButton = withStyles(styles)(HiddenEntriesButtonStyle);
 
 export default class BudgetPage extends Component {
     onHiddenEntriesClick() {
         this.props.actions.toggleHiddenEntries(!this.props.emptyVisible)
     }
 
-    mapEntry(item) {
+    mapEntry(item, id) {
         const props = this.props;
 
-        const account = props.accounts.get(item.attributes.account_id);
+        const account = props.accounts.get(item.get('account_id'));
 
         const currency = props.currencies.get(account.get('currency_id'));
 
         return (
-            <BudgetEntry entry={item} key={item.id} currency={currency}
+            <BudgetEntry entry={item} id={id} key={id} currency={currency}
                          saveBudgetEntryChange={props.entryActions.updateBudgetEntry}/>
         )
     }
 
     renderEntries(entries, type) {
         const props = this.props;
-        const mappedEntries = entries.filter((item) => props.accounts.filter((v) => v.get('account_type') === type).keySeq().toJS().includes(item.attributes.account_id)).map(::this.mapEntry);
+        const mappedEntries = entries.filter((item) => props.accounts.filter((v) => v.get('account_type') === type).keySeq().toJS().includes(item.get('account_id'))).map(::this.mapEntry).valueSeq();
 
         return  (
             <Card>
@@ -70,7 +70,7 @@ export default class BudgetPage extends Component {
 
         let nonEmptyEntries = props.entries;
         if (!props.emptyVisible) {
-            nonEmptyEntries = props.entries.filter((item) => item.attributes.actual_amount !== 0 || item.attributes.expected_amount !== 0);
+            nonEmptyEntries = props.entries.filter((item) => item.get('actual_amount') !== 0 || item.get('expected_amount') !== 0);
         }
 
         const incomeCard = this.renderEntries(nonEmptyEntries, 'income');

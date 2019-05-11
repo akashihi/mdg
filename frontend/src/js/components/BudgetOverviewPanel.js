@@ -20,36 +20,36 @@ export default class BudgetOverviewPanel extends Component {
 
     render() {
         const props = this.props;
-        const attrs = props.budget.attributes;
+        const budget = props.budget;
 
-        const totalChange = attrs.state.change.actual + attrs.state.change.expected;
+        const totalChange = budget.get('state').change.actual + budget.get('state').change.expected;
         let percentActualChange;
         if (totalChange > 0) {
-            percentActualChange = Math.round((attrs.state.change.actual / totalChange) * 100);
+            percentActualChange = Math.round((budget.get('state').change.actual / totalChange) * 100);
         }
-        
+
         let incomePercentage;
-        if (attrs.state.income.expected) {
-            incomePercentage = Math.round(attrs.state.income.actual / attrs.state.income.expected * 100);
+        if (budget.get('state').income.expected) {
+            incomePercentage = Math.round(budget.get('state').income.actual / budget.get('state').income.expected * 100);
             if (incomePercentage > 100) {
                 incomePercentage = 100;
             }
         }
 
         let expensePercentage;
-        if (attrs.state.expense.expected) {
-            expensePercentage = Math.round(attrs.state.expense.actual / attrs.state.expense.expected * 100);
+        if (budget.get('state').expense.expected) {
+            expensePercentage = Math.round(budget.get('state').expense.actual / budget.get('state').expense.expected * 100);
             if (expensePercentage > 100) {
                 expensePercentage = 100;
             }
         }
 
-        let actual_profit = (attrs.outgoing_amount.actual - attrs.incoming_amount).toFixed(2);
+        let actual_profit = (budget.get('outgoing_amount').actual - budget.get('incoming_amount')).toFixed(2);
         actual_profit = (actual_profit <= 0 ? '' : '+') + actual_profit;
-        let expected_profit = (attrs.outgoing_amount.expected - attrs.incoming_amount).toFixed(2);
+        let expected_profit = (budget.get('outgoing_amount').expected - budget.get('incoming_amount')).toFixed(2);
         expected_profit = (expected_profit <= 0 ? '' : '+') + expected_profit;
 
-        let title = 'Budget for: ' + attrs.term_beginning + ' - ' + attrs.term_end;
+        let title = 'Budget for: ' + budget.get('term_beginning') + ' - ' + budget.get('term_end');
 
         return (
             <div>
@@ -58,15 +58,15 @@ export default class BudgetOverviewPanel extends Component {
                     <Grid fluid>
                         <Row>
                             <Col xs={4} sm={4} md={4} lg={4}>
-                                <div>Assets first day: {attrs.incoming_amount.toFixed(2)}</div>
+                                <div>Assets first day: {budget.get('incoming_amount').toFixed(2)}</div>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
                                 <div style={{'textAlign': 'center'}}>Actual assets last
-                                    day: {attrs.outgoing_amount.actual.toFixed(2)} ({actual_profit})</div>
+                                    day: {budget.get('outgoing_amount').actual.toFixed(2)} ({actual_profit})</div>
                             </Col>
                             <Col xs={4} sm={4} md={4} lg={4}>
                                 <div style={{'textAlign': 'right'}}>Expected assets last
-                                    day: {attrs.outgoing_amount.expected.toFixed(2)} ({expected_profit})</div>
+                                    day: {budget.get('outgoing_amount').expected.toFixed(2)} ({expected_profit})</div>
                             </Col>
                         </Row>
                         <Divider variant='middle'/>
@@ -95,21 +95,21 @@ export default class BudgetOverviewPanel extends Component {
                         </Row>
                         <Row>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <div>{attrs.state.income.actual} of {attrs.state.income.expected}</div>
+                                <div>{budget.get('state').income.actual} of {budget.get('state').income.expected}</div>
                             </Col>
                             <Col xs={6} sm={6} md={6} lg={6}>
-                                <div style={{'textAlign': 'right'}}>{attrs.state.expense.actual} of {attrs.state.expense.expected}</div>
+                                <div style={{'textAlign': 'right'}}>{budget.get('state').expense.actual} of {budget.get('state').expense.expected}</div>
                             </Col>
                         </Row>
                         <Row>
                             <Col xs={3} sm={2} md={2} lg={2}>
-                                Spent today: {attrs.state.change.actual}
+                                Spent today: {budget.get('state').change.actual}
                             </Col>
                             <Col xs={6} sm={8} md={8} lg={8}>
                                 <Progress percent={percentActualChange}/>
                             </Col>
                             <Col xs={3} sm={2} md={2} lg={2}>
-                                <div style={{'textAlign': 'right'}}>Left today: {attrs.state.change.expected}</div>
+                                <div style={{'textAlign': 'right'}}>Left today: {budget.get('state').change.expected}</div>
                             </Col>
                         </Row>
                     </Grid>

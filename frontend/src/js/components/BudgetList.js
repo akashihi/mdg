@@ -54,7 +54,7 @@ export default class BudgetList extends Component {
     }
 
     onDeleteBudget() {
-        this.props.actions.deleteBudget(this.props.budget.id)
+        this.props.actions.deleteBudget(this.props.budget.get('id'))
     }
 
 
@@ -147,7 +147,7 @@ export default class BudgetList extends Component {
         return (
             <Fragment>
                 <InputLabel htmlFor={'budget-selector'}>Select budget:</InputLabel>
-                <Select value={props.budget.id} onChange={(ev) => props.actions.selectBudget(ev.target.value)}
+                <Select value={props.budget.get('id')} onChange={(ev) => props.actions.selectBudget(ev.target.value)}
                         inputProps={{id: 'budget-selector'}}>
                     {budgetList}
                 </Select>

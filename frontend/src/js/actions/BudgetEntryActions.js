@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, singleToMap, dataToMap} from '../util/ApiUtils';
 
 import {
     SET_CURRENT_BUDGET,
@@ -17,12 +17,16 @@ export function loadBudgetInfoById(id) {
         fetch('/api/budget/' + id)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(singleToMap)
+            .then(function (map) {
+                return map.map((v, k) => v.set('id', k)).first()
+            })
+            .then(function (map) {
                 dispatch({
                     type: SET_CURRENT_BUDGET,
-                    payload: json.data
+                    payload: map
                 });
-                dispatch(loadBudgetEntryList(json.data.id));
+                dispatch(loadBudgetEntryList(map.get('id')));
             })
     }
 }
@@ -43,10 +47,11 @@ export function loadBudgetEntryList(budgetId) {
         fetch('/api/budget/' + budgetId + '/entry')
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_BUDGETENTRYLIST_SUCCESS,
-                    payload: json.data
+                    payload: map
                 });
             })
             .catch(function (response) {
