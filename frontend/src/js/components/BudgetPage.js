@@ -50,7 +50,7 @@ export default class BudgetPage extends Component {
 
         return  (
             <Card>
-                <CardHeader title='Incomes'/>
+                <CardHeader title={type.charAt(0).toUpperCase() + type.slice(1)}/>
                 <CardContent>{mappedEntries}</CardContent>
             </Card>
         );
