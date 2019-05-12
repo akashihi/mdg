@@ -17,6 +17,10 @@ const styles = {
         'float': 'right'
     }
 };
+const cardStyle = {
+    padding: '0px',
+    paddingBottom: '16px'
+};
 
 class HiddenEntriesButtonStyle extends Component {
     render() {
@@ -49,8 +53,8 @@ export default class BudgetPage extends Component {
         const mappedEntries = entries.filter((item) => props.accounts.filter((v) => v.get('account_type') === type).keySeq().toJS().includes(item.get('account_id'))).map(::this.mapEntry).valueSeq();
 
         return  (
-            <Card>
-                <CardHeader title={type.charAt(0).toUpperCase() + type.slice(1)}/>
+            <Card style={cardStyle}>
+                <CardHeader style={{paddingTop: '0px'}} title={type.charAt(0).toUpperCase() + type.slice(1)}/>
                 <CardContent>{mappedEntries}</CardContent>
             </Card>
         );

@@ -58,44 +58,44 @@ export default class BudgetEntry extends Component {
             entry_color = 'lime'
         }
 
-        let change = <p/>;
-        let editors = <p/>;
+        let change = <div/>;
+        let editors = <div/>;
         if (entry.get('account_type') === 'expense') {
             editors = (
                 <Fragment>
-                    <Col xs={12} sm={12} md={6} lg={1}>
+                    <Col xsOffset={5} xs={3} smOffset={5} sm={3} mdOffset={6} md={3} lgOffset={1} lg={1}>
                         <FormControlLabel control={<Checkbox color='primary' checked={entry.get('even_distribution')} onChange={::this.onEvenEdit}/>} label={'Evenly distributed'}/>
                     </Col>
-                    <Col xs={12} sm={12} md={6} lg={1}>
+                    <Col xs={3} sm={3} md={3} lg={1}>
                         <FormControlLabel control={<Checkbox color='primary' checked={entry.get('proration')} onChange={::this.onProratedEdit} disabled={!entry.get('even_distribution')}/>} label={'Prorate spendings'}/>
                     </Col>
                 </Fragment>
             );
             if (entry.get('change_amount')) {
-                change = <p>{entry.get('change_amount')} allowed</p>;
+                change = <div>{entry.get('change_amount')} allowed</div>;
             }
         }
 
         return (
             <Grid fluid>
-                <Row>
-                    <Col xs={6} sm={6} md={3} lg={3}>
-                        <p>{entry.get('account_name')}&nbsp;({props.currency.get('name')})</p>
+                <Row style={{paddingBottom:'8px'}}>
+                    <Col xs={3} sm={3} md={4} lg={3}>
+                        <div>{entry.get('account_name')}&nbsp;({props.currency.get('name')})</div>
                     </Col>
-                    <Col xs={6} sm={6} md={3} lg={3}>
+                    <Col xs={3} sm={3} md={2} lg={1}>
                         {change}
                     </Col>
-                    <Col xs={2} sm={2} md={1} lg={1}>
+                    <Col xs={2} sm={2} md={2} lg={1}>
                         <div style={{width: '60px', height: '60px'}}>
                             <SegmentedProgressbar percentage={progress} color={entry_color}/>
                         </div>
                     </Col>
-                    <Col xs={4} sm={4} md={2} lg={2}>
+                    <Col xs={2} sm={2} md={2} lg={2}>
                         <TextField id={'budgetentry' + props.id} defaultValue={entry.get('expected_amount')}
                                    onBlur={::this.onExpectedApply} onChange={::this.onExpectedEdit}/>
                     </Col>
-                    <Col xs={6} sm={6} md={3} lg={1}>
-                        <p>{entry.get('actual_amount')}</p>
+                    <Col xs={2} sm={2} md={2} lg={1}>
+                        <div>{entry.get('actual_amount')}</div>
                     </Col>
                     {editors}
                 </Row>
