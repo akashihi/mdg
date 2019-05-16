@@ -19,9 +19,15 @@ const styles = {
 
 class FinanceOverviewPanel extends Component {
 
+    constructor(props) {
+        super(props);
+        this.entryId = 0;
+    }
+
     renderAsset(props, item) {
-      var getCurrency = function(id) {
-          const currency = props.currencies.find((v, k) => id == k);
+
+      const getCurrency = function(id) {
+          const currency = props.currencies.get(id);
           if (currency) {
             return currency.get('code');
           }
@@ -29,27 +35,28 @@ class FinanceOverviewPanel extends Component {
       };
 
 
-      var primaryCurrencyCode = getCurrency(props.primaryCurrency)
+      const primaryCurrencyCode = getCurrency(props.primaryCurrency);
 
-      if (!(item.totals.length == 1 && item.totals[0].currency_id == props.primaryCurrency)) {
-        var detailed = item.totals.map((subitem) => {
-          var currencyCode = getCurrency(subitem.currency_id)
+      let details;
+      if (!(item.totals.length === 1 && item.totals[0].currency_id === props.primaryCurrency)) {
+        const detailed = item.totals.map((subitem) => {
+          const currencyCode = getCurrency(subitem.currency_id);
           return subitem.balance.toFixed(2)+' '+currencyCode
-        })
-        var details = <Fragment>({detailed.join(', ')})</Fragment>
+        });
+        details = <Fragment>({detailed.join(', ')})</Fragment>
       }
 
-      var color = 'black'
+      let color = 'black';
       if (item.primary_balance < 0) {
         color = 'red'
       }
 
       return (
-          <GridListTile>
+          <GridListTile key={this.entryId++}>
             <Grid fluid>
               <Row>
                 <Col xs={2} sm={2} md={2} lg={2}>
-                  <div style={{'text-transform': 'capitalize'}}>{item.asset_type}:</div>
+                  <div style={{'textTransform': 'capitalize'}}>{item.asset_type}:</div>
                 </Col>
                 <Col xs={3} sm={3} md={3} lg={3}>
                   <span style={{color: color}}>{item.primary_balance.toFixed(2)}</span> {primaryCurrencyCode}
@@ -64,14 +71,14 @@ class FinanceOverviewPanel extends Component {
     }
 
     render() {
-        var props = this.props;
+        const props = this.props;
 
-        var sorted = props.totals.sort((l, r) => {
-          var typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable']
+        const sorted = props.totals.sort((l, r) => {
+          var typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable'];
           return typesInOrder.indexOf(l.asset_type) - typesInOrder.indexOf(r.asset_type)
-        })
+        });
 
-        var result = sorted.map((item) => this.renderAsset(props, item))
+        const result = sorted.map((item) => this.renderAsset(props, item));
 
         return (
             <Fragment>
