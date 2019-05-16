@@ -6,14 +6,10 @@ import AccountList from './AccountList'
 
 export default class AccountsOverviewPanel extends Component {
 
-    onCreateAccountClick() {
-        this.props.actions.createAccount();
-    }
-
     render() {
         var props = this.props;
 
-        var accounts = props.assetAccounts.filter((item) => item.attributes.favorite);
+        var accounts = props.assetAccounts.filter((item) => item.get('favorite'));
 
         return (
             <Fragment>

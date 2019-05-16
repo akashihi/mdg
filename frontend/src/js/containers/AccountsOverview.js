@@ -8,7 +8,7 @@ import * as AccountActions from '../actions/AccountActions'
 const mapStateToProps = (state) => {
     return {
         currencies: state.currency.get('currencies'),
-        assetAccounts: state.account.assetAccountList,
+        assetAccounts: state.account.get('assetAccountList'),
     }
 };
 
