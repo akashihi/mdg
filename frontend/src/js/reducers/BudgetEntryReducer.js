@@ -3,7 +3,9 @@ import {
     SET_CURRENT_BUDGET,
     GET_BUDGETENTRYLIST_REQUEST,
     GET_BUDGETENTRYLIST_SUCCESS,
-    GET_BUDGETENTRYLIST_FAILURE
+    GET_BUDGETENTRYLIST_FAILURE,
+    BUDGETENTRY_PARTIAL_UPDATE,
+    BUDGETENTRY_PARTIAL_SUCCESS
 } from '../constants/BudgetEntry'
 
 import {
@@ -53,6 +55,10 @@ export default function budgetEntryReducer(state = initialState, action) {
         case GET_BUDGETENTRYLIST_FAILURE:
             return state.setIn(['ui', 'entryListLoading'], false)
                 .setIn(['ui', 'entryListError'], true);
+        case BUDGETENTRY_PARTIAL_UPDATE:
+        case BUDGETENTRY_PARTIAL_SUCCESS:
+            return state.setIn(['entryList', action.payload.id], action.payload.entry)
+                .setIn(['ui', 'entryListLoading'], false);
         case SET_CURRENT_BUDGET:
             return state.set('currentBudget', action.payload);
         case TOGGLE_HIDDEN_ENTRIES:

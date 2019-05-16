@@ -4,10 +4,12 @@ import {
     SET_CURRENT_BUDGET,
     GET_BUDGETENTRYLIST_REQUEST,
     GET_BUDGETENTRYLIST_SUCCESS,
-    GET_BUDGETENTRYLIST_FAILURE
+    GET_BUDGETENTRYLIST_FAILURE,
+    BUDGETENTRY_PARTIAL_UPDATE,
+    BUDGETENTRY_PARTIAL_SUCCESS
 } from '../constants/BudgetEntry'
 
-export function loadBudgetInfoById(id) {
+export function loadBudgetInfoById(id, skipListReload) {
     return (dispatch) => {
         dispatch({
             type: GET_BUDGETENTRYLIST_REQUEST,
@@ -26,7 +28,10 @@ export function loadBudgetInfoById(id) {
                     type: SET_CURRENT_BUDGET,
                     payload: map
                 });
-                dispatch(loadBudgetEntryList(map.get('id')));
+                if (!skipListReload) {
+                    dispatch(loadBudgetEntryList(map.get('id')));
+                }
+
             })
     }
 }
@@ -66,15 +71,18 @@ export function loadBudgetEntryList(budgetId) {
 export function updateBudgetEntry(id, entry) {
     return(dispatch, getState) => {
         dispatch({
-            type: GET_BUDGETENTRYLIST_REQUEST,
-            payload: true
+            type: BUDGETENTRY_PARTIAL_UPDATE,
+            payload: {
+                id: id,
+                entry: entry.set('loading', true)
+            }
         });
 
-        var state = getState();
+        const state = getState();
 
-        var budgetId = state.budgetentry.get('currentBudget').get('id');
+        const budgetId = state.budgetentry.get('currentBudget').get('id');
 
-        var url = '/api/budget/' + budgetId + '/entry/' + id;
+        const url = '/api/budget/' + budgetId + '/entry/' + id;
 
         fetch(url, {
             method: 'PUT',
@@ -85,7 +93,17 @@ export function updateBudgetEntry(id, entry) {
         })
             .then(parseJSON)
             .then(checkApiError)
-            .then(()=>dispatch(loadBudgetInfoById(budgetId)))
+            .then(singleToMap)
+            .then(map => {
+                dispatch(loadBudgetInfoById(budgetId, true));
+                dispatch({
+                    type: BUDGETENTRY_PARTIAL_SUCCESS,
+                    payload: {
+                        id: id,
+                        entry: map.first()
+                    }
+                })
+            })
             .catch(()=>dispatch(loadBudgetInfoById(budgetId)))
     }
 }

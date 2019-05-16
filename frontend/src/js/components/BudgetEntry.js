@@ -4,6 +4,7 @@ import {Grid, Row, Col} from 'react-flexbox-grid';
 import SegmentedProgressbar from '../widgets/SegmentedProgressbar'
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class BudgetEntry extends Component {
     constructor(props) {
@@ -11,6 +12,7 @@ export default class BudgetEntry extends Component {
         this.state = {entry: props.entry}
     }
     onSave() {
+        this.setState({entry: this.state.entry.set('loading', true)}); //We need to set it here, cause global setter will not update instance state.
         this.props.saveBudgetEntryChange(this.props.id, this.state.entry);
     }
 
@@ -24,6 +26,12 @@ export default class BudgetEntry extends Component {
     render() {
         const props = this.props;
         const entry = this.state.entry;
+
+        if (entry.get('loading')) {
+            // Fast processing
+            return <ClipLoader sizeUnit={'px'} size={15} loading={true}/>
+        }
+
 
         let progress = 0;
         if (entry.get('expected_amount') !== 0) {
