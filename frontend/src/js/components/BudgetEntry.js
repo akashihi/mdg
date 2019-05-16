@@ -6,34 +6,24 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
 export default class BudgetEntry extends Component {
-    onExpectedApply() {
-        this.props.saveBudgetEntryChange(this.entry);
+    constructor(props) {
+        super(props);
+        this.state = {entry: props.entry}
+    }
+    onSave() {
+        this.props.saveBudgetEntryChange(this.props.id, this.state.entry);
     }
 
-    onExpectedEdit(ev) {
-        var value = ev.target.value;
-        var attr = {...this.props.entry.attributes};
-        attr.expected_amount = value;
-        this.entry = {...this.props.entry, attributes: attr};
-    }
-
-    onEvenEdit(ev, value) {
-        var attr = {...this.props.entry.attributes};
-        attr.even_distribution = value;
-        var entry = {...this.props.entry, attributes: attr};
-        this.props.saveBudgetEntryChange(entry);
-    }
-
-    onProratedEdit(ev, value) {
-        var attr = {...this.props.entry.attributes};
-        attr.proration = value;
-        var entry = {...this.props.entry, attributes: attr};
-        this.props.saveBudgetEntryChange(entry);
+    onEdit(field, value, shouldSave) {
+        this.setState({entry: this.state.entry.set(field, value)});
+        if (shouldSave) {
+            ::this.onSave()
+        }
     }
 
     render() {
         const props = this.props;
-        const entry = props.entry;
+        const entry = this.state.entry;
 
         let progress = 0;
         if (entry.get('expected_amount') !== 0) {
@@ -64,10 +54,10 @@ export default class BudgetEntry extends Component {
             editors = (
                 <Fragment>
                     <Col xsOffset={5} xs={3} smOffset={5} sm={3} mdOffset={6} md={3} lgOffset={1} lg={1}>
-                        <FormControlLabel control={<Checkbox color='primary' checked={entry.get('even_distribution')} onChange={::this.onEvenEdit}/>} label={'Evenly distributed'}/>
+                        <FormControlLabel control={<Checkbox color='primary' checked={entry.get('even_distribution')} onChange={(ev, value) => ::this.onEdit('even_distribution', value, true)}/>} label={'Evenly distributed'}/>
                     </Col>
                     <Col xs={3} sm={3} md={3} lg={1}>
-                        <FormControlLabel control={<Checkbox color='primary' checked={entry.get('proration')} onChange={::this.onProratedEdit} disabled={!entry.get('even_distribution')}/>} label={'Prorate spendings'}/>
+                        <FormControlLabel control={<Checkbox color='primary' checked={entry.get('proration')} onChange={(ev, value) => ::this.onEdit('proration', value, true)} disabled={!entry.get('even_distribution')}/>} label={'Prorate spendings'}/>
                     </Col>
                 </Fragment>
             );
@@ -91,8 +81,8 @@ export default class BudgetEntry extends Component {
                         </div>
                     </Col>
                     <Col xs={2} sm={2} md={2} lg={2}>
-                        <TextField id={'budgetentry' + props.id} defaultValue={entry.get('expected_amount')}
-                                   onBlur={::this.onExpectedApply} onChange={::this.onExpectedEdit}/>
+                        <TextField id={'budgetentry' + props.id} defaultValue={entry.get('expected_amount')} type='number'
+                                   onBlur={::this.onSave} onChange={(ev) => ::this.onEdit('expected_amount', ev.target.value, false)}/>
                     </Col>
                     <Col xs={2} sm={2} md={2} lg={1}>
                         <div>{entry.get('actual_amount')}</div>

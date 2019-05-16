@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON, singleToMap, dataToMap} from '../util/ApiUtils';
+import {checkApiError, parseJSON, singleToMap, dataToMap, mapToData} from '../util/ApiUtils';
 
 import {
     SET_CURRENT_BUDGET,
@@ -63,7 +63,7 @@ export function loadBudgetEntryList(budgetId) {
     }
 }
 
-export function updateBudgetEntry(entry) {
+export function updateBudgetEntry(id, entry) {
     return(dispatch, getState) => {
         dispatch({
             type: GET_BUDGETENTRYLIST_REQUEST,
@@ -72,17 +72,16 @@ export function updateBudgetEntry(entry) {
 
         var state = getState();
 
-        var budgetId = state.budgetentry.currentBudget.id;
+        var budgetId = state.budgetentry.get('currentBudget').get('id');
 
-        var url = '/api/budget/' + budgetId + '/entry/' + entry.id;
-        var method = 'PUT';
+        var url = '/api/budget/' + budgetId + '/entry/' + id;
 
         fetch(url, {
-            method: method,
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify({data: entry})
+            body: JSON.stringify(mapToData(id, entry))
         })
             .then(parseJSON)
             .then(checkApiError)
