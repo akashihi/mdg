@@ -15,7 +15,7 @@ export default class AccountsOverviewPanel extends Component {
             <Fragment>
                 <CardHeader title='Accounts'/>
                 <CardContent>
-                  <AccountList hiddenVisible={false} actions={props.actions} currencies={props.currencies} accounts={accounts}/>
+                  <AccountList preview={true} hiddenVisible={false} actions={props.actions} currencies={props.currencies} accounts={accounts}/>
                 </CardContent>
             </Fragment>
         )

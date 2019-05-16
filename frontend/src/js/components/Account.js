@@ -21,21 +21,21 @@ export default class Account extends Component {
     };
 
     render() {
-        var account = this.props.account;
-        var favIcon;
-        var opIcon;
+        const account = this.props.account;
+        let favIcon;
+        let opIcon;
 
         if (account.get('loading')) {
           // Fast processing
           return <ClipLoader sizeUnit={'px'} size={15} loading={true}/>
         }
 
-        var balance_style = {
+        let balance_style = {
             'color': 'black',
             'fontWeight': 'normal'
         };
 
-        if (account.get('account_type') == 'asset') {
+        if (account.get('account_type') === 'asset') {
             if (account.get('balance') <0 ) {
                 balance_style = {
                     'color': 'red',
@@ -53,27 +53,27 @@ export default class Account extends Component {
                 opIcon = <Button aria-label='Not operational' onClick={()=>this.props.switchFunc('operational')}><StarBorder/></Button>
             }
         }
-        var visibilityIcon = <Button aria-label='Visible' onClick={()=>this.props.switchFunc('hidden')}><Visibility/></Button>;
+        let visibilityIcon = <Button aria-label='Visible' onClick={()=>this.props.switchFunc('hidden')}><Visibility/></Button>;
         if (account.get('hidden')) {
             visibilityIcon = <Button aria-label='Hidden' onClick={()=>this.props.switchFunc('hidden')}><VisibilityOff/></Button>;
         }
 
-        var currency = this.getCurrency(account, this.props.currencies);
+        const currency = this.getCurrency(account, this.props.currencies);
 
         return (
             <Grid fluid>
                 <Row>
                     <Col xs={6} sm={6} md={4} lg={4}>
-                        <p>{account.get('name')}</p>
+                        {account.get('name')}
                     </Col>
-                    <Col xs={6} sm={6} md={3} lg={3}>
-                        <p style={balance_style}>{account.get('balance')} {currency}</p>
+                    <Col xs={6} sm={6} md={4} lg={4}>
+                        <div style={balance_style}>{account.get('balance')} {currency}</div>
                     </Col>
-                    <Col xs={12} sm={12} md={5} lg={5} className='hide-on-small'>
+                    <Col xs={12} sm={12} md={4} lg={4} className='hide-on-small'>
                         {favIcon}
                         {opIcon}
-                        {visibilityIcon}
-                        <Button aria-label='Edit' onClick={this.props.editAccountFunc}><Edit/></Button>
+                        {!this.props.preview && visibilityIcon}
+                        {!this.props.preview && <Button aria-label='Edit' onClick={this.props.editAccountFunc}><Edit/></Button>}
                     </Col>
                 </Row>
             </Grid>
