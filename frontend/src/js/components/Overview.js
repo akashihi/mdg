@@ -18,24 +18,24 @@ export default class Overview extends Component {
         return (
             <Grid fluid>
                 <Row>
-                    <Col xs={12} sm={12} md={6} lg={6}>
+                    <Col xs={12} sm={12} md={12} lg={6}>
                         <Card style={cardStyle}>
                             <AccountsOverview/>
                         </Card>
                     </Col>
-                    <Col xs={12} sm={12} md={6} lg={6}>
+                    <Col xs={12} sm={12} md={12} lg={6}>
                         <Card style={cardStyle}>
                             <FinanceOverview/>
                         </Card>
                     </Col>
                 </Row>
                 <Row>
-                    <Col xs={12} sm={12} md={6} lg={6}>
+                    <Col xs={12} sm={12} md={12} lg={6}>
                         <Card style={cardStyle}>
                             <BudgetOverview short={true}/>
                         </Card>
                     </Col>
-                    <Col xs={12} sm={12} md={6} lg={6}>
+                    <Col xs={12} sm={12} md={12} lg={6}>
                         <Card style={cardStyle}>
                             <TransactionsOverview/>
                         </Card>
