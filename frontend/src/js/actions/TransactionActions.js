@@ -262,7 +262,7 @@ export function updateTransaction(id, tx) {
         });
 
         var state=getState();
-        var selectedBudgetId = state.budgetentry.currentBudget.id;
+        var selectedBudgetId = state.budgetentry.get('currentBudget').get('id');
 
         var url = '/api/transaction';
         var method = 'POST';
