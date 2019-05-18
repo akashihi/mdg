@@ -13,7 +13,7 @@ import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import Transaction from './Transaction';
+import Transaction from './TransactionFullWidget';
 import TransactionPager from '../../containers/TransactionsPager'
 import TransactionFilter from '../../containers/TransactionsFilter'
 import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog'

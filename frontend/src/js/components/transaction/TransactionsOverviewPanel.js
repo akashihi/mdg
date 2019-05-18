@@ -4,7 +4,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
-import Transaction from './Transaction';
+import Transaction from './TransactionShortWidget';
 
 const styles = {
   content: {
@@ -21,9 +21,7 @@ class TransactionsOverviewPanel extends Component {
         const props = this.props;
 
         const transactions = props.transactions.map((item, id) => {
-            return <GridListTile key={id}><Transaction transaction={item} accounts={props.accounts} preview={true}
-                                                        editAction={props.actions.editTransaction}
-                                                        deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
+            return <GridListTile key={id}><Transaction transaction={item} accounts={props.accounts}/></GridListTile>
         }).valueSeq();
 
         return (
