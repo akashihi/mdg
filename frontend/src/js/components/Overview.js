@@ -32,7 +32,7 @@ export default class Overview extends Component {
                 <Row>
                     <Col xs={12} sm={12} md={6} lg={6}>
                         <Card style={cardStyle}>
-                            <BudgetOverview/>
+                            <BudgetOverview short={true}/>
                         </Card>
                     </Col>
                     <Col xs={12} sm={12} md={6} lg={6}>

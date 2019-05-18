@@ -22,6 +22,14 @@ export default class BudgetOverviewPanel extends Component {
         const props = this.props;
         const budget = props.budget;
 
+        //That circular thingy needs to be moved, while rendering as overview widget
+        let expensePercentageOffset;
+        if (props.short) {
+            expensePercentageOffset = 9;
+        } else {
+            expensePercentageOffset = 10;
+        }
+
         const totalChange = budget.get('state').change.actual + budget.get('state').change.expected;
         let percentActualChange;
         if (totalChange > 0) {
@@ -87,7 +95,7 @@ export default class BudgetOverviewPanel extends Component {
                                     <SegmentedProgressbar percentage={incomePercentage}/>
                                 </div>
                             </Col>
-                            <Col xsOffset={9} xs={1} lgOffset={10}>
+                            <Col xsOffset={9} xs={1} lgOffset={expensePercentageOffset}>
                                 <div style={{width: '80px', height: '80px', textAlign: 'right'}}>
                                     <SegmentedProgressbar percentage={expensePercentage}/>
                                 </div>
