@@ -1,7 +1,7 @@
 import jQuery from 'jquery';
 import moment from 'moment';
 
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, singleToMap} from '../util/ApiUtils';
 
 import {
   GET_TOTALSREPORT_REQUEST,
@@ -43,16 +43,17 @@ export function loadTotalsReport() {
         fetch('/api/report/totals')
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(singleToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_TOTALSREPORT_SUCCESS,
-                    payload: json.data.attributes.value
+                    payload: map.get('totals').get('value')
                 });
             })
             .catch(function (response) {
                 dispatch({
                     type: GET_TOTALSREPORT_FAILURE,
-                    payload: response.json
+                    payload: response
                 })
             });
     }

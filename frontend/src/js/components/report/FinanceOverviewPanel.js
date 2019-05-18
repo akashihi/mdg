@@ -19,6 +19,11 @@ const styles = {
 
 class FinanceOverviewPanel extends Component {
 
+    cardHeaderStyle = {
+        paddingTop: '0px',
+        textAlign: 'center'
+    };
+
     constructor(props) {
         super(props);
         this.entryId = 0;
@@ -54,7 +59,7 @@ class FinanceOverviewPanel extends Component {
       return (
           <GridListTile key={this.entryId++}>
             <Grid fluid>
-              <Row>
+              <Row style={{'fontSize': '0.9em'}}>
                 <Col xs={2} sm={2} md={2} lg={2}>
                   <div style={{'textTransform': 'capitalize'}}>{item.asset_type}:</div>
                 </Col>
@@ -74,7 +79,7 @@ class FinanceOverviewPanel extends Component {
         const props = this.props;
 
         const sorted = props.totals.sort((l, r) => {
-          var typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable'];
+          const typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable'];
           return typesInOrder.indexOf(l.asset_type) - typesInOrder.indexOf(r.asset_type)
         });
 
@@ -82,9 +87,9 @@ class FinanceOverviewPanel extends Component {
 
         return (
             <Fragment>
-                <CardHeader title='Financial status'/>
+                <CardHeader title='Financial status' style={this.cardHeaderStyle}/>
                   <CardContent className={this.props.classes.content}>
-                    <GridList cellHeight={30} cols={1} className={this.props.classes.panel}>
+                    <GridList cellHeight={36} cols={1} className={this.props.classes.panel}>
                         {result}
                     </GridList>
                   </CardContent>

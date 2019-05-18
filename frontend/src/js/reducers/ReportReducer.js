@@ -1,3 +1,4 @@
+import {List, Map} from 'immutable';
 import moment from 'moment';
 
 import {
@@ -34,8 +35,8 @@ import {
     GET_BUDGETLIST_SUCCESS
 } from '../constants/Budget'
 
-const initialState = {
-   totalsReport: [],
+const initialState = Map({
+   totalsReport: List(),
    simpleAssetReport: [],
    currencyAssetReport: {dates:[], series: []},
    typeAssetReport: {dates:[], series: []},
@@ -47,7 +48,7 @@ const initialState = {
    startDate: moment().subtract(1, 'month'),
    endDate: moment(),
    granularity: 7
-};
+});
 
 function prepareBudgetExecutionReport(/*budgetList*/) {
   var dates = [];
@@ -56,70 +57,59 @@ function prepareBudgetExecutionReport(/*budgetList*/) {
   var aExpense = [];
   var eExpense = [];
   var profit = [];
-  //var entries = [...budgetList].reverse()
-  /*entries.forEach((item) => {
-    var attr = item.attributes;
-    dates.push(attr.term_beginning)
-    aIncome.push(attr.state.income.actual)
-    eIncome.push(attr.state.income.expected)
-    aExpense.push(-1 * attr.state.expense.actual)
-    eExpense.push(-1 * attr.state.expense.expected)
-    profit.push(attr.outgoing_amount.actual-attr.incoming_amount)
-  })*/
   return {dates: dates, aIncome: aIncome, eIncome: eIncome, aExpense: aExpense, eExpense: eExpense, profit: profit}
 }
 
 export default function reportReducer(state = initialState, action) {
     switch(action.type) {
         case GET_TOTALSREPORT_REQUEST:
-            return {...state, totalsReport: []};
-        case GET_TOTALSREPORT_SUCCESS:
-            return {...state, totalsReport: action.payload};
         case GET_TOTALSREPORT_FAILURE:
-            return {...state, totalsReport: []};
+            return state.set('totalsReport', List());
+        case GET_TOTALSREPORT_SUCCESS:
+            return state.set('totalsReport', List(action.payload));
         case GET_SIMPLEASSETREPORT_REQUEST:
         case GET_SIMPLEASSETREPORT_FAILURE:
-            return {...state, simpleAssetReport: []}
+            return state.set('simpleAssetReport', []);
         case GET_SIMPLEASSETREPORT_SUCCESS:
-          return {...state, simpleAssetReport: action.payload}
+            return state.set('simpleAssetReport', action.payload);
         case GET_CURRENCYASSETREPORT_REQUEST:
         case GET_CURRENCYASSETREPORT_FAILURE:
-            return {...state, currencyAssetReport: {dates:[], series: []}}
+            return state.set('currencyAssetReport', {dates:[], series: []});
         case GET_CURRENCYASSETREPORT_SUCCESS:
-          return {...state, currencyAssetReport: action.payload}
+            return state.set('currencyAssetReport', action.payload);
         case GET_TYPEASSETREPORT_REQUEST:
         case GET_TYPEASSETREPORT_FAILURE:
-            return {...state, typeAssetReport: {dates:[], series: []}}
+            return state.set('typeAssetReport', {dates:[], series: []});
         case GET_TYPEASSETREPORT_SUCCESS:
-          return {...state, typeAssetReport: action.payload}
+            return state.set('typeAssetReport', action.payload);
         case GET_INCOMEEVENTACCOUNTREPORT_REQUEST:
         case GET_INCOMEEVENTACCOUNTREPORT_FAILURE:
-            return {...state, incomeByAccount: {dates:[], series: []}}
+            return state.set('incomeByAccount', {dates:[], series: []});
         case GET_INCOMEEVENTACCOUNTREPORT_SUCCESS:
-          return {...state, incomeByAccount: action.payload}
+            return state.set('incomeByAccount', action.payload);
         case GET_EXPENSEEVENTACCOUNTREPORT_REQUEST:
         case GET_EXPENSEEVENTACCOUNTREPORT_FAILURE:
-            return {...state, expenseByAccount: {dates:[], series: []}}
+            return state.set('expenseByAccount', {dates:[], series: []});
         case GET_EXPENSEEVENTACCOUNTREPORT_SUCCESS:
-          return {...state, expenseByAccount: action.payload}
+            return state.set('expenseByAccount', action.payload);
         case GET_INCOMEWEIGHTACCOUNTREPORT_REQUEST:
         case GET_INCOMEWEIGHTACCOUNTREPORT_FAILURE:
-            return {...state, incomeByAccountWeight: {date:'', series: []}}
+            return state.set('incomeByAccountWeight', {date:'', series: []});
         case GET_INCOMEWEIGHTACCOUNTREPORT_SUCCESS:
-          return {...state, incomeByAccountWeight: action.payload}
+            return state.set('incomeByAccountWeight', action.payload);
         case GET_EXPENSEWEIGHTACCOUNTREPORT_REQUEST:
         case GET_EXPENSEWEIGHTACCOUNTREPORT_FAILURE:
-            return {...state, expenseByAccountWeight: {date:'', series: []}}
+            return state.set('expenseByAccountWeight', {date:'', series: []});
         case GET_EXPENSEWEIGHTACCOUNTREPORT_SUCCESS:
-          return {...state, expenseByAccountWeight: action.payload}
+            return state.set('expenseByAccountWeight', action.payload);
         case SET_REPORT_STARTDATE:
-          return {...state, startDate: action.payload}
+            return state.set('startDate', action.payload);
         case SET_REPORT_ENDDATE:
-          return {...state, endDate: action.payload}
+            return state.set('endDate', action.payload);
         case SET_REPORT_GRANULARITY:
-          return {...state, granularity: action.payload}
+            return state.set('granularity', action.payload);
         case GET_BUDGETLIST_SUCCESS:
-          return {...state, budgetExecutionReport: prepareBudgetExecutionReport(action.payload)}
+            return state.set('budgetExecutionReport', prepareBudgetExecutionReport(action.payload));
         default:
             return state;
     }
