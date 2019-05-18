@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import CategoryViewerWidget from '../components/CategoryViewerWidget'
+import CategoryViewerWidget from '../components/category/CategoryViewerWidget'
 import * as CategoryActions from '../actions/CategoryActions'
 
 

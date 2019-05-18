@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import AccountDialog from '../components/AccountDialog'
+import AccountDialog from '../components/account/AccountDialog'
 import * as AccountActions from '../actions/AccountActions'
 
 

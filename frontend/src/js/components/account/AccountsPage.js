@@ -7,7 +7,7 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-import AccountEditor from '../containers/AccountEditor'
+import AccountEditor from '../../containers/AccountEditor'
 import AssetAccountList from './AssetAccountList'
 import CategorizedAccountList from './CategorizedAccountList.js'
 

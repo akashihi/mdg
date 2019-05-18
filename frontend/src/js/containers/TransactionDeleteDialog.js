@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionDeleteConfirmation from '../components/TransactionDeleteConfirmation'
+import TransactionDeleteConfirmation from '../components/transaction/TransactionDeleteConfirmation'
 import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {

@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import BudgetList from '../components/BudgetList'
+import BudgetList from '../components/budget/BudgetList'
 import * as BudgetViewerActions from '../actions/BudgetActions'
 
 

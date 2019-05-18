@@ -13,7 +13,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 
-import {timestampToFormattedDate} from '../util/DateUtil'
+import {timestampToFormattedDate} from '../../util/DateUtil'
 import Operation from './Operation'
 
 const styles = theme => ({

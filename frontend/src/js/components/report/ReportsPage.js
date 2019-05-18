@@ -9,7 +9,7 @@ import FormControl from '@material-ui/core/FormControl';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 
 import AssetReportCollection from './AssetReportCollection'
-import BudgetExecutionReport from './BudgetExecutionReport'
+import BudgetExecutionReport from '../budget/BudgetExecutionReport'
 import IncomeReportCollection from './IncomeReportCollection'
 import ExpenseReportCollection from './ExpenseReportCollection'
 

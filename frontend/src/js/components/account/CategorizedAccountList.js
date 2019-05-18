@@ -1,7 +1,7 @@
 import React, {Component, Fragment} from 'react';
 
 import AccountList from './AccountList'
-import {filterNonListedCategories} from '../util/AccountUtils'
+import {filterNonListedCategories} from '../../util/AccountUtils'
 
 export default class CategorizedAccountList extends Component {
 

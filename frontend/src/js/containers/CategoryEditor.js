@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import CategoryDialog from '../components/CategoryDialog'
+import CategoryDialog from '../components/category/CategoryDialog'
 import * as CategoryActions from '../actions/CategoryActions'
 
 

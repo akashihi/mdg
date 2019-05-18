@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionsOverviewPanel from '../components/TransactionsOverviewPanel'
+import TransactionsOverviewPanel from '../components/transaction/TransactionsOverviewPanel'
 import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {

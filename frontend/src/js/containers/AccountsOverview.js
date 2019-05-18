@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import AccountsOverviewPanel from '../components/AccountsOverviewPanel'
+import AccountsOverviewPanel from '../components/account/AccountsOverviewPanel'
 import * as AccountActions from '../actions/AccountActions'
 
 

@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import SegmentedProgressbar from '../widgets/SegmentedProgressbar'
+import SegmentedProgressbar from '../../widgets/SegmentedProgressbar'
 import Divider from '@material-ui/core/Divider';
 import {Progress} from 'react-sweet-progress';
 import 'react-sweet-progress/lib/style.css';

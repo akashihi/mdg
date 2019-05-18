@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import AccountsPage from '../components/AccountsPage'
+import AccountsPage from '../components/account/AccountsPage'
 import * as CurrencyActions from '../actions/CurrencyActions'
 import * as AccountActions from '../actions/AccountActions'
 

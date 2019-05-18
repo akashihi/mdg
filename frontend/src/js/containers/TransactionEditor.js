@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionDialog from '../components/TransactionDialog'
+import TransactionDialog from '../components/transaction/TransactionDialog'
 import * as TransactionActions from '../actions/TransactionActions'
 
 

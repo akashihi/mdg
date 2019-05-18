@@ -20,7 +20,7 @@ import TimePicker from 'react-time-picker';
 import Checkbox from '@material-ui/core/Checkbox';
 import RSelect from 'react-select';
 
-import {AccountMapper} from '../util/AccountUtils'
+import {AccountMapper} from '../../util/AccountUtils'
 
 class SimpleOperationsEditor extends React.Component {
     render() {

@@ -14,7 +14,7 @@ import Clear from '@material-ui/icons/Clear';
 import {List} from 'immutable';
 import moment from 'moment';
 
-import {AccountMapper} from '../util/AccountUtils'
+import {AccountMapper} from '../../util/AccountUtils'
 
 export default class TransactionsPageFilter extends Component {
 

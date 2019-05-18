@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import Pagination from '../widgets/material-ui-pagination';
+import Pagination from '../../widgets/material-ui-pagination';
 
 export default class TransactionsPagePager extends Component {
     setPage(no) {

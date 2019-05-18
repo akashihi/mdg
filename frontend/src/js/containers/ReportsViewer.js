@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import ReportsPage from '../components/ReportsPage'
+import ReportsPage from '../components/report/ReportsPage'
 import * as ReportActions from '../actions/ReportActions'
 
 const mapStateToProps = (state) => {

@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionsPageFilter from '../components/TransactionsPageFilter'
+import TransactionsPageFilter from '../components/transaction/TransactionsPageFilter'
 import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {

@@ -14,9 +14,9 @@ import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import Transaction from './Transaction';
-import TransactionPager from '../containers/TransactionsPager'
-import TransactionFilter from '../containers/TransactionsFilter'
-import TransactionDeleteDialog from '../containers/TransactionDeleteDialog'
+import TransactionPager from '../../containers/TransactionsPager'
+import TransactionFilter from '../../containers/TransactionsFilter'
+import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog'
 
 const styles = theme => ({
   expand: {

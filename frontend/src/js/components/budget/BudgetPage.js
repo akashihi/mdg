@@ -9,7 +9,7 @@ import Button from '@material-ui/core/Button';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 import BudgetEntry from './BudgetEntry'
-import BudgetSelector from '../containers/BudgetSelector'
+import BudgetSelector from '../../containers/BudgetSelector'
 import BudgetOverviewPanel from './BudgetOverviewPanel'
 
 const styles = {
