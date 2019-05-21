@@ -6,17 +6,17 @@ import * as ReportActions from '../actions/ReportActions'
 
 const mapStateToProps = (state) => {
     return {
-        simpleAssetReport: state.report.simpleAssetReport,
-        assetReportCurrency: state.report.currencyAssetReport,
-        assetReportType: state.report.typeAssetReport,
-        budgetExecution: state.report.budgetExecutionReport,
-        incomeByAccount: state.report.incomeByAccount,
-        expenseByAccount: state.report.expenseByAccount,
-        incomeByAccountWeight: state.report.incomeByAccountWeight,
-        expenseByAccountWeight: state.report.expenseByAccountWeight,
-        startDate: state.report.startDate,
-        endDate: state.report.endDate,
-        granularity: state.report.granularity,
+        simpleAssetReport: state.report.get('simpleAssetReport'),
+        assetReportCurrency: state.report.get('currencyAssetReport'),
+        assetReportType: state.report.get('typeAssetReport'),
+        budgetExecution: state.report.get('budgetExecutionReport'),
+        incomeByAccount: state.report.get('incomeByAccount'),
+        expenseByAccount: state.report.get('expenseByAccount'),
+        incomeByAccountWeight: state.report.get('incomeByAccountWeight'),
+        expenseByAccountWeight: state.report.get('expenseByAccountWeight'),
+        startDate: state.report.get('startDate'),
+        endDate: state.report.get('endDate'),
+        granularity: state.report.get('granularity'),
     }
 };
 

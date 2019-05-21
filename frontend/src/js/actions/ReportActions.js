@@ -59,6 +59,13 @@ export function loadTotalsReport() {
     }
 }
 
+function reportDatesToParams(getState) {
+    const state = getState();
+
+    const params = {start: state.report.get('startDate').format('YYYY-MM-DD'), end: state.report.get('endDate').format('YYYY-MM-DD'), granularity: state.report.get('granularity')};
+    return '?' + jQuery.param(params);
+}
+
 export function loadTypeAssetReport() {
   return (dispatch, getState) => {
       dispatch({
@@ -66,10 +73,7 @@ export function loadTypeAssetReport() {
           payload: true
       });
 
-      var state = getState()
-
-      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
-      var url = '/api/report/asset/type' + '?' + jQuery.param(params)
+      const url = '/api/report/asset/type' + reportDatesToParams(getState);
 
       fetch(url)
           .then(parseJSON)
@@ -122,10 +126,9 @@ export function loadCurrencyAssetReport() {
           payload: true
       });
 
-      var state = getState()
+      const state = getState();
 
-      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
-      var url = '/api/report/asset/currency' + '?' + jQuery.param(params)
+      const url = '/api/report/asset/currency' + reportDatesToParams(getState);
 
       fetch(url)
           .then(parseJSON)
@@ -190,19 +193,16 @@ export function loadSimpleAssetReport() {
           payload: true
       });
 
-      var state = getState()
-
-      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
-      var url = '/api/report/asset/simple' + '?' + jQuery.param(params)
+      const url = '/api/report/asset/simple' + reportDatesToParams(getState);
 
       fetch(url)
           .then(parseJSON)
           .then(checkApiError)
           .then(function (json) {
-              var series = json.data.attributes.value.map((item) => {
-                  var dt = moment(item.date, 'YYYY-MM-DD')
-                  return [dt.valueOf(), item.value]
-              })
+              const series = json.data.attributes.value.map((item) => {
+                  const dt = moment(item.date, 'YYYY-MM-DD');
+                  return [dt.valueOf(), item.value];
+              });
               dispatch({
                   type: GET_SIMPLEASSETREPORT_SUCCESS,
                   payload: series
@@ -224,10 +224,8 @@ export function loadIncomeEventAccountReport() {
           payload: true
       });
 
-      var state = getState()
-
-      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
-      var url = '/api/report/income/events' + '?' + jQuery.param(params)
+      const state = getState();
+      const url = '/api/report/income/events' + reportDatesToParams(getState);
 
       fetch(url)
           .then(parseJSON)
@@ -292,10 +290,8 @@ export function loadExpenseEventAccountReport() {
           payload: true
       });
 
-      var state = getState()
-
-      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
-      var url = '/api/report/expense/events' + '?' + jQuery.param(params)
+      const state = getState();
+      const url = '/api/report/expense/events' + reportDatesToParams(getState);
 
       fetch(url)
           .then(parseJSON)
@@ -360,10 +356,8 @@ export function loadIncomeWeightAccountReport() {
           payload: true
       });
 
-      var state = getState()
-
-      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
-      var url = '/api/report/income/accounts' + '?' + jQuery.param(params)
+      const state = getState();
+      const url = '/api/report/income/accounts' + reportDatesToParams(getState);
 
       fetch(url)
           .then(parseJSON)
@@ -408,10 +402,8 @@ export function loadExpenseWeightAccountReport() {
           payload: true
       });
 
-      var state = getState()
-
-      var params = {start: state.report.startDate.format('YYYY-MM-DD'), end: state.report.endDate.format('YYYY-MM-DD'), granularity: state.report.granularity}
-      var url = '/api/report/expense/accounts' + '?' + jQuery.param(params)
+      const state = getState();
+      const url = '/api/report/expense/accounts' + reportDatesToParams(getState);
 
       fetch(url)
           .then(parseJSON)
@@ -470,7 +462,7 @@ export function setReportStartDate(startDate) {
     dispatch({
       type: SET_REPORT_STARTDATE,
       payload: moment(startDate)
-    })
+    });
     dispatch(loadTypeAssetReport());
     dispatch(loadCurrencyAssetReport());
     dispatch(loadSimpleAssetReport());
@@ -486,7 +478,7 @@ export function setReportEndDate(endDate) {
     dispatch({
       type: SET_REPORT_ENDDATE,
       payload: moment(endDate)
-    })
+    });
     dispatch(loadTypeAssetReport());
     dispatch(loadCurrencyAssetReport());
     dispatch(loadSimpleAssetReport());
