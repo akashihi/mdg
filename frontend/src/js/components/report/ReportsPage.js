@@ -22,33 +22,21 @@ export default class ReportsPage extends Component {
         });
     }
 
-    setStartDate(value) {
-      this.props.actions.setReportStartDate(value)
-    }
-
-    setEndDate(value) {
-      this.props.actions.setReportEndDate(value)
-    }
-
-    setGranularity(ev) {
-      this.props.actions.setReportGranularity(ev.target.value)
-    }
-
     render() {
-      var props = this.props
+      const props = this.props;
         return (
           <Fragment>
             <Grid fluid>
               <Row>
                 <Col xs={6} sm={6} md={2} lg={2}>Report start date</Col>
-                <Col xs={6} sm={6} md={3} lg={3}><DatePicker value={props.startDate.toDate()} onChange={::this.setStartDate}/></Col>
+                <Col xs={6} sm={6} md={3} lg={3}><DatePicker value={props.startDate.toDate()} onChange={props.actions.setReportStartDate}/></Col>
                 <Col xs={6} sm={6} md={2} lg={2}>Report last date</Col>
-                <Col xs={6} sm={6} md={3} lg={3}><DatePicker value={props.endDate.toDate()} onChange={::this.setEndDate}/></Col>
+                <Col xs={6} sm={6} md={3} lg={3}><DatePicker value={props.endDate.toDate()} onChange={props.actions.setReportEndDate}/></Col>
                 <Col xs={6} sm={6} md={2} lg={2}>
                   <FormControl fullWidth={true}>
                     <InputLabel htmlFor={'granularity'}>Granularity</InputLabel>
                     <Select value={props.granularity}
-                            onChange={::this.setGranularity}
+                            onChange={(ev) => props.actions.setReportGranularity(ev.target.value)}
                             inputProps={{id: 'granularity'}}>
                             <MenuItem value={1}>1 day</MenuItem>
                             <MenuItem value={7}>Week</MenuItem>
@@ -62,7 +50,7 @@ export default class ReportsPage extends Component {
               </Row>
             </Grid>
 
-            <Tabs value={this.state.tabValue} onChange={::this.switchTab} centered>
+            <Tabs value={this.state.tabValue} onChange={::this.switchTab} centered variant={'fullWidth'}>
                 <Tab label='Asset report' value='asset'/>
                 <Tab label='Budget report' value='budget'/>
                 <Tab label='Incomes report' value='income'/>
