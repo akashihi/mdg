@@ -11,28 +11,28 @@ import scala.concurrent.Future
 
 class AssetReport @Inject() (protected val sql: SqlDatabase)
                                   (implicit ec: SqlExecutionContext){
-  def simpleAssetReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[SimpleAssetReportEntry]] = {
+  def simpleAssetReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[ReportValueInTime]] = {
     val series = expandPeriod(start, end,granularity).map(d => sql.query(AssetQuery.getTotalAssetsForDate(d)).map((d,_)))
     val report = Future.sequence(series)
-    val entries = report.map(s => s.map(e => SimpleAssetReportEntry(e._1, e._2)))
+    val entries = report.map(s => s.map(e => ReportValueInTime(e._1, e._2)))
     entries.map(GenericReportDTO(Some("simple_asset"), _))
   }
 
-  def assetByCurrencyReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[AssetByCurrencyReportEntry]] = {
+  def assetByCurrencyReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[ReportIdentifiedValueInTime[Long]]] = {
     val series = expandPeriod(start, end, granularity)
       .map(d => sql.query(AssetQuery.getTotalAssetsByCurrencyForDate(d)).map((d,_)))
     val report = Future.sequence(series)
-    val detailed = report.map(_.map(e => (e._1, e._2.map(d => AssetByCurrencyReportDetail(d._1, d._2)))))
-    val entries = detailed.map(s => s.map(e => AssetByCurrencyReportEntry(e._1, e._2)))
+    val detailed = report.map(_.flatMap(e => e._2.map(d => (e._1, d._1, d._2))))
+    val entries = detailed.map(_.map(e => ReportIdentifiedValueInTime(e._1, e._3, e._2)))
     entries.map(GenericReportDTO(Some("asset_by_currency"), _))
   }
 
-  def assetByTypeReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[AssetByTypeReportEntry]] = {
+  def assetByTypeReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[ReportIdentifiedValueInTime[String]]] = {
     val series = expandPeriod(start, end, granularity)
       .map(d => sql.query(AssetQuery.getTotalAssetsByTypeForDate(d)).map((d,_)))
     val report = Future.sequence(series)
-    val detailed = report.map(_.map(e => (e._1, e._2.map(d => AssetByTypeReportDetail(d._1, d._2)))))
-    val entries = detailed.map(s => s.map(e => AssetByTypeReportEntry(e._1, e._2)))
+    val detailed = report.map(_.flatMap(e => e._2.map(d => (e._1, d._1, d._2))))
+    val entries = detailed.map(_.map(e => ReportIdentifiedValueInTime(e._1, e._3, e._2)))
     entries.map(GenericReportDTO(Some("asset_by_type"), _))
   }
 }
