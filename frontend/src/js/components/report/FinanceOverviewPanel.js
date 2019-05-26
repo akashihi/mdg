@@ -43,10 +43,10 @@ class FinanceOverviewPanel extends Component {
       const primaryCurrencyCode = getCurrency(props.primaryCurrency);
 
       let details;
-      if (!(item.totals.length === 1 && item.totals[0].currency_id === props.primaryCurrency)) {
+      if (!(item.totals.length === 1 && item.totals[0].id === props.primaryCurrency)) {
         const detailed = item.totals.map((subitem) => {
-          const currencyCode = getCurrency(subitem.currency_id);
-          return subitem.balance.toFixed(2)+' '+currencyCode
+          const currencyCode = getCurrency(subitem.id);
+          return subitem.value.toFixed(2)+' '+currencyCode
         });
         details = <Fragment>({detailed.join(', ')})</Fragment>
       }

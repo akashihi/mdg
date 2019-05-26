@@ -1,4 +1,4 @@
-import {List, Map} from 'immutable';
+import {List, Map, OrderedMap} from 'immutable';
 import moment from 'moment';
 
 import {
@@ -39,7 +39,7 @@ const initialState = Map({
    totalsReport: List(),
    simpleAssetReport: [],
    currencyAssetReport: {dates:[], series: []},
-   typeAssetReport: {dates:[], series: []},
+   typeAssetReport: Map({dates:List(), series: OrderedMap()}),
    budgetExecutionReport: {dates: [], aIncome: [], eIncome: [], aExpense: [], eExpense:[], profit:[]},
    incomeByAccount: {dates:[], series: []},
    expenseByAccount: {dates:[], series: []},
@@ -79,7 +79,7 @@ export default function reportReducer(state = initialState, action) {
             return state.set('currencyAssetReport', action.payload);
         case GET_TYPEASSETREPORT_REQUEST:
         case GET_TYPEASSETREPORT_FAILURE:
-            return state.set('typeAssetReport', {dates:[], series: []});
+            return state.set('typeAssetReport', Map({dates:List(), series: OrderedMap()}));
         case GET_TYPEASSETREPORT_SUCCESS:
             return state.set('typeAssetReport', action.payload);
         case GET_INCOMEEVENTACCOUNTREPORT_REQUEST:
