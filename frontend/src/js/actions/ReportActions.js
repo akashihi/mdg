@@ -71,6 +71,37 @@ function reportDatesToParams(getState) {
     return '?' + jQuery.param(params);
 }
 
+export function loadSimpleAssetReport() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: GET_SIMPLEASSETREPORT_REQUEST,
+            payload: true
+        });
+
+        const url = '/api/report/asset/simple' + reportDatesToParams(getState);
+
+        fetch(url)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(function (json) {
+                const series = json.data.attributes.value.map((item) => {
+                    const dt = moment(item.date, 'YYYY-MM-DD');
+                    return [dt.valueOf(), item.value];
+                });
+                dispatch({
+                    type: GET_SIMPLEASSETREPORT_SUCCESS,
+                    payload: series
+                });
+            })
+            .catch(function (response) {
+                dispatch({
+                    type: GET_SIMPLEASSETREPORT_FAILURE,
+                    payload: response.json
+                })
+            });
+    }
+}
+
 export function loadTypeAssetReport() {
     return (dispatch, getState) => {
         dispatch({
@@ -133,6 +164,41 @@ export function loadTypeAssetReport() {
     }
 }
 
+function processIdentifiedInTimeReport(json, idMapping) {
+    const report = Immutable.fromJS(json);
+    const dates = report.map((item) => moment(item.get('date'), 'YYYY-MM-DD'));
+
+    const currencyReport = report.map(idMapping);
+
+    let idsMap = OrderedMap();
+    let emptyMap = OrderedMap();
+    currencyReport.forEach(item => {
+        idsMap = idsMap.set(item.get('id'), 0);
+        emptyMap = emptyMap.set(item.get('id'), List())
+    });
+
+    let datedSeries = OrderedMap();
+    currencyReport.forEach(item => {
+        const dt = item.get('date');
+        if (!datedSeries.has(dt)) {
+            datedSeries = datedSeries.set(dt, idsMap)
+        }
+        datedSeries = datedSeries.update(dt, entry => entry.set(item.get('id'), item.get('value')))
+    });
+
+    let series = OrderedMap(emptyMap);
+    datedSeries.valueSeq().forEach(item => {
+        item.forEach((v, k) => {
+            series = series.update(k, list => list.push(v))
+        })
+    });
+
+    return Map({
+        dates: dates,
+        series: series
+    })
+}
+
 export function loadCurrencyAssetReport() {
     return (dispatch, getState) => {
         dispatch({
@@ -148,81 +214,23 @@ export function loadCurrencyAssetReport() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                const report = Immutable.fromJS(json.data.attributes.value);
-                const dates = report.map((item) => moment(item.get('date'), 'YYYY-MM-DD'));
-                let idsMap = OrderedMap();
-                let emptyMap = OrderedMap();
-                report.forEach(item => {
-                    idsMap = idsMap.set(item.get('id'), 0);
+                const currencyMapper = item => {
                     if (state.currency.get('currencies').has(parseInt(item.get('id')))) {
-                        emptyMap = emptyMap.set(state.currency.get('currencies').get(parseInt(item.get('id'))).get('name'), List())
-                    } else {
-                        emptyMap = emptyMap.set(item.get('id'), List())
+                        return item.set('id', state.currency.get('currencies').get(parseInt(item.get('id'))).get('name'))
                     }
-                });
+                    return item
+                };
 
-                let datedSeries = OrderedMap();
-                report.forEach(item => {
-                    const dt = item.get('date');
-                    if (!datedSeries.has(dt)) {
-                        datedSeries = datedSeries.set(dt, idsMap)
-                    }
-                    datedSeries = datedSeries.update(dt, entry => entry.set(item.get('id'), item.get('value')))
-                });
-
-                let series = OrderedMap(emptyMap);
-                datedSeries.valueSeq().forEach(item => {
-                    item.forEach((v, k) => {
-                        let name = k;
-                        if (state.currency.get('currencies').has(parseInt(k))) {
-                            name = state.currency.get('currencies').get(parseInt(k)).get('name')
-                        }
-                        series = series.update(name, list => list.push(v))
-                    })
-                });
+                const result = processIdentifiedInTimeReport(json.data.attributes.value, currencyMapper);
 
                 dispatch({
                     type: GET_CURRENCYASSETREPORT_SUCCESS,
-                    payload: Map({
-                        dates: dates,
-                        series: series
-                    })
+                    payload: result
                 });
             })
             .catch(function (response) {
                 dispatch({
                     type: GET_CURRENCYASSETREPORT_FAILURE,
-                    payload: response.json
-                })
-            });
-    }
-}
-
-export function loadSimpleAssetReport() {
-    return (dispatch, getState) => {
-        dispatch({
-            type: GET_SIMPLEASSETREPORT_REQUEST,
-            payload: true
-        });
-
-        const url = '/api/report/asset/simple' + reportDatesToParams(getState);
-
-        fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json) {
-                const series = json.data.attributes.value.map((item) => {
-                    const dt = moment(item.date, 'YYYY-MM-DD');
-                    return [dt.valueOf(), item.value];
-                });
-                dispatch({
-                    type: GET_SIMPLEASSETREPORT_SUCCESS,
-                    payload: series
-                });
-            })
-            .catch(function (response) {
-                dispatch({
-                    type: GET_SIMPLEASSETREPORT_FAILURE,
                     payload: response.json
                 })
             });
@@ -243,47 +251,18 @@ export function loadIncomeEventAccountReport() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                var report = json.data.attributes.value
-                var dates = report.map((item) => moment(item.date, 'YYYY-MM-DD'))
-                var series = {}
-                report.forEach((dtEntry) => {
-                    dtEntry.entries.forEach((item) => {
-                        var accountObject = state.account.incomeAccountList.find((account) => account.id == item.account_id)
-                        if (accountObject) {
-                            var account = accountObject.attributes.name
-                        } else {
-                            account = item.account_id
-                        }
-                        if (!(account in series)) {
-                            series[account] = []
-                        }
-                    })
-                })
-                report.forEach((dtEntry) => {
-                    var visited = []
-                    dtEntry.entries.forEach((item) => {
-                        var accountObject = state.account.incomeAccountList.find((account) => account.id == item.account_id)
-                        if (accountObject) {
-                            var account = accountObject.attributes.name
-                        } else {
-                            account = item.account_id
-                        }
-                        series[account].push(item.value)
-                        visited.push(account)
-                    })
-                    // Stuff skipped values
-                    for (var type in series) {
-                        if (!visited.find((item) => item == type)) {
-                            series[type].push(0)
-                        }
+                const accountMapper = item => {
+                    if (state.account.get('accountList').has(parseInt(item.get('id')))) {
+                        return item.set('id', state.account.get('accountList').get(parseInt(item.get('id'))).get('name'))
                     }
-                })
+                    return item
+                };
+
+                const result = processIdentifiedInTimeReport(json.data.attributes.value, accountMapper);
+
                 dispatch({
                     type: GET_INCOMEEVENTACCOUNTREPORT_SUCCESS,
-                    payload: {
-                        dates: dates,
-                        series: series
-                    }
+                    payload: result
                 });
             })
             .catch(function (response) {

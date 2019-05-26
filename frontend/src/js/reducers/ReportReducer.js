@@ -41,8 +41,8 @@ const initialState = Map({
    currencyAssetReport: Map({dates:List(), series: OrderedMap()}),
    typeAssetReport: Map({dates:List(), series: OrderedMap()}),
    budgetExecutionReport: {dates: [], aIncome: [], eIncome: [], aExpense: [], eExpense:[], profit:[]},
-   incomeByAccount: {dates:[], series: []},
-   expenseByAccount: {dates:[], series: []},
+   incomeByAccount: Map({dates:List(), series: OrderedMap()}),
+   expenseByAccount: Map({dates:List(), series: OrderedMap()}),
    incomeByAccountWeight: {date:'', series: []},
    expenseByAccountWeight: {date:'', series: []},
    startDate: moment().subtract(1, 'month'),
@@ -84,12 +84,12 @@ export default function reportReducer(state = initialState, action) {
             return state.set('typeAssetReport', action.payload);
         case GET_INCOMEEVENTACCOUNTREPORT_REQUEST:
         case GET_INCOMEEVENTACCOUNTREPORT_FAILURE:
-            return state.set('incomeByAccount', {dates:[], series: []});
+            return state.set('incomeByAccount', Map({dates:List(), series: OrderedMap()}));
         case GET_INCOMEEVENTACCOUNTREPORT_SUCCESS:
             return state.set('incomeByAccount', action.payload);
         case GET_EXPENSEEVENTACCOUNTREPORT_REQUEST:
         case GET_EXPENSEEVENTACCOUNTREPORT_FAILURE:
-            return state.set('expenseByAccount', {dates:[], series: []});
+            return state.set('expenseByAccount', Map({dates:List(), series: OrderedMap()}));
         case GET_EXPENSEEVENTACCOUNTREPORT_SUCCESS:
             return state.set('expenseByAccount', action.payload);
         case GET_INCOMEWEIGHTACCOUNTREPORT_REQUEST:
