@@ -38,7 +38,7 @@ import {
 const initialState = Map({
    totalsReport: List(),
    simpleAssetReport: [],
-   currencyAssetReport: {dates:[], series: []},
+   currencyAssetReport: Map({dates:List(), series: OrderedMap()}),
    typeAssetReport: Map({dates:List(), series: OrderedMap()}),
    budgetExecutionReport: {dates: [], aIncome: [], eIncome: [], aExpense: [], eExpense:[], profit:[]},
    incomeByAccount: {dates:[], series: []},
@@ -74,7 +74,7 @@ export default function reportReducer(state = initialState, action) {
             return state.set('simpleAssetReport', action.payload);
         case GET_CURRENCYASSETREPORT_REQUEST:
         case GET_CURRENCYASSETREPORT_FAILURE:
-            return state.set('currencyAssetReport', {dates:[], series: []});
+            return state.set('currencyAssetReport', Map({dates:List(), series: OrderedMap()}));
         case GET_CURRENCYASSETREPORT_SUCCESS:
             return state.set('currencyAssetReport', action.payload);
         case GET_TYPEASSETREPORT_REQUEST:

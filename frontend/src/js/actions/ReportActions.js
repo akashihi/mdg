@@ -85,7 +85,7 @@ export function loadTypeAssetReport() {
             .then(checkApiError)
             .then(function (json) {
                 const report = Immutable.fromJS(json.data.attributes.value);
-                const dates = report.map((item) => moment(item.date, 'YYYY-MM-DD'));
+                const dates = report.map((item) => moment(item.get('date'), 'YYYY-MM-DD'));
                 let idsMap = OrderedMap();
                 report.forEach(item => {
                     idsMap = idsMap.set(item.get('id'), 0)
@@ -148,47 +148,45 @@ export function loadCurrencyAssetReport() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                var report = json.data.attributes.value
-                var dates = report.map((item) => moment(item.date, 'YYYY-MM-DD'))
-                var series = {}
-                report.forEach((dtEntry) => {
-                    dtEntry.entries.forEach((item) => {
-                        var currencyObject = state.currency.currencyList.find((currency) => currency.id == item.currency)
-                        if (currencyObject) {
-                            var currency = currencyObject.attributes.name
-                        } else {
-                            currency = item.currency
-                        }
-                        if (!(currency in series)) {
-                            series[currency] = []
-                        }
-                    })
-                })
-                report.forEach((dtEntry) => {
-                    var visited = []
-                    dtEntry.entries.forEach((item) => {
-                        var currencyObject = state.currency.currencyList.find((currency) => currency.id == item.currency)
-                        if (currencyObject) {
-                            var currency = currencyObject.attributes.name
-                        } else {
-                            currency = item.currency
-                        }
-                        series[currency].push(item.value)
-                        visited.push(currency)
-                    })
-                    // Stuff skipped values
-                    for (var type in series) {
-                        if (!visited.find((item) => item == type)) {
-                            series[type].push(0)
-                        }
+                const report = Immutable.fromJS(json.data.attributes.value);
+                const dates = report.map((item) => moment(item.get('date'), 'YYYY-MM-DD'));
+                let idsMap = OrderedMap();
+                let emptyMap = OrderedMap();
+                report.forEach(item => {
+                    idsMap = idsMap.set(item.get('id'), 0);
+                    if (state.currency.get('currencies').has(parseInt(item.get('id')))) {
+                        emptyMap = emptyMap.set(state.currency.get('currencies').get(parseInt(item.get('id'))).get('name'), List())
+                    } else {
+                        emptyMap = emptyMap.set(item.get('id'), List())
                     }
-                })
+                });
+
+                let datedSeries = OrderedMap();
+                report.forEach(item => {
+                    const dt = item.get('date');
+                    if (!datedSeries.has(dt)) {
+                        datedSeries = datedSeries.set(dt, idsMap)
+                    }
+                    datedSeries = datedSeries.update(dt, entry => entry.set(item.get('id'), item.get('value')))
+                });
+
+                let series = OrderedMap(emptyMap);
+                datedSeries.valueSeq().forEach(item => {
+                    item.forEach((v, k) => {
+                        let name = k;
+                        if (state.currency.get('currencies').has(parseInt(k))) {
+                            name = state.currency.get('currencies').get(parseInt(k)).get('name')
+                        }
+                        series = series.update(name, list => list.push(v))
+                    })
+                });
+
                 dispatch({
                     type: GET_CURRENCYASSETREPORT_SUCCESS,
-                    payload: {
+                    payload: Map({
                         dates: dates,
                         series: series
-                    }
+                    })
                 });
             })
             .catch(function (response) {
