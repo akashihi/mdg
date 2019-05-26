@@ -35,7 +35,7 @@ export default class AssetReportType extends Component {
             },
             yAxis: {
                 title: {
-                    text: 'CZK'
+                    text:  this.props.currency
                 },
                 labels: {
                     formatter: function () {

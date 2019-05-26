@@ -24,6 +24,14 @@ export default class ReportsPage extends Component {
 
     render() {
       const props = this.props;
+
+
+      let primaryCurrencyName = 'Amount';
+      if (props.currencies.has(props.primaryCurrency)) {
+        primaryCurrencyName = props.currencies.get(props.primaryCurrency).get('name');
+      }
+
+
         return (
           <Fragment>
             <Grid fluid>
@@ -56,10 +64,10 @@ export default class ReportsPage extends Component {
                 <Tab label='Incomes report' value='income'/>
                 <Tab label='Expenses report' value='expenses'/>
             </Tabs>
-            {this.state.tabValue == 'asset' && <AssetReportCollection actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency} assetReportType={props.assetReportType}/>}
-            {this.state.tabValue == 'budget' && <BudgetExecutionReport budgetExecution={props.budgetExecution}/>}
-            {this.state.tabValue == 'income' && <IncomeReportCollection actions={props.actions} incomeByAccount={props.incomeByAccount} incomeByAccountWeight={props.incomeByAccountWeight}/>}
-            {this.state.tabValue == 'expenses' && <ExpenseReportCollection actions={props.actions} expenseByAccount={props.expenseByAccount} expenseByAccountWeight={props.expenseByAccountWeight}/>}
+            {this.state.tabValue == 'asset' && <AssetReportCollection currencyName={primaryCurrencyName} actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency} assetReportType={props.assetReportType}/>}
+            {this.state.tabValue == 'budget' && <BudgetExecutionReport currencyName={primaryCurrencyName} budgetExecution={props.budgetExecution}/>}
+            {this.state.tabValue == 'income' && <IncomeReportCollection currencyName={primaryCurrencyName} actions={props.actions} incomeByAccount={props.incomeByAccount} incomeByAccountWeight={props.incomeByAccountWeight}/>}
+            {this.state.tabValue == 'expenses' && <ExpenseReportCollection currencyName={primaryCurrencyName} actions={props.actions} expenseByAccount={props.expenseByAccount} expenseByAccountWeight={props.expenseByAccountWeight}/>}
           </Fragment>
         );
     }

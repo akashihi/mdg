@@ -30,7 +30,7 @@ export default class AssetReportSimple extends Component {
           },
           yAxis: {
               title: {
-                  text: 'CZK'
+                  text: this.props.currency
               },
               labels: {
                   formatter: function () {
@@ -39,7 +39,7 @@ export default class AssetReportSimple extends Component {
               }
           },
           tooltip: {
-              pointFormat: 'You had <b>{point.y:,.0f}</b> in primary currency'
+              pointFormat: 'You had <b>{point.y:,.0f}</b> in ' + this.props.currency
           },
           plotOptions: {
               area: {

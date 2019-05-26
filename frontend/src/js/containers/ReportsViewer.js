@@ -17,6 +17,8 @@ const mapStateToProps = (state) => {
         startDate: state.report.get('startDate'),
         endDate: state.report.get('endDate'),
         granularity: state.report.get('granularity'),
+        primaryCurrency: state.setting.get('primaryCurrency'),
+        currencies: state.currency.get('currencies')
     }
 };
 
