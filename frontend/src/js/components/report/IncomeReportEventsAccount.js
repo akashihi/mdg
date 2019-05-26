@@ -18,9 +18,7 @@ export default class IncomeReportEventsAccount extends Component {
     }
 
     render() {
-        const series = this.props.data.get('series').map((v, k) => {
-            return {name: k, data: v.toJS()}
-        }).valueSeq().toJS();
+        const series = this.props.data.get('series').map((v, k) => { return {name: k, data: v.toJS()} }).valueSeq().toJS();
 
         const options = {
             chart: {

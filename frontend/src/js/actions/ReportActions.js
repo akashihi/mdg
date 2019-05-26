@@ -237,6 +237,16 @@ export function loadCurrencyAssetReport() {
     }
 }
 
+
+function getAccountMapper(state) {
+    return item => {
+        if (state.account.get('accountList').has(parseInt(item.get('id')))) {
+            return item.set('id', state.account.get('accountList').get(parseInt(item.get('id'))).get('name'))
+        }
+        return item
+    };
+}
+
 export function loadIncomeEventAccountReport() {
     return (dispatch, getState) => {
         dispatch({
@@ -251,14 +261,7 @@ export function loadIncomeEventAccountReport() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                const accountMapper = item => {
-                    if (state.account.get('accountList').has(parseInt(item.get('id')))) {
-                        return item.set('id', state.account.get('accountList').get(parseInt(item.get('id'))).get('name'))
-                    }
-                    return item
-                };
-
-                const result = processIdentifiedInTimeReport(json.data.attributes.value, accountMapper);
+                const result = processIdentifiedInTimeReport(json.data.attributes.value, getAccountMapper(state));
 
                 dispatch({
                     type: GET_INCOMEEVENTACCOUNTREPORT_SUCCESS,
@@ -288,47 +291,11 @@ export function loadExpenseEventAccountReport() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                var report = json.data.attributes.value
-                var dates = report.map((item) => moment(item.date, 'YYYY-MM-DD'))
-                var series = {}
-                report.forEach((dtEntry) => {
-                    dtEntry.entries.forEach((item) => {
-                        var accountObject = state.account.expenseAccountList.find((account) => account.id == item.account_id)
-                        if (accountObject) {
-                            var account = accountObject.attributes.name
-                        } else {
-                            account = item.account_id
-                        }
-                        if (!(account in series)) {
-                            series[account] = []
-                        }
-                    })
-                })
-                report.forEach((dtEntry) => {
-                    var visited = []
-                    dtEntry.entries.forEach((item) => {
-                        var accountObject = state.account.expenseAccountList.find((account) => account.id == item.account_id)
-                        if (accountObject) {
-                            var account = accountObject.attributes.name
-                        } else {
-                            account = item.account_id
-                        }
-                        series[account].push(item.value)
-                        visited.push(account)
-                    })
-                    // Stuff skipped values
-                    for (var type in series) {
-                        if (!visited.find((item) => item == type)) {
-                            series[type].push(0)
-                        }
-                    }
-                })
+                const result = processIdentifiedInTimeReport(json.data.attributes.value, getAccountMapper(state));
+
                 dispatch({
                     type: GET_EXPENSEEVENTACCOUNTREPORT_SUCCESS,
-                    payload: {
-                        dates: dates,
-                        series: series
-                    }
+                    payload: result
                 });
             })
             .catch(function (response) {
