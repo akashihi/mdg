@@ -307,6 +307,22 @@ export function loadExpenseEventAccountReport() {
     }
 }
 
+function processWeightAccountReport(json, state) {
+    const report = Immutable.fromJS(json);
+    const date = moment(report.first().get('date'), 'YYYY-MM-DD');
+    const accountReport = report.map(getAccountMapper(state));
+
+    let series = List();
+    accountReport.forEach(item => {
+        series = series.push({name: item.get('id'), y: item.get('value')})
+    });
+
+    return Map({
+        date: date,
+        series: series
+    })
+}
+
 export function loadIncomeWeightAccountReport() {
     return (dispatch, getState) => {
         dispatch({
@@ -321,27 +337,11 @@ export function loadIncomeWeightAccountReport() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                var report = json.data.attributes.value
-                var date = moment(report[0].date, 'YYYY-MM-DD')
-                var series = []
-                report[0].entries.forEach((item) => {
-                    var accountObject = state.account.incomeAccountList.find((account) => account.id == item.account_id)
-                    if (accountObject) {
-                        var account = accountObject.attributes.name
-                    } else {
-                        account = item.account_id
-                    }
-                    series.push({
-                        name: account,
-                        y: item.value
-                    })
-                })
+                const result = processWeightAccountReport(json.data.attributes.value, state);
+
                 dispatch({
                     type: GET_INCOMEWEIGHTACCOUNTREPORT_SUCCESS,
-                    payload: {
-                        date: date,
-                        series: series
-                    }
+                    payload: result
                 });
             })
             .catch(function (response) {
@@ -367,27 +367,10 @@ export function loadExpenseWeightAccountReport() {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json) {
-                var report = json.data.attributes.value
-                var date = moment(report[0].date, 'YYYY-MM-DD')
-                var series = []
-                report[0].entries.forEach((item) => {
-                    var accountObject = state.account.expenseAccountList.find((account) => account.id == item.account_id)
-                    if (accountObject) {
-                        var account = accountObject.attributes.name
-                    } else {
-                        account = item.account_id
-                    }
-                    series.push({
-                        name: account,
-                        y: item.value
-                    })
-                })
+                const result = processWeightAccountReport(json.data.attributes.value, state);
                 dispatch({
                     type: GET_EXPENSEWEIGHTACCOUNTREPORT_SUCCESS,
-                    payload: {
-                        date: date,
-                        series: series
-                    }
+                    payload: result
                 });
             })
             .catch(function (response) {
