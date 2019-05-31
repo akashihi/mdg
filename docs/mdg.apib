@@ -44,7 +44,7 @@ Report may have some value, related to point in time, not a entity. For that cas
 
 ## IdentifiedValueInTime
 
-Combinateion of IdentifiedValue and ValueInTime
+Combination of IdentifiedValue and ValueInTime
 
 + Attributes
     + value (number, required) - Some value, usually decimal
@@ -60,6 +60,15 @@ Data structure for a single totals report entry, linked to a specific asset type
     + primary_balance (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
     + value (array[IdentifiedValue, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency. Entry id is a currency id of the sum above.
 
+## BudgetReportEntry
+
+Data structure for a single totals report entry, linked to a specific asset type.
+
++ Attributes
+    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid (beginning of a reported budget)
+    + income (BudgetPair, required) - Value of expected/actual income for that budget
+    + expense (BudgetPair, required) - Value of expected/actual expense for that budget
+    + profit (number, required) - Increase of the asset balance between first and last dates of the budget.
 
 # Group Settings
 
@@ -1357,6 +1366,33 @@ Various reporting data, mostly read-only
 
 + Attributes
     + value (array[ValueInTime], required) - Array of ValueInTime, where value is a sum of all asset accounts for a specified date. 
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json)
+
+        {
+            "data": {
+                "type": "report",
+                "id": 1,
+                "attributes": {
+                    "value": [
+                        {"date": "2018-01-01", "value": 9000},
+                        {"date": "2018-02-01", "value": 100.500}
+                    ]
+                }
+            }
+        }
+
+## BudgetExecutionReport [/report/budget/execution?startDate={startDate}&endDate={endDate}]
+
++ Parameters
+  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format. It will include budget, that may have been started earlier, then that date, but have ended after it.
+  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format. And vice versa, budget, that have been finished after that date, but it's beginning is earlier, will be included.
+
+
++ Attributes
+    + value (array[BudgetReportEntry], required) - Array of BudgetReportEntry, where value is a budget execution data for a specified date.
 
 ### View a report [GET]
 

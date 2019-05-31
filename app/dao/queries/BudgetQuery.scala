@@ -25,6 +25,19 @@ object BudgetQuery {
       .result
   }
 
+  private def budgetRangeFilter(term_beginning: LocalDate, term_end: LocalDate) = {
+    budgets.filter(b => b.term_beginning <= term_end && b.term_end >= term_beginning)
+  }
+
+  /**
+    * Looks for a budgets matching the specified range.
+    * @param term_beginning period first day
+    * @param term_end period last day
+    * @return List of budgets overlapping with that period
+    */
+  def findBudgetsInRange(term_beginning: LocalDate, term_end: LocalDate): DBIO[Seq[Budget]] = budgetRangeFilter(term_beginning, term_end).result
+
+
   /**
     * Looks for a budgets, that overlap with specified period.
     * @param term_beginning period first day
@@ -32,14 +45,7 @@ object BudgetQuery {
     * @return first found overlapping budget
     */
   def findOverlapping(term_beginning: LocalDate,
-                      term_end: LocalDate): DBIO[Option[Budget]] = {
-    budgets
-      .filter(b =>
-        b.term_beginning <= term_end && b.term_end >= term_beginning)
-      .take(1)
-      .result
-      .headOption
-  }
+                      term_end: LocalDate): DBIO[Option[Budget]] = budgetRangeFilter(term_beginning, term_end).take(1).result.headOption
 
   /**
     * Adds budget to the database.
