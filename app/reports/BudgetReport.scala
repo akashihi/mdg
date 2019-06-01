@@ -37,7 +37,7 @@ class BudgetReport @Inject() (protected val sql: SqlDatabase)
       p <- profits
     } yield i.map(inc => BudgetReportEntry(inc._1, BudgetPair(ei.getOrElse(inc._1, 0), inc._2), BudgetPair(ee.getOrElse(inc._1, 0), e.getOrElse(inc._1, 0)), p.getOrElse(inc._1, 0)))
 
-    val sortedEntries = entries.map(_.toSeq.sortWith((l, r) => l.date.isAfter(r.date)))
+    val sortedEntries = entries.map(_.toSeq.sortWith((l, r) => l.date.isBefore(r.date)))
     sortedEntries.map(GenericReportDTO(Some("budget_execution"), _))
   }
 }
