@@ -12,15 +12,15 @@ export default class BudgetEntry extends Component {
         this.state = {entry: props.entry}
     }
     onSave() {
-        this.setState({entry: this.state.entry.set('loading', true)}); //We need to set it here, cause global setter will not update instance state.
-        this.props.saveBudgetEntryChange(this.props.id, this.state.entry);
+        const e = this.state.entry.set('loading', true);
+        this.setState({entry: e}, () => this.props.saveBudgetEntryChange(this.props.id, this.state.entry)); //We need to set it here, cause global setter will not update instance state.
     }
 
     onEdit(field, value, shouldSave) {
-        this.setState({entry: this.state.entry.set(field, value)});
-        if (shouldSave) {
+        const e = this.state.entry.set(field, value);
+        this.setState({entry: e}, () => {if (shouldSave) {
             ::this.onSave()
-        }
+        }});
     }
 
     render() {
