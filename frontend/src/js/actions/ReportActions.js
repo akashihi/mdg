@@ -8,6 +8,9 @@ import {
     GET_TOTALSREPORT_REQUEST,
     GET_TOTALSREPORT_SUCCESS,
     GET_TOTALSREPORT_FAILURE,
+    GET_BUDGETREPORT_REQUEST,
+    GET_BUDGETREPORT_SUCCESS,
+    GET_BUDGETREPORT_FAILURE,
     GET_SIMPLEASSETREPORT_REQUEST,
     GET_SIMPLEASSETREPORT_SUCCESS,
     GET_SIMPLEASSETREPORT_FAILURE,
@@ -69,6 +72,39 @@ function reportDatesToParams(getState) {
         granularity: state.report.get('granularity')
     };
     return '?' + jQuery.param(params);
+}
+
+export function loadBudgetExecutionReport() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: GET_BUDGETREPORT_REQUEST,
+            payload: true
+        });
+
+        const url = '/api/report/budget/execution' + reportDatesToParams(getState);
+
+        fetch(url)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(function (json) {
+                const dates = Immutable.fromJS(json.data.attributes.value.map(item => item.date));
+                const aIncome = Immutable.fromJS(json.data.attributes.value.map(item => item.income.actual));
+                const eIncome = Immutable.fromJS(json.data.attributes.value.map(item => item.income.expected));
+                const aExpense = Immutable.fromJS(json.data.attributes.value.map(item => -1*item.expense.actual));
+                const eExpense = Immutable.fromJS(json.data.attributes.value.map(item => -1*item.expense.expected));
+                const profit = Immutable.fromJS(json.data.attributes.value.map(item => item.profit));
+                dispatch({
+                    type: GET_BUDGETREPORT_SUCCESS,
+                    payload: Map({dates: dates, aIncome: aIncome, eIncome: eIncome, aExpense: aExpense, eExpense: eExpense, profit: profit})
+                });
+            })
+            .catch(function (response) {
+                dispatch({
+                    type: GET_BUDGETREPORT_FAILURE,
+                    payload: response.json
+                })
+            });
+    }
 }
 
 export function loadSimpleAssetReport() {
@@ -388,6 +424,7 @@ export function setReportGranularity(granularity) {
             type: SET_REPORT_GRANULARITY,
             payload: granularity
         });
+        dispatch(loadBudgetExecutionReport());
         dispatch(loadTypeAssetReport());
         dispatch(loadCurrencyAssetReport());
         dispatch(loadSimpleAssetReport());
@@ -404,6 +441,7 @@ export function setReportStartDate(startDate) {
             type: SET_REPORT_STARTDATE,
             payload: moment(startDate)
         });
+        dispatch(loadBudgetExecutionReport());
         dispatch(loadTypeAssetReport());
         dispatch(loadCurrencyAssetReport());
         dispatch(loadSimpleAssetReport());
@@ -420,6 +458,7 @@ export function setReportEndDate(endDate) {
             type: SET_REPORT_ENDDATE,
             payload: moment(endDate)
         });
+        dispatch(loadBudgetExecutionReport());
         dispatch(loadTypeAssetReport());
         dispatch(loadCurrencyAssetReport());
         dispatch(loadSimpleAssetReport());

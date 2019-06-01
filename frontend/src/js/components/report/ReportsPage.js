@@ -9,7 +9,7 @@ import FormControl from '@material-ui/core/FormControl';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 
 import AssetReportCollection from './AssetReportCollection'
-import BudgetExecutionReport from '../budget/BudgetExecutionReport'
+import BudgetExecutionReport from './BudgetExecutionReport'
 import IncomeReportCollection from './IncomeReportCollection'
 import ExpenseReportCollection from './ExpenseReportCollection'
 
@@ -65,7 +65,7 @@ export default class ReportsPage extends Component {
                 <Tab label='Expenses report' value='expenses'/>
             </Tabs>
             {this.state.tabValue == 'asset' && <AssetReportCollection currencyName={primaryCurrencyName} actions={props.actions} simpleAssetReport={props.simpleAssetReport} currencyAssetReport={props.assetReportCurrency} assetReportType={props.assetReportType}/>}
-            {this.state.tabValue == 'budget' && <BudgetExecutionReport currencyName={primaryCurrencyName} budgetExecution={props.budgetExecution}/>}
+            {this.state.tabValue == 'budget' && <BudgetExecutionReport currencyName={primaryCurrencyName} actions={props.actions} budgetExecution={props.budgetExecution}/>}
             {this.state.tabValue == 'income' && <IncomeReportCollection currencyName={primaryCurrencyName} actions={props.actions} incomeByAccount={props.incomeByAccount} incomeByAccountWeight={props.incomeByAccountWeight}/>}
             {this.state.tabValue == 'expenses' && <ExpenseReportCollection currencyName={primaryCurrencyName} actions={props.actions} expenseByAccount={props.expenseByAccount} expenseByAccountWeight={props.expenseByAccountWeight}/>}
           </Fragment>

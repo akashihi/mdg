@@ -14,6 +14,7 @@ export default class BudgetExecutionReport extends Component {
     container.style.height = '100%';
     container.style.width = '100%';
     this.chartComponent.current.chart.reflow();
+      this.props.actions.loadBudgetExecutionReport()
   }
 
     render() {
@@ -24,11 +25,11 @@ export default class BudgetExecutionReport extends Component {
               text: 'Budget execution'
           },
           xAxis: {
-              categories: report.dates,
+              categories: report.get('dates').toJS(),
           },
           yAxis: {
               title: {
-                  text: 'CZK'
+                  text:  this.props.currencyName
               },
               labels: {
                   formatter: function () {
@@ -48,31 +49,31 @@ export default class BudgetExecutionReport extends Component {
             {
               name: 'Actual income',
               type: 'column',
-              data: report.aIncome,
+              data: report.get('aIncome').toJS(),
               stack: 'actual'
             },
             {
                 name: 'Actual expense',
                 type: 'column',
-                data: report.aExpense,
+                data: report.get('aExpense').toJS(),
                 stack: 'actual'
             },
             {
               name: 'Expected income',
               type: 'column',
-              data: report.eIncome,
+              data: report.get('eIncome').toJS(),
               stack: 'expected'
             },
             {
                 name: 'Expected expense',
                 type: 'column',
-                data: report.eExpense,
+                data: report.get('eExpense').toJS(),
                 stack: 'expected'
             },
             {
                 name: 'Profit',
                 type: 'spline',
-                data: report.profit
+                data: report.get('profit').toJS()
             }
         ]
 }
