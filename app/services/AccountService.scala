@@ -79,6 +79,16 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
     favorite = dto.favorite
   )
 
+  private def setDefaultCategory(d: AccountDTO): Future[AccountDTO] = {
+    if (d.account_type == AssetAccount && d.category_id.empty) {
+      val currentCategory = sql.query(CategoryQuery.findByName("Current", AssetAccount))
+      currentCategory.map(_.map(c => d.copy(category_id = c.id)).getOrElse(d))
+    }
+    else {
+      Future.successful(d)
+    }
+  }
+
   /**
     * Creates Account or reports error.
     * @param dto Account to create, if exists.
@@ -91,7 +101,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
       .map(validate)
       .flatMap(validationToXor)
 
-    val checkedCategory = EitherT(Future.successful(validDto)).flatMap(validateCategoryType)
+    val checkedCategory =  validDto.map(setDefaultCategory).transform.flatMap(validateCategoryType)
 
     val query = getAssetPropertyForAccountDto(validDto).map(p => AccountQuery.insertWithProperties(p) _).getOrElse(AccountQuery.insert _)
 
