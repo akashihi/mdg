@@ -28,8 +28,7 @@ object Validator {
     */
   def validate(account: AccountDTO): AccountValidation = {
     (AccountValidator.validateOpsFlag(account)
-      |@| AccountValidator.validateFavFlag(account)
-      |@| AccountValidator.validateAssetType(account)) { case _ => account }
+      |@| AccountValidator.validateFavFlag(account)) { case _ => account }
   }
 
   /**
