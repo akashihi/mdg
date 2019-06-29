@@ -20,10 +20,4 @@ object AccountValidator {
       "ACCOUNT_NONASSET_INVALIDFLAG".failureNel
     } else { account.success }
   }
-
-  def validateAssetType(account: AccountDTO): AccountValidation = {
-    if (account.asset_type.isDefined && account.account_type != AssetAccount) {
-      "ACCOUNT_NONASSET_INVALIDFLAG".failureNel
-    } else { account.success }
-  }
 }

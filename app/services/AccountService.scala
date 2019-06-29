@@ -47,12 +47,11 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
         .map(_.setScale(2, HALF_EVEN))
         .flatMap { primary_balance =>
           val properties = sql.query(AccountQuery.findPropertyById(account.id.get))
-          val propValue = properties.map(_.map(p => (p.operational, p.favorite, Some(p.asset_type))).getOrElse(false, false, Option.empty[AssetType]))
+          val propValue = properties.map(_.map(p => (p.operational, p.favorite)).getOrElse(false, false))
           val dto:Future[\/[String, AccountDTO]] = propValue.map(pv =>
             AccountDTO(
               account.id,
               account.account_type,
-              pv._3,
               account.currency_id,
               account.category_id,
               account.name,
@@ -77,9 +76,18 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
   def dtoToAssetAccountProperty(dto: AccountDTO): AssetAccountProperty = AssetAccountProperty(
     id = dto.id,
     operational = dto.operational,
-    favorite = dto.favorite,
-    asset_type = dto.asset_type.getOrElse(CurrentAssetAccount)
+    favorite = dto.favorite
   )
+
+  private def setDefaultCategory(d: AccountDTO): Future[AccountDTO] = {
+    if (d.account_type == AssetAccount && d.category_id.empty) {
+      val currentCategory = sql.query(CategoryQuery.findByName("Current", AssetAccount))
+      currentCategory.map(_.map(c => d.copy(category_id = c.id)).getOrElse(d))
+    }
+    else {
+      Future.successful(d)
+    }
+  }
 
   /**
     * Creates Account or reports error.
@@ -93,7 +101,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
       .map(validate)
       .flatMap(validationToXor)
 
-    val checkedCategory = EitherT(Future.successful(validDto)).flatMap(validateCategoryType)
+    val checkedCategory =  validDto.map(setDefaultCategory).transform.flatMap(validateCategoryType)
 
     val query = getAssetPropertyForAccountDto(validDto).map(p => AccountQuery.insertWithProperties(p) _).getOrElse(AccountQuery.insert _)
 

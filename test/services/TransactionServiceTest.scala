@@ -16,9 +16,9 @@ class TransactionServiceTest extends ParameterizedSpec with MockFactory {
   val rs= mock[RateService]
 
   val accounts = Array(
-    AccountDTO(Some(1L), IncomeAccount, None, 978, None, "EUR", 0, 0, false, false, false),
-    AccountDTO(Some(2L), ExpenseAccount, None, 840, None, "USD", 0, 0, false, false, false),
-    AccountDTO(Some(3L), AssetAccount, None, 203, None, "CZK", 0, 0, false, false, false)
+    AccountDTO(Some(1L), IncomeAccount, 978, None, "EUR", 0, 0, false, false, false),
+    AccountDTO(Some(2L), ExpenseAccount, 840, None, "USD", 0, 0, false, false, false),
+    AccountDTO(Some(3L), AssetAccount, 203, None, "CZK", 0, 0, false, false, false)
   )
 
   property("Transactions with same currency rebalanced precisely") {

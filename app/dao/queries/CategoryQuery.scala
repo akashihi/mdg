@@ -1,8 +1,9 @@
 package dao.queries
 
 import dao.tables.{Categories, CategoriesTree}
-import models.{Category, ClosureTable}
+import models.{AccountType, Category, ClosureTable}
 import slick.jdbc.PostgresProfile.api._
+import dao.tables.Accounts.accountTypeMapper
 
 import scala.concurrent.ExecutionContext
 
@@ -43,6 +44,10 @@ object CategoryQuery {
 
   def findById(id: Long): DBIO[Option[Category]] = {
     categories.filter(_.id === id).result.headOption
+  }
+
+  def findByName(name: String, account: AccountType): DBIO[Option[Category]] = {
+    categories.filter(_.name === name).filter(_.account_type === account).result.headOption
   }
 
   def update(a: Category)(implicit ec: ExecutionContext): DBIO[Option[Category]] = {
