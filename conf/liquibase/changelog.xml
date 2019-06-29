@@ -21,5 +21,6 @@
     <include file="17-assetaccounttype.sql" relativeToChangelogFile="true"/>
     <include file="18-category.sql" relativeToChangelogFile="true"/>
     <include file="19-errorassetcurrency.sql" relativeToChangelogFile="true"/>
+    <include file="20-assetcategory.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>
 
