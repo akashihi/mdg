@@ -39,6 +39,13 @@ class FinanceOverviewPanel extends Component {
           return '';
       };
 
+      const getCategory = function (id) {
+          const category = props.categoryList.get(id);
+          if (category) {
+              return category.get('name');
+          }
+          return 'Unknown asset';
+      };
 
       const primaryCurrencyCode = getCurrency(props.primaryCurrency);
 
@@ -61,7 +68,7 @@ class FinanceOverviewPanel extends Component {
             <Grid fluid>
               <Row style={{'fontSize': '0.9em'}}>
                 <Col xs={2} sm={2} md={2} lg={2}>
-                  <div style={{'textTransform': 'capitalize'}}>{item.asset_type}:</div>
+                  <div style={{'textTransform': 'capitalize'}}>{getCategory(item.category_id)}:</div>
                 </Col>
                 <Col xs={3} sm={3} md={3} lg={3}>
                   <span style={{color: color}}>{item.primary_balance.toFixed(2)}</span> {primaryCurrencyCode}
@@ -79,8 +86,17 @@ class FinanceOverviewPanel extends Component {
         const props = this.props;
 
         const sorted = props.totals.sort((l, r) => {
-          const typesInOrder = ['cash', 'current', 'savings', 'deposit', 'credit', 'debt', 'broker', 'tradable'];
-          return typesInOrder.indexOf(l.asset_type) - typesInOrder.indexOf(r.asset_type)
+            const lc = props.categoryList.get(l.category_id);
+            if (!lc) {
+                return 0;
+            }
+
+            const rc = props.categoryList.get(r.category_id);
+            if (!rc) {
+                return 0;
+            }
+
+            return lc.get('priority') - rc.get('priority');
         });
 
         const result = sorted.map((item) => this.renderAsset(props, item));

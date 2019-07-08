@@ -6,6 +6,7 @@ const mapStateToProps = (state) => {
     return {
         currencies: state.currency.get('currencies'),
         totals: state.report.get('totalsReport'),
+        categoryList: state.category.get('categoryList'),
         primaryCurrency: state.setting.get('primaryCurrency')
     }
 };
