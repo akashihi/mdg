@@ -34,12 +34,12 @@ object CategoryQuery {
     */
   def list(implicit ec: ExecutionContext): DBIO[Seq[Category]] = {
     val treeQuery = categoriesTree.filter(_.depth > 0).map(_.descendant).result
-    treeQuery.flatMap(tlc => categories.filterNot(_.id inSet  tlc).sortBy(_.priority.asc).result)
+    treeQuery.flatMap(tlc => categories.filterNot(_.id inSet  tlc).sortBy(c => (c.account_type.asc, c.priority.asc)).result)
   }
 
   def listChildren(c: Category)(implicit ec: ExecutionContext): DBIO[Seq[Category]] = {
     val query = categories join categoriesTree on (_.id === _.descendant) filter(q => q._2.ancestor === c.id.get) filter (q => q._2.depth === 1)
-    query.map(_._1).sortBy(_.priority.asc).result
+    query.map(_._1).sortBy(c => (c.account_type.asc, c.priority.asc)).result
   }
 
   def findById(id: Long): DBIO[Option[Category]] = {
