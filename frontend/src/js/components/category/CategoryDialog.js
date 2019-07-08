@@ -99,16 +99,17 @@ export default class CategoryDialog extends React.Component {
                                 helperText='Please select parent'
                                 margin='normal'
                                 component={TextField}
+                                disabled={values.account_type === 'asset'}
                                 className='common-field-width'>
                                 {::this.mapCategoryListToMenu(values.account_type)}
                                 ))}
                             </Field>
                             <br/>
-                            <Field type='number' name='priority' label='Ordering value' component={TextField}  className='common-field-width'/>
+                            <Field type='number' name='priority' label='Ordering value' component={TextField} className='common-field-width'/>
                             <ErrorMessage name='priority' component='div'/>
                         </DialogContent>
                         <DialogActions>
-                            <Button color='primary' disabled={props.full} variant='contained'
+                            <Button color='primary' disabled={props.full || values.account_type === 'asset'} variant='contained'
                                     onClick={::this.onDeleteClick}>Delete</Button>
                             <Button color='primary' disabled={isSubmitting} onClick={submitForm}>Save</Button>
                             <Button color='secondary' onClick={::this.onCancelClick}>Cancel</Button>

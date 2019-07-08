@@ -10,21 +10,25 @@ export default class CategoryViewerWidget extends Component {
     this.props.actions.createCategory()
   }
 
+  categoryFormatName(category) {
+      return category.get('name') + '(' + category.get('account_type') + ')';
+  }
+
   categoryToTree(category, id) {
     
     if (category.has('children')) {
       return {
         id: id,
-        value: category.get('name'),
+        value: this.categoryFormatName(category),
         nodes: category.get('children').map(::this.categoryToTree).valueSeq()
       }
     } else {
-        return {id: id, value: category.get('name')}
+        return {id: id, value: this.categoryFormatName(category)}
     }
   }
 
   render() {
-    var props = this.props
+    const props = this.props;
 
     if (props.error) {
       return (<h1>Error loading category list</h1>)
@@ -34,7 +38,7 @@ export default class CategoryViewerWidget extends Component {
       return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
     }
 
-    var tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS()
+    const tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS();
 
     return (
       <Fragment>
