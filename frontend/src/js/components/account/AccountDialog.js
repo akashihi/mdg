@@ -47,7 +47,6 @@ export default class AccountDialog extends React.Component {
 
         var initialValues = {
           account_type: props.account.get('account_type'),
-          asset_type: props.account.get('asset_type') ? props.account.get('asset_type') : 'current',
           name: props.account.get('name'),
           currency_id: props.account.get('currency_id'),
           category_id: props.account.get('category_id') ? props.account.get('category_id') : -1,
@@ -83,26 +82,6 @@ export default class AccountDialog extends React.Component {
                   <MenuItem key='expense' value='expense'>Expense account</MenuItem>
               </Field>
               <ErrorMessage name='account_type' component='div'/>
-              <Field
-                  type='text'
-                  name='asset_type'
-                  label='Asset type'
-                  value={values.asset_type}
-                  select
-                  disabled={values.account_type !== 'asset'}
-                  helperText='Please select asset type'
-                  margin='normal'
-                  component={TextField}
-                  className='common-field-width'>
-                  <MenuItem key='cash' value='cash'>Cash account</MenuItem>
-                  <MenuItem key='current' value='current'>Current account</MenuItem>
-                  <MenuItem key='savings' value='savings'>Savings account</MenuItem>
-                  <MenuItem key='deposit' value='deposit'>Deposit account</MenuItem>
-                  <MenuItem key='credit' value='credit'>Credit</MenuItem>
-                  <MenuItem key='debt' value='debt'>Debt</MenuItem>
-                  <MenuItem key='broker' value='broker'>Trading account</MenuItem>
-                  <MenuItem key='tradable' value='tradable'>Tradable asset</MenuItem>
-              </Field>
               <Field type='text' name='name' label='Account name' value={values.name} component={TextField} className='common-field-width'/>
               <ErrorMessage name='name' component='div'/>
               <Field
@@ -126,7 +105,6 @@ export default class AccountDialog extends React.Component {
                   select
                   helperText='Please select owning category'
                   margin='normal'
-                  disabled={values.account_type === 'asset'}
                   component={TextField}
                   className='common-field-width'>
                   {::this.mapCategoryListToMenu(props.categoryList.filter((v) => v.get('account_type') === values.account_type))}
