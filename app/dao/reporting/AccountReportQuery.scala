@@ -10,6 +10,6 @@ object AccountReportQuery {
   def getTotalsByTypeAndCurrency: DBIO[Seq[(Long, Long, BigDecimal)]] = sql"""
     select a.currency_id, a.category_id, sum(a.balance)
     from account as a
-    where a.hidden = 'f' and a.balance <> 0
+    where a.hidden = 'f' and a.balance <> 0 and a.account_type = 'asset'
     group by a.category_id, a.currency_id;""".as[(Long, Long, BigDecimal)]
 }
