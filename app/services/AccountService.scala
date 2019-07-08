@@ -32,10 +32,10 @@ class AccountService @Inject() (protected val rs: RateService, protected val ts:
 
   private def validateCategoryType(account: AccountDTO): ErrorF[AccountDTO] = {
     if (account.category_id.isEmpty) {
-      var result: \/[String, AccountDTO] = account.right
+      val result: \/[String, AccountDTO] = account.right
       EitherT(Future.successful(result))
     } else {
-      var categoryQuery = CategoryQuery.findById(account.category_id.get).map(_.fromOption("CATEGORY_NOT_FOUND"))
+      val categoryQuery = CategoryQuery.findById(account.category_id.get).map(_.fromOption("CATEGORY_NOT_FOUND"))
       EitherT(sql.query(categoryQuery))
         .map(c => if (c.account_type == account.account_type) { account.right } else { "CATEGORY_INVALID_TYPE".left }).flatMapF(Future.successful)
     }
