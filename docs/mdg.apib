@@ -56,7 +56,7 @@ Combination of IdentifiedValue and ValueInTime
 Data structure for a single totals report entry, linked to a specific asset type.
 
 + Attributes
-    + asset_type (string, required) - Asset type name
+    + category_id (number, required) - Asset category
     + primary_balance (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
     + value (array[IdentifiedValue, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency. Entry id is a currency id of the sum above.
 
@@ -501,7 +501,7 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
                         "type": "category",
                         "attributes": {
                             "parent_id": 4,
-                            "name": "Bnouses",
+                            "name": "Bonuses",
                             "priority": 1,
                             "account_type": "income"
                         }
@@ -554,16 +554,6 @@ Resources related to account management
     + hidden (boolean, optional) - Marks deleted accounts
     + favorite (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
     + operational (boolean, optional) - Marks account as operational. Applicable only to the 'asset' accounts
-    + asset_type (enum[string], optional) - Actual type of asset, hold on that account. Only valid accounts with type `asset` and should be ignored for other types. If omitted, defaults to 'current'
-      + Members
-        + `cash`       - actually cash in hands.
-        + `current`    - bank account with ability to immediately pay from it. This covers non-credit bank cards too.
-        + `savings`    - bank account that have a limitation on accessing it, but not term bounded.
-        + `deposit`    - A savings account with term, so money could not be used before that term
-        + `credit`     - Account to hold a track of money, owed to somebody else.
-        + `debt`       - Account to hold a track of money, use owed and now debiting.
-        + `tradable`   - Represents all possible tradable assets, like bonds, stocks and so on.
-        + `broker`     - Current account at your broker.
 
 ### View an account detail [GET]
 
@@ -586,7 +576,7 @@ Resources related to account management
 
 ### Modify account data [PUT]
 
-Only `hidden`, `name`, `category_id`, `favorite`, `operational` and 'asset_type' fields could be changed. Values in other fields will be silently ignored.
+Only `hidden`, `name`, `category_id`, `favorite` and `operational` fields could be changed. Values in other fields will be silently ignored.
 
 + Request (application/vnd.mdg+json)
 
@@ -660,7 +650,6 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
                         "account_type": "asset",
                         "currency_id": 978,
                         "name": "Savings EUR",
-                        "asset_type": "savings",
                         "primary_balance": 10100,
                         "balance": 9000
                     }
