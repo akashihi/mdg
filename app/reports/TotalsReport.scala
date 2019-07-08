@@ -14,7 +14,7 @@ import scala.language.postfixOps
 
 class TotalsReport @Inject() (protected val rs: RateService, protected val sql: SqlDatabase)
                              (implicit ec: SqlExecutionContext) {
-  def calculate(): Future[Map[String,(BigDecimal,Seq[(Long,BigDecimal)])]] = {
+  def calculate(): Future[Map[Long,(BigDecimal,Seq[(Long,BigDecimal)])]] = {
     val values = sql.query(AccountReportQuery.getTotalsByTypeAndCurrency)
     val withRate = values.map(
       _.map(
