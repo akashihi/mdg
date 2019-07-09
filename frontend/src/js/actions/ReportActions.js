@@ -138,68 +138,6 @@ export function loadSimpleAssetReport() {
     }
 }
 
-export function loadTypeAssetReport() {
-    return (dispatch, getState) => {
-        dispatch({
-            type: GET_TYPEASSETREPORT_REQUEST,
-            payload: true
-        });
-
-        const url = '/api/report/asset/type' + reportDatesToParams(getState);
-
-        fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json) {
-                const report = Immutable.fromJS(json.data.attributes.value);
-                const dates = report.map((item) => moment(item.get('date'), 'YYYY-MM-DD'));
-                let idsMap = OrderedMap();
-                report.forEach(item => {
-                    idsMap = idsMap.set(item.get('id'), 0)
-                });
-
-                let datedSeries = OrderedMap();
-                report.forEach(item => {
-                    const dt = item.get('date');
-                    if (!datedSeries.has(dt)) {
-                        datedSeries = datedSeries.set(dt, idsMap)
-                    }
-                    datedSeries = datedSeries.update(dt, entry => entry.set(item.get('id'), item.get('value')))
-                });
-
-                let series = OrderedMap(OrderedMap({
-                    cash: List(),
-                    current: List(),
-                    savings: List(),
-                    deposit: List(),
-                    credit: List(),
-                    debt: List(),
-                    broker: List(),
-                    tradable: List()
-                }));
-                datedSeries.valueSeq().forEach(item => {
-                    item.forEach((v, k) => {
-                        series = series.update(k, list => list.push(v))
-                    })
-                });
-
-                dispatch({
-                    type: GET_TYPEASSETREPORT_SUCCESS,
-                    payload: Map({
-                        dates: dates,
-                        series: series
-                    })
-                });
-            })
-            .catch(function (response) {
-                dispatch({
-                    type: GET_TYPEASSETREPORT_FAILURE,
-                    payload: response.json
-                })
-            });
-    }
-}
-
 function processIdentifiedInTimeReport(json, idMapping) {
     const report = Immutable.fromJS(json);
     const dates = report.map((item) => moment(item.get('date'), 'YYYY-MM-DD'));
@@ -233,6 +171,45 @@ function processIdentifiedInTimeReport(json, idMapping) {
         dates: dates,
         series: series
     })
+}
+
+export function loadTypeAssetReport() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: GET_TYPEASSETREPORT_REQUEST,
+            payload: true
+        });
+
+        const state = getState();
+
+        const url = '/api/report/asset/type' + reportDatesToParams(getState);
+
+        fetch(url)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(function (json) {
+                const categoryMapper = item => {
+                    console.log(parseInt(item.get('id')));
+                    if (state.category.get('categoryList').has(parseInt(item.get('id')))) {
+                        return item.set('id', state.category.get('categoryList').get(parseInt(item.get('id'))).get('name'));
+                    }
+                    return item
+                };
+
+                const result = processIdentifiedInTimeReport(json.data.attributes.value, categoryMapper);
+
+                dispatch({
+                    type: GET_TYPEASSETREPORT_SUCCESS,
+                    payload: result
+                });
+            })
+            .catch(function (response) {
+                dispatch({
+                    type: GET_TYPEASSETREPORT_FAILURE,
+                    payload: response.json
+                })
+            });
+    }
 }
 
 export function loadCurrencyAssetReport() {
