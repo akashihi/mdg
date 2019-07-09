@@ -27,7 +27,7 @@ class AssetReport @Inject() (protected val sql: SqlDatabase)
     entries.map(GenericReportDTO(Some("asset_by_currency"), _))
   }
 
-  def assetByTypeReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[ReportIdentifiedValueInTime[String]]] = {
+  def assetByTypeReport(start: LocalDate, end: LocalDate, granularity: Int): Future[GenericReportDTO[ReportIdentifiedValueInTime[Long]]] = {
     val series = expandPeriod(start, end, granularity)
       .map(d => sql.query(AssetQuery.getTotalAssetsByTypeForDate(d)).map((d,_)))
     val report = Future.sequence(series)
