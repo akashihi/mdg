@@ -48,7 +48,7 @@ export function checkApiError(json) {
     if (typeof json === 'undefined') {
         return json
     }
-    if ('errors' in json) {
+    if (json.hasOwnProperty('errors')) {
         json.errors.forEach((e)=>{
           window.notifications.addNotification(
             {
