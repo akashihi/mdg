@@ -32,7 +32,7 @@ class FinanceOverviewPanel extends Component {
     renderAsset(props, item) {
 
       const getCurrency = function(id) {
-          const currency = props.currencies.get(id);
+          const currency = props.currencies.get(parseInt(id));
           if (currency) {
             return currency.get('code');
           }
