@@ -1,14 +1,15 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionDeleteConfirmation from '../components/TransactionDeleteConfirmation'
+import TransactionDeleteConfirmation from '../components/transaction/TransactionDeleteConfirmation'
 import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {
     return {
-        transaction: state.transaction.delete.transaction,
-        visible: state.transaction.delete.approvementDialogVisible,
-        loading: state.transaction.delete.loading
+        id: state.transaction.get('delete').get('id'),
+        transaction: state.transaction.get('delete').get('transaction'),
+        visible: state.transaction.get('delete').get('approvementDialogVisible'),
+        loading: state.transaction.get('delete').get('loading')
     }
 };
 

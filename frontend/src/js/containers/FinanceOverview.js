@@ -1,12 +1,13 @@
 import { connect } from 'react-redux'
 
-import FinanceOverviewPanel from '../components/FinanceOverviewPanel'
+import FinanceOverviewPanel from '../components/report/FinanceOverviewPanel'
 
 const mapStateToProps = (state) => {
     return {
-        currencies: state.currency.currencyList,
-        totals: state.report.totalsReport,
-        primaryCurrency: state.setting.primaryCurrency
+        currencies: state.currency.get('currencies'),
+        totals: state.report.get('totalsReport'),
+        categoryList: state.category.get('categoryList'),
+        primaryCurrency: state.setting.get('primaryCurrency')
     }
 };
 

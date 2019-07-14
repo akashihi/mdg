@@ -3,7 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ArchivePlugin = require('webpack-archive-plugin');
 const merge = require('webpack-merge');
 
@@ -26,10 +26,10 @@ var build = {
   module: {
       rules: [
           {
-              enforce: "pre",
+              enforce: 'pre',
               test: /\.js$/,
               exclude: /node_modules/,
-              loader: "eslint-loader",
+              loader: 'eslint-loader',
           },
           {
               test: /\.js$/, // Check for all js files
@@ -45,17 +45,18 @@ var build = {
           }
       ]
   }
-}
+};
 
 var development = {
     mode: 'development',
-    devtool: "eval-source-map",
+    devtool: 'eval-source-map',
     devServer: {
         contentBase: path.resolve(__dirname, 'src'), // `__dirname` is root of the project
         watchContentBase: true,
+        historyApiFallback: true,
         proxy: {
             '/api': {
-                target: 'http://127.0.0.1:9000/api',
+                target: 'http://127.0.0.1/api',
                 pathRewrite: {'^/api' : ''}
             }
         }
@@ -64,15 +65,15 @@ var development = {
 
 var production = {
     mode: 'production',
-    devtool: 'source-map',
+    devtool: 'none',
     plugins: [
      new UglifyJSPlugin({
-       sourceMap: true
+       sourceMap: false
      }),
      new ArchivePlugin()
     ]
-}
-if (process.env.NODE_ENV === "production") {
+};
+if (process.env.NODE_ENV === 'production') {
   var config = merge(build, production)
 } else {
   config = merge(build, development)

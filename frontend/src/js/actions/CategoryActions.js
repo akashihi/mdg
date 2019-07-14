@@ -1,12 +1,13 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
-import {loadAccountList} from './AccountViewerActions';
+import {Map} from 'immutable';
+
+import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
+import {loadAccountList} from './AccountActions';
 
 import {
     GET_CATEGORYLIST_REQUEST,
     GET_CATEGORYLIST_SUCCESS,
     GET_CATEGORYLIST_FAILURE,
     CATEGORY_DIALOG_OPEN,
-    CATEGORY_DIALOG_CHANGE,
     CATEGORY_DIALOG_CLOSE
 } from '../constants/Category'
 
@@ -22,10 +23,11 @@ export function loadCategoryList() {
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (data) {
                 dispatch({
                     type: GET_CATEGORYLIST_SUCCESS,
-                    payload: json.data
+                    payload: data
                 })
             })
             .then(() => dispatch(loadAccountList()))
@@ -38,7 +40,7 @@ export function loadCategoryList() {
     }
 }
 
-export function updateCategory(category) {
+export function updateCategory(id, category) {
     return (dispatch) => {
         dispatch({
             type: GET_CATEGORYLIST_REQUEST,
@@ -47,18 +49,18 @@ export function updateCategory(category) {
 
         var url = '/api/category';
         var method = 'POST';
-        if (category.hasOwnProperty('id') && category['id'] ) {
-            url = url + '/' + category.id;
+        if (id !== -1) {
+            url = url + '/' + id;
             method = 'PUT';
         }
 
-        category.attributes.priority = parseInt(category.attributes.priority)
+        category.set('priority', parseInt(category.get('priority')));
         fetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify({data: category})
+            body: JSON.stringify(mapToData(id, category))
         })
             .then(parseJSON)
             .then(checkApiError)
@@ -73,52 +75,43 @@ export function createCategory() {
       type: CATEGORY_DIALOG_OPEN,
       payload: {
         full: true,
-        category: { attributes: {account_type: 'income', priority: 1, name: ''} }
+        category: Map({account_type: 'income', priority: 1, name: '', parent_id: -1}),
+        id: -1
       }
     })
   }
 }
 
 function findCategoryInListById(categoryId, categoryList) {
-  var getEntry = function(category) {
-    if ('attributes' in category) {
-      var attr = category.attributes
-    } else {
-      attr = category
-    }
-    // We do not want edited category and it's children in a parents list
-    if (attr.id == categoryId) {
-      return {id: categoryId, attributes: attr}
-    }
-    if (attr.children) {
-      for (var item of attr.children) {
-        var result = getEntry(item)
-        if (result != null) {
-          return result
-        }
-      }
-    }
-    return null
+  //Try shortcut
+  if (categoryList.has(categoryId)) {
+    return categoryList.get(categoryId)
   }
-  for (var item of categoryList) {
-    var result = getEntry(item)
-    if (result != null) {
-      return result
+
+  var result = Map({account_type: 'income', priority: 1, name: ''})
+  var getEntry = function(id, category) {
+    if (id === categoryId) {
+      result = category
+    }
+    if (category.has('children')) {
+      category.get('children').forEach((v,k) => getEntry(k, v))
     }
   }
-  return { attributes: {account_type: 'income', priority: 1, name: ''} }
+  categoryList.forEach((v,k) => getEntry(k, v))
+  return result
 }
 
 export function editCategory(categoryId) {
   return (dispatch, getState) => {
     var state = getState()
-    var categoryList = state.category.categoryList
+    var categoryList = state.category.get('categoryList')
     var category = findCategoryInListById(categoryId, categoryList)
     dispatch({
         type: CATEGORY_DIALOG_OPEN,
         payload: {
             full: false,
-            category: category
+            category: category,
+            id: categoryId
           }
     })
   }
@@ -132,23 +125,17 @@ export function editCategoryCancel() {
     }
 }
 
-export function editCategoryChange(category) {
-    return {
-        type: CATEGORY_DIALOG_CHANGE,
-        payload: category
-    }
-}
-
-export function editCategorySave() {
+export function editCategorySave(newCategory) {
     return (dispatch, getState) => {
         dispatch({
             type: CATEGORY_DIALOG_CLOSE,
             payload: true
         });
 
-        var state = getState();
-        var category = state.category.dialog.category;
-        dispatch(updateCategory(category));
+        const state = getState();
+        const id = state.category.getIn(['dialog', 'id']);
+        var category = state.category.getIn(['dialog', 'category']).merge(newCategory);
+        dispatch(updateCategory(id, category));
     }
 }
 
@@ -160,7 +147,7 @@ export function editCategoryDelete() {
         });
 
         var state = getState();
-        var category = state.category.dialog.category;
+        var id = state.category.getIn(['dialog', 'id']);
 
           dispatch({
               type: GET_CATEGORYLIST_REQUEST,
@@ -169,14 +156,13 @@ export function editCategoryDelete() {
 
           var url = '/api/category';
           var method = 'DELETE';
-          url = url + '/' + category.id;
+          url = url + '/' + id;
 
           fetch(url, {
               method: method,
               headers: {
                   'Content-Type': 'application/vnd.mdg+json'
-              },
-              body: JSON.stringify({data: category})
+              }
           })
               .then(parseJSON)
               .then(checkApiError)

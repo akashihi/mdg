@@ -1,24 +1,28 @@
+import {Map} from 'immutable';
 import {GET_SETTING_REQUEST, GET_SETTING_SUCCESS, GET_SETTING_FAILURE} from '../constants/Setting'
 
-const initialState = {
-    primaryCurrency: '',
-    closeTransactionDialog: true
-};
+const initialState = Map({
+    primaryCurrency: -1,
+    closeTransactionDialog: true,
+    ui: Map({
+        settingListLoading: true,
+        settingListError: false
+    })
+});
 
 export default function currencyReducer(state = initialState, action) {
     switch(action.type) {
         case GET_SETTING_REQUEST:
-            return {...state, primaryCurrency: {id: -1, attributes: {value: 'Loading'}}};
+            return state.setIn(['ui', 'settingListLoading'], true)
+                .setIn(['ui', 'settingListError'], false);
         case GET_SETTING_SUCCESS:
-            var primaryCurrencyObject = action.payload.filter((item) => item.id == 'currency.primary')[0]
-            var primaryCurrency = Number(primaryCurrencyObject.attributes.value)
-
-            var closeTransactionDialogObject = action.payload.filter((item) => item.id == 'ui.transaction.closedialog')[0]
-            var closeTransactionDialog = closeTransactionDialogObject.attributes.value === 'true'
-
-            return {...state, primaryCurrency: primaryCurrency, closeTransactionDialog: closeTransactionDialog};
+            return state.set('primaryCurrency', parseInt(action.payload.get('currency.primary').get('value')))
+                .set('closeTransactionDialog', action.payload.get('ui.transaction.closedialog').get('value') === 'true')
+                .setIn(['ui', 'settingListLoading'], false)
+                .setIn(['ui', 'settingListError'], false);
         case GET_SETTING_FAILURE:
-            return {...state, primaryCurrency: {id: -1, attributes: {value: 'Failed to load'}}};
+            return state.setIn(['ui', 'settingListLoading'], false)
+                .setIn(['ui', 'settingListError'], true);
         default:
             return state;
     }

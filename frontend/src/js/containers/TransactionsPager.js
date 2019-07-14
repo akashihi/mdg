@@ -1,14 +1,14 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionsPagePager from '../components/TransactionsPagePager'
+import TransactionsPagePager from '../components/transaction/TransactionsPagePager'
 import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {
     return {
-        pageSize: state.transactionview.pageSize,
-        pageNumber: state.transactionview.pageNumber,
-        count: state.transactionview.count,
+        pageSize: state.transactionview.get('pageSize'),
+        pageNumber: state.transactionview.get('pageNumber'),
+        count: state.transactionview.get('count'),
     }
 };
 

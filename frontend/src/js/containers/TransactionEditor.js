@@ -1,23 +1,22 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import TransactionDialog from '../components/TransactionDialog'
+import TransactionDialog from '../components/transaction/TransactionDialog'
 import * as TransactionActions from '../actions/TransactionActions'
 
 
 const mapStateToProps = (state) => {
     return {
-        primaryCurrency: state.setting.primaryCurrency,
-        currencies: state.currency.currencyList,
-        tags: state.tag.tagList,
-        assetAccounts: state.account.assetAccountList,
-        incomeAccounts: state.account.incomeAccountList,
-        expenseAccounts: state.account.expenseAccountList,
-        open: state.transaction.dialog.open,
-        closeOnSave: state.transaction.dialog.closeOnSave,
-        transaction: state.transaction.dialog.transaction,
-        valid: state.transaction.dialog.valid,
-        errors: state.transaction.dialog.errors
+        primaryCurrency: state.setting.get('primaryCurrency'),
+        currencies: state.currency.get('currencies'),
+        categories: state.category.get('categoryList'),
+        tags: state.tag.get('tagList'),
+        accounts: state.account.get('accountList'),
+        open: state.transaction.get('dialog').get('open'),
+        closeOnSave: state.transaction.get('dialog').get('closeOnSave'),
+        transaction: state.transaction.get('dialog').get('transaction'),
+        valid: state.transaction.get('dialog').get('valid'),
+        errors: state.transaction.get('dialog').get('errors')
     }
 };
 

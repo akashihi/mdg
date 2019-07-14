@@ -1,4 +1,4 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap} from '../util/ApiUtils';
 
 import {GET_TAGLIST_REQUEST, GET_TAGLIST_SUCCESS, GET_TAGLIST_FAILURE} from '../constants/Tag'
 
@@ -12,10 +12,11 @@ export function loadTagList() {
         fetch('/api/tag')
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_TAGLIST_SUCCESS,
-                    payload: json.data
+                    payload: map
                 });
             })
             .catch(function () {

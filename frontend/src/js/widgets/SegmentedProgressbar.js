@@ -1,6 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import CircularProgressbar from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 // Component that renders an arbitrary
 // number of divs on top of CircularProgressbar,

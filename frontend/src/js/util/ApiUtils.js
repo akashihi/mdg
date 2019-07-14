@@ -1,3 +1,5 @@
+import { OrderedMap, Map } from 'immutable';
+
 export function parseJSON(response) {
     try {
         return response.json()
@@ -5,6 +7,41 @@ export function parseJSON(response) {
         //Not a json, pass
     }
 
+}
+
+export function dataToMap(json) {
+    function mapChildren(content) {
+      if (content.has('children')) {
+        var children = content.get('children').reduce((subacc, item) => {
+          const mapItem = Map(item);
+          return subacc.set(item.id, mapChildren(mapItem))
+        }, new OrderedMap());
+        content = content.set('children', children)
+      }
+      return content
+    }
+
+    return json.data.reduce((acc, item) => {
+        var content = Map(item.attributes);
+
+        // Special handling for tree structures, like Category
+        content = mapChildren(content);
+        return acc.set(item.id, content)
+    }, new OrderedMap())
+}
+
+export function singleToMap(json) {
+  const attr = Map(json.data.attributes);
+  return OrderedMap().set(json.data.id, attr)
+}
+
+export function mapToData(id, item) {
+    return {
+        data: {
+            id: id,
+            attributes: item.toJS()
+        }
+    }
 }
 
 export function checkApiError(json) {

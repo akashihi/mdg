@@ -1,10 +1,10 @@
 import { connect } from 'react-redux'
 
-import BudgetOverviewPanel from '../components/BudgetOverviewPanel'
+import BudgetOverviewPanel from '../components/budget/BudgetOverviewPanel'
 
 const mapStateToProps = (state) => {
     return {
-        budget: state.budgetentry.currentBudget,
+        budget: state.budgetentry.get('currentBudget'),
     }
 };
 

@@ -1,24 +1,18 @@
 import jQuery from 'jquery';
 import moment from 'moment';
+import {Map} from 'immutable';
 
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
 
-import {loadAccountList} from './AccountViewerActions'
+import {loadAccountList} from './AccountActions'
 import {loadBudgetInfoById} from './BudgetEntryActions';
 import {loadTotalsReport} from './ReportActions'
 
 import {
     GET_TRANSACTIONLIST_REQUEST,
+    GET_TRANSACTIONLIST_COUNT,
     GET_TRANSACTIONLIST_SUCCESS,
     GET_TRANSACTIONLIST_FAILURE,
-    SET_TRANSACTION_PAGESIZE,
-    SET_TRANSACTION_PAGENO,
-    SET_TRANSACTION_VIEW_PERIOD,
-    SET_TRANSACTION_VIEW_BEGINNING,
-    SET_TRANSACTION_VIEW_END,
-    SET_TRANSACTION_FILTER_ACCOUNT,
-    SET_TRANSACTION_FILTER_TAG,
-    SET_TRANSACTION_FILTER_COMMENT,
     CLEAR_TRANSACTION_FILTER,
     APPLY_TRANSACTION_FILTER,
     DELETE_TRANSACTION_REQUEST,
@@ -30,7 +24,8 @@ import {
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
     TRANSACTION_DIALOG_CLOSESAVE_SET,
-    GET_LASTTRANSACTION_SUCCESS
+    GET_LASTTRANSACTION_SUCCESS,
+    SET_TRANSACTION_FILTER
 } from '../constants/Transaction'
 
 export function loadLastTransactions() {
@@ -50,10 +45,11 @@ export function loadLastTransactions() {
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_LASTTRANSACTION_SUCCESS,
-                    payload: json
+                    payload: map
                 })
             });
     }
@@ -66,34 +62,42 @@ export function loadTransactionList() {
             payload: true
         });
 
-        var state = getState();
+        const state = getState();
 
-        var paginationParams = {
-            pageSize: state.transactionview.pageSize,
-            pageNumber: state.transactionview.pageNumber
+        const paginationParams = {
+            pageSize: state.transactionview.get('pageSize'),
+            pageNumber: state.transactionview.get('pageNumber')
         };
-        var periodParams = {
-            notLater: state.transactionview.periodEnd.format('YYYY-MM-DDT23:59:59'),
-            notEarlier: state.transactionview.periodBeginning.format('YYYY-MM-DDT00:00:00')
+        const periodParams = {
+            notLater: state.transactionview.get('periodEnd').format('YYYY-MM-DDT23:59:59'),
+            notEarlier: state.transactionview.get('periodBeginning').format('YYYY-MM-DDT00:00:00')
         };
-        var filter = {
-            comment: state.transactionview.commentFilter,
-            tag: state.transactionview.tagFilter,
-            account_id: state.transactionview.accountFilter,
+        const filter = {
+            comment: state.transactionview.get('commentFilter'),
+            tag: state.transactionview.get('tagFilter'),
+            account_id: state.transactionview.get('accountFilter'),
         };
-        var filterParams = {filter: JSON.stringify(filter)};
+        const filterParams = {filter: JSON.stringify(filter)};
 
-        var params = Object.assign({}, paginationParams, periodParams, filterParams);
+        const params = Object.assign({}, paginationParams, periodParams, filterParams);
 
-        var url = '/api/transaction' + '?' + jQuery.param(params);
+        const url = '/api/transaction' + '?' + jQuery.param(params);
 
         fetch(url)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(function(json) {
+                dispatch({
+                    type: GET_TRANSACTIONLIST_COUNT,
+                    payload: json.count
+                });
+                return json
+            })
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_TRANSACTIONLIST_SUCCESS,
-                    payload: json
+                    payload: map
                 });
                 dispatch(loadLastTransactions())
             })
@@ -106,77 +110,16 @@ export function loadTransactionList() {
     }
 }
 
-export function setTransactionPageSize(size) {
+export function setTransactionFilter(key, value, reload) {
     return (dispatch) => {
         dispatch({
-            type: SET_TRANSACTION_PAGESIZE,
-            payload: size
+            type: SET_TRANSACTION_FILTER,
+            key: key,
+            payload: value
         });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionPage(page) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_PAGENO,
-            payload: page
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionViewPeriod(days) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_VIEW_PERIOD,
-            payload: {
-                beginning: moment().subtract(days, 'days'),
-                end: moment()
-            }
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionViewBeginning(value) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_VIEW_BEGINNING,
-            payload: moment(value)
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionViewEnd(value) {
-    return (dispatch) => {
-        dispatch({
-            type: SET_TRANSACTION_VIEW_END,
-            payload: moment(value)
-        });
-        dispatch(loadTransactionList())
-    }
-}
-
-export function setTransactionFilterAccount(values) {
-    return {
-        type: SET_TRANSACTION_FILTER_ACCOUNT,
-        payload: values
-    }
-}
-
-export function setTransactionFilterTag(values) {
-    return {
-        type: SET_TRANSACTION_FILTER_TAG,
-        payload: values
-    }
-}
-
-export function setTransactionFilterComment(values) {
-    return {
-        type: SET_TRANSACTION_FILTER_COMMENT,
-        payload: values
+        if (reload) {
+            dispatch(loadTransactionList())
+        }
     }
 }
 
@@ -200,10 +143,13 @@ export function transactionFilterApply() {
     }
 }
 
-export function deleteTransactionRequest(tx) {
+export function deleteTransactionRequest(id, tx) {
     return {
         type: DELETE_TRANSACTION_REQUEST,
-        payload: tx
+        payload: {
+            id: id,
+            tx: tx
+        }
     }
 }
 
@@ -214,21 +160,21 @@ export function deleteTransactionCancel() {
     }
 }
 
-export function deleteTransaction(tx) {
+export function deleteTransaction(id) {
     return (dispatch) => {
         dispatch({
             type: DELETE_TRANSACTION_APPROVE,
-            payload: tx
+            payload: id
         });
 
-        var url = '/api/transaction/' + tx.id;
+        var url = '/api/transaction/' + id;
 
         fetch(url, {method: 'DELETE'})
             .then(function(response) {
-                if (response.status == 204) {
+                if (response.status === 204) {
                     dispatch({
                         type: DELETE_TRANSACTION_SUCCESS,
-                        payload: tx
+                        payload: id
                     })
                 }
             })
@@ -255,14 +201,24 @@ export function setCloseOnSave(value) {
 export function createTransaction() {
     return {
         type: TRANSACTION_DIALOG_OPEN,
-        payload: { type: 'transaction', attributes: {comment: '', timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'), tags: [], operations: [ {amount: 0, account_id: -1}, {amount: 0, account_id: -1}]} }
+        payload: {
+            id: -1,
+            tx: Map({
+                comment: '',
+                timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'),
+                tags: [],
+                operations: [ {amount: 0, account_id: -1}, {amount: 0, account_id: -1}]})
+        }
     }
 }
 
-export function editTransaction(tx) {
+export function editTransaction(id, tx) {
     return {
         type: TRANSACTION_DIALOG_OPEN,
-        payload: tx
+        payload: {
+            id: id,
+            tx: tx
+        }
     }
 }
 
@@ -282,22 +238,23 @@ export function editTransactionChange(tx) {
 
 export function editTransactionSave() {
     return (dispatch, getState) => {
-      var state = getState();
-      if (state.transaction.dialog.closeOnSave) {
+      const state = getState();
+      if (state.transaction.getIn(['dialog', 'closeOnSave'])) {
         dispatch({
             type: TRANSACTION_DIALOG_CLOSE,
             payload: true
         });
       }
-        var transaction = state.transaction.dialog.transaction;
-        dispatch(updateTransaction(transaction));
-        if (!state.transaction.dialog.closeOnSave) {
+        const id = state.transaction.getIn(['dialog', 'id']);
+        const transaction = state.transaction.getIn(['dialog', 'transaction']);
+        dispatch(updateTransaction(id, transaction));
+        if (!state.transaction.getIn(['dialog', 'closeOnSave'])) {
           dispatch(createTransaction())
         }
     }
 }
 
-export function updateTransaction(tx) {
+export function updateTransaction(id, tx) {
     return (dispatch, getState) => {
         dispatch({
             type: GET_TRANSACTIONLIST_REQUEST,
@@ -305,12 +262,12 @@ export function updateTransaction(tx) {
         });
 
         var state=getState();
-        var selectedBudgetId = state.budgetentry.currentBudget.id;
+        var selectedBudgetId = state.budgetentry.get('currentBudget').get('id');
 
         var url = '/api/transaction';
         var method = 'POST';
-        if (tx.hasOwnProperty('id') && tx['id'] ) {
-            url = url + '/' + tx.id;
+        if (id != -1) {
+            url = url + '/' + id;
             method = 'PUT';
         }
 
@@ -319,7 +276,7 @@ export function updateTransaction(tx) {
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify({data: tx})
+            body: JSON.stringify(mapToData(id, tx))
         })
             .then(parseJSON)
             .then(checkApiError)

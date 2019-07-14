@@ -1,13 +1,15 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils';
+import {checkApiError, parseJSON, singleToMap, dataToMap, mapToData} from '../util/ApiUtils';
 
 import {
     SET_CURRENT_BUDGET,
     GET_BUDGETENTRYLIST_REQUEST,
     GET_BUDGETENTRYLIST_SUCCESS,
-    GET_BUDGETENTRYLIST_FAILURE
+    GET_BUDGETENTRYLIST_FAILURE,
+    BUDGETENTRY_PARTIAL_UPDATE,
+    BUDGETENTRY_PARTIAL_SUCCESS
 } from '../constants/BudgetEntry'
 
-export function loadBudgetInfoById(id) {
+export function loadBudgetInfoById(id, skipListReload) {
     return (dispatch) => {
         dispatch({
             type: GET_BUDGETENTRYLIST_REQUEST,
@@ -17,12 +19,19 @@ export function loadBudgetInfoById(id) {
         fetch('/api/budget/' + id)
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(singleToMap)
+            .then(function (map) {
+                return map.map((v, k) => v.set('id', k)).first()
+            })
+            .then(function (map) {
                 dispatch({
                     type: SET_CURRENT_BUDGET,
-                    payload: json.data
+                    payload: map
                 });
-                dispatch(loadBudgetEntryList(json.data.id));
+                if (!skipListReload) {
+                    dispatch(loadBudgetEntryList(map.get('id')));
+                }
+
             })
     }
 }
@@ -43,10 +52,11 @@ export function loadBudgetEntryList(budgetId) {
         fetch('/api/budget/' + budgetId + '/entry')
             .then(parseJSON)
             .then(checkApiError)
-            .then(function (json) {
+            .then(dataToMap)
+            .then(function (map) {
                 dispatch({
                     type: GET_BUDGETENTRYLIST_SUCCESS,
-                    payload: json.data
+                    payload: map
                 });
             })
             .catch(function (response) {
@@ -58,30 +68,42 @@ export function loadBudgetEntryList(budgetId) {
     }
 }
 
-export function updateBudgetEntry(entry) {
+export function updateBudgetEntry(id, entry) {
     return(dispatch, getState) => {
         dispatch({
-            type: GET_BUDGETENTRYLIST_REQUEST,
-            payload: true
+            type: BUDGETENTRY_PARTIAL_UPDATE,
+            payload: {
+                id: id,
+                entry: entry.set('loading', true)
+            }
         });
 
-        var state = getState();
+        const state = getState();
 
-        var budgetId = state.budgetentry.currentBudget.id;
+        const budgetId = state.budgetentry.get('currentBudget').get('id');
 
-        var url = '/api/budget/' + budgetId + '/entry/' + entry.id;
-        var method = 'PUT';
+        const url = '/api/budget/' + budgetId + '/entry/' + id;
 
         fetch(url, {
-            method: method,
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify({data: entry})
+            body: JSON.stringify(mapToData(id, entry))
         })
             .then(parseJSON)
             .then(checkApiError)
-            .then(()=>dispatch(loadBudgetInfoById(budgetId)))
+            .then(singleToMap)
+            .then(map => {
+                dispatch(loadBudgetInfoById(budgetId, true));
+                dispatch({
+                    type: BUDGETENTRY_PARTIAL_SUCCESS,
+                    payload: {
+                        id: id,
+                        entry: map.first()
+                    }
+                })
+            })
             .catch(()=>dispatch(loadBudgetInfoById(budgetId)))
     }
 }

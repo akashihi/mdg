@@ -4,25 +4,32 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import Divider from '@material-ui/core/Divider';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class RateWidget extends Component {
 
-  render() {
-    var rates = this.props.rates
-    .filter((item) => item.attributes.to_currency == this.props.primaryCurrency)
-    .map((item) => {
-      var currencyCode = this.props.currencies.filter((currency) => currency.id == item.attributes.from_currency)
-      .map((currency) => currency.attributes.code)
+    render() {
+        const props = this.props;
+        if (props.currency.get('error') || props.currency.get('loading')) {
+            return <ClipLoader sizeUnit={'px'} size={80} loading={true}/>
+        }
+        const rates = this.props.rates
+            .filter((item) => item.attributes.to_currency === this.props.primaryCurrency)
+            .map((item) => {
+                var currency = this.props.currency.get('currencies').get(item.attributes.from_currency);
+                if (currency) {
+                    return <ListItem key={'rate' + item.id}><ListItemText primary={currency.get('code')}
+                                                                          secondary={item.attributes.rate}/></ListItem>
+                }
+                return '';
+            });
 
-      return <ListItem key={'rate'+item.id}><ListItemText primary={currencyCode} secondary={item.attributes.rate}/></ListItem>
-    })
-
-    return (
-      <List>
-        <ListSubheader>Currency rates</ListSubheader>
-        <Divider/>
-        {rates}
-      </List>
-    )
-  }
+        return (
+            <List>
+                <ListSubheader>Currency rates</ListSubheader>
+                <Divider/>
+                {rates}
+            </List>
+        )
+    }
 }

@@ -1,70 +1,46 @@
+import {OrderedMap, Map} from 'immutable';
 import {
     GET_CATEGORYLIST_REQUEST,
     GET_CATEGORYLIST_SUCCESS,
     GET_CATEGORYLIST_FAILURE,
     CATEGORY_DIALOG_OPEN,
-    CATEGORY_DIALOG_CLOSE,
-    CATEGORY_DIALOG_CHANGE
+    CATEGORY_DIALOG_CLOSE
 } from '../constants/Category'
 
-const initialState = {
-    categoryList: [],
-    ui: {
+const initialState = Map({
+    categoryList: OrderedMap(),
+    ui: Map({
         categoryListLoading: true,
         categoryListError: false
-    },
-    dialog: {
+    }),
+    dialog: Map({
         open: false,
         full: false,
-        category: {attributes: {}},
-        valid: false,
-        errors: { }
-    }
-};
-
-function validateCategoryForm(category) {
-    var attributes = category.attributes;
-    var errors = {};
-    if (!attributes.name) {
-        errors.name = 'Name is empty'
-    }
-
-    if (!attributes.account_type) {
-        errors.account_type = 'Type is not selected'
-    }
-
-    if (isNaN(attributes.priority)) {
-        errors.order = 'Order is invalid';
-    }
-
-    return {valid: Object.keys(errors).length == 0, errors: errors}
-}
-
+        category: Map(),
+        id: null
+    })
+});
 
 export default function categoryReducer(state = initialState, action) {
-    var ui = state.ui;
-    var dialog = state.dialog;
     switch (action.type) {
         case CATEGORY_DIALOG_OPEN:
-            var validInitial = validateCategoryForm(action.payload.category);
-            dialog = {...dialog, open: true, full: action.payload.full, category: action.payload.category, valid: validInitial.valid, errors: validInitial.errors};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'open'], true)
+              .setIn(['dialog', 'full'], action.payload.full)
+              .setIn(['dialog', 'category'], action.payload.category)
+              .setIn(['dialog', 'id'], action.payload.id);
         case CATEGORY_DIALOG_CLOSE:
-            dialog = {...dialog, open: false};
-            return {...state, dialog: dialog};
-        case CATEGORY_DIALOG_CHANGE:
-            var valid = validateCategoryForm(action.payload);
-            dialog = {...dialog, category: action.payload, valid: valid.valid, errors: valid.errors};
-            return {...state, dialog: dialog};
+            return state.setIn(['dialog', 'open'], false);
         case GET_CATEGORYLIST_REQUEST:
-            ui = {...ui, categoryListLoading: true, categoryListError: false};
-            return {...state, ui: ui};
+            return state.setIn(['ui', 'categoryListLoading'], true)
+                .setIn(['ui', 'categoryListError'], false);
         case GET_CATEGORYLIST_SUCCESS:
-            ui = {...ui, categoryListLoading: false, categoryListError: false};
-            return { ...state, categoryList: action.payload, ui: ui };
+            return state.setIn(['ui', 'categoryListLoading'], false)
+                .setIn(['ui', 'categoryListError'], false)
+                .set('categoryList', action.payload);
         case GET_CATEGORYLIST_FAILURE:
-            ui = {...ui, categoryListLoading: false, categoryListError: true};
-            return { ...state, categoryList: [], ui: ui };
+            return state.setIn(['ui', 'categoryListLoading'], false)
+                .setIn(['ui', 'categoryListError'], true)
+                .set('categoryList', OrderedMap());
         default:
             return state;
     }
