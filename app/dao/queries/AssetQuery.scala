@@ -41,17 +41,16 @@ object AssetQuery {
       .as[(Long, BigDecimal)]
   }
 
-  def getTotalAssetsByTypeForDate(term: LocalDate)(implicit ec: ExecutionContext): DBIO[Seq[(String, BigDecimal)]] = {
+  def getTotalAssetsByTypeForDate(term: LocalDate)(implicit ec: ExecutionContext): DBIO[Seq[(Long, BigDecimal)]] = {
     val dt = Date.valueOf(term)
     sql"""
-         select ap.asset_type, sum(o.amount*coalesce(r.rate,1))
+         select a.category_id, sum(o.amount*coalesce(r.rate,1))
          from operation as o
          left outer join account as a on(o.account_id = a.id)
-         inner join asset_account_properties as ap on (ap.id=a.id)
          inner join tx on (o.tx_id=tx.id)
          inner join setting as s on (s.name='currency.primary')
          left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value::bigint and r.rate_beginning <= now() and r.rate_end > now())
-         where a.account_type='asset' and tx.ts < $dt group by ap.asset_type"""
-      .as[(String, BigDecimal)]
+         where a.account_type='asset' and tx.ts < $dt group by a.category_id"""
+      .as[(Long, BigDecimal)]
   }
 }

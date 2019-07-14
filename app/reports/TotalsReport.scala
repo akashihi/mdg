@@ -8,13 +8,13 @@ import services.RateService
 import scala.concurrent.Future
 import scalaz._
 import Scalaz._
-import controllers.dto.reporting.{GenericReportDTO, TotalsDetailEntry, TotalsReportEntry}
+import controllers.dto.reporting.{GenericReportDTO, ReportIdentifiedValue, TotalsReportValue}
 
 import scala.language.postfixOps
 
 class TotalsReport @Inject() (protected val rs: RateService, protected val sql: SqlDatabase)
                              (implicit ec: SqlExecutionContext) {
-  def calculate(): Future[Map[String,(BigDecimal,Seq[(Long,BigDecimal)])]] = {
+  def calculate(): Future[Map[Long,(BigDecimal,Seq[(Long,BigDecimal)])]] = {
     val values = sql.query(AccountReportQuery.getTotalsByTypeAndCurrency)
     val withRate = values.map(
       _.map(
@@ -27,10 +27,10 @@ class TotalsReport @Inject() (protected val rs: RateService, protected val sql: 
     withTotals.map(_.mapValues(v => (v._1, v._2.map(e => (e._2, e._3)))))
   }
 
-  def get(): Future[GenericReportDTO[TotalsReportEntry]] = {
+  def get(): Future[GenericReportDTO[TotalsReportValue]] = {
     val report = this.calculate()
-    val detailed = report.map(_.mapValues(v => (v._1, v._2.map(e => TotalsDetailEntry(e._2, e._1)))))
-    val entries = detailed.map(_.map { case (k,v) => TotalsReportEntry(k, v._1, v._2)} toList)
+    val detailed = report.map(_.mapValues(v => (v._1, v._2.map(e => ReportIdentifiedValue(e._2, e._1)))))
+    val entries = detailed.map(_.map { case (k,v) => TotalsReportValue(k, v._1, v._2)} toList)
     entries.map(GenericReportDTO(Some("totals"), _))
   }
 }

@@ -1,5 +1,6 @@
 package services
 
+import Function.tupled
 import BigDecimal.RoundingMode.HALF_EVEN
 import dao.filters.AccountFilter
 import models._
@@ -17,7 +18,8 @@ import scala.concurrent._
 /**
   * Account operations service.
   */
-class AccountService @Inject() (protected val rs: RateService, protected val sql: SqlDatabase)
+class AccountService @Inject() (protected val rs: RateService, protected val ts: TransactionService,
+                                protected val sql: SqlDatabase)
                                    (implicit ec: SqlExecutionContext) {
 
   private def getAssetPropertyForAccountDto(validDto: \/[String, AccountDTO]) = {
@@ -30,10 +32,10 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
 
   private def validateCategoryType(account: AccountDTO): ErrorF[AccountDTO] = {
     if (account.category_id.isEmpty) {
-      var result: \/[String, AccountDTO] = account.right
+      val result: \/[String, AccountDTO] = account.right
       EitherT(Future.successful(result))
     } else {
-      var categoryQuery = CategoryQuery.findById(account.category_id.get).map(_.fromOption("CATEGORY_NOT_FOUND"))
+      val categoryQuery = CategoryQuery.findById(account.category_id.get).map(_.fromOption("CATEGORY_NOT_FOUND"))
       EitherT(sql.query(categoryQuery))
         .map(c => if (c.account_type == account.account_type) { account.right } else { "CATEGORY_INVALID_TYPE".left }).flatMapF(Future.successful)
     }
@@ -45,12 +47,11 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
         .map(_.setScale(2, HALF_EVEN))
         .flatMap { primary_balance =>
           val properties = sql.query(AccountQuery.findPropertyById(account.id.get))
-          val propValue = properties.map(_.map(p => (p.operational, p.favorite, Some(p.asset_type))).getOrElse(false, false, Option.empty[AssetType]))
+          val propValue = properties.map(_.map(p => (p.operational, p.favorite)).getOrElse(false, false))
           val dto:Future[\/[String, AccountDTO]] = propValue.map(pv =>
             AccountDTO(
               account.id,
               account.account_type,
-              pv._3,
               account.currency_id,
               account.category_id,
               account.name,
@@ -75,9 +76,18 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
   def dtoToAssetAccountProperty(dto: AccountDTO): AssetAccountProperty = AssetAccountProperty(
     id = dto.id,
     operational = dto.operational,
-    favorite = dto.favorite,
-    asset_type = dto.asset_type.getOrElse(CurrentAssetAccount)
+    favorite = dto.favorite
   )
+
+  private def setDefaultCategory(d: AccountDTO): Future[AccountDTO] = {
+    if (d.account_type == AssetAccount && d.category_id.empty) {
+      val currentCategory = sql.query(CategoryQuery.findByName("Current", AssetAccount))
+      currentCategory.map(_.map(c => d.copy(category_id = c.id)).getOrElse(d))
+    }
+    else {
+      Future.successful(d)
+    }
+  }
 
   /**
     * Creates Account or reports error.
@@ -91,7 +101,7 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
       .map(validate)
       .flatMap(validationToXor)
 
-    val checkedCategory = EitherT(Future.successful(validDto)).flatMap(validateCategoryType)
+    val checkedCategory =  validDto.map(setDefaultCategory).transform.flatMap(validateCategoryType)
 
     val query = getAssetPropertyForAccountDto(validDto).map(p => AccountQuery.insertWithProperties(p) _).getOrElse(AccountQuery.insert _)
 
@@ -157,14 +167,30 @@ class AccountService @Inject() (protected val rs: RateService, protected val sql
 
     val checkedCategory = EitherT(Future.successful(validDto)).flatMap(validateCategoryType)
 
-    val newAcc = checkedCategory.flatMap(ad => {getAccount(id).map(_.copy(name = ad.name, hidden = ad.hidden, category_id = ad.category_id))})
+    val oldAcc = getAccount(id)
+    val newAcc = checkedCategory.flatMap(ad => {oldAcc.map(_.copy(
+      name = ad.name,
+      hidden = ad.hidden,
+      category_id = ad.category_id,
+      currency_id = ad.currency_id))})
+
+    val currencyChanger = newAcc zip oldAcc flatMap tupled
+    {(n,o) => if (n.currency_id != o.currency_id) {
+      if (n.account_type == AssetAccount) {
+        //We do not support currency change on asset accounts
+        EitherT(Future.successful("ACCOUNT_CURRENCY_ASSET".left[Account]))
+      } else {
+        val l = EitherT(list(AccountFilter(None, None, None, None)).map(_.right[String]))
+        l.flatMap(ts.replaceCurrencyForAccount(n, _)).flatMap(_ => newAcc)
+      }
+    } else { newAcc }}
 
     val query = getAssetPropertyForAccountDto(validDto)
       .map(_.copy(id = Some(id)))
       .map(p => AccountQuery.updateWithProperties(p) _)
       .getOrElse(AccountQuery.update _)
 
-    newAcc
+    currencyChanger
       .map(query(_).map(_.fromOption("ACCOUNT_NOT_UPDATED")))
       .flatMapF(sql.query)
       .flatMap(accountToDto)

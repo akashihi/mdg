@@ -46,7 +46,11 @@ object AccountQuery {
   }
 
   def update(a: Account)(implicit ec: ExecutionContext): DBIO[Option[Account]] = {
-    accounts.filter(_.id === a.id).update(a).map {
+    val query =
+      sql"""
+           UPDATE ACCOUNT SET CURRENCY_ID=${a.currency_id}, name=${a.name}, hidden=${a.hidden}, category_id=${a.category_id} where id = ${a.id.get}
+         """.asUpdate
+    query.map {
       case 1 => Some(a)
       case _ => None
     }

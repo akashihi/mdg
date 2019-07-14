@@ -53,5 +53,6 @@ GET     /report/income/events                   controllers.reporting.IncomeRepo
 GET     /report/income/accounts                 controllers.reporting.IncomeReportController.incomeStructureByAccountReport(start: String, end: String, granularity: Int)
 GET     /report/expense/events                  controllers.reporting.ExpenseReportController.expenseEventByAccountReport(start: String, end: String, granularity: Int)
 GET     /report/expense/accounts                controllers.reporting.ExpenseReportController.expenseStructureByAccountReport(start: String, end: String, granularity: Int)
+GET     /report/budget/execution                controllers.reporting.BudgetReportController.execution(start: String, end: String)
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                           controllers.Assets.versioned(path="/public", file: Asset)
