@@ -29,7 +29,7 @@ Appliances are available since version 0.5.0 and are built for each release. If 
 
 #### Deployment guide
 
-Just grab the image from the URL and create a new VM with the following parameters:
+Just grab the image from the [github](https://github.com/akashihi/mdg/releases/download/v0.5.0/MDG-appliance-v0.5.0.qcow2.bz2) and create a new VM with the following parameters:
 
 * 1 or more x64 CPU cores
 * 2GB of RAM or more
