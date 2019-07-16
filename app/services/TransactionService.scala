@@ -136,8 +136,8 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     import akka.stream.scaladsl._
     implicit val am: ActorMaterializer = ActorMaterializer()
 
-    val commentsIds = filter.comment.map(es.lookupComment).getOrElse(Future.successful(Array[Long]()))
-    val tagIds = filter.tag.map(_.mkString(" ")).map(es.lookupTags).getOrElse(Future.successful(Array[Long]()))
+    val commentsIds = filter.comment.map(_.trim).filter(_.nonEmpty).map(es.lookupComment).getOrElse(Future.successful(Array[Long]()))
+    val tagIds = filter.tag.filter(_.nonEmpty).map(_.mkString(" ")).map(es.lookupTags).getOrElse(Future.successful(Array[Long]()))
     val searchIds = commentsIds zip tagIds map {case(a, b) => a ++ b} map { _.distinct }
 
     val list = searchIds.map(streamTransactions(filter, sort, page, _)).flatMap(_.runWith(Sink.seq))
