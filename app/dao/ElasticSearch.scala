@@ -1,15 +1,16 @@
 package dao
 
+import com.google.inject.Provider
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.JavaClient
 import com.sksamuel.elastic4s.requests.analyzers._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy
 import com.sksamuel.elastic4s.requests.searches.queries.matches.MatchQuery
 import javax.inject.Inject
-import org.elasticsearch.client.RestClient
-import play.api.Configuration
+import play.Application
+import play.api.{Configuration, Logger}
+import play.libs.Scala
 import util.OptionConverters._
-import play.api.Logger
 
 import scala.concurrent._
 
@@ -21,7 +22,7 @@ case class HunspellTokenFilter(name:String,language: String)
   }
 }
 
-class ElasticSearch @Inject() (protected val config: Configuration)(implicit val ec: SqlExecutionContext) {
+class ElasticSearch @Inject() (protected val config: Configuration, protected val app: Provider[Application])(implicit val ec: SqlExecutionContext) {
   import com.sksamuel.elastic4s.ElasticDsl._
 
   private val INDEX_NAME = "mdg"
@@ -61,107 +62,15 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     * @return True in case of sucess.
     */
   def createMdgIndex(): Future[Boolean] = {
-    val stopWords = Seq("а",
-      "без",
-      "более",
-      "бы",
-      "был",
-      "была",
-      "были",
-      "было",
-      "быть",
-      "в",
-      "вам",
-      "вас",
-      "весь",
-      "во",
-      "вот",
-      "все",
-      "всего",
-      "всех",
-      "вы",
-      "где",
-      "да",
-      "даже",
-      "для",
-      "до",
-      "его",
-      "ее",
-      "если",
-      "есть",
-      "еще",
-      "же",
-      "за",
-      "здесь",
-      "и",
-      "из",
-      "или",
-      "им",
-      "их",
-      "к",
-      "как",
-      "ко",
-      "когда",
-      "кто",
-      "ли",
-      "либо",
-      "мне",
-      "может",
-      "мы",
-      "на",
-      "надо",
-      "наш",
-      "не",
-      "него",
-      "нее",
-      "нет",
-      "ни",
-      "них",
-      "но",
-      "ну",
-      "о",
-      "об",
-      "однако",
-      "он",
-      "она",
-      "они",
-      "оно",
-      "от",
-      "очень",
-      "по",
-      "под",
-      "при",
-      "с",
-      "со",
-      "так",
-      "также",
-      "такой",
-      "там",
-      "те",
-      "тем",
-      "то",
-      "того",
-      "тоже",
-      "той",
-      "только",
-      "том",
-      "ты",
-      "у",
-      "уже",
-      "хотя",
-      "чего",
-      "чей",
-      "чем",
-      "что",
-      "чтобы",
-      "чье",
-      "чья",
-      "эта",
-      "эти",
-      "это",
-      "я")
-    val stopWordsFilter = StopTokenFilter("stop_ru", stopwords = stopWords, ignoreCase = Some(true))
+    val languageCode = "ru"
+
+    val stopWordsFile = app.get().classloader().getResourceAsStream("elasticsearch/stopwords." + languageCode)
+    val stopWords = scala.io.Source.fromInputStream(stopWordsFile, "UTF-8").getLines().toSeq
+    log.info(s"Loaded ${stopWords.length} stop words")
+    val stopWordsFilter = StopTokenFilter("stop", stopwords = stopWords, ignoreCase = Some(true))
+
     val triplets = NGramTokenizer("triplets", minGram=3, maxGram=3, tokenChars=Seq("letter", "digit"))
+
     val ru_mapping = MappingCharFilter("ru_mapping", "Ё" -> "Е", "ё" -> "е")
     val wordDelimiter = WordDelimiterTokenFilter("delimiter",
       generateWordParts = Some(true),
