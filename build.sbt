@@ -16,12 +16,12 @@ libraryDependencies += "com.ticketfly" %% "play-liquibase" % "1.4"
 libraryDependencies += "com.github.cb372" %% "scalacache-guava" % "0.24.1"
 
 // major.minor are in sync with the elasticsearch releases
-val elastic4sVersion = "6.3.7"
+val elastic4sVersion = "7.1.0"
 libraryDependencies ++= Seq(
   "com.sksamuel.elastic4s" %% "elastic4s-core" % elastic4sVersion,
 
   // for the http client
-  "com.sksamuel.elastic4s" %% "elastic4s-http" % elastic4sVersion,
+  "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % elastic4sVersion,
 )
 
 libraryDependencies += "org.scalamock" %% "scalamock" % "4.1.0" % Test

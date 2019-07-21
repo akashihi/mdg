@@ -1,11 +1,12 @@
 package dao
 
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.analyzers._
-import com.sksamuel.elastic4s.http._
-import com.sksamuel.elastic4s.json.XContentBuilder
-import com.sksamuel.elastic4s.searches.queries.matches.MatchQuery
+import com.sksamuel.elastic4s.http.JavaClient
+import com.sksamuel.elastic4s.requests.analyzers._
+import com.sksamuel.elastic4s.requests.common.RefreshPolicy
+import com.sksamuel.elastic4s.requests.searches.queries.matches.MatchQuery
 import javax.inject.Inject
+import org.elasticsearch.client.RestClient
 import play.api.Configuration
 import util.OptionConverters._
 import play.api.Logger
@@ -21,7 +22,7 @@ case class HunspellTokenFilter(name:String,language: String)
 }
 
 class ElasticSearch @Inject() (protected val config: Configuration)(implicit val ec: SqlExecutionContext) {
-  import com.sksamuel.elastic4s.http.ElasticDsl._
+  import com.sksamuel.elastic4s.ElasticDsl._
 
   private val INDEX_NAME = "mdg"
   private val log: Logger = Logger(this.getClass)
@@ -29,7 +30,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
 
   protected def getEsClient: ElasticClient = {
     val url = config.getOptional[String]("elasticsearch.url").getOrElse("http://localhost:9200")
-    ElasticClient(ElasticProperties(url))
+    ElasticClient(JavaClient(ElasticProperties(url)))
   }
 
   def logEsError[T](response: Response[T]): Response[T] = {
@@ -196,7 +197,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
   def saveTx(id: Long, comment: String, tags: Seq[String]): Future[Boolean] = {
 
     val response = client.execute {
-      indexInto(INDEX_NAME / "tx").id(id.toString).fields("comment" -> comment, "tags" -> tags).refresh(RefreshPolicy.Immediate)
+      indexInto(INDEX_NAME + "/" + "tx").id(id.toString).fields("comment" -> comment, "tags" -> tags).refresh(RefreshPolicy.Immediate)
     }
 
     response.map(logEsError).map(_.isSuccess)
