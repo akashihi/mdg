@@ -9,7 +9,6 @@ import com.sksamuel.elastic4s.requests.searches.queries.matches.MatchQuery
 import javax.inject.Inject
 import play.Application
 import play.api.{Configuration, Logger}
-import play.libs.Scala
 import util.OptionConverters._
 
 import scala.concurrent._
@@ -71,7 +70,12 @@ class ElasticSearch @Inject() (protected val config: Configuration, protected va
 
     val triplets = NGramTokenizer("triplets", minGram=3, maxGram=3, tokenChars=Seq("letter", "digit"))
 
-    val ru_mapping = MappingCharFilter("ru_mapping", "Ё" -> "Е", "ё" -> "е")
+    val charMapFile = app.get().classloader().getResourceAsStream("elasticsearch/charmap." + languageCode)
+    val charMap = scala.io.Source.fromInputStream(stopWordsFile, "UTF-8").getLines().toSeq
+      .map(_.split("\\s+")).map(e => (e.head, e.tail.head))
+    log.info(s"Loaded ${charMap.length} character mappings")
+    val ru_mapping = MappingCharFilter("ru_mapping", charMap:_*)
+
     val wordDelimiter = WordDelimiterTokenFilter("delimiter",
       generateWordParts = Some(true),
       generateNumberParts = Some(true),
@@ -82,9 +86,10 @@ class ElasticSearch @Inject() (protected val config: Configuration, protected va
       preserveOriginal = Some(true),
       splitOnNumerics = Some(false)
     )
-    val language = HunspellTokenFilter("ru_RU", language = "ru")
-    val comment_analyzer = CustomAnalyzerDefinition("ru_RU", triplets, ru_mapping, stopWordsFilter, wordDelimiter, language)
-    val tags_analyzer = CustomAnalyzerDefinition("ru_RU_tags", triplets, ru_mapping, wordDelimiter, language)
+    val language = HunspellTokenFilter(languageCode, language = languageCode)
+    val comment_analyzer = CustomAnalyzerDefinition(languageCode, triplets, ru_mapping, stopWordsFilter, wordDelimiter, language)
+    val tags_analyzer = CustomAnalyzerDefinition(languageCode + "_tags", triplets, ru_mapping, wordDelimiter, language)
+
     client.execute {
       createIndex(INDEX_NAME)
         .mappings(
