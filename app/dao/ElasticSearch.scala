@@ -53,9 +53,7 @@ class ElasticSearch @Inject() (protected val config: Configuration, protected va
     * Index is hardcoded to russian.
     * @return True in case of sucess.
     */
-  def createMdgIndex(): Future[Boolean] = {
-    val languageCode = "ru"
-
+  def createMdgIndex(languageCode: String): Future[Boolean] = {
     val stopWordsFile = app.get().classloader().getResourceAsStream("elasticsearch/stopwords." + languageCode)
     val stopWords = scala.io.Source.fromInputStream(stopWordsFile, "UTF-8").getLines().toSeq
     log.info(s"Loaded ${stopWords.length} stop words")
