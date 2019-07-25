@@ -69,6 +69,10 @@ class SettingEditor extends Component {
         this.props.actions.setCloseTransactionDialog(value);
     }
 
+    onLanguageChange(value) {
+        this.props.actions.setLanguage(value);
+    }
+
     onReindexClick() {
         this.props.actions.reindexTransactions();
     }
@@ -83,7 +87,7 @@ class SettingEditor extends Component {
             return <h1>Unable to load settings</h1>
         }
 
-        var currencies = props.currency.get('currencies').filter((v) => v.get('active')).map((v, k) => {
+        const currencies = props.currency.get('currencies').filter((v) => v.get('active')).map((v, k) => {
             return (
                 <MenuItem value={k} key={k}>{v.get('name')}</MenuItem>
             )
@@ -120,6 +124,23 @@ class SettingEditor extends Component {
                     <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
                 </Col>
             </Row>
+            <Row>
+                <Col xs={12} sm={6} md={6} lg={4}>
+                    <p>Language:</p>
+                </Col>
+                <Col xs={12} sm={6} md={6} lg={4}>
+                    <Select
+                        value={props.language}
+                        onChange={(ev) => ::this.onLanguageChange(ev.target.value)}
+                    >
+                        <MenuItem value='cz' key='cz'>cz</MenuItem>
+                        <MenuItem value='de' key='de'>de</MenuItem>
+                        <MenuItem value='en-US' key='en-US'>en-US</MenuItem>
+                        <MenuItem value='lt' key='lt'>lt</MenuItem>
+                        <MenuItem value='ru' key='ru'>ru</MenuItem>
+                    </Select>
+                </Col>
+            </Row>
         </Fragment>)
     }
 }
@@ -133,6 +154,7 @@ class SettingsPage extends Component {
                 <SettingEditor ui={props.setting.get('ui')} currency={props.currency}
                                primaryCurrency={props.primaryCurrency}
                                closeTransactionDialog={props.closeTransactionDialog}
+                               language={props.language}
                                actions={props.actions}/>
                 <Divider/>
                 <Row>
