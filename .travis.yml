@@ -14,6 +14,13 @@ before_script:
 - psql -f docs/createdb.sql -U postgres
 - git clone https://github.com/akashihi/mdg-api-test
 script:
+#TODO Remove custom elastic4s when it will be fixed upstream
+- git clone https://github.com/akashihi/elastic4s
+- cd elastic4s
+- git checkout mdg
+- sbt compile
+- sbt publishLocal
+- cd ../
 - sbt universal:packageZipTarball
 - cd target/universal
 - tar zxvf mdg.tgz

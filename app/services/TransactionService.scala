@@ -28,7 +28,8 @@ import scala.concurrent._
   * Transaction operations service.
   */
 class TransactionService @Inject() (protected val rs: RateService, protected val es: ElasticSearch,
-                                    protected val sql: SqlDatabase, implicit protected val acs: ActorSystem)
+                                    protected val sql: SqlDatabase, protected val ss: SettingService,
+                                    implicit protected val acs: ActorSystem)
                                    (implicit ec: SqlExecutionContext) {
   val log: Logger = Logger(this.getClass)
 
@@ -221,8 +222,9 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
     implicit val am: ActorMaterializer = ActorMaterializer()
 
     log.info("Starting transaction reindexing")
-    def create = OptionT(es.createMdgIndex().map(_.option(1)))
-    def drop = OptionT(es.dropMdgIndex().map(_.option(1)))
+    val language = ss.get(UiLanguage).map(_.value)
+    val create = language.map(es.createMdgIndex).flatten.map(_ => 1)
+    val drop = EitherT(es.dropMdgIndex().map(_.option(1).fromOption("")))
     def saveToIndex(tx: Transaction) = {
       val tags = sql.query(TransactionQuery.listTags(tx.id.get)).map(_.map(_.txtag))
       tags.flatMap(es.saveTx(tx.id.get, tx.comment.getOrElse(""), _))
@@ -231,7 +233,7 @@ class TransactionService @Inject() (protected val rs: RateService, protected val
 
     def flow = Source.fromPublisher(transactions).mapAsync(1)(saveToIndex).map(if (_) 0 else 1).toMat(Sink.fold(0)(_ + _))(Keep.right)
 
-    val index = drop.flatMap(_ => create).flatMapF(_ => flow.run())
+    val index = drop.flatMap(_ => create).map(_ => flow.run()).flatten
 
     index.map {errors => log.warn(s"Transaction reindexing finished with $errors errors"); errors}
         .map(e => e == 0)

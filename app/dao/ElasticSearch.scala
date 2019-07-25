@@ -1,27 +1,21 @@
 package dao
 
+import com.google.inject.Provider
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.analyzers._
-import com.sksamuel.elastic4s.http._
-import com.sksamuel.elastic4s.json.XContentBuilder
-import com.sksamuel.elastic4s.searches.queries.matches.MatchQuery
+import com.sksamuel.elastic4s.http.JavaClient
+import com.sksamuel.elastic4s.requests.analysis._
+import com.sksamuel.elastic4s.requests.common.RefreshPolicy
+import com.sksamuel.elastic4s.requests.mappings.TextField
+import com.sksamuel.elastic4s.requests.searches.queries.matches.MatchQuery
 import javax.inject.Inject
-import play.api.Configuration
+import play.Application
+import play.api.{Configuration, Logger}
 import util.OptionConverters._
-import play.api.Logger
 
 import scala.concurrent._
 
-case class HunspellTokenFilter(name:String,language: String)
-  extends TokenFilterDefinition {
-  val filterType = "hunspell"
-  override def build(source: XContentBuilder): Unit = {
-    source.field("language", language)
-  }
-}
-
-class ElasticSearch @Inject() (protected val config: Configuration)(implicit val ec: SqlExecutionContext) {
-  import com.sksamuel.elastic4s.http.ElasticDsl._
+class ElasticSearch @Inject() (protected val config: Configuration, protected val app: Provider[Application])(implicit val ec: SqlExecutionContext) {
+  import com.sksamuel.elastic4s.ElasticDsl._
 
   private val INDEX_NAME = "mdg"
   private val log: Logger = Logger(this.getClass)
@@ -29,7 +23,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
 
   protected def getEsClient: ElasticClient = {
     val url = config.getOptional[String]("elasticsearch.url").getOrElse("http://localhost:9200")
-    ElasticClient(ElasticProperties(url))
+    ElasticClient(JavaClient(ElasticProperties(url)))
   }
 
   def logEsError[T](response: Response[T]): Response[T] = {
@@ -59,109 +53,20 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
     * Index is hardcoded to russian.
     * @return True in case of sucess.
     */
-  def createMdgIndex(): Future[Boolean] = {
-    val stopWords = Seq("а",
-      "без",
-      "более",
-      "бы",
-      "был",
-      "была",
-      "были",
-      "было",
-      "быть",
-      "в",
-      "вам",
-      "вас",
-      "весь",
-      "во",
-      "вот",
-      "все",
-      "всего",
-      "всех",
-      "вы",
-      "где",
-      "да",
-      "даже",
-      "для",
-      "до",
-      "его",
-      "ее",
-      "если",
-      "есть",
-      "еще",
-      "же",
-      "за",
-      "здесь",
-      "и",
-      "из",
-      "или",
-      "им",
-      "их",
-      "к",
-      "как",
-      "ко",
-      "когда",
-      "кто",
-      "ли",
-      "либо",
-      "мне",
-      "может",
-      "мы",
-      "на",
-      "надо",
-      "наш",
-      "не",
-      "него",
-      "нее",
-      "нет",
-      "ни",
-      "них",
-      "но",
-      "ну",
-      "о",
-      "об",
-      "однако",
-      "он",
-      "она",
-      "они",
-      "оно",
-      "от",
-      "очень",
-      "по",
-      "под",
-      "при",
-      "с",
-      "со",
-      "так",
-      "также",
-      "такой",
-      "там",
-      "те",
-      "тем",
-      "то",
-      "того",
-      "тоже",
-      "той",
-      "только",
-      "том",
-      "ты",
-      "у",
-      "уже",
-      "хотя",
-      "чего",
-      "чей",
-      "чем",
-      "что",
-      "чтобы",
-      "чье",
-      "чья",
-      "эта",
-      "эти",
-      "это",
-      "я")
-    val stopWordsFilter = StopTokenFilter("stop_ru", stopwords = stopWords, ignoreCase = Some(true))
+  def createMdgIndex(languageCode: String): Future[Boolean] = {
+    val stopWordsFile = app.get().classloader().getResourceAsStream("elasticsearch/stopwords." + languageCode)
+    val stopWords = scala.io.Source.fromInputStream(stopWordsFile, "UTF-8").getLines().toSeq
+    log.info(s"Loaded ${stopWords.length} stop words")
+    val stopWordsFilter = StopTokenFilter("stop", stopwords = stopWords, ignoreCase = Some(true))
+
     val triplets = NGramTokenizer("triplets", minGram=3, maxGram=3, tokenChars=Seq("letter", "digit"))
-    val ru_mapping = MappingCharFilter("ru_mapping", "Ё" -> "Е", "ё" -> "е")
+
+    val charMapFile = app.get().classloader().getResourceAsStream("elasticsearch/charmap." + languageCode)
+    val charMap = scala.io.Source.fromInputStream(charMapFile, "UTF-8").getLines().toSeq
+      .map(_.split("\\s+")).map(e => e.head -> e.tail.head).toMap
+    log.info(s"Loaded ${charMap.size} character mappings")
+    val mapping = MappingCharFilter("mapping", charMap)
+
     val wordDelimiter = WordDelimiterTokenFilter("delimiter",
       generateWordParts = Some(true),
       generateNumberParts = Some(true),
@@ -172,19 +77,27 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
       preserveOriginal = Some(true),
       splitOnNumerics = Some(false)
     )
-    val language = HunspellTokenFilter("ru_RU", language = "ru")
-    val comment_analyzer = CustomAnalyzerDefinition("ru_RU", triplets, ru_mapping, stopWordsFilter, wordDelimiter, language)
-    val tags_analyzer = CustomAnalyzerDefinition("ru_RU_tags", triplets, ru_mapping, wordDelimiter, language)
-    client.execute {
-      createIndex(INDEX_NAME)
-        .mappings(
-          mapping("tx").fields(
-            textField("comment").analyzer("ru_RU"), textField("tags").analyzer("ru_RU_tags")
-          )
-        )
-        .analysis(comment_analyzer, tags_analyzer)
-        .settings(Map("number_of_shards" -> 1))
-    }.map(logEsError).map(_.isSuccess)
+
+    val language = HunspellTokenFilter(name = "hunspell", locale = languageCode)
+
+    val comment = CustomAnalyzer("comments", "triplets", List("mapping"), List("stop", "delimiter", "hunspell"))
+    val tags = CustomAnalyzer("tags", "triplets", List("mapping"), List("delimiter", "hunspell"))
+
+    val analysis = Analysis(List(comment, tags), List(triplets), List(stopWordsFilter, wordDelimiter, language), List(mapping))
+
+    val index = createIndex(INDEX_NAME)
+      .analysis(analysis)
+      .mapping(
+        properties(Seq(
+          TextField("comment").analyzer("comments"),
+          TextField("tags").analyzer("tags")
+        ))
+      )
+      .settings(Map("number_of_shards" -> 1))
+
+    log.info(index.show)
+
+    client.execute {index}.map(logEsError _).map(_.isSuccess)
   }
 
   /**
@@ -196,7 +109,7 @@ class ElasticSearch @Inject() (protected val config: Configuration)(implicit val
   def saveTx(id: Long, comment: String, tags: Seq[String]): Future[Boolean] = {
 
     val response = client.execute {
-      indexInto(INDEX_NAME / "tx").id(id.toString).fields("comment" -> comment, "tags" -> tags).refresh(RefreshPolicy.Immediate)
+      indexInto(INDEX_NAME).id(id.toString).fields("comment" -> comment, "tags" -> tags).refresh(RefreshPolicy.Immediate)
     }
 
     response.map(logEsError).map(_.isSuccess)

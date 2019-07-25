@@ -241,3 +241,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## License
 
 This project is licensed under the GPLv3 License - see the LICENSE file for details.
+
+Stop words for English, German, Russian languages are provided by [PostgreSQL](https://www.postgresql.org/), released under PostgreSQL License 
+
+Stop words for the Czech language are provided by [{Python Stop Words](https://github.com/Alir3z4/python-stop-words), released under BSD License
+
+Stop words for the Lithuanian language are provided by [{Stopwords-LT](https://github.com/stopwords-iso/stopwords-lt), released under MIT License
