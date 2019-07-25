@@ -26,12 +26,12 @@ export default class Main extends Component {
               <Row>
                 <Col xs={12} sm={12} md={11} lg={11}>
                   <Switch>
-                    <Route exact path='/' component={Overview}/>
-                    <Route path='/budget' component={BudgetViewer}/>
-                    <Route path='/transactions' component={TransactionsViewer}/>
-                    <Route path='/reports' component={ReportsViewer}/>
-                    <Route path='/accounts' component={AccountsViewer}/>
-                    <Route path='/settings' component={SettingsViewer}/>
+                    <Route exact path='/' render={() => <Overview/>}/>
+                    <Route path='/budget' render={() => <BudgetViewer/>}/>
+                    <Route path='/transactions' render={() => <TransactionsViewer/>}/>
+                    <Route path='/reports' render={() => <ReportsViewer/>}/>
+                    <Route path='/accounts' render={() => <AccountsViewer/>}/>
+                    <Route path='/settings' render={() => <SettingsViewer/>}/>
                   </Switch>
                 </Col>
                 <Col xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
