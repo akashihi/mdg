@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classnames from 'classnames';
 import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Divider from '@material-ui/core/Divider';
 import GridList from '@material-ui/core/GridList';
@@ -47,9 +46,18 @@ class TransactionsPage extends Component {
 
         const title = 'Showing transactions from ' + props.periodBeginning + ' till ' + props.periodEnd;
 
+        let summary = '';
+        if (props.selectedTotals.get('count') > 0) {
+            summary = <GridListTile>
+                <Card>
+                    <CardContent style={{textAlign: 'center'}}>Selected {props.selectedTotals.get('count')} transaction(s) with total change of {props.selectedTotals.get('change')}</CardContent>
+                </Card>
+            </GridListTile>
+        }
+
         const transactions = props.transactions.map(function (item, id) {
             return (
-                <GridListTile key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
+                <GridListTile key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest} selectTxAction={props.actions.markTransaction}/></GridListTile>
             )
         }).valueSeq();
 
@@ -70,9 +78,10 @@ class TransactionsPage extends Component {
             </Card>
             <Divider/>
             <GridList cols={1} cellHeight='auto'>
+                {summary}
                 <GridListTile>
                     <Card>
-                        <CardHeader>
+                        <CardContent>
                             <Grid>
                                 <Row>
                                     <Col xs={1}/>
@@ -84,7 +93,7 @@ class TransactionsPage extends Component {
                                     <Col xs={1}/>
                                 </Row>
                             </Grid>
-                        </CardHeader>
+                        </CardContent>
                     </Card>
                 </GridListTile>
                 {props.waiting && <ClipLoader sizeUnit={'px'} size={150} loading={true}/>}

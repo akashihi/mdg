@@ -37,6 +37,11 @@ class TransactionFullWidget extends React.Component {
         this.setState(state => ({ expanded: !state.expanded }));
       };
 
+    markTransaction = value => {
+        const props = this.props;
+        props.selectTxAction(props.transaction.get('id'), value)
+    };
+
     renderOperations(tx) {
         return tx.get('operations').map(function (item) {
             return (
@@ -50,13 +55,13 @@ class TransactionFullWidget extends React.Component {
         const props = this.props;
         const transaction = props.transaction;
 
-        const operations = ::this.renderOperations(props.transaction);
+        const operations = ::this.renderOperations(transaction);
 
         return <Card>
             <CardContent>
                 <Grid>
                     <Row>
-                        <Col xs={1} className='hide-on-small'><Checkbox color='default'/></Col>
+                        <Col xs={1} className='hide-on-small'><Checkbox color='default' onChange={(ev, value) => ::this.markTransaction(value)}/></Col>
                         <Col xs={3} sm={2} md={1} lg={1}>{transaction.get('timestamp')}</Col>
                         <Col xs={6} sm={3} md={3} lg={3}>{transaction.get('comment')}</Col>
                         <Col xs={3} sm={1} md={1} lg={1}>

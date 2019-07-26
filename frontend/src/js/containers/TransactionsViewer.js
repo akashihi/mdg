@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import {selectBeginningDate, selectEndDate} from '../selectors/TransactionViewSelector'
+import {selectBeginningDate, selectEndDate, selectMarkedTransactionsTotals} from '../selectors/TransactionViewSelector'
 import {selectTransactions} from '../selectors/TransactionSelector'
 
 
@@ -14,6 +14,7 @@ const mapStateToProps = (state) => {
     return {
         waiting: state.transaction.get('ui').get('transactionListLoading'),
         error: state.transaction.get('ui').get('transactionListError'),
+        selectedTotals: selectMarkedTransactionsTotals(state),
         transactions: selectTransactions(state),
         periodBeginning: selectBeginningDate(state),
         periodEnd: selectEndDate(state)
