@@ -14,7 +14,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import TransactionBase from './TransactionBase'
 
-import {timestampToFormattedDate} from '../../util/DateUtil'
 import Operation from './Operation'
 
 const styles = theme => ({
@@ -55,18 +54,18 @@ class TransactionFullWidget extends TransactionBase {
 
         const operations = ::this.renderOperations(props.transaction, props.accounts);
         const totals = ::this.getTotalChange();
-
+console.log(transaction);
         return <Card>
             <CardContent>
                 <Grid>
                     <Row>
                         <Col xs={1} className='hide-on-small'><Checkbox color='default'/></Col>
-                        <Col xs={3} sm={2} md={1} lg={1}>{timestampToFormattedDate(transaction.get('timestamp'))}</Col>
+                        <Col xs={3} sm={2} md={1} lg={1}>{transaction.get('timestamp')}</Col>
                         <Col xs={6} sm={3} md={3} lg={3}>{transaction.get('comment')}</Col>
                         <Col xs={3} sm={1} md={1} lg={1}>
                             <div style={{color: totals.color}}>{totals.total}</div>
                         </Col>
-                        <Col xs={7} sm={3} md={2} lg={2}>{::this.renderTransactionAccountList(transaction.get('operations'), props.accounts)}</Col>
+                        <Col xs={7} sm={3} md={2} lg={2}>{transaction.get('accountNames')}</Col>
                         <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{transaction.get('tags').join(', ')}</Col>
                         <Col xs={5} sm={3} md={2} lg={2}>
                           <Button aria-label='Edit' onClick={() => props.editAction(props.id, props.transaction)}><Edit/></Button>

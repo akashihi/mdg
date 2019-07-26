@@ -1,22 +1,6 @@
 import React from 'react';
 
 export default class TransactionBase extends React.Component {
-    renderTransactionAccountList(operations, accounts) {
-        //Tx account list should include only non-asset
-        //account.
-        //If transaction is built only of asset accounts,
-        //they should be used
-        var opAccounts = operations.map((item) => item.account_id);
-        var usedAccounts = accounts.filter((item, key) => opAccounts.includes(key));
-
-        var nonAssetAccounts = usedAccounts.filter((item) => item.get('account_type') !== 'asset');
-        if (!nonAssetAccounts.isEmpty()) {
-            return nonAssetAccounts.map((item) => item.get('name')).valueSeq().join(', ')
-        } else {
-            return usedAccounts.map((item) => item.get('name')).valueSeq().join(', ')
-        }
-    }
-
     getTotalChange() {
         //We need to calculate totals for all
         //types of accounts.
