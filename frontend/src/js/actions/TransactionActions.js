@@ -25,7 +25,9 @@ import {
     TRANSACTION_DIALOG_CHANGE,
     TRANSACTION_DIALOG_CLOSESAVE_SET,
     GET_LASTTRANSACTION_SUCCESS,
-    SET_TRANSACTION_FILTER
+    SET_TRANSACTION_FILTER,
+    TRANSACTION_LIST_SELECT,
+    TRANSACTION_LIST_UNSELECT
 } from '../constants/Transaction'
 
 export function loadLastTransactions() {
@@ -284,5 +286,12 @@ export function updateTransaction(id, tx) {
             .then(()=>dispatch(loadTotalsReport()))
             .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetInfoById(selectedBudgetId))}})
             .catch(()=>dispatch(loadTransactionList()))
+    }
+}
+
+export function markTransaction(id, value) {
+    return {
+        type: value ? TRANSACTION_LIST_SELECT : TRANSACTION_LIST_UNSELECT,
+        payload: id
     }
 }

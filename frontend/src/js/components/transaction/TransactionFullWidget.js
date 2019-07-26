@@ -12,9 +12,6 @@ import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import TransactionBase from './TransactionBase'
-
-import {timestampToFormattedDate} from '../../util/DateUtil'
 import Operation from './Operation'
 
 const styles = theme => ({
@@ -33,17 +30,22 @@ const styles = theme => ({
   },
 });
 
-class TransactionFullWidget extends TransactionBase {
+class TransactionFullWidget extends React.Component {
     state = { expanded: false };
 
     handleExpandClick = () => {
         this.setState(state => ({ expanded: !state.expanded }));
       };
 
-    renderOperations(tx, accounts) {
+    markTransaction = value => {
+        const props = this.props;
+        props.selectTxAction(props.transaction.get('id'), value)
+    };
+
+    renderOperations(tx) {
         return tx.get('operations').map(function (item) {
             return (
-                <Fragment key={tx.id + '-' + item.account_id}><Operation operation={item} accounts={accounts}/></Fragment>
+                <Fragment key={tx.get('id') + '-' + item.account_id}><Operation operation={item}/></Fragment>
             )
         });
     }
@@ -53,20 +55,19 @@ class TransactionFullWidget extends TransactionBase {
         const props = this.props;
         const transaction = props.transaction;
 
-        const operations = ::this.renderOperations(props.transaction, props.accounts);
-        const totals = ::this.getTotalChange();
+        const operations = ::this.renderOperations(transaction);
 
         return <Card>
             <CardContent>
                 <Grid>
                     <Row>
-                        <Col xs={1} className='hide-on-small'><Checkbox color='default'/></Col>
-                        <Col xs={3} sm={2} md={1} lg={1}>{timestampToFormattedDate(transaction.get('timestamp'))}</Col>
+                        <Col xs={1} className='hide-on-small'><Checkbox color='default' onChange={(ev, value) => ::this.markTransaction(value)}/></Col>
+                        <Col xs={3} sm={2} md={1} lg={1}>{transaction.get('timestamp')}</Col>
                         <Col xs={6} sm={3} md={3} lg={3}>{transaction.get('comment')}</Col>
                         <Col xs={3} sm={1} md={1} lg={1}>
-                            <div style={{color: totals.color}}>{totals.total}</div>
+                            <div style={{color: transaction.get('totals').get('color')}}>{transaction.get('totals').get('total')}</div>
                         </Col>
-                        <Col xs={7} sm={3} md={2} lg={2}>{::this.renderTransactionAccountList(transaction.get('operations'), props.accounts)}</Col>
+                        <Col xs={7} sm={3} md={2} lg={2}>{transaction.get('accountNames')}</Col>
                         <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{transaction.get('tags').join(', ')}</Col>
                         <Col xs={5} sm={3} md={2} lg={2}>
                           <Button aria-label='Edit' onClick={() => props.editAction(props.id, props.transaction)}><Edit/></Button>
