@@ -42,10 +42,10 @@ class TransactionsPage extends Component {
     };
 
     render() {
-        var { classes } = this.props;
-        var props = this.props;
+        const { classes } = this.props;
+        const props = this.props;
 
-        var title = 'Showing transactions from ' + props.periodBeginning.format('DD-MM-YYYY') + ' till ' + props.periodEnd.format('DD-MM-YYYY');
+        const title = 'Showing transactions from ' + props.periodBeginning + ' till ' + props.periodEnd;
 
         var transactions;
         if (props.waiting) {
