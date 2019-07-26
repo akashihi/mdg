@@ -37,10 +37,10 @@ class TransactionFullWidget extends React.Component {
         this.setState(state => ({ expanded: !state.expanded }));
       };
 
-    renderOperations(tx, accounts) {
+    renderOperations(tx) {
         return tx.get('operations').map(function (item) {
             return (
-                <Fragment key={tx.id + '-' + item.account_id}><Operation operation={item} accounts={accounts}/></Fragment>
+                <Fragment key={tx.get('id') + '-' + item.account_id}><Operation operation={item}/></Fragment>
             )
         });
     }
@@ -50,7 +50,7 @@ class TransactionFullWidget extends React.Component {
         const props = this.props;
         const transaction = props.transaction;
 
-        const operations = ::this.renderOperations(props.transaction, props.accounts);
+        const operations = ::this.renderOperations(props.transaction);
 
         return <Card>
             <CardContent>

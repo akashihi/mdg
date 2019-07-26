@@ -9,10 +9,32 @@ export const selectTransactions = createSelector(
         return transactions.map(item => item.update('timestamp', timestampToFormattedDate))
             .map(item => item.set('accountNames', renderTransactionAccountList(item.get('operations'), accounts)))
             .map(item => item.set('totals', calculateTransactionTotals(item, accounts)))
+            .map((item, id) => item.set('id', id))
+            .map(item => item.update('operations', ops => ops.map(op => accountToOp(op, accounts))));
     }
 );
 
 //Data preparation functions
+const accountToOp = (op, accounts) => {
+    const opAccount = accounts.get(op.account_id);
+
+    op.name = opAccount.get('name');
+
+    op.color = 'black';
+    switch(opAccount.get('account_type')) {
+        case 'income':
+            op.color = 'lime';
+            break;
+        case 'asset':
+            op.color = 'orange';
+            break;
+        case 'expense':
+            op.color = 'red';
+            break;
+
+    }
+    return op;
+}
 const renderTransactionAccountList = (operations, accounts) => {
     //Tx account list should include only non-asset
     //account.

@@ -47,18 +47,11 @@ class TransactionsPage extends Component {
 
         const title = 'Showing transactions from ' + props.periodBeginning + ' till ' + props.periodEnd;
 
-        var transactions;
-        if (props.waiting) {
-            transactions = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
-        } else if (props.error) {
-            transactions = <h1>Unable to load transactions list</h1>
-        } else {
-            transactions = props.transactions.map(function (item, id) {
-                return (
-                    <GridListTile key={id}><Transaction id={id} transaction={item} accounts={props.accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
-                )
-            }).valueSeq();
-        }
+        const transactions = props.transactions.map(function (item, id) {
+            return (
+                <GridListTile key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
+            )
+        }).valueSeq();
 
         return <div>
             <TransactionDeleteDialog/>
@@ -94,6 +87,8 @@ class TransactionsPage extends Component {
                         </CardHeader>
                     </Card>
                 </GridListTile>
+                {props.waiting && <ClipLoader sizeUnit={'px'} size={150} loading={true}/>}
+                {props.error && <h1>Unable to load transactions list</h1>}
                 {transactions}
             </GridList>
             <TransactionPager/>

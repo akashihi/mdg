@@ -14,10 +14,6 @@ const mapStateToProps = (state) => {
     return {
         waiting: state.transaction.get('ui').get('transactionListLoading'),
         error: state.transaction.get('ui').get('transactionListError'),
-        assetAccounts: state.account.get('assetAccountList'),
-        incomeAccounts: state.account.get('incomeAccountList'),
-        expenseAccounts: state.account.get('expenseAccountList'),
-        accounts: state.account.get('accountList'),
         transactions: selectTransactions(state),
         periodBeginning: selectBeginningDate(state),
         periodEnd: selectEndDate(state)
