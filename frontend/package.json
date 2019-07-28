@@ -62,7 +62,7 @@
     "immutable": "^4.0.0-rc.12",
     "jquery": "^3.2.1",
     "material-ui-treeview": "^3.2.0",
-    "mathjs": "^5.9.0",
+    "mathjs": "^6.0.3",
     "moment": "^2.18.1",
     "npm": "^6.9.0",
     "prop-types": "^15.5.8",
