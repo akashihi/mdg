@@ -189,7 +189,7 @@ export function loadTypeAssetReport() {
             .then(checkApiError)
             .then(function (json) {
                 const categoryMapper = item => {
-                    console.log(parseInt(item.get('id')));
+
                     if (state.category.get('categoryList').has(parseInt(item.get('id')))) {
                         return item.set('id', state.category.get('categoryList').get(parseInt(item.get('id'))).get('name'));
                     }
