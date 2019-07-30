@@ -11,3 +11,6 @@ export const getTransactionToDeleteId = state => state.transaction.get('delete')
 
 //Accounts
 export const getAccounts = state => state.account.get('accountList');
+
+//Budget
+export const getCurrentBudgetId = state => state.budgetentry.get('currentBudget').get('id');

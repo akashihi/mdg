@@ -6,7 +6,8 @@ import {timestampToFormattedDate} from '../util/DateUtil'
 
 export const selectTransactions = createSelector(
     [getTransactions, getAccounts], (transactions, accounts) => {
-        return transactions.map(item => item.update('timestamp', timestampToFormattedDate))
+        return transactions.map(item => item.set('dt', item.get('timestamp')))
+            .map(item => item.update('dt', timestampToFormattedDate))
             .map(item => item.set('accountNames', renderTransactionAccountList(item.get('operations'), accounts)))
             .map(item => item.set('totals', calculateTransactionTotals(item, accounts)))
             .map((item, id) => item.set('id', id))

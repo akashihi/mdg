@@ -4,6 +4,7 @@ import {Map} from 'immutable';
 
 import {checkApiError, parseJSON, dataToMap, mapToData, singleToMap} from '../util/ApiUtils';
 
+import {getCurrentBudgetId} from '../selectors/StateGetters';
 import {selectTransactionToDeleteById} from '../selectors/TransactionDeleteSelector';
 
 import {loadAccountList} from './AccountActions'
@@ -263,13 +264,8 @@ export function updateTransaction(tx) {
                 tx: tx.set('loading', true)
             }
         });
-        dispatch({
-            type: GET_TRANSACTIONLIST_REQUEST,
-            payload: true
-        });
 
-        const state=getState();
-        const selectedBudgetId = state.budgetentry.get('currentBudget').get('id');
+        const selectedBudgetId = getCurrentBudgetId(getState());
 
         let url = '/api/transaction';
         let method = 'POST';
