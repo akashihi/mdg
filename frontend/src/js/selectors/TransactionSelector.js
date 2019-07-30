@@ -72,7 +72,7 @@ const calculateTransactionTotals = (tx, accounts) => {
     //
     //In other cases it's a 'transfer' transaction.
     const sumByAccount = ops => ops.reduce((acc, item) => {
-        let amount = item.amount;
+        let amount = parseFloat(item.amount);
         if (item.rate) {
             amount = amount * item.rate
         }
