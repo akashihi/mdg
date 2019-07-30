@@ -1,6 +1,5 @@
 import {Map} from 'immutable';
 import {checkApiError, parseJSON, dataToMap, mapToData, singleToMap} from '../util/ApiUtils';
-import {loadTransactionList} from './TransactionActions';
 import {loadBudgetEntryList} from './BudgetEntryActions';
 import {loadTotalsReport} from './ReportActions'
 
@@ -35,7 +34,6 @@ export function loadAccountList() {
                     payload: data
                 })
             })
-            .then(() => dispatch(loadTransactionList()))
             .catch(function (response) {
                 dispatch({
                     type: GET_ACCOUNTLIST_FAILURE,
