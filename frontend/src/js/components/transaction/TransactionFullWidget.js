@@ -11,6 +11,7 @@ import Edit from '@material-ui/icons/Edit';
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 import Operation from './Operation'
 
@@ -55,6 +56,10 @@ class TransactionFullWidget extends React.Component {
         const props = this.props;
         const transaction = props.transaction;
 
+        if (transaction.get('loading')) {
+            // Fast processing
+            return <ClipLoader sizeUnit={'px'} size={15} loading={true}/>
+        }
         const operations = ::this.renderOperations(transaction);
 
         return <Card>

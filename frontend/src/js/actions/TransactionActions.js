@@ -2,7 +2,7 @@ import jQuery from 'jquery';
 import moment from 'moment';
 import {Map} from 'immutable';
 
-import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils';
+import {checkApiError, parseJSON, dataToMap, mapToData, singleToMap} from '../util/ApiUtils';
 
 import {loadAccountList} from './AccountActions'
 import {loadBudgetInfoById} from './BudgetEntryActions';
@@ -27,22 +27,24 @@ import {
     GET_LASTTRANSACTION_SUCCESS,
     SET_TRANSACTION_FILTER,
     TRANSACTION_LIST_SELECT,
-    TRANSACTION_LIST_UNSELECT
+    TRANSACTION_LIST_UNSELECT,
+    TRANSACTION_PARTIAL_SUCCESS,
+    TRANSACTION_PARTIAL_UPDATE
 } from '../constants/Transaction'
 
 export function loadLastTransactions() {
     return (dispatch) => {
-        var paginationParams = {
+        const paginationParams = {
             pageSize: 5,
             pageNumber: 1
         };
-        var periodParams = {
+        const periodParams = {
             notLater: moment().format('YYYY-MM-DDT23:59:59'),
         };
 
-        var params = Object.assign({}, paginationParams, periodParams);
+        const params = Object.assign({}, paginationParams, periodParams);
 
-        var url = '/api/transaction' + '?' + jQuery.param(params);
+        const url = '/api/transaction' + '?' + jQuery.param(params);
 
         fetch(url)
             .then(parseJSON)
@@ -247,29 +249,35 @@ export function editTransactionSave() {
             payload: true
         });
       }
-        const id = state.transaction.getIn(['dialog', 'id']);
         const transaction = state.transaction.getIn(['dialog', 'transaction']);
-        dispatch(updateTransaction(id, transaction));
+        dispatch(updateTransaction(transaction));
         if (!state.transaction.getIn(['dialog', 'closeOnSave'])) {
           dispatch(createTransaction())
         }
     }
 }
 
-export function updateTransaction(id, tx) {
+export function updateTransaction(tx) {
     return (dispatch, getState) => {
+        dispatch({
+            type: TRANSACTION_PARTIAL_UPDATE,
+            payload: {
+                id: tx.get('id', -1),
+                tx: tx.set('loading', true)
+            }
+        });
         dispatch({
             type: GET_TRANSACTIONLIST_REQUEST,
             payload: true
         });
 
-        var state=getState();
-        var selectedBudgetId = state.budgetentry.get('currentBudget').get('id');
+        const state=getState();
+        const selectedBudgetId = state.budgetentry.get('currentBudget').get('id');
 
-        var url = '/api/transaction';
-        var method = 'POST';
-        if (id != -1) {
-            url = url + '/' + id;
+        let url = '/api/transaction';
+        let method = 'POST';
+        if (tx.has('id')) {
+            url = url + '/' + tx.get('id');
             method = 'PUT';
         }
 
@@ -278,10 +286,25 @@ export function updateTransaction(id, tx) {
             headers: {
                 'Content-Type': 'application/vnd.mdg+json'
             },
-            body: JSON.stringify(mapToData(id, tx))
+            body: JSON.stringify(mapToData(tx.get('id', -1), tx))
         })
             .then(parseJSON)
+            .then(singleToMap)
             .then(checkApiError)
+            .then(map => {
+                if (!tx.has('id')) {
+                    dispatch(loadTransactionList());
+                    dispatch(loadLastTransactions());
+                } else {
+                    dispatch({
+                        type: TRANSACTION_PARTIAL_SUCCESS,
+                        payload: {
+                            id: tx.get('id', -1),
+                            tx: map.first()
+                        }
+                    })
+                }
+            })
             .then(()=>dispatch(loadAccountList())) //Reloading accounts will trigger transactions reload
             .then(()=>dispatch(loadTotalsReport()))
             .then(()=>{if (selectedBudgetId) { dispatch(loadBudgetInfoById(selectedBudgetId))}})

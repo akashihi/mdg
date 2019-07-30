@@ -12,7 +12,9 @@ import {
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
     TRANSACTION_DIALOG_CLOSESAVE_SET,
-    GET_LASTTRANSACTION_SUCCESS
+    GET_LASTTRANSACTION_SUCCESS,
+    TRANSACTION_PARTIAL_UPDATE,
+    TRANSACTION_PARTIAL_SUCCESS
 } from '../constants/Transaction'
 import {GET_SETTING_SUCCESS} from '../constants/Setting'
 
@@ -117,6 +119,10 @@ export default function transactionReducer(state = initialState, action) {
                 .setIn(['dialog', 'errors'], validInitial.get('errors'));
         case TRANSACTION_DIALOG_CLOSESAVE_SET:
             return state.setIn(['dialog', 'closeOnSave'], action.payload);
+        case TRANSACTION_PARTIAL_UPDATE:
+        case TRANSACTION_PARTIAL_SUCCESS:
+            return state.setIn(['transactionList', action.payload.id], action.payload.tx)
+                .setIn(['ui', 'transactionListLoading'], false);
         case GET_SETTING_SUCCESS:
             var closeTransactionDialog = action.payload.get('ui.transaction.closedialog').get('value') === 'true';
             return state.setIn(['dialog', 'closeOnSave'], closeTransactionDialog);

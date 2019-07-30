@@ -36,6 +36,10 @@ const styles = theme => ({
 class TransactionsPage extends Component {
   state = { expanded: false };
 
+    componentDidMount() {
+        this.props.actions.loadTransactionList();
+    }
+
   handleExpandClick = () => {
       this.setState(state => ({ expanded: !state.expanded }));
     };
