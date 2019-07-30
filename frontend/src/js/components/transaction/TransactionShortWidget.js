@@ -8,7 +8,7 @@ export default class TransactionShortWidget extends React.Component {
 
         return <Grid>
             <Row>
-                <Col xs={3} sm={2} md={1} lg={3}>{transaction.get('timestamp')}</Col>
+                <Col xs={3} sm={2} md={1} lg={3}>{transaction.get('dt')}</Col>
                 <Col xs={6} sm={3} md={3} lg={3}>{transaction.get('comment')}</Col>
                 <Col xs={3} sm={1} md={1} lg={2}>
                     <div style={{color: transaction.get('totals').get('color')}}>{transaction.get('totals').get('total')}</div>
