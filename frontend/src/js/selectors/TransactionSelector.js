@@ -16,6 +16,9 @@ export const selectTransactions = createSelector(
 
 //Data preparation functions
 const accountToOp = (op, accounts) => {
+    if (!accounts.has(op.account_id)) {
+        return {name:'', color: 'black'};
+    }
     const opAccount = accounts.get(op.account_id);
 
     op.name = opAccount.get('name');
@@ -34,7 +37,8 @@ const accountToOp = (op, accounts) => {
 
     }
     return op;
-}
+};
+
 const renderTransactionAccountList = (operations, accounts) => {
     //Tx account list should include only non-asset
     //account.
@@ -77,12 +81,12 @@ const calculateTransactionTotals = (tx, accounts) => {
 
 
     const expandedOperations = tx.get('operations').map((op) => {
-        const opAccount = accounts.get(op.account_id);
-        return {amount: op.amount, rate: op.rate, type: opAccount.get('account_type')}
-    });
-
+        const opAccount = accounts.get(op.account_id, Map());
+        return {amount: op.amount, rate: op.rate, type: opAccount.get('account_type', '')}
+    }).filter(item => item.type);
 
     const summary = sumByAccount(expandedOperations);
+
     if (summary['asset'] > 0 && (summary['income'] !== 0 || summary['expense'] !== 0)) {
         return Map({color: 'lime', total: summary['asset'].toFixed(2)});
     }
@@ -108,5 +112,5 @@ const calculateTransactionTotals = (tx, accounts) => {
         return Map({color: 'orange', total: positives['income'].toFixed(2)});
     }
 
-    return Map({color: 'black', total: 0})
+    return Map({color: 'black', total: ''})
 };
