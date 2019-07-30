@@ -4,6 +4,8 @@ import {Map} from 'immutable';
 
 import {checkApiError, parseJSON, dataToMap, mapToData, singleToMap} from '../util/ApiUtils';
 
+import {selectTransactionToDeleteById} from '../selectors/TransactionDeleteSelector';
+
 import {loadAccountList} from './AccountActions'
 import {loadBudgetInfoById} from './BudgetEntryActions';
 import {loadTotalsReport} from './ReportActions'
@@ -19,7 +21,6 @@ import {
     DELETE_TRANSACTION_CANCEL,
     DELETE_TRANSACTION_APPROVE,
     DELETE_TRANSACTION_SUCCESS,
-    DELETE_TRANSACTION_FAILURE,
     TRANSACTION_DIALOG_OPEN,
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
@@ -147,13 +148,10 @@ export function transactionFilterApply() {
     }
 }
 
-export function deleteTransactionRequest(id, tx) {
+export function deleteTransactionRequest(id) {
     return {
         type: DELETE_TRANSACTION_REQUEST,
-        payload: {
-            id: id,
-            tx: tx
-        }
+        payload: id
     }
 }
 
@@ -165,13 +163,17 @@ export function deleteTransactionCancel() {
 }
 
 export function deleteTransaction(id) {
-    return (dispatch) => {
+    return (dispatch, getState) => {
+        const tx = selectTransactionToDeleteById(getState());
         dispatch({
             type: DELETE_TRANSACTION_APPROVE,
-            payload: id
+            payload: {
+                id: id,
+                tx: tx.set('loading', true)
+            }
         });
 
-        var url = '/api/transaction/' + id;
+        const url = '/api/transaction/' + id;
 
         fetch(url, {method: 'DELETE'})
             .then(function(response) {
@@ -184,14 +186,9 @@ export function deleteTransaction(id) {
             })
             .then(parseJSON)
             .then(checkApiError)
-            .then(()=>dispatch(loadAccountList())) //Reloading accounts will trigger transactions reload
+            .then(()=>dispatch(loadAccountList()))
             .then(()=>dispatch(loadTotalsReport()))
-            .catch(function (response) {
-                dispatch({
-                    type: DELETE_TRANSACTION_FAILURE,
-                    payload: response.json
-                })
-            });
+            .catch(() => dispatch(loadTransactionList()));
     }
 }
 

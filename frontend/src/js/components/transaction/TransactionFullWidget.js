@@ -76,7 +76,7 @@ class TransactionFullWidget extends React.Component {
                         <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{transaction.get('tags').join(', ')}</Col>
                         <Col xs={5} sm={3} md={2} lg={2}>
                           <Button aria-label='Edit' onClick={() => props.editAction(props.id, props.transaction)}><Edit/></Button>
-                          <Button aria-label='Delete' onClick={() => props.deleteAction(props.id, props.transaction)}><Delete/></Button>
+                          <Button aria-label='Delete' onClick={() => props.deleteAction(props.id)}><Delete/></Button>
                           <IconButton className={classnames(classes.expand, {[classes.expandOpen]: this.state.expanded,})} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
                             <ExpandMoreIcon />
                           </IconButton>

@@ -6,5 +6,8 @@ export const getSelectedTransactions = state => state.transactionview.get('selec
 //Transaction
 export const getTransactions = state => state.transaction.get('transactionList');
 
+//Transaction deletion dialog
+export const getTransactionToDeleteId = state => state.transaction.get('delete').get('id');
+
 //Accounts
 export const getAccounts = state => state.account.get('accountList');

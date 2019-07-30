@@ -7,7 +7,6 @@ import {
     DELETE_TRANSACTION_CANCEL,
     DELETE_TRANSACTION_APPROVE,
     DELETE_TRANSACTION_SUCCESS,
-    DELETE_TRANSACTION_FAILURE,
     TRANSACTION_DIALOG_OPEN,
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
@@ -26,8 +25,7 @@ const initialState = Map({
         transactionListError: false,
     }),
     delete: Map({
-        transaction: Map({comment: ''}),
-        id: -1,
+        id: '',
         approvementDialogVisible: false,
         loading: false
     }),
@@ -119,31 +117,24 @@ export default function transactionReducer(state = initialState, action) {
                 .setIn(['dialog', 'errors'], validInitial.get('errors'));
         case TRANSACTION_DIALOG_CLOSESAVE_SET:
             return state.setIn(['dialog', 'closeOnSave'], action.payload);
+        case DELETE_TRANSACTION_APPROVE:
         case TRANSACTION_PARTIAL_UPDATE:
         case TRANSACTION_PARTIAL_SUCCESS:
             return state.setIn(['transactionList', action.payload.id], action.payload.tx)
-                .setIn(['ui', 'transactionListLoading'], false);
+                .setIn(['ui', 'transactionListLoading'], false)
+                .setIn(['delete', 'approvementDialogVisible'], false);
         case GET_SETTING_SUCCESS:
             var closeTransactionDialog = action.payload.get('ui.transaction.closedialog').get('value') === 'true';
             return state.setIn(['dialog', 'closeOnSave'], closeTransactionDialog);
         case DELETE_TRANSACTION_REQUEST:
             return state.setIn(['delete', 'approvementDialogVisible'], true)
-                .setIn(['delete', 'transaction'], action.payload.tx)
-                .setIn(['delete', 'id'], action.payload.id);
+                .setIn(['delete', 'id'], action.payload);
         case DELETE_TRANSACTION_CANCEL:
             return state.setIn(['delete', 'approvementDialogVisible'], false)
                 .setIn(['delete', 'transaction'], Map({comment: ''}));
-        case DELETE_TRANSACTION_APPROVE:
-            return state.setIn(['delete', 'loading'], true);
-        case DELETE_TRANSACTION_FAILURE:
-            return state.setIn(['delete', 'loading'], false);
         case DELETE_TRANSACTION_SUCCESS:
-            var removed = state.get('transactionList').remove(action.payload.id);
-            return state.setIn(['delete', 'approvementDialogVisible'], false)
-                .setIn(['delete', 'loading'], false)
-                .setIn(['delete', 'transaction'], Map({comment: ''}))
-                .setIn(['delete', 'id'], -1)
-                .set('transactionList', removed);
+            return state.update('transactionList', (transactions) => transactions.remove(action.payload))
+                .setIn(['delete', 'id'], '');
         case GET_TRANSACTIONLIST_REQUEST:
             return state.setIn(['ui', 'transactionListLoading'], true)
                 .setIn(['ui', 'transactionListError'], false);
