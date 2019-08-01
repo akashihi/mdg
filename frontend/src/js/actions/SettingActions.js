@@ -39,7 +39,7 @@ export function setPrimaryCurrency(currency_id) {
 
       var url = '/api/setting/currency.primary';
       var method = 'PUT';
-      var setting = { 'type': 'setting', 'id': 'currency.primary', 'attributes': {'value': currency_id.toString() }}
+      var setting = { 'type': 'setting', 'id': 'currency.primary', 'attributes': {'value': currency_id.toString() }};
 
       fetch(url, {
           method: method,
@@ -72,7 +72,7 @@ export function setCloseTransactionDialog(value) {
 
       var url = '/api/setting/ui.transaction.closedialog';
       var method = 'PUT';
-      var setting = { 'type': 'setting', 'id': 'ui.transaction.closedialog', 'attributes': {'value': value.toString() }}
+      var setting = { 'type': 'setting', 'id': 'ui.transaction.closedialog', 'attributes': {'value': value.toString() }};
 
       fetch(url, {
           method: method,
@@ -91,6 +91,36 @@ export function setCloseTransactionDialog(value) {
               })
           })
   }
+}
+
+export function setLanguage(value) {
+    return (dispatch) => {
+        dispatch({
+            type: GET_SETTING_REQUEST,
+            payload: true
+        });
+
+        var url = '/api/setting/ui.language';
+        var method = 'PUT';
+        var setting = { 'type': 'setting', 'id': 'ui.language', 'attributes': {'value': value}};
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json'
+            },
+            body: JSON.stringify({data: setting})
+        })
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(()=>dispatch(loadSettingList()))
+            .catch(function (response) {
+                dispatch({
+                    type: GET_SETTING_FAILURE,
+                    payload: response.json
+                })
+            })
+    }
 }
 
 export function reindexTransactions() {

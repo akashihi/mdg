@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classnames from 'classnames';
 import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Divider from '@material-ui/core/Divider';
 import GridList from '@material-ui/core/GridList';
@@ -37,28 +36,34 @@ const styles = theme => ({
 class TransactionsPage extends Component {
   state = { expanded: false };
 
+    componentDidMount() {
+        this.props.actions.loadTransactionList();
+    }
+
   handleExpandClick = () => {
       this.setState(state => ({ expanded: !state.expanded }));
     };
 
     render() {
-        var { classes } = this.props;
-        var props = this.props;
+        const { classes } = this.props;
+        const props = this.props;
 
-        var title = 'Showing transactions from ' + props.periodBeginning.format('DD-MM-YYYY') + ' till ' + props.periodEnd.format('DD-MM-YYYY');
+        const title = 'Showing transactions from ' + props.periodBeginning + ' till ' + props.periodEnd;
 
-        var transactions;
-        if (props.waiting) {
-            transactions = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
-        } else if (props.error) {
-            transactions = <h1>Unable to load transactions list</h1>
-        } else {
-            transactions = props.transactions.map(function (item, id) {
-                return (
-                    <GridListTile key={id}><Transaction id={id} transaction={item} accounts={props.accounts} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest}/></GridListTile>
-                )
-            }).valueSeq();
+        let summary = '';
+        if (props.selectedTotals.get('count') > 0) {
+            summary = <GridListTile>
+                <Card>
+                    <CardContent style={{textAlign: 'center'}}>Selected {props.selectedTotals.get('count')} transaction(s) with total change of {props.selectedTotals.get('change')}</CardContent>
+                </Card>
+            </GridListTile>
         }
+
+        const transactions = props.transactions.map(function (item, id) {
+            return (
+                <GridListTile key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest} selectTxAction={props.actions.markTransaction}/></GridListTile>
+            )
+        }).valueSeq();
 
         return <div>
             <TransactionDeleteDialog/>
@@ -77,9 +82,10 @@ class TransactionsPage extends Component {
             </Card>
             <Divider/>
             <GridList cols={1} cellHeight='auto'>
+                {summary}
                 <GridListTile>
                     <Card>
-                        <CardHeader>
+                        <CardContent>
                             <Grid>
                                 <Row>
                                     <Col xs={1}/>
@@ -91,9 +97,11 @@ class TransactionsPage extends Component {
                                     <Col xs={1}/>
                                 </Row>
                             </Grid>
-                        </CardHeader>
+                        </CardContent>
                     </Card>
                 </GridListTile>
+                {props.waiting && <ClipLoader sizeUnit={'px'} size={150} loading={true}/>}
+                {props.error && <h1>Unable to load transactions list</h1>}
                 {transactions}
             </GridList>
             <TransactionPager/>

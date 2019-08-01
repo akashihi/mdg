@@ -1,5 +1,5 @@
 import React,{Fragment} from 'react';
-import mathjs from 'mathjs';
+import {evaluate} from 'mathjs';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -261,7 +261,7 @@ export default class TransactionDialog extends React.Component {
             if (strAmount.slice(-1) === '=') { //If it ends with =
                 var expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
                 try {
-                    value = mathjs.eval(expr).toFixed(2)
+                    value = evaluate(expr).toFixed(2)
                 } catch (e) {
                     value = expr
                 }

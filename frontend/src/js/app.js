@@ -11,7 +11,7 @@ import 'whatwg-fetch';
 import rootReducer from './reducers/rootReducer'
 import Main from './components/Main'
 
-const history = createBrowserHistory()
+const history = createBrowserHistory();
 const router = routerMiddleware(history);
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;

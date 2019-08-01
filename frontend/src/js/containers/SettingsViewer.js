@@ -9,6 +9,7 @@ const mapStateToProps = (state) => {
     return {
         primaryCurrency: state.setting.get('primaryCurrency'),
         closeTransactionDialog: state.setting.get('closeTransactionDialog'),
+        language: state.setting.get('language'),
         setting: state.setting,
         currency: state.currency,
     }
