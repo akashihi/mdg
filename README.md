@@ -29,28 +29,22 @@ Appliances are available since version 0.5.0 and are built for each release. If 
 
 #### Deployment guide
 
-Just grab the image from the [github](https://github.com/akashihi/mdg/releases/download/v0.5.0/MDG-appliance-v0.5.0.qcow2.bz2) and create a new VM with the following parameters:
-
-* 1 or more x64 CPU cores
-* 2GB of RAM or more
-* Internet enabled network for exchange rates download
-
-Convert image file from QCOW2 format to your virtualization system format and attach it as a primary disk. Boot up the VM
-and try to access MDG in VM's port 80. Default VM credentials for console login are root/mdg, please, don't forget 
+Just grab the VM package from [github](https://github.com/akashihi/mdg/releases/download/v0.5.1/MDG-appliance-v0.5.1.ova.bz2)  and import it
+into you virtualization system as a new VM. Boot up the VM and try to access MDG in VM's port 80. Default VM credentials for console login are root/mdg, please, don't forget 
 to change them right after deployment.
 
 #### Database backup
 
 Appliance is shipped with preconfigured backup service with timer set to 21:21 local time, that will make a full dump of your MDG database and publish it for Duplicati backup. 
 
-Duplicati web interface is available at http://VM.ip:8200/ and needs to be configured manually, to backup that database dump file somewhere else. Backup file will be available under '/srv/dump_mdg.sql' file in the Duplicati container.
+Duplicati web interface is available at http://VM.ip:8200/ and needs to be configured manually, to backup that database dump file somewhere else. Backup file will be available under '/source/dump_mdg.sql' file in the Duplicati container.
 
 #### Database restore
 
 MDG database can be restored from the dump by running following commands:
 
-    docker-compose -f /usr/local/etc/next.yml stop rates
-    docker-compose -f /usr/local/etc/next.yml stop mdg
+    docker-compose -f /usr/local/etc/{next,docker-compose}.yml stop rates
+    docker-compose -f /usr/local/etc/{next,docker-compose}.yml stop mdg
     docker run -i --rm --network etc_backend --link etc_postgres_1:postgres postgres psql -h postgres -U postgres < dump_mdg.sql
     systemctl restart mdg
 
@@ -191,8 +185,7 @@ This will produce a `dist.tar.gz` archive.
 
 Start postgresql and create a database, using sql script at `mdg/docs/createdb.sql`
 
-Download [hunspell dictionaries](https://github.com/elastic/hunspell.git) and put the to the elastic configuration directory. Start elastic and, optionally, create indices, using definition from `mdg/docs/es_schema.json` Indices may be recreated at any moment using web ui.
-
+Download [hunspell dictionaries](https://github.com/elastic/hunspell.git) and put the to the elastic configuration directory, then start elastic.
 Configure nginx to serve web ui files and proxy mdg server. Sample server configuration is below:
 
     server {
