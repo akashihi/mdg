@@ -5,7 +5,7 @@ import controllers.dto.{AccountDTO, OperationDto, TransactionDto}
 import models._
 import org.scalamock.scalatest.MockFactory
 import tests.ParameterizedSpec
-import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.ElasticDsl._
 import dao.SqlExecutionContext
 
 import scala.concurrent.Future

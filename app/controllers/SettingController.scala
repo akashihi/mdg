@@ -68,4 +68,19 @@ class SettingController @Inject() (protected val ss: SettingService, protected v
       }
     }
   }
+
+  /**
+    * ui.language setting method.
+    *
+    * @return setting object.
+    */
+  def editUiLanguage() = Action.async(parse.tolerantJson) { request =>
+    val value = (request.body \ "data" \ "attributes" \ "value").asOpt[String]
+
+    ss.setUiLanguage(value).run.flatMap { x =>
+      es.handleErrors(x) { x =>
+        makeResult(x)(ACCEPTED)
+      }
+    }
+  }
 }

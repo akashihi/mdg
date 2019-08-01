@@ -23,11 +23,11 @@ object TransactionQuery {
   /**
     * Filtering helper. Retrieves list of transactions ids,
     * which have operations on the specified acocunt ids
-    * @param filter List of tags
+    * @param accountIds List of tags
     * @return List of transactions id, wrapped to DBIO
     */
-  def accTxFilter(filter: Option[Seq[Long]]): DBIO[Seq[Long]] = {
-    filter
+  def accTxFilter(accountIds: Option[Seq[Long]]): DBIO[Seq[Long]] = {
+    accountIds.filter(_.nonEmpty)
       .map { a =>
         operations.filter(_.account_id inSet a).map(_.tx_id).result
       }

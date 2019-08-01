@@ -37,7 +37,7 @@ class RateService @Inject()(protected val sql: SqlDatabase, protected val ss: Se
       .map(_.getOrElse(Rate(Some(-1), ts, ts, from, to, 1))))
 
   def getCurrentRateToPrimary(from: Long): ErrorF[Rate] = {
-    val currency = ss.get(ss.PrimaryCurrency)
+    val currency = ss.get(PrimaryCurrency)
 
     currency.map( c => this.get(LocalDateTime.now(), from, c.value.toLong))
       .map(_.right)

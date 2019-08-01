@@ -9,6 +9,10 @@ MDG (acronim of Moi.Den.Gi, that means "my money" in Russian) is a truly persona
 ## Contents
 
 - [Deployment](#deployment)
+  - [Appliance](#mdg-appliance)
+  - [Ansible](#automatic-deploy-with-ansible-on-atomic-host)
+  - [Docker compose](#docker-compose)
+  - [From source](#deploy-from-source-codes)
 - [Usage](#usage)
 - [Development](#development)
 - [Versioning](#versioning)
@@ -17,9 +21,43 @@ MDG (acronim of Moi.Den.Gi, that means "my money" in Russian) is a truly persona
 
 ## Deployment
 
-### Automatic deploy with Ansible on Atomic host
+###MDG appliance
 
-This is a recommended way to deploy MDG for actual use. Provided ansible playbook will deploy docker compose, run MDG and related services in docker containers, configure systemd services for automated start-up and, finally, configure [Duplicati](https://www.duplicati.com/) based backup solution for your data.
+This is a recommended way to deploy MDG for actual use. VM image contains Atomic OS image with MDG preinstalled and backup system preconfigured.
+
+Appliances are available since version 0.5.0 and are built for each release. If you would like to use development versions, you have to manually [deploy with ansible](#automatic-deploy-with-ansible-on-atomic-host)
+
+#### Deployment guide
+
+Just grab the VM package from [github](https://github.com/akashihi/mdg/releases/download/v0.5.1/MDG-appliance-v0.5.1.ova.bz2)  and import it
+into you virtualization system as a new VM. Boot up the VM and try to access MDG in VM's port 80. Default VM credentials for console login are root/mdg, please, don't forget 
+to change them right after deployment.
+
+#### Database backup
+
+Appliance is shipped with preconfigured backup service with timer set to 21:21 local time, that will make a full dump of your MDG database and publish it for Duplicati backup. 
+
+Duplicati web interface is available at http://VM.ip:8200/ and needs to be configured manually, to backup that database dump file somewhere else. Backup file will be available under '/source/dump_mdg.sql' file in the Duplicati container.
+
+#### Database restore
+
+MDG database can be restored from the dump by running following commands:
+
+    docker-compose -f /usr/local/etc/{next,docker-compose}.yml stop rates
+    docker-compose -f /usr/local/etc/{next,docker-compose}.yml stop mdg
+    docker run -i --rm --network etc_backend --link etc_postgres_1:postgres postgres psql -h postgres -U postgres < dump_mdg.sql
+    systemctl restart mdg
+
+It is your duty to upload MDG database dump to the system.
+
+#### Upgrade procedure
+
+To upgrade your MDG appliance make a [backup](#database-backup), move it out of the VM, delete VM, [redeploy](#mdg-appliance)
+with the new image and [restore database](#database-restore)
+  
+###Automatic deploy with Ansible on Atomic host
+
+Provided ansible playbook will deploy docker compose, run MDG and related services in docker containers, configure systemd services for automated start-up and, finally, configure [Duplicati](https://www.duplicati.com/) based backup solution for your data.
 
 #### Prerequisites
 
@@ -29,27 +67,34 @@ This is a recommended way to deploy MDG for actual use. Provided ansible playboo
 #### Deployment guide
 
 1) Get a copy of recent mdg deploy, by either downloading or cloning it:
-    
+
+
     wget -O mdg-deploy.zip https://github.com/akashihi/mdg-deploy/archive/
     unzip mdg-deploy.zip
-
+    
+or
+    
     git clone https://github.com/akashihi/mdg-deploy.git
+    
 2) Configure your inverntory file: You need to set ip address to your host (default value is 192.168.1.253) and configure ssh access settings, if needed. Consult [Ansible manual](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) for details.
+
 
     vi mdg-deploy/atomic/inventory
 
 3) Choose version, you would like to deploy, by editing playbook file:
     
+    
     vi mdg-deploy/atomic/mdg.yml
 
-You need to edit a 'flavor' variable, setting it either to next(default), deploying a latest dev build ofr MDG, or to 'docker-compose', to deploy latest "stable" version.
+You also need to edit a 'flavor' variable, setting it either to next(default), deploying a latest dev build ofr MDG, or to 'docker-compose', to deploy latest "stable" version.
 
 4) You can start your deployment now, by calling ansible:
+
 
     cd mdg-deploy/atomic
     ansible-playbook -i inventory mdg.yml -k
 
-5) After successfull Ansible run you should check that mdg is available at http://yourip/
+5) After successful Ansible run you should check that mdg is available at http://yourip/
 
 #### Upgrade procedure
 
@@ -60,21 +105,9 @@ To upgrade your MDG, deployed with ansible, you have to login to your Atomic hos
 
 Those two commands will pull new Docker images for MDG and restart the whole software stack.
 
-#### Database backup
+Use [same procedure](#database-backup) for the database backup and restore, as with the appliance.
 
-Ansible playbook will preconfigure backup service with timer, set to 21:21 local time, that will make a full dump of your MDG database and plublish it for Duplicati backup. 
-
-Duplicati web interface is available at http://yourip:8200/ and needs to be configured manually, to backup that database dump file somewhere else. Backup file will be available under '/srv/dump_mdg.sql' file in the Duplicati container.
-
-#### Database restore
-
-MDG database can be restored from dump by running following command:
-
-    docker run -i --rm --link postgres_1:postgres postgres psql -h postgres -U postgres < dump_mdg.sql
-
-Postgres container name may differ on your system.
-
-### Docker compose
+###Docker compose
 Another way of deployment is via [docker compose](https://docs.docker.com/compose/). 
 
 You need to install docker engine and docker compose before deployment, using appropriate procedure for your operating system. After that you have to download docker compose descriptor and start MDG:
@@ -90,7 +123,7 @@ There are two docker compose files:
 
 Ansible based deployment procedure, mentioned above, uses same docker compose approach internally.
 
-### Deploy from source code
+###Deploy from source code
 
 Deployment from the source code is the most complex, but may be useful in case you do not like docker or would like to improve MDG. 
 
@@ -106,8 +139,8 @@ Other (and newer) versions should work too.
 
 Deployment:
 
-* [PostgreSQL 9.x](https://www.postgresql.org/)
-* [ElasticSearch 6.x](https://www.elastic.co/downloads/elasticsearch)
+* [PostgreSQL 11.x](https://www.postgresql.org/)
+* [ElasticSearch 7.x](https://www.elastic.co/downloads/elasticsearch)
 * [Nginx](https://www.nginx.com/)
 
 #### Getting source code
@@ -152,8 +185,7 @@ This will produce a `dist.tar.gz` archive.
 
 Start postgresql and create a database, using sql script at `mdg/docs/createdb.sql`
 
-Download [hunspell dictionaries](https://github.com/elastic/hunspell.git) and put the to the elastic configuration directory. Start elastic and, optionally, create indices, using definition from `mdg/docs/es_schema.json` Indices may be recreated at any moment using web ui.
-
+Download [hunspell dictionaries](https://github.com/elastic/hunspell.git) and put the to the elastic configuration directory, then start elastic.
 Configure nginx to serve web ui files and proxy mdg server. Sample server configuration is below:
 
     server {
@@ -202,3 +234,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## License
 
 This project is licensed under the GPLv3 License - see the LICENSE file for details.
+
+Stop words for English, German, Russian languages are provided by [PostgreSQL](https://www.postgresql.org/), released under PostgreSQL License 
+
+Stop words for the Czech language are provided by [{Python Stop Words](https://github.com/Alir3z4/python-stop-words), released under BSD License
+
+Stop words for the Lithuanian language are provided by [{Stopwords-LT](https://github.com/stopwords-iso/stopwords-lt), released under MIT License
