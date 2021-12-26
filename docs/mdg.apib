@@ -94,11 +94,12 @@ Currencies are identified by their numeric ISO 4217 code
 ## Currency [/currencies/{code}]
 
 + parameters
-    + code (required, number) - ID of a currency in form of ISO 4217 number-3 code
+    + id (required, number) - ID of a currency in form of ISO 4217 number-3 code
 
 + Attributes (object)
-    + code: 978 (string, required) - Currency ISO 4217 alfa-3 code
-    + name: EUR (string, required) - Human friendly currency name
+    + id: 978 (string, required) - Currency ISO 4217 alfa-3 code
+    + code: EUR (string, required) - Short currency code
+    + name: € (string, required) - Human friendly currency name
     + active: true (boolean, required) - Whether this currency is used or not
         Inactive currencies are known by the system, but do not participate in other activities, like rate retireval account management etc
 
