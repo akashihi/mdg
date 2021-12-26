@@ -5,70 +5,10 @@ HOST: https://localhost/api
 
 MDG is a self-hosted personal accounting web service.
 
-This API document is edited at https://mdg1.docs.apiary.io/
+This API document is available at https://mdg2.docs.apiary.io/ and describes API v1
 
-# Data Structures
-
-## Operation (object)
-
-Single operation in a transation.
-
-+ Attributes
-    + account_id (number, required) - Related account id
-    + amount (number, required) - account balance change
-    + rate (number, optional) - exchange rate to be applied
-
-## BudgetPair (object)
-
-Budget specific thing. As budget manages a predicted future and harsh reality at the same time, we usually operation with a pair of number, one is actual and another one is expected. This data structure is used for that
-
-+ Attributes
-    + actual (number, required) - Amount that actually was reached during budget execution
-    + expected (number, required) - Amount that planned to be reached during budget execution
-
-## IdentifiedValue
-
-A report usually sends data in pairs of a vule and id of a linked object (currency, account, etc). This generic structure describes that approach
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
-
-## ValueInTime
-
-Report may have some value, related to point in time, not a entity. For that case we provide separate generic structure.
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
-
-## IdentifiedValueInTime
-
-Combination of IdentifiedValue and ValueInTime
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
-
-## TotalsReportEntry
-
-Data structure for a single totals report entry, linked to a specific asset type.
-
-+ Attributes
-    + category_id (number, required) - Asset category
-    + primary_balance (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
-    + value (array[IdentifiedValue, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency. Entry id is a currency id of the sum above.
-
-## BudgetReportEntry
-
-Data structure for a single totals report entry, linked to a specific asset type.
-
-+ Attributes
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid (beginning of a reported budget)
-    + income (BudgetPair, required) - Value of expected/actual income for that budget
-    + expense (BudgetPair, required) - Value of expected/actual expense for that budget
-    + profit (number, required) - Increase of the asset balance between first and last dates of the budget.
+Previous API document is available at https://mdg1.docs.apiary.io/ and describes API v0,
+which is going to be deprecated soon.
 
 # Group Settings
 
@@ -91,7 +31,7 @@ Resources describing system configuration variables.
                 }
             ]
         }
-    
+
 ## Setting [/setting/{setting_id}]
 
 Valid setting names are:
@@ -102,7 +42,7 @@ Valid setting names are:
 
 + Parameters
     + setting_id (string) - Name of the setting
-    
+
 ### View a Setting [GET]
 
 + Response 200 (application/vnd.mdg+json)
@@ -135,7 +75,7 @@ Settings may have different valid values for different names. Invalid named will
 
 + Response 202 (application/vnd.mdg+json)
   + Body
-  
+
             {
                 "data": {
                     "type": "setting",
@@ -148,94 +88,46 @@ Settings may have different valid values for different names. Invalid named will
 
 # Group Currencies
 
-Resources describing currencies
+Resources describing currencies known to the system.
+Currencies are identified by their numeric ISO 4217 code
 
-## Currency [/currency/{currency_id}]
+## Currency [/currencies/{code}]
 
 + parameters
-    + currency_id (required, number) - ID of a currency in form of ISO 4217 number-3 code
+    + code (required, number) - ID of a currency in form of ISO 4217 number-3 code
 
-+ Attributes
-    + code (string, required) - Currency ISO 4217 alfa-3 code
-    + name (string, required) - Human friendly currency name
-    + active (boolean, required) - Whether this currency is used or not
++ Attributes (object)
+    + code: 978 (string, required) - Currency ISO 4217 alfa-3 code
+    + name: EUR (string, required) - Human friendly currency name
+    + active: true (boolean, required) - Whether this currency is used or not
+        Inactive currencies are known by the system, but do not participate in other activities, like rate retireval account management etc
+
 
 ### View a currency detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-        
-        {
-        "data": {
-                "type": "currency",
-                "id": 840,
-                "attributes": {
-                    "code": "USD",
-                    "name": "$",
-                    "active": true
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Currency)
++ Response 404 (application/vnd.mdg+json;version=1)
+    + Attributes (Problem)
+
 
 ### Modify currency data [PUT]
 
-Only `active` field could be changed. Values in other fields will be silently ignored.
+Only `active` field could be changed. Values in the other fields will be silently ignored.
 
-+ Request (application/vnd.mdg+json)
-
-        {
-        "data": {
-                "type": "currency",
-                "id": 840,
-                "attributes": {
-                    "code": "USD",
-                    "name": "$",
-                    "active": false
-                }
-            }
-        }
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Currency)
 
 + Response 202 (application/vnd.mdg+json)
+    + Attributes (Currency)
 
-        {
-        "data": {
-                "type": "currency",
-                "id": 840,
-                "attributes": {
-                    "code": "USD",
-                    "name": "$",
-                    "active": false
-                }
-            }
-        }
-
-## Currency collection [/currency]
+## Currencies [/currencies]
 
 ### List All Currencies [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "currency",
-                    "id": 840,
-                    "attributes": {
-                        "code": "USD",
-                        "name": "$",
-                        "active": true
-                    }
-                },
-                {
-                    "type": "currency",
-                    "id": 978,
-                    "attributes": {
-                        "code": "EUR",
-                        "name": "€",
-                        "active": false
-                    }
-                }
-            ]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + currencies (array[Currency], required) - Array of currencies
 
 # Group Rates
 
@@ -318,7 +210,7 @@ Resources describing account categories. A category is just an account label, us
 
 + parameters
     + category_id (number, required) - ID of a category
-    
+
 + Attributes
     + id (number, required) - Due to hierarchical nature of categories, category is an exception and provides id twice: inside of a attributes and in a wrapper object.
     + parent_id (number, optional) - Category's parent category id. May be missing for top level categories
@@ -382,7 +274,7 @@ Resources describing account categories. A category is just an account label, us
                                 "account_type": "income"
                             }
                         ]
-                    }   
+                    }
                 }
             }
         }
@@ -487,7 +379,7 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
                                 "account_type": "income"
                             }
                         ]
-                    }   
+                    }
                 }
             }]
         }
@@ -511,11 +403,11 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
 
 + Response 201 (application/vnd.mdg+json)
     + Headers
-    
+
             Location: /category/5
-            
+
     + Body
-    
+
             {
                 "data": {
                         "id": 5,
@@ -698,11 +590,11 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 
 + Response 201 (application/vnd.mdg+json)
   + Headers
-        
+
             Location: /account/4
-        
+
   + Body
-  
+
             {
               "data": {
                     "type": "account",
@@ -917,11 +809,11 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + Response 202 (application/vnd.mdg+json)
   + Headers
-    
+
             Location: /transaction/4
-  
+
   + Body
-    
+
             {
                 "data": [
                     {
@@ -1013,11 +905,11 @@ Budgets effective dates are inclusive and should not overlap.
 
 + Response 202 (application/vnd.mdg+json)
   + Headers
-  
+
             Location: /budget/20170201
-        
+
   + Body
-  
+
             {
                 "data": [
                     {
@@ -1354,7 +1246,7 @@ Various reporting data, mostly read-only
 
 
 + Attributes
-    + value (array[ValueInTime], required) - Array of ValueInTime, where value is a sum of all asset accounts for a specified date. 
+    + value (array[ValueInTime], required) - Array of ValueInTime, where value is a sum of all asset accounts for a specified date.
 
 ### View a report [GET]
 
@@ -1399,3 +1291,71 @@ Various reporting data, mostly read-only
                 }
             }
         }
+
+# Data Structures
+
+## Problem (object)
++ title: CURRENCY_NOT_FOUND (string, required) - Human-friendly error code
++ status: 404 (number, required) - HTTP Status code, must match response status code
++ instance: /currency/1 (string, optional) - URL of errored object if applicable
+
+## Operation (object)
+
+Single operation in a transation.
+
++ Attributes
+    + account_id (number, required) - Related account id
+    + amount (number, required) - account balance change
+    + rate (number, optional) - exchange rate to be applied
+
+## BudgetPair (object)
+
+Budget specific thing. As budget manages a predicted future and harsh reality at the same time, we usually operation with a pair of number, one is actual and another one is expected. This data structure is used for that
+
++ Attributes
+    + actual (number, required) - Amount that actually was reached during budget execution
+    + expected (number, required) - Amount that planned to be reached during budget execution
+
+## IdentifiedValue
+
+A report usually sends data in pairs of a vule and id of a linked object (currency, account, etc). This generic structure describes that approach
+
++ Attributes
+    + value (number, required) - Some value, usually decimal
+    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
+
+## ValueInTime
+
+Report may have some value, related to point in time, not a entity. For that case we provide separate generic structure.
+
++ Attributes
+    + value (number, required) - Some value, usually decimal
+    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
+
+## IdentifiedValueInTime
+
+Combination of IdentifiedValue and ValueInTime
+
++ Attributes
+    + value (number, required) - Some value, usually decimal
+    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
+    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
+
+## TotalsReportEntry
+
+Data structure for a single totals report entry, linked to a specific asset type.
+
++ Attributes
+    + category_id (number, required) - Asset category
+    + primary_balance (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
+    + value (array[IdentifiedValue, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency. Entry id is a currency id of the sum above.
+
+## BudgetReportEntry
+
+Data structure for a single totals report entry, linked to a specific asset type.
+
++ Attributes
+    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid (beginning of a reported budget)
+    + income (BudgetPair, required) - Value of expected/actual income for that budget
+    + expense (BudgetPair, required) - Value of expected/actual expense for that budget
+    + profit (number, required) - Increase of the asset balance between first and last dates of the budget.
