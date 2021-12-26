@@ -221,6 +221,8 @@ TBD
 
 ## Development
 
+We are using GitHub flow for development.
+
 TBD
 
 ## Versioning
