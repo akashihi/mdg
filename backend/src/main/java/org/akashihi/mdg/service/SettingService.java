@@ -4,11 +4,12 @@ import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.CurrencyRepository;
 import org.akashihi.mdg.dao.SettingRepository;
 import org.akashihi.mdg.entity.Setting;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -25,10 +26,12 @@ public class SettingService {
         return settingRepository.findAll(Sort.by("id"));
     }
 
+    @Cacheable(value="settingsCache", key="#result.id", condition = "#result != null")
     public Optional<Setting> get(String name) {
         return settingRepository.findById(name);
     }
 
+    @CacheEvict(value = "settingsCache", key="#result.id")
     public Setting updateUiTransactionCloseDialog(String newValue) {
         if (!newValue.equalsIgnoreCase("true") && !newValue.equalsIgnoreCase("false")) {
             throw new RestException("SETTING_DATA_INVALID", 422, "/settings/ui.transaction.closedialog");
@@ -39,6 +42,7 @@ public class SettingService {
         return setting;
     }
 
+    @CacheEvict(value = "settingsCache", key="#result.id")
     public Setting updateCurrencyPrimary(String newValue) {
         try {
             var currencyID = Long.parseLong(newValue);
@@ -55,6 +59,7 @@ public class SettingService {
         }
     }
 
+    @CacheEvict(value = "settingsCache", key="#result.id")
     public Setting updateUiLanguage(String newValue) {
         var setting = settingRepository.findById("ui.language").orElseThrow(() -> new RestException("SETTING_NOT_FOUND", 404, "/settings/ui.language"));
         setting.setValue(newValue);
