@@ -14,84 +14,52 @@ which is going to be deprecated soon.
 
 Resources describing system configuration variables.
 
-## Settings Collection [/setting]
+## Setting [/settings/{id}]
 
-### List All Settings [GET]
++ parameters
+    + id (required, string) - Name of the setting
+        Valid setting names are:
 
-+ Response 200 (application/vnd.mdg+json)
+        * currency.primary - Changes primary currency of the MDG. Value is a currency id
+        * ui.transaction.closedialog - Configures auto-closing of transaction dialog, values are "true" or "false"
+        * mnt.transaction.reindex - Triggers transaction reindexing. This setting can only be written.
 
-        {
-            "data": [
-                {
-                    "type": "setting",
-                    "id": "currency.primary",
-                    "attributes": {
-                        "value": "840"
-                    }
-                }
-            ]
-        }
-
-## Setting [/setting/{setting_id}]
-
-Valid setting names are:
-
-* currency.primary - Changes primary currency of the MDG. Value is a currency id
-* ui.transaction.closedialog - Configures auto-closing of transaction dialog, values are "true" or "false"
-* mnt.transaction.reindex - Triggers transaction reindexing. This setting can only be written.
-
-+ Parameters
-    + setting_id (string) - Name of the setting
++ Attributes (object)
+    + id: currency.primary (string, required) - Seting name
+    + value: 978 (string, required) - Setting value as a string. As different settings may have different meaning, they values are transferred as strings.
 
 ### View a Setting [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-        "data": {
-                "type": "setting",
-                "id": "currency.primary",
-                "attributes": {
-                    "value": "840"
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Setting)
++ Response 404 (application/vnd.mdg+json;version=1)
+    + Attributes (Problem)
++ Response 422 (application/vnd.mdg+json;version=1)
+    + Attributes (Problem)
 
 ### Modify setting value [PUT]
 
-Settings may have different valid values for different names. Invalid named will not be accepted
+Settings may have different valid values for different names. Invalid values will not be accepted
 
-+ Request (application/vnd.mdg+json)
-
-        {
-        "data": {
-                "type": "setting",
-                "id": "currency.primary"
-                "attributes": {
-                    "value": "978"
-                }
-            }
-        }
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Setting)
 
 + Response 202 (application/vnd.mdg+json)
-  + Body
+    + Attributes (Setting)
+## Settings Collection [/settings]
 
-            {
-                "data": {
-                    "type": "setting",
-                    "id": "currency.primary"
-                    "attributes": {
-                        "value": "978"
-                    }
-                }
-            }
+### List All Settings [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + settings (array[Setting], required) - Array of settings
 
 # Group Currencies
 
 Resources describing currencies known to the system.
 Currencies are identified by their numeric ISO 4217 code
 
-## Currency [/currencies/{code}]
+## Currency [/currencies/{id}]
 
 + parameters
     + id (required, number) - ID of a currency in form of ISO 4217 number-3 code
