@@ -21,6 +21,10 @@ public class CurrencyService {
         return currencyRepository.findAll(Sort.by("active").descending().and(Sort.by("name").ascending()));
     }
 
+    public Collection<Currency> listActive() {
+        return currencyRepository.findAllByActiveTrueOrderByNameAsc();
+    }
+
     public Optional<Currency> get(Long id) {
         return currencyRepository.findById(id);
     }

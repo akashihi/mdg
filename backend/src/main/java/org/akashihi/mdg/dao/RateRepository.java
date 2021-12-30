@@ -11,4 +11,6 @@ public interface RateRepository extends JpaRepository<Rate, Long> {
     Collection<Rate> findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(LocalDateTime rate_beginning, LocalDateTime rate_end);
 
     Optional<Rate> findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(LocalDateTime rate_beginning, LocalDateTime rate_end, Long from_id, Long to_id);
+
+    Optional<Rate> findByBeginningGreaterThanEqualAndFromEqualsAndToEquals(LocalDateTime rate_beginning, Long from_id, Long to_id);
 }
