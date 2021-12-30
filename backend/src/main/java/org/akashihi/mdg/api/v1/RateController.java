@@ -1,5 +1,6 @@
 package org.akashihi.mdg.api.v1;
 
+import org.akashihi.mdg.api.v1.dto.RateStatus;
 import org.akashihi.mdg.api.v1.dto.Rates;
 import org.akashihi.mdg.entity.Rate;
 import org.akashihi.mdg.service.RateService;
@@ -16,6 +17,11 @@ public class RateController {
 
     public RateController(RateService rateService) {
         this.rateService = rateService;
+    }
+
+    @GetMapping(value = "/rates/status", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    public RateStatus updateStatus() {
+        return new RateStatus(rateService.lastUpdate());
     }
 
     @GetMapping(value = "/rates/{ts}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
