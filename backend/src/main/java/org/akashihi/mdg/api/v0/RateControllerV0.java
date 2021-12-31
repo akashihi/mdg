@@ -19,12 +19,12 @@ public class RateControllerV0 {
         this.rateService = rateService;
     }
 
-    @GetMapping(value = "/api/rate/{ts}", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
+    @GetMapping(value = "/api/rate/{ts}", produces = "application/vnd.mdg+json")
     public DataPlural<RateData> listForTs(@PathVariable("ts") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ts) {
         return new DataPlural<>((rateService.listForTs(ts).stream().map(r -> new RateData(r.getId(), "rate", new RateData.Attributes(r.getFrom(), r.getTo(), r.getRate(), r.getBeginning(), r.getEnd()))).toList()));
     }
 
-    @GetMapping(value = "/api/rate/{ts}/{from}/{to}", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
+    @GetMapping(value = "/api/rate/{ts}/{from}/{to}", produces = "application/vnd.mdg+json")
     public DataSingular<RateData> pairForTs(@PathVariable("ts") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ts, @PathVariable("from") Long from, @PathVariable("to") Long to) {
         var rate = rateService.getPair(ts, from, to);
         return new DataSingular<>(new RateData(rate.getId(), "rate", new RateData.Attributes(rate.getFrom(), rate.getTo(), rate.getRate(), rate.getBeginning(), rate.getEnd())));

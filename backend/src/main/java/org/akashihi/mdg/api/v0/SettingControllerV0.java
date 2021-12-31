@@ -19,12 +19,12 @@ public class SettingControllerV0 {
         this.settingService = settingService;
     }
 
-    @GetMapping(value = "/api/setting", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
+    @GetMapping(value = "/api/setting", produces = "application/vnd.mdg+json")
     DataPlural<SettingData> list() {
         return new DataPlural<>(settingService.list().stream().map((s) -> new SettingData(s.getId(), "setting", new SettingData.Attributes(s.getValue()))).toList());
     }
 
-    @GetMapping(value = "/api/setting/{id}", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
+    @GetMapping(value = "/api/setting/{id}", produces = "application/vnd.mdg+json")
     DataSingular<SettingData> get(@PathVariable("id") String id) {
         var setting = settingService.get(id).orElseThrow(() -> new RequestException(404, "SETTING_NOT_FOUND"));
         return new DataSingular<>(new SettingData(setting.getId(), "setting", new SettingData.Attributes(setting.getValue())));

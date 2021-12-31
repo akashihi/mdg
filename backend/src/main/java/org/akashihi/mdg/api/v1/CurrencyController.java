@@ -14,12 +14,12 @@ public class CurrencyController {
         this.currencyService = currencyService;
     }
 
-    @GetMapping(value = "/currencies", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/currencies", produces = "application/vnd.mdg+json;version=1")
     Currencies list() {
         return new Currencies(currencyService.list());
     }
 
-    @GetMapping(value = "/currencies/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/currencies/{id}", produces = "application/vnd.mdg+json;version=1")
     Currency get(@PathVariable("id") Long id) {
         return currencyService.get(id).orElseThrow(() -> new RestException("CURRENCY_NOT_FOUND", 404, "/currencies/%d".formatted(id)));
     }

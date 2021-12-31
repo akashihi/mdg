@@ -16,13 +16,13 @@ public class CurrencyControllerV0 {
         this.currencyService = currencyService;
     }
 
-    @GetMapping(value = "/api/currency", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
+    @GetMapping(value = "/api/currency", produces = "application/vnd.mdg+json")
     DataPlural<CurrencyData> list() {
         var currencies = currencyService.list().stream().map(currency -> new CurrencyData(currency.getId(), "currency", new CurrencyData.Attributes(currency.getCode(), currency.getName(), currency.getActive()))).toList();
         return new DataPlural<>(currencies);
     }
 
-    @GetMapping(value = "/api/currency/{id}", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
+    @GetMapping(value = "/api/currency/{id}", produces = "application/vnd.mdg+json")
     DataSingular<CurrencyData> get(@PathVariable("id") Long id) {
         var currency = currencyService.get(id).orElseThrow(() -> new RequestException(404, "CURRENCY_NOT_FOUND"));
         var currencyDto = new CurrencyData(id, "currency", new CurrencyData.Attributes(currency.getCode(), currency.getName(), currency.getActive()));

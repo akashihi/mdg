@@ -19,17 +19,17 @@ public class RateController {
         this.rateService = rateService;
     }
 
-    @GetMapping(value = "/rates/status", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/rates/status", produces = "application/vnd.mdg+json;version=1")
     public RateStatus updateStatus() {
         return new RateStatus(rateService.lastUpdate());
     }
 
-    @GetMapping(value = "/rates/{ts}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/rates/{ts}", produces = "application/vnd.mdg+json;version=1")
     public Rates listForTs(@PathVariable("ts") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ts) {
         return new Rates(rateService.listForTs(ts));
     }
 
-    @GetMapping(value = "/rates/{ts}/{from}/{to}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/rates/{ts}/{from}/{to}", produces = "application/vnd.mdg+json;version=1")
     public Rate pairForTs(@PathVariable("ts") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ts, @PathVariable("from") Long from, @PathVariable("to") Long to) {
         return rateService.getPair(ts, from, to);
     }

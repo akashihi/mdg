@@ -14,12 +14,12 @@ public class SettingController {
         this.settingService = settingService;
     }
 
-    @GetMapping(value = "/settings", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/settings", produces = "application/vnd.mdg+json;version=1")
     Settings list() {
         return new Settings(settingService.list());
     }
 
-    @GetMapping(value = "/settings/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/settings/{id}", produces = "application/vnd.mdg+json;version=1")
     Setting get(@PathVariable("id") String id) {
         return settingService.get(id).orElseThrow(() -> new RestException("SETTING_NOT_FOUND", 404, "/settings/%s".formatted(id)));
     }
