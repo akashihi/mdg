@@ -17,9 +17,9 @@ public class CategoryController {
         return categoryService.create(category);
     }
 
-    /*@GetMapping(value = "/category{id}", produces = "application/vnd.mdg+json;version=1")
+    @GetMapping(value = "/categories/{id}", produces = "application/vnd.mdg+json;version=1")
     Category get(@PathVariable("id") Long id) {
-        return categoryService.get(id);
-    }*/
+        return categoryService.get(id).orElseThrow(() -> new RestException("CATEGORY_NOT_FOUND", 404, "/categories/%d".formatted(id)));
+    }
 
 }

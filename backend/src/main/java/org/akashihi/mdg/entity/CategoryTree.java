@@ -20,7 +20,7 @@ public class CategoryTree {
     @Getter
     @Setter
     @EqualsAndHashCode
-    static class CategoryTreePK implements Serializable {
+    static public class CategoryTreePK implements Serializable {
         private Long ancestor;
         private Long descendant;
         private Integer depth;
