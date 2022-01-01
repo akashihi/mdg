@@ -136,7 +136,7 @@ Resources describing currency exchange rates
 ## Rate Status [/rates/status]
 
 + Attributes
-    + timestamp: `YYYY-MM-DDTHH:MM:SS` (string, required) - Last successful rate update timestamp
+    + ts: `YYYY-MM-DDTHH:MM:SS` (string, required) - Last successful rate update timestamp
 
 ### View rate update status [GET]
 
@@ -147,116 +147,37 @@ Resources describing currency exchange rates
 
 Resources describing account categories. A category is just an account label, used in analysis, statistics, rendering etc.
 
-## Category [/category/{category_id}]
+## Category [/categories/{category_id}]
 
 + parameters
     + category_id (number, required) - ID of a category
 
 + Attributes
-    + id (number, required) - Due to hierarchical nature of categories, category is an exception and provides id twice: inside of a attributes and in a wrapper object.
-    + parent_id (number, optional) - Category's parent category id. May be missing for top level categories
-    + name (string, required) - Category name
-    + priority (number, required) - Ordering weight of that category. Categories output will be sorted ascendant by that weight. Same rule applies to the chidlren attribute.
-    + account_type (enum, required) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
+    + id: 2 (number, required) - Due to hierarchical nature of categories, category is an exception and provides id twice: inside of a attributes and in a wrapper object.
+    + parent_id: 1 (number, optional) - Category's parent category id. May be missing for top level categories
+    + name: "Pet expenses" (string, required) - Category name
+    + priority: 7 (number, required) - Ordering weight of that category. Categories output will be sorted ascendant by that weight. Same rule applies to the chidlren attribute.
+    + account_type: "expense" (enum, required) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
         + `asset`
         + `expense`
         + `income`
-    + children (array[Category], optional) - Array of subcategories of that categories, may be empty or missing. Only 'attributes' section is included
+    + children (array[Category], optional) - Array of subcategories of that categories, may be empty or missing.
 
 ### View a category detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
-        {
-            "data": {
-                    "type": "category",
-                    "id": 1,
-                    "attributes": {
-                        "name": "Flat payments",
-                        "priority": 1,
-                        "account_type": "expense",
-                        "children": [
-                            {
-                               "id": 2,
-                                "parent_id": 1,
-                                "name": "Rent",
-                                "priority": 1,
-                                "account_type": "expense"
-                            },
-                            {
-                                "id": 3,
-                                "parent_id": 1,
-                                "name": "Facilities",
-                                "priority": 1,
-                                "account_type": "expense"
-                            }
-                        ]
-                    },
-                    {
-                    "type": "category",
-                    "id": 4,
-                    "attributes": {
-                        "name": "Work income",
-                        "priority": 1,
-                        "account_type": "income",
-                        "children": [
-                            {
-                                "id": 5,
-                                "parent_id": 4,
-                                "name": "Salary",
-                                "priority": 1,
-                                "account_type": "income"
-                            },
-                            {
-                                "id": 6,
-                                "parent_id": 4,
-                                "name": "Bnouses",
-                                "priority": 1,
-                                "account_type": "income"
-                            }
-                        ]
-                    }
-                }
-            }
-        }
 
 ### Modify category data [PUT]
 
-Only `parent_id`, `name` and `order` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, error will be returned. Set parent_id to the category id (self) to make that category a top level category. Parenting category to the parent with different account_type is not possible.
+Only `parent_id`, `name` and `priority` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, error will be returned. Set parent_id to the category id (self) to make that category a top level category. Parenting category to the parent with different account_type is not possible.
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
-        {
-            "data": {
-                "type": "account",
-                "id": 4
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
-
-+ Response 202 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "account",
-                "id": 4
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
 ### Delete a category [DELETE]
 
@@ -264,105 +185,25 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
 
 + Response 204
 
-## Category collection [/category]
+## Category collection [/categories]
 
 ### List all Categories [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [{
-                    "type": "category",
-                    "id": 1,
-                    "attributes": {
-                        "id": 1,
-                        "name": "Flat payments",
-                        "priority": 1,
-                        "account_type": "expense",
-                        "children": [
-                            {
-                                "id": 2,
-                                "parent_id": 1,
-                                "name": "Rent",
-                                "priority": 1,
-                                "account_type": "expense"
-                            },
-                            {
-                                "id": 3,
-                                "parent_id": 1,
-                                "name": "Facilities",
-                                "priority": 1,
-                                "account_type": "expense"
-                            }
-                        ]
-                    },
-                    {
-                    "type": "category",
-                    "id": 4,
-                    "attributes": {
-                        "id": 4,
-                        "name": "Work income",
-                        "priority": 1,
-                        "account_type": "income",
-                        "children": [
-                            {
-                                "parent_id": 4,
-                                "id": 5,
-                                "name": "Salary",
-                                "priority": 1,
-                                "account_type": "income"
-                            },
-                            {
-                                "id": 6,
-                                "parent_id": 4,
-                                "name": "Bnouses",
-                                "priority": 1,
-                                "account_type": "income"
-                            }
-                        ]
-                    }
-                }
-            }]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + categories (array[Category], required) - Array of categories
 
 ### Create a new category [POST]
 
-+ Request (application/vnd.mdg+json)
-
-        {
-            "data": {
-                        "type": "category",
-                        "attributes": {
-                            "parent_id": 4,
-                            "name": "Bonuses",
-                            "priority": 1,
-                            "account_type": "income"
-                        }
-                    }
-                }
-        }
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
 + Response 201 (application/vnd.mdg+json)
     + Headers
 
             Location: /category/5
 
-    + Body
-
-            {
-                "data": {
-                        "id": 5,
-                        "type": "category",
-                        "attributes": {
-                            "parent_id": 4,
-                            "name": "Bnouses",
-                            "priority": 1,
-                            "account_type": "income"
-                        }
-                    }
-                }
-            }
-
+    + Attributes (Category)
 
 # Group Accounts
 

@@ -1,6 +1,7 @@
 package org.akashihi.mdg.service;
 
 import com.jayway.jsonpath.JsonPath;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.akashihi.mdg.dao.RateRepository;
 import org.akashihi.mdg.entity.Currency;
@@ -23,14 +24,10 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class RateService {
     private final CurrencyService currencyService;
     private final RateRepository rateRepository;
-
-    public RateService(CurrencyService currencyService, RateRepository rateRepository) {
-        this.currencyService = currencyService;
-        this.rateRepository = rateRepository;
-    }
 
     public Collection<Rate> listForTs(LocalDateTime dt) {
         return rateRepository.findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(dt, dt);

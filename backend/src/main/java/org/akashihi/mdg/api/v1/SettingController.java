@@ -1,5 +1,6 @@
 package org.akashihi.mdg.api.v1;
 
+import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.Settings;
 import org.akashihi.mdg.entity.Setting;
 import org.akashihi.mdg.service.SettingService;
@@ -7,12 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 public class SettingController {
     private final SettingService settingService;
-
-    public SettingController(SettingService settingService) {
-        this.settingService = settingService;
-    }
 
     @GetMapping(value = "/settings", produces = "application/vnd.mdg+json;version=1")
     Settings list() {

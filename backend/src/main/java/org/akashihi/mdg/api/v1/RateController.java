@@ -1,5 +1,6 @@
 package org.akashihi.mdg.api.v1;
 
+import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.RateStatus;
 import org.akashihi.mdg.api.v1.dto.Rates;
 import org.akashihi.mdg.entity.Rate;
@@ -12,12 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 @RestController
+@RequiredArgsConstructor
 public class RateController {
     private final RateService rateService;
-
-    public RateController(RateService rateService) {
-        this.rateService = rateService;
-    }
 
     @GetMapping(value = "/rates/status", produces = "application/vnd.mdg+json;version=1")
     public RateStatus updateStatus() {

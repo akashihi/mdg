@@ -1,5 +1,6 @@
 package org.akashihi.mdg.service;
 
+import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.dao.CurrencyRepository;
 import org.akashihi.mdg.entity.Currency;
 import org.springframework.data.domain.Sort;
@@ -10,12 +11,9 @@ import java.util.Collection;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CurrencyService {
     private final CurrencyRepository currencyRepository;
-
-    public CurrencyService(CurrencyRepository currencyRepository) {
-        this.currencyRepository = currencyRepository;
-    }
 
     public Collection<Currency> list() {
         return currencyRepository.findAll(Sort.by("active").descending().and(Sort.by("name").ascending()));

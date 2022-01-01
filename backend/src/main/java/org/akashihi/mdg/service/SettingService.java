@@ -1,5 +1,6 @@
 package org.akashihi.mdg.service;
 
+import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.CurrencyRepository;
 import org.akashihi.mdg.dao.SettingRepository;
@@ -13,14 +14,10 @@ import java.util.Collection;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class SettingService {
     private final CurrencyRepository currencyRepository;
     private final SettingRepository settingRepository;
-
-    public SettingService(SettingRepository settingRepository, CurrencyRepository currencyRepository) {
-        this.settingRepository = settingRepository;
-        this.currencyRepository = currencyRepository;
-    }
 
     public Collection<Setting> list() {
         return settingRepository.findAll(Sort.by("id"));
