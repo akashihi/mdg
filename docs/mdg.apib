@@ -157,10 +157,10 @@ Resources describing account categories. A category is just an account label, us
     + parent_id: 1 (number, optional) - Category's parent category id. May be missing for top level categories
     + name: "Pet expenses" (string, required) - Category name
     + priority: 7 (number, required) - Ordering weight of that category. Categories output will be sorted ascendant by that weight. Same rule applies to the chidlren attribute.
-    + account_type: "expense" (enum, required) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
-        + `asset`
-        + `expense`
-        + `income`
+    + account_type: "EXPENSE" (enum, required) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
+        + `ASSET`
+        + `EXPENSE`
+        + `INCOME`
     + children (array[Category], optional) - Array of subcategories of that categories, may be empty or missing.
 
 ### View a category detail [GET]
@@ -185,7 +185,7 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
 
 + Response 204
 
-## Category collection [/categories]
+## Category collection [/category]
 
 ### List all Categories [GET]
 
