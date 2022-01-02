@@ -3,7 +3,6 @@ package org.akashihi.mdg.api.v1;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.Categories;
 import org.akashihi.mdg.entity.Category;
-import org.akashihi.mdg.entity.Currency;
 import org.akashihi.mdg.service.CategoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,7 @@ public class CategoryController {
 
     @PostMapping(value = "/categories", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.CREATED)
-    Category addCategory(@RequestBody Category category) {
+    Category create(@RequestBody Category category) {
         return categoryService.create(category);
     }
 

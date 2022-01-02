@@ -41,3 +41,5 @@ databaseChangeLog:
       file: db/changelog/20-assetcategory.sql
   - include:
       file: db/changelog/21-language.sql
+  - include:
+      file: db/changelog/22-dropassetproperties.sql

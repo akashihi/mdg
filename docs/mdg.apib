@@ -209,81 +209,44 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
 
 Resources related to account management
 
-## Account [/account/{account_id}]
+## Account [/accounts/{account_id}?embed={embed}]
 
 + parameters
-    + account_id (number, required) - ID of an account in form of integer
+    + account_id: 2 (number, required) - ID of an account in form of integer
+    + embed: [currency,category] (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
-    + account_type (enum[string], required) - type of the account
+    + id: 2 (number, required) - Account id
+    + account_type: 'ASSET' (enum[string], required) - type of the account
       + Members
-        + `asset`
-        + `expense`
-        + `income`
-    + currency_id (number, required) - account's currency id
-    + category_id (number, optional) - account's category id, may be missing in case account doesn't belongs to the any category.
-    + name (string, required) - Account name
-    + balance (number, required) - Account balance, read only attribute.
-    + primary_balance (number, required) - Account balance in primary currency, read only attribute. Automatically converted from the 'balance' field by applying correspondent rate.
-    + hidden (boolean, optional) - Marks deleted accounts
-    + favorite (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
-    + operational (boolean, optional) - Marks account as operational. Applicable only to the 'asset' accounts
+        + `ASSET`
+        + `EXPENSE`
+        + `INCOME`
+    + currency_id: 978 (number, required) - account's currency id
+    + currency (Currency, optional) - account's associated currency object.
+    + category_id: 1 (number, optional) - account's category id, may be missing in case account doesn't belongs to the any category.
+    + category (Category, optional) - account's associated category object.
+    + name: 'wallet' (string, required) - Account name
+    + balance: 3.62 (number, required) - Account balance, read only attribute.
+    + primary_balance: 2.98 (number, required) - Account balance in primary currency, read only attribute. Automatically converted from the 'balance' field by applying correspondent rate.
+    + hidden: false (boolean, optional) - Marks deleted accounts
+    + asset_properties (AssetProperties, optional) - Favorite/operational/etc flags. Applicable only to the 'asset' accounts
 
 ### View an account detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "account",
-                "id": 4,
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
 
 ### Modify account data [PUT]
 
 Only `hidden`, `name`, `category_id`, `favorite` and `operational` fields could be changed. Values in other fields will be silently ignored.
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
 
-        {
-            "data": {
-                "type": "account",
-                "id": 4
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
 
-+ Response 202 (application/vnd.mdg+json)
-
-        {
-          "data": {
-                "type": "account",
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
 
 ### Delete an account [DELETE]
 
@@ -291,106 +254,79 @@ Actually accounts are immortal, deleting an account puts a 'hidden' flag on it.
 
 + Response 204
 
-## Account collection [/account?filter={filter}]
+## Account collection [/accounts?q={query}&embed={embed}]
 
 + Parameters
-    + filter (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
+    + query (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
+    + embed: [currency,category] (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 ### List all Accounts [GET]
 
 Accounts with attribute 'hidden' equal to 'true' are shown if no filter is specified.
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "account",
-                    "id": 1,
-                    "attributes": {
-                        "account_type": "asset",
-                        "currency_id": 840,
-                        "name": "Current USD",
-                        "balance": 100500,
-                        "primary_balance": 100500,
-                        "operational": true,
-                        "favorite": true
-                    }
-                },
-                {
-                    "type": "account",
-                    "id": 2,
-                    "attributes": {
-                        "account_type": "asset",
-                        "currency_id": 978,
-                        "name": "Savings EUR",
-                        "primary_balance": 10100,
-                        "balance": 9000
-                    }
-                }
-                {
-                    "type": "account",
-                    "id": 3,
-                    "attributes": {
-                        "account_type": "expense",
-                        "currency_id": 978,
-                        "name": "Household expenses",
-                        "balance": 9000,
-                        "primary_balance": 10100
-                    }
-                }
-                {
-                    "type": "account",
-                    "id": 4,
-                    "attributes": {
-                        "account_type": "expense",
-                        "currency_id": 978,
-                        "name": "Rent",
-                        "balance": 9000,
-                        "primary_balance": 10100,
-                        "parent_id": 3
-                    }
-                }
-            ]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + accounts (array[Account], required) - Array of accounts (flat)
 
 ### Create a new account [POST]
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
+
++ Response 201 (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
+
+# Account tree [/accounts/tree?q={query}&embed={embed}]
+
++ Parameters
+    + query (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
+    + embed: [currency,category] (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
+
+### Get all Accounts [GET]
+
+Accounts with attribute 'hidden' equal to 'true' are shown if no filter is specified.
+
++ Response 200 (application/vnd.mdg+json;version=1)
 
         {
-            "data": {
-                "type": "account",
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Rent",
-                    "parent_id": 3
-                }
-            }
-        }
-
-+ Response 201 (application/vnd.mdg+json)
-  + Headers
-
-            Location: /account/4
-
-  + Body
-
-            {
-              "data": {
-                    "type": "account",
-                    "id": 4
-                    "attributes": {
-                        "account_type": "expense",
+            "asset": {
+                "accounts": [
+                    {
+                        "id": 2,
+                        "account_type": "ASSET",
                         "currency_id": 978,
-                        "name": "Rent",
-                        "balance": 0,
-                        "primary_balance": 0,
-                        "parent_id": 3
+                        "name": "wallet",
+                        "balance": 3.62,
+                        "primary_balance": 2.98,
+                        "hidden": false,
+                        "favorite": false,
+                        "operational": false
                     }
-                }
-            }
+                ],
+                "categories": [
+                    {
+                        "id": 2,
+                        "name": "cash",
+                        "accounts": [
+                            {
+                                "id": 3,
+                                "account_type": "ASSET",
+                                "currency_id": 978,
+                                "name": "wallet",
+                                "balance": 3.62,
+                                "primary_balance": 2.98,
+                                "hidden": false,
+                                "favorite": false,
+                                "operational": false
+                            }
+                        ],
+                        "categories": {
+                            "accounts": [],
+                            "categories": []
+                        }
+                    }
+            ]
+        }
 
 # Group Transactions
 
@@ -1080,6 +1016,10 @@ Various reporting data, mostly read-only
 + title: CURRENCY_NOT_FOUND (string, required) - Human-friendly error code
 + status: 404 (number, required) - HTTP Status code, must match response status code
 + instance: /currency/1 (string, optional) - URL of errored object if applicable
+
+## AssetProperties (object)
++ operational: true (boolean, required) - Whether asset account is marked boolean
++ favorite: true (boolean, required) - Whether asset account is marked favorite
 
 ## Operation (object)
 

@@ -1,6 +1,7 @@
 package org.akashihi.mdg.dao;
 
 import liquibase.pro.packaged.Q;
+import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.entity.CategoryTree;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,8 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
+    Optional<Category> findByNameAndAccountType(String name, AccountType type);
+
     @Modifying
     @Query(nativeQuery = true, value = "INSERT INTO category_tree (ancestor, descendant, depth) SELECT t.ancestor, ?2, t.depth + 1 FROM category_tree AS t WHERE t.descendant = ?1 UNION ALL SELECT ?2, ?2, 0")
     void addLeaf(Long parent, Long leaf);
