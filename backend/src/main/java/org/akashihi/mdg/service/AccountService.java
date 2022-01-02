@@ -29,10 +29,10 @@ public class AccountService {
     public Account create(Account account) {
         if (!account.getAccountType().equals(AccountType.ASSET)) {
             if (account.getOperational() != null && account.getOperational()) {
-                throw new RestException("ACCOUNT_DATA_INVALID", 412, "/accounts");
+                throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts");
             }
             if (account.getFavorite() != null && account.getFavorite()) {
-                throw new RestException("ACCOUNT_DATA_INVALID", 412, "/accounts");
+                throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts");
             }
         }
         if (account.getAccountType().equals(AccountType.ASSET)) {
@@ -64,5 +64,63 @@ public class AccountService {
             return accountRepository.findAll(sort);
         }
         return accountRepository.findAll(filteredAccount(query.get()), sort);
+    }
+
+    @Transactional
+    public Optional<Account> get(Long id) {
+        return accountRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<Account> update(Long id, Account newAccount) {
+        var accountValue = accountRepository.findById(id);
+        if (accountValue.isEmpty()) {
+            return accountValue;
+        }
+
+        var account = accountValue.get();
+        if (newAccount.getHidden() != null) {
+            account.setHidden(newAccount.getHidden());
+        }
+        if (newAccount.getName() != null) {
+            account.setName(newAccount.getName());
+        }
+        if (newAccount.getCategoryId() == null) {
+            account.setCategory(null);
+        } else {
+            Long currentCategoryId = null;
+            if (account.getCategory() != null) {
+                currentCategoryId = account.getCategory().getId();
+            }
+            if (!newAccount.getCategoryId().equals(currentCategoryId)) {
+                var newCategory = categoryRepository.findById(newAccount.getCategoryId()).orElseThrow(() ->new RestException("CATEGORY_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+                if (!newCategory.getAccountType().equals(account.getAccountType())) {
+                    throw new RestException("CATEGORY_INVALID_TYPE", 412, "/accounts/%d".formatted(id));
+                }
+                account.setCategory(newCategory);
+            }
+        }
+
+        if (account.getAccountType() == AccountType.ASSET) {
+            account.setFavorite(newAccount.getFavorite());
+            account.setOperational(newAccount.getOperational());
+            if (!account.getCurrency().getId().equals(newAccount.getCurrencyId())) {
+                throw new RestException("ACCOUNT_CURRENCY_ASSET", 422, "/accounts/%d".formatted(id));
+            }
+        } else {
+            //TODO handle currency change
+            if ((newAccount.getFavorite() != null && newAccount.getFavorite()) || (newAccount.getOperational() != null && newAccount.getOperational())) {
+                throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts/%d".formatted(id));
+            }
+        }
+        accountRepository.save(account);
+        return Optional.of(account);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        var account = accountRepository.findById(id).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+        account.setHidden(true);
+        accountRepository.save(account);
     }
 }

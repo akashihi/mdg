@@ -2,6 +2,7 @@ package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.RestException;
+import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.CategoryRepository;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Category;
@@ -14,8 +15,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
-
     private final CategoryRepository categoryRepository;
+    private final AccountRepository accountRepository;
 
     @Transactional
     public Category create(Category category) {
@@ -104,6 +105,7 @@ public class CategoryService {
 
     @Transactional
     public void delete(Long id) {
+        accountRepository.dropCategory(id);
         categoryRepository.deleteById(id);
     }
 }

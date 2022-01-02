@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.Accounts;
-import org.akashihi.mdg.api.v1.dto.Categories;
 import org.akashihi.mdg.entity.Account;
+import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.service.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,4 +59,39 @@ public class AccountController {
         return new Accounts(accounts);
     }
 
+    @GetMapping(value = "/accounts/{id}", produces = "application/vnd.mdg+json;version=1")
+    Account get(@PathVariable("id") Long id, @RequestParam("embed") Optional<Collection<String>> embed) {
+        var embed_categories = embed.map(e -> e.contains("category")).orElse(false);
+        var embed_currencies = embed.map(e -> e.contains("currency")).orElse(false);
+        return accountService.get(id).map(a -> {
+            a.setCurrencyId(a.getCurrency().getId());
+            if (!embed_currencies) {
+                a.setCurrency(null);
+            }
+            if (a.getCategory() != null) {
+                a.setCategoryId(a.getCategory().getId());
+                if (!embed_categories) {
+                    a.setCategory(null);
+                }
+            }
+            return a;
+        }).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+    }
+
+    @PutMapping(value = "/accounts/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    Account update(@PathVariable("id") Long id, @RequestBody Account account) {
+        var newAccount = accountService.update(id, account).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+        newAccount.setCurrencyId(newAccount.getCurrency().getId());
+        if (newAccount.getCategory() != null) {
+            newAccount.setCategoryId(newAccount.getCategory().getId());
+        }
+        return newAccount;
+    }
+
+    @DeleteMapping(value = "/accounts/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable("id") Long id) {
+        accountService.delete(id);
+    }
 }
