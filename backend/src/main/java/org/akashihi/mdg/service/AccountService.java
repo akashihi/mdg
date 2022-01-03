@@ -1,6 +1,7 @@
 package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.CategoryRepository;
@@ -20,6 +21,7 @@ import static org.akashihi.mdg.dao.AccountSpecification.filteredAccount;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountService {
     private final AccountRepository accountRepository;
     private final CategoryRepository categoryRepository;
@@ -54,6 +56,7 @@ public class AccountService {
         account.setBalance(BigDecimal.ZERO); //Accounts are created with balance 0
         account.setHidden(false);
         accountRepository.save(account);
+        log.info("Created account {}", account);
         return account;
     }
 
