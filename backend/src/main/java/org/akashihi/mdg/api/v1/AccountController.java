@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.Accounts;
 import org.akashihi.mdg.entity.Account;
-import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.service.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
