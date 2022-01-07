@@ -213,7 +213,7 @@ Resources related to account management
 
 + parameters
     + account_id: 2 (number, required) - ID of an account in form of integer
-    + embed: [currency,category] (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
+    + embed: currency,category (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
     + id: 2 (number, required) - Account id
@@ -230,7 +230,8 @@ Resources related to account management
     + balance: 3.62 (number, required) - Account balance, read only attribute.
     + primary_balance: 2.98 (number, required) - Account balance in primary currency, read only attribute. Automatically converted from the 'balance' field by applying correspondent rate.
     + hidden: false (boolean, optional) - Marks deleted accounts
-    + asset_properties (AssetProperties, optional) - Favorite/operational/etc flags. Applicable only to the 'asset' accounts
+    + operational: true (boolean, required) - Whether asset account is marked boolean. Valid for asset accounts only.
+    + favorite: true (boolean, required) - Whether asset account is marked favorite. Valid for asset accounts only.
 
 ### View an account detail [GET]
 
@@ -258,7 +259,7 @@ Actually accounts are immortal, deleting an account puts a 'hidden' flag on it.
 
 + Parameters
     + query (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
-    + embed: [currency,category] (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
+    + embed: currency,category (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 ### List all Accounts [GET]
 
@@ -276,7 +277,8 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 + Response 201 (application/vnd.mdg+json;version=1)
     + Attributes (Account)
 
-# Account tree [/accounts/tree?q={query}&embed={embed}]
+
+## Account tree [/accounts/tree?q={query}&embed={embed}]
 
 + Parameters
     + query (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
@@ -351,215 +353,58 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + Attributes
     - timestamp: `YYYY-MM-DDTHH:MM:SS` (string, required) - transaction timestamp
-    - comment (string, optional) - transaction description
-    - tags (array[string], optional) - tags, associated with transaction
+    - comment: 'Salary payment' (string, optional) - transaction description
+    - tags: 'income','salary' (array[string], optional) - tags, associated with transaction
     - operations (array[Operation], required) - Each operation has the following attributes
 
 ### View an transaction detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 4,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 100
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 0.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
 ### Modify transaction data [PUT]
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 4,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 90
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 10.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 4,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 90
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 10.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
 
 ### Delete an transaction [DELETE]
 
 + Response 204
 
-## Transaction collection [/transaction?filter={filter}&sort={sort},comment&page%5Bnumber%5D={pageNumber}&page%5Bsize%5D={pageSize}&timestamp%5BnotEarlier%5D={notEarlier}&timeStamp%5BnotLater%5D={notLater}]
-
+## Transaction collection [/transaction?q={q}&sort={sort}&embed={embed}&limit={limit}&cursor={cursor}]
 
 ### List all Transactions [GET]
 
 + Parameters
-  + filter (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes
-  + sort (string, optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order. Sorting could be done only by `timestamp` field. Only first item in a list is used as a sortf eidl at the moment.
-  + pageNumber (optional, number) - Paginate list and return only data, matching specified page number. This parameter is required to activate pagination.
-  + pageSize: 10 (optional, number) - Paginate list using specified page size (max transactions on page).
-  + notEarlier (optional, number) - Optional, range based filter on timestamp. Will filter out all transactions happened before specified point in time.
-  + notLater (optional, number) - Optional, range based filter on timestamp. Will filter out all transactions happened after specified point in time.
+  + q (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes
+  + sort: timestamp (array[string], optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order.
+  + embed: account,currency,category (array[string], optional) - Objects to embed. accout_id and other _id fields are always provided.
+  + limit: 10 (number, optional) - Paginate list using specified page size. Setting limit will trigger pagionation and will put pagination related field to the reply.
+  + cursor: AAABBB (string, optional) - A pointer to the next page. Only valid if cursor value was previously set by the backend.
+    The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit`
+    number of trasactions will be returned along side with additional cursor fields (see below). Each cursor is
+    self-contained and can be used without repeating other parameters.
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + transactions (array[Transaction], required) - Transactions covered by the request
+        + self: AAABBB (string, optional) - Cursor of the current page.
+        + first: AAABBB (string, optional) - Cursor of the first page
+        + next: AAABBB (string, optional) - Cursor of the following page
+        + left: 15 (number,optional) - Number of items left after the current page.
 
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 1,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 100
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 0.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
 
 ### Create a new transaction [POST]
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
-        {
-            "data": {
-                "type": "transaction",
-                "attributes": {
-                    "timestamp": "123456",
-                    "comment": "A sample transaction",
-                    "tags": ["USD", "New year party"],
-                    "operations": [
-                        {
-                            "account_id": 1,
-                            "amount": -100.50
-                        },
-                        {
-                            "account_id": 2,
-                            "amount": 100
-                        },
-                        {
-                            "account_id": 3,
-                            "amount": 0.50
-                        }
-                    ]
-                }
-            }
-        }
-
-+ Response 202 (application/vnd.mdg+json)
-  + Headers
-
-            Location: /transaction/4
-
-  + Body
-
-            {
-                "data": [
-                    {
-                        "type": "transaction",
-                        "id": 4,
-                        "attributes": {
-                            "timestamp": "123456",
-                            "comment": "A sample transaction",
-                            "tags": ["USD", "New year party"],
-                            "operations": [
-                                {
-                                    "account_id": 1,
-                                    "amount": -100.50
-                                },
-                                {
-                                    "account_id": 2,
-                                    "amount": 100
-                                },
-                                {
-                                    "account_id": 3,
-                                    "amount": 0.50
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
 # Group Budget
 
@@ -1017,18 +862,14 @@ Various reporting data, mostly read-only
 + status: 404 (number, required) - HTTP Status code, must match response status code
 + instance: /currency/1 (string, optional) - URL of errored object if applicable
 
-## AssetProperties (object)
-+ operational: true (boolean, required) - Whether asset account is marked boolean
-+ favorite: true (boolean, required) - Whether asset account is marked favorite
-
 ## Operation (object)
 
 Single operation in a transation.
 
 + Attributes
-    + account_id (number, required) - Related account id
-    + amount (number, required) - account balance change
-    + rate (number, optional) - exchange rate to be applied
+    + account_id: 1 (number, required) - Related account id
+    + amount: 7.40 (number, required) - account balance change
+    + rate: 0.04 (number, optional) - exchange rate to be applied
 
 ## BudgetPair (object)
 
