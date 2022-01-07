@@ -1,6 +1,7 @@
 package org.akashihi.mdg.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,6 +26,7 @@ public class Operation {
     private BigDecimal amount;
     @ManyToOne
     @JoinColumn(name="account_id", nullable = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Account account;
     @Transient
     private Long account_id;

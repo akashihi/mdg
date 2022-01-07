@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.search.annotations.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,7 +17,6 @@ import java.util.Collection;
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @DocumentId
     private Long id;
     private String comment;
     @JsonProperty("timestamp")

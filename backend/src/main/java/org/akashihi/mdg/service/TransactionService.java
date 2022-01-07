@@ -9,11 +9,13 @@ import org.akashihi.mdg.dao.TransactionRepository;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.Operation;
 import org.akashihi.mdg.entity.Transaction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.Collection;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -78,5 +80,13 @@ public class TransactionService {
         transactionRepository.save(tx);
         tx.getOperations().forEach(o -> {o.setTransaction(tx); operationRepository.save(o);});
         return tx;
+    }
+
+    public Collection<Transaction> list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
+        Pageable pageLimit = Pageable.unpaged();
+        if (limit != null) {
+            pageLimit = Pageable.ofSize(limit);
+        }
+        return transactionRepository.findAll(pageLimit).getContent();
     }
 }

@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.Accounts;
 import org.akashihi.mdg.api.v1.dto.CategoryTree;
 import org.akashihi.mdg.api.v1.dto.CategoryTreeEntry;
+import org.akashihi.mdg.api.v1.filtering.Embedding;
+import org.akashihi.mdg.api.v1.filtering.FilterConverter;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Category;
@@ -23,40 +25,6 @@ public class AccountController {
     private final AccountService accountService;
     private final CategoryService categoryService;
     private final ObjectMapper objectMapper;
-
-    protected Optional<Map<String, String>> buildFilter(Optional<String> query) {
-        return query.map(s -> {
-            try {
-                var queryMap = new HashMap<String,String>();
-                var parsedQuery = objectMapper.readValue(s, Map.class);
-                parsedQuery
-                        .keySet().stream().filter(k -> k instanceof String && parsedQuery.get(k) instanceof String)
-                        .forEach(k -> queryMap.put((String) k, (String) parsedQuery.get(k)));
-                return queryMap;
-            } catch (JsonProcessingException e) {
-                return Collections.EMPTY_MAP;
-            }
-        });
-    }
-
-    protected Function<Account, Account> embedAccountObjects(Optional<Collection<String>> embed) {
-        var categories = embed.map(e -> e.contains("category")).orElse(false);
-        var currencies = embed.map(e -> e.contains("currency")).orElse(false);
-
-        return (account) -> {
-            account.setCurrencyId(account.getCurrency().getId());
-            if (!currencies) {
-                account.setCurrency(null);
-            }
-            if (account.getCategory() != null) {
-                account.setCategoryId(account.getCategory().getId());
-                if (!categories) {
-                    account.setCategory(null);
-                }
-            }
-            return account;
-        };
-    }
 
     protected CategoryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<Account> accounts) {
         var topAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(a -> a.getCategoryId() == null).toList();
@@ -85,14 +53,14 @@ public class AccountController {
 
     @GetMapping(value = "/accounts", produces = "application/vnd.mdg+json;version=1")
     Accounts list(@RequestParam("q") Optional<String> query, @RequestParam("embed") Optional<Collection<String>> embed) {
-        var accounts = accountService.list(buildFilter(query)).stream().map(embedAccountObjects(embed)).toList();
+        var accounts = accountService.list(FilterConverter.buildFilter(query, objectMapper)).stream().map(Embedding.embedAccountObjects(embed)).toList();
         return new Accounts(accounts);
     }
 
     @GetMapping(value = "/accounts/tree", produces = "application/vnd.mdg+json;version=1")
     CategoryTree tree(@RequestParam("q") Optional<String> query, @RequestParam("embed") Optional<Collection<String>> embed) {
         var categories = categoryService.list();
-        var accounts = accountService.list(buildFilter(query)).stream().map(embedAccountObjects(embed)).toList();
+        var accounts = accountService.list(FilterConverter.buildFilter(query, objectMapper)).stream().map(Embedding.embedAccountObjects(embed)).toList();
         var assetEntry = convertTopCategory(AccountType.ASSET, categories, accounts);
         var expenseEntry = convertTopCategory(AccountType.EXPENSE, categories, accounts);
         var incomeEntry = convertTopCategory(AccountType.INCOME, categories, accounts);
@@ -101,7 +69,7 @@ public class AccountController {
 
     @GetMapping(value = "/accounts/{id}", produces = "application/vnd.mdg+json;version=1")
     Account get(@PathVariable("id") Long id, @RequestParam("embed") Optional<Collection<String>> embed) {
-        return accountService.get(id).map(embedAccountObjects(embed)).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+        return accountService.get(id).map(Embedding.embedAccountObjects(embed)).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
     }
 
     @PutMapping(value = "/accounts/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
