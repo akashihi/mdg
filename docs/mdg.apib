@@ -334,7 +334,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 
 Resources related to Transaction management
 
-## Transaction [/account/{transaction_id}]
+## Transaction [/transactions/{transaction_id}?embed={embed}]
 
 Transaction object have some limitations:
   - Operations with amount equal to zero are ignored
@@ -350,6 +350,7 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + parameters
     + transaction_id (required, number) - ID of a transaction in form of integer
+    + embed: currency,category,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
     - timestamp: `YYYY-MM-DDTHH:MM:SS` (string, required) - transaction timestamp
@@ -357,7 +358,7 @@ operation will be multiplied to its rate and only after that it will be summariz
     - tags: 'income','salary' (array[string], optional) - tags, associated with transaction
     - operations (array[Operation], required) - Each operation has the following attributes
 
-### View an transaction detail [GET]
+### View a transaction detail [GET]
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes (Transaction)
@@ -375,12 +376,12 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + Response 204
 
-## Transaction collection [/transaction?q={q}&sort={sort}&embed={embed}&limit={limit}&cursor={cursor}]
+## Transaction collection [/transactions?q={q}&sort={sort}&embed={embed}&limit={limit}&cursor={cursor}]
 
 ### List all Transactions [GET]
 
 + Parameters
-  + q (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes
+  + q (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes. Timestmap filtering is supported with 'notEarlier' and 'notLater' keys.
   + sort: timestamp (array[string], optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order.
   + embed: account,currency,category (array[string], optional) - Objects to embed. accout_id and other _id fields are always provided.
   + limit: 10 (number, optional) - Paginate list using specified page size. Setting limit will trigger pagionation and will put pagination related field to the reply.

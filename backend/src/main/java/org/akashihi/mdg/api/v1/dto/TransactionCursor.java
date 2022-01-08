@@ -9,5 +9,5 @@ public record TransactionCursor(
         @JsonInclude(JsonInclude.Include.NON_NULL) Map<String, String> filter,
         @JsonInclude(JsonInclude.Include.NON_NULL) Collection<String> sort,
         @JsonInclude(JsonInclude.Include.NON_NULL) Collection<String> embed,
-        @JsonInclude(JsonInclude.Include.NON_NULL) Integer Limit,
+        @JsonInclude(JsonInclude.Include.NON_NULL) Integer limit,
         @JsonInclude(JsonInclude.Include.NON_NULL) Long pointer) { }

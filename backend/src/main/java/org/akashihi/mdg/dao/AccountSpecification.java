@@ -26,7 +26,7 @@ public class AccountSpecification {
             if (filter.containsKey("hidden")) {
                 predicates.add(criteriaBuilder.equal(root.get("hidden"), Boolean.parseBoolean(filter.get("hidden"))));
             }
-            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
 }

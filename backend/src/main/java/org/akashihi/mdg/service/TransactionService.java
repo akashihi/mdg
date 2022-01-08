@@ -2,19 +2,19 @@ package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.RestException;
-import org.akashihi.mdg.dao.AccountRepository;
-import org.akashihi.mdg.dao.OperationRepository;
-import org.akashihi.mdg.dao.TagRepository;
-import org.akashihi.mdg.dao.TransactionRepository;
+import org.akashihi.mdg.dao.*;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.Operation;
 import org.akashihi.mdg.entity.Transaction;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -82,11 +82,21 @@ public class TransactionService {
         return tx;
     }
 
-    public Collection<Transaction> list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
-        Pageable pageLimit = Pageable.unpaged();
-        if (limit != null) {
-            pageLimit = Pageable.ofSize(limit);
+    public record ListResult(List<Transaction> transactions, Long left) {}
+
+    public ListResult list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
+        var spec = TransactionSpecification.filteredTransactions(filter, pointer);
+        var sorting = Sort.by("id").ascending().and(Sort.by("ts").descending()); //Sort by id then timestamp by default
+        if (sort.contains("-timestamp")) {
+            //Reverse sort requested
+            sorting = Sort.by("id").ascending().and(Sort.by("ts").ascending());
         }
-        return transactionRepository.findAll(pageLimit).getContent();
+        if (limit == null) {
+            return new ListResult(transactionRepository.findAll(spec, sorting), 0L);
+        } else {
+            var pageLimit = PageRequest.of(0, limit, sorting);
+            var page =  transactionRepository.findAll(spec, pageLimit);
+            return new ListResult(page.getContent(), page.getTotalElements()-limit);
+        }
     }
 }

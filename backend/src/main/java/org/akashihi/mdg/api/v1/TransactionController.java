@@ -34,9 +34,13 @@ public class TransactionController {
         }
     }
 
-    protected String cursorToString(TransactionCursor cursor) throws JsonProcessingException {
-        var cursorString = objectMapper.writeValueAsString(cursor);
-        return Base64.getUrlEncoder().encodeToString(cursorString.getBytes(StandardCharsets.UTF_8));
+    protected Optional<String> cursorToString(TransactionCursor cursor)  {
+        try {
+            String cursorString = objectMapper.writeValueAsString(cursor);
+            return Optional.of(Base64.getUrlEncoder().encodeToString(cursorString.getBytes(StandardCharsets.UTF_8)));
+        } catch (JsonProcessingException e) {
+            return Optional.empty();
+        }
     }
 
     protected TransactionCursor buildCursor(Optional<String> query, Optional<Collection<String>> sort, Optional<Collection<String>> embed, Optional<Integer> limit, Optional<Long> pointer) {
@@ -55,10 +59,22 @@ public class TransactionController {
     @GetMapping(value = "/transactions", produces = "application/vnd.mdg+json;version=1")
     Transactions list(@RequestParam("q") Optional<String> query, @RequestParam("sort") Optional<Collection<String>> sort, @RequestParam("embed") Optional<Collection<String>> embed, @RequestParam("limit") Optional<Integer> limit, @RequestParam("cursor") Optional<String> cursor) {
         TransactionCursor txCursor = cursor.flatMap(this::cursorFromString).orElse(buildCursor(query, sort, embed, limit, Optional.empty()));
-        var transactions = transactionService.list(txCursor.filter(), txCursor.sort(), txCursor.Limit(), txCursor.pointer());
+        var listResult = transactionService.list(txCursor.filter(), txCursor.sort(), txCursor.limit(), txCursor.pointer());
+        var transactions = listResult.transactions();
+        var left = listResult.left();
         var operationEmbedded = Embedding.embedOperationObjects(Optional.of(txCursor.embed()));
         transactions.forEach(tx -> tx.setOperations(tx.getOperations().stream().map(operationEmbedded).toList()));
-        return new Transactions(transactions, "", "", "", 0L);
+
+        String self = cursorToString(txCursor).orElse("");
+        String first = "";
+        String next = "";
+        if (limit.isPresent()) {
+            var firstCursor = new TransactionCursor(txCursor.filter(), txCursor.sort(), txCursor.embed(), txCursor.limit(), 0L);
+            first = cursorToString(firstCursor).orElse("");
+            var nextCursor = new TransactionCursor(txCursor.filter(), txCursor.sort(), txCursor.embed(), txCursor.limit(), transactions.get(transactions.size()-1).getId());
+            next = cursorToString(nextCursor).orElse("");
+        }
+        return new Transactions(transactions, self, first, next, left);
     }
 
 }
