@@ -26,6 +26,19 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final CategoryRepository categoryRepository;
     private final CurrencyRepository currencyRepository;
+    private final SettingService settingService;
+    private final RateService rateService;
+
+    protected Account setPrimaryBalance(Account a) {
+        var defaultCurrency = settingService.getCurrentCurrencyPrimary();
+        if (defaultCurrency.isEmpty() || a.getCurrency().equals(defaultCurrency.get())) {
+            a.setPrimaryBalance(a.getBalance());
+        } else {
+            var rate = rateService.getCurrentRateForPair(a.getCurrency(), defaultCurrency.get());
+            a.setPrimaryBalance(a.getBalance().multiply(rate.getRate()));
+        }
+        return a;
+    }
 
     @Transactional
     public Account create(Account account) {
@@ -64,14 +77,14 @@ public class AccountService {
     public Collection<Account> list(Optional<Map<String, String>> query) {
         var sort = Sort.by("accountType").ascending().and(Sort.by("name").ascending());
         if (query.isEmpty()) {
-            return accountRepository.findAll(sort);
+            return accountRepository.findAll(sort).stream().map(this::setPrimaryBalance).toList();
         }
-        return accountRepository.findAll(filteredAccount(query.get()), sort);
+        return accountRepository.findAll(filteredAccount(query.get()), sort).stream().map(this::setPrimaryBalance).toList();
     }
 
     @Transactional
     public Optional<Account> get(Long id) {
-        return accountRepository.findById(id);
+        return accountRepository.findById(id).map(this::setPrimaryBalance);
     }
 
     @Transactional
@@ -117,7 +130,7 @@ public class AccountService {
             }
         }
         accountRepository.save(account);
-        return Optional.of(account);
+        return Optional.of(setPrimaryBalance(account));
     }
 
     @Transactional

@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.CurrencyRepository;
 import org.akashihi.mdg.dao.SettingRepository;
+import org.akashihi.mdg.entity.Currency;
 import org.akashihi.mdg.entity.Setting;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -62,5 +64,15 @@ public class SettingService {
         setting.setValue(newValue);
         settingRepository.save(setting);
         return setting;
+    }
+
+    @Transactional
+    @Cacheable(value="settingsCache", key="#result.id", condition = "#result != null")
+    public Optional<Currency> getCurrentCurrencyPrimary() {
+        return this.get("currency.primary").flatMap(id -> {try {
+            return Optional.of(Long.parseLong(id.getValue()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }}).flatMap(currencyRepository::findById);
     }
 }

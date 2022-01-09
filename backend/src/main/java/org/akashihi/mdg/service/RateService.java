@@ -38,6 +38,10 @@ public class RateService {
                 .orElse(new Rate(-1L, dt, dt, from, to, new BigDecimal(1)));
     }
 
+    public Rate getCurrentRateForPair(Currency from, Currency to) {
+        return this.getPair(LocalDateTime.now(), from.getId(), to.getId());
+    }
+
     public LocalDateTime lastUpdate() {
         return rateRepository.findAll(PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "beginning")))
                 .stream()
