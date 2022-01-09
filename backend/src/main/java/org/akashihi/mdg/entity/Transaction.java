@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,8 +25,9 @@ public class Transaction {
     @ManyToMany
     @JoinTable(name="tx_tags", joinColumns = @JoinColumn(name = "tx_id"), inverseJoinColumns = @JoinColumn(name="tag_id"))
     @ToString.Exclude
-    private Collection<Tag> tags;
+    private Set<Tag> tags;
     @OneToMany(mappedBy = "transaction")
     @ToString.Exclude
+    @OrderBy("id")
     private Collection<Operation> operations;
 }

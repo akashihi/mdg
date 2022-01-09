@@ -5,6 +5,7 @@ import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.*;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.Operation;
+import org.akashihi.mdg.entity.Tag;
 import org.akashihi.mdg.entity.Transaction;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,9 +14,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +25,7 @@ public class TransactionService {
     private final TagRepository tagRepository;
     private final OperationRepository operationRepository;
 
-    @Transactional
-    public Transaction create(Transaction tx) {
+    protected Transaction enrichOperations(Transaction tx) {
         //Drop empty operations
         tx.setOperations(tx.getOperations().stream().filter(o -> !o.getAmount().equals(BigDecimal.ZERO)).toList());
 
@@ -39,6 +38,10 @@ public class TransactionService {
         //Set default rate if not specified
         tx.getOperations().forEach(o -> {if (o.getRate() == null) { o.setRate(BigDecimal.ONE);}});
 
+        return tx;
+    }
+
+    protected Transaction validateTransaction(Transaction tx) {
         //Validate transaction:
         // Check that operation list is not empty
         if (tx.getOperations().isEmpty()) {
@@ -64,9 +67,11 @@ public class TransactionService {
         if ((!balance.equals(BigDecimal.ZERO) && !multicurrency) || !(balance.compareTo(BigDecimal.ONE.negate()) > 0 && balance.compareTo(BigDecimal.ONE) < 0)) {
             throw new RestException("TRANSACTION_NOT_BALANCED", 412, "/transactions");
         }
+        return tx;
+    }
 
-        // Load/Create tags
-        var dbTags = tx.getTags().stream().map(t -> {
+    protected Set<Tag> enrichTags(Collection<Tag> tags) {
+        return tags.stream().map(t -> {
             var candidate = tagRepository.findByTag(t.getTag());
             if (candidate.isPresent()) {
                 return candidate.get();
@@ -74,16 +79,29 @@ public class TransactionService {
                 tagRepository.save(t);
                 return t;
             }
-        }).toList();
-        tx.setTags(dbTags);
+        }).collect(Collectors.toUnmodifiableSet());
+    }
 
-        transactionRepository.save(tx);
-        tx.getOperations().forEach(o -> {o.setTransaction(tx); operationRepository.save(o);});
+    protected Transaction loadTags(Transaction tx) {
+        var dbTags = enrichTags(tx.getTags());
+        tx.setTags(dbTags);
+        return tx;
+    }
+
+    @Transactional
+    public Transaction create(Transaction tx) {
+        tx = enrichOperations(tx);
+        tx = validateTransaction(tx);
+        tx = loadTags(tx);
+
+        var savedTransaction = transactionRepository.save(tx);
+        tx.getOperations().forEach(o -> {o.setTransaction(savedTransaction); operationRepository.save(o);});
         return tx;
     }
 
     public record ListResult(List<Transaction> transactions, Long left) {}
 
+    @Transactional
     public ListResult list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
         var spec = TransactionSpecification.filteredTransactions(filter, pointer);
         var sorting = Sort.by("id").ascending().and(Sort.by("ts").descending()); //Sort by id then timestamp by default
@@ -98,5 +116,49 @@ public class TransactionService {
             var page =  transactionRepository.findAll(spec, pageLimit);
             return new ListResult(page.getContent(), page.getTotalElements()-limit);
         }
+    }
+
+    @Transactional
+    public Optional<Transaction> get(Long id) {
+        return transactionRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<Transaction> update(Long id, Transaction newTx) {
+        var txValue = transactionRepository.findById(id);
+        if (txValue.isEmpty()) {
+            return txValue;
+        }
+        var tx = txValue.get();
+
+        tx.setTs(newTx.getTs());
+        tx.setComment(newTx.getComment());
+
+        var newTxTagValues = newTx.getTags().stream().map(Tag::getTag).collect(Collectors.toUnmodifiableSet());
+        var removedTags = tx.getTags().stream().filter(t -> !newTxTagValues.contains(t.getTag())).collect(Collectors.toUnmodifiableSet());
+        tx.getTags().removeAll(removedTags);
+        var oldTxTagValues = tx.getTags().stream().map(Tag::getTag).collect(Collectors.toUnmodifiableSet());
+        var tagsToInsert = newTx.getTags().stream().filter(t -> !oldTxTagValues.contains(t.getTag())).collect(Collectors.toUnmodifiableSet());
+        var newTxTags = enrichTags(tagsToInsert);
+        tx.getTags().addAll(newTxTags);
+        var savedTransaction = transactionRepository.save(tx);
+
+
+        operationRepository.deleteAll(savedTransaction.getOperations());
+        savedTransaction.getOperations().clear();
+
+        savedTransaction.setOperations(newTx.getOperations());
+
+        savedTransaction = enrichOperations(savedTransaction);
+        var finalTx = validateTransaction(savedTransaction);
+
+        finalTx.setOperations(finalTx.getOperations().stream().map(o -> {o.setTransaction(finalTx); operationRepository.save(o); return o;} ).toList());
+        return Optional.of(finalTx);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        operationRepository.deleteOperationsForTransaction(id);
+        transactionRepository.deleteById(id);
     }
 }

@@ -7,6 +7,7 @@ import org.akashihi.mdg.api.v1.dto.TransactionCursor;
 import org.akashihi.mdg.api.v1.dto.Transactions;
 import org.akashihi.mdg.api.v1.filtering.Embedding;
 import org.akashihi.mdg.api.v1.filtering.FilterConverter;
+import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.Transaction;
 import org.akashihi.mdg.service.TransactionService;
 import org.springframework.http.HttpStatus;
@@ -77,4 +78,26 @@ public class TransactionController {
         return new Transactions(transactions, self, first, next, left);
     }
 
+    @GetMapping(value = "/transactions/{id}", produces = "application/vnd.mdg+json;version=1")
+    Transaction get(@PathVariable("id") Long id, @RequestParam("embed") Optional<Collection<String>> embed) {
+        var tx = transactionService.get(id).orElseThrow(() -> new RestException("TRANSACTION_NOT_FOUND", 404, "/transactions/%d".formatted(id)));
+        var operationEmbedded = Embedding.embedOperationObjects(embed);
+        tx.setOperations(tx.getOperations().stream().map(operationEmbedded).toList());
+        return tx;
+    }
+
+    @PutMapping(value = "/transactions/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    Transaction update(@PathVariable("id") Long id, @RequestBody Transaction tx) {
+        var newTx = transactionService.update(id, tx).orElseThrow(() -> new RestException("TRANSACTION_NOT_FOUND", 404, "/transactions/%d".formatted(id)));
+        var operationEmbedded = Embedding.embedOperationObjects(Optional.empty());
+        newTx.setOperations(newTx.getOperations().stream().map(operationEmbedded).toList());
+        return newTx;
+    }
+
+    @DeleteMapping(value = "/transactions/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable("id") Long id) {
+        transactionService.delete(id);
+    }
 }
