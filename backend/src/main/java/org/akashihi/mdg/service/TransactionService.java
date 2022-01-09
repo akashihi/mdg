@@ -27,7 +27,7 @@ public class TransactionService {
 
     protected Transaction enrichOperations(Transaction tx) {
         //Drop empty operations
-        tx.setOperations(tx.getOperations().stream().filter(o -> !o.getAmount().equals(BigDecimal.ZERO)).toList());
+        tx.setOperations(tx.getOperations().stream().filter(o -> o.getAmount()!= null && !o.getAmount().equals(BigDecimal.ZERO)).toList());
 
         //Propagate accounts
         tx.getOperations().forEach(o -> {
@@ -104,10 +104,10 @@ public class TransactionService {
     @Transactional
     public ListResult list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
         var spec = TransactionSpecification.filteredTransactions(filter, pointer);
-        var sorting = Sort.by("id").ascending().and(Sort.by("ts").descending()); //Sort by id then timestamp by default
+        var sorting = Sort.by("ts").descending().and(Sort.by("id").ascending()); //Sort by id then timestamp by default
         if (sort.contains("-timestamp")) {
             //Reverse sort requested
-            sorting = Sort.by("id").ascending().and(Sort.by("ts").ascending());
+            sorting = Sort.by("ts").ascending().and(Sort.by("id").ascending());
         }
         if (limit == null) {
             return new ListResult(transactionRepository.findAll(spec, sorting), 0L);
