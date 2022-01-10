@@ -7,9 +7,11 @@ import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.Operation;
 import org.akashihi.mdg.entity.Tag;
 import org.akashihi.mdg.entity.Transaction;
+import org.akashihi.mdg.indexing.IndexingService;
+import org.akashihi.mdg.indexing.TransactionDocument;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -24,6 +26,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final TagRepository tagRepository;
     private final OperationRepository operationRepository;
+    private final IndexingService indexingService;
 
     protected Transaction enrichOperations(Transaction tx) {
         //Drop empty operations
@@ -96,6 +99,9 @@ public class TransactionService {
 
         var savedTransaction = transactionRepository.save(tx);
         tx.getOperations().forEach(o -> {o.setTransaction(savedTransaction); operationRepository.save(o);});
+
+        indexingService.storeTransaction(tx);
+
         return tx;
     }
 
@@ -153,6 +159,9 @@ public class TransactionService {
         var finalTx = validateTransaction(savedTransaction);
 
         finalTx.setOperations(finalTx.getOperations().stream().map(o -> {o.setTransaction(finalTx); operationRepository.save(o); return o;} ).toList());
+
+        indexingService.storeTransaction(tx);
+
         return Optional.of(finalTx);
     }
 

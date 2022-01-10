@@ -3,6 +3,7 @@ package org.akashihi.mdg.api.v1;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.Settings;
 import org.akashihi.mdg.entity.Setting;
+import org.akashihi.mdg.indexing.IndexingService;
 import org.akashihi.mdg.service.SettingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class SettingController {
     private final SettingService settingService;
+    private final IndexingService indexingService;
+
 
     @GetMapping(value = "/settings", produces = "application/vnd.mdg+json;version=1")
     Settings list() {
@@ -38,5 +41,12 @@ public class SettingController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     Setting updateUiLanguage(@RequestBody Setting setting) {
         return settingService.updateUiLanguage(setting.getValue());
+    }
+
+    @PutMapping(value = "/settings/mnt.transaction.reindex", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    Setting transactionReindex() {
+        indexingService.reIndex();
+        return new Setting("mnt.transaction.reindex", "true");
     }
 }

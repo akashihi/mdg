@@ -1,0 +1,12 @@
+{
+  "properties": {
+    "comment": {
+      "type": "text",
+      "analyzer": "comments"
+    },
+    "tags": {
+      "type": "text",
+      "analyzer": "tags"
+    }
+  }
+}
