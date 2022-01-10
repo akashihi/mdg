@@ -46,7 +46,8 @@ public class SettingController {
     @PutMapping(value = "/settings/mnt.transaction.reindex", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.ACCEPTED)
     Setting transactionReindex() {
-        indexingService.reIndex();
+        var language = settingService.get("ui.language").map(Setting::getValue).orElse("en");
+        indexingService.reIndex(language);
         return new Setting("mnt.transaction.reindex", "true");
     }
 }

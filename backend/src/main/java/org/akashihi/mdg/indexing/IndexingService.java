@@ -24,10 +24,10 @@ public class IndexingService {
 
     @SneakyThrows
     @Transactional(readOnly = true)
-    public void reIndex() {
+    public void reIndex(String language) {
         elasticsearchOperations.indexOps(TransactionDocument.class).delete();
 
-        var settingsStream = IndexingService.class.getClassLoader().getResourceAsStream("elasticsearch/settings.json");
+        var settingsStream = IndexingService.class.getClassLoader().getResourceAsStream("elasticsearch/settings.%s.json".formatted(language));
         var settings = objectMapper.readValue(settingsStream, Map.class);
 
         elasticsearchOperations.indexOps(TransactionDocument.class).create(settings);
@@ -38,6 +38,9 @@ public class IndexingService {
 
     public void storeTransaction(Transaction tx) {
         elasticsearchOperations.save(new TransactionDocument(tx));
+    }
+    public void removeTransaction(Long id) {
+        elasticsearchOperations.delete(id.toString(), TransactionDocument.class);
     }
 
     public Collection<Long> lookupByComment(String comment) {

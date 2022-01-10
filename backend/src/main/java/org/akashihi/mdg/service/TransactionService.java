@@ -169,5 +169,6 @@ public class TransactionService {
     public void delete(Long id) {
         operationRepository.deleteOperationsForTransaction(id);
         transactionRepository.deleteById(id);
+        indexingService.removeTransaction(id);
     }
 }

@@ -1,0 +1,66 @@
+{
+  "analysis": {
+    "char_filter": {
+      "dia_mappings": {
+        "type": "mapping",
+        "mappings": [
+          "ï => i"
+        ]
+      }
+    },
+    "filter": {
+      "stop_words_dict": {
+        "type": "stop",
+        "stopwords": "_english_"
+      },
+      "words_splitter": {
+        "type": "word_delimiter_graph",
+        "split_on_numerics": false
+      },
+      "speller": {
+        "type": "hunspell",
+        "locale": "ru_RU"
+      }
+    },
+    "tokenizer": {
+      "trigram": {
+        "type": "edge_ngram",
+        "min_ngram": 3,
+        "max_ngram": 3,
+        "token_chars": [
+          "letter",
+          "digit"
+        ]
+      }
+    },
+    "analyzer": {
+      "comments": {
+        "type": "custom",
+        "tokenizer": "trigram",
+        "char_filter": [
+          "html_strip",
+          "dia_mappings"
+        ],
+        "filter": [
+          "lowercase",
+          "asciifolding",
+          "stop_words_dict",
+          "words_splitter"
+        ]
+      },
+      "tags": {
+        "type": "custom",
+        "tokenizer": "trigram",
+        "char_filter": [
+          "html_strip",
+          "dia_mappings"
+        ],
+        "filter": [
+          "lowercase",
+          "asciifolding",
+          "words_splitter"
+        ]
+      }
+    }
+  }
+}
