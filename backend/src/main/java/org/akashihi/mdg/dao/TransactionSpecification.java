@@ -1,6 +1,7 @@
 package org.akashihi.mdg.dao;
 
 import org.akashihi.mdg.entity.Transaction;
+import org.akashihi.mdg.indexing.IndexingService;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.Predicate;
@@ -11,9 +12,25 @@ import java.util.Collection;
 import java.util.Map;
 
 public class TransactionSpecification {
-    public static Specification<Transaction> filteredTransactions(Map<String, String> filter, Long pointer) {
+    public static Specification<Transaction> filteredTransactions(IndexingService indexingService, Map<String, String> filter, Long pointer) {
         return (root, query, criteriaBuilder) -> {
             Collection<Predicate> predicates = new ArrayList<>();
+
+            Collection<Long> fulltextIds = new ArrayList<>();
+            if (filter.containsKey("comment")) {
+                fulltextIds.addAll(indexingService.lookupByComment(filter.get("comment")));
+            }
+            if (filter.containsKey("tag")) {
+                fulltextIds.addAll(indexingService.lookupByTag(filter.get("tag")));
+            }
+            if (!fulltextIds.isEmpty()) {
+                predicates.add(root.get("id").in(fulltextIds));
+            } else {
+                if (filter.containsKey("comment") || filter.containsKey("tag")) {
+                    predicates.add(criteriaBuilder.equal(root.get("id"), -1)); //Prevent any results pickup
+                }
+            }
+
             if (filter.containsKey("notEarlier")) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("ts"), LocalDateTime.parse(filter.get("notEarlier"))));
             }
@@ -29,6 +46,7 @@ public class TransactionSpecification {
             if (pointer != null) {
                 predicates.add(criteriaBuilder.lessThan(root.get("id"), pointer));
             }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }

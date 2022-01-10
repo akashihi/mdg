@@ -109,7 +109,7 @@ public class TransactionService {
 
     @Transactional
     public ListResult list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
-        var spec = TransactionSpecification.filteredTransactions(filter, pointer);
+        var spec = TransactionSpecification.filteredTransactions(indexingService, filter, pointer);
         var sorting = Sort.by("ts").descending().and(Sort.by("id").ascending()); //Sort by id then timestamp by default
         if (sort.contains("-timestamp")) {
             //Reverse sort requested
