@@ -3,19 +3,16 @@ package org.akashihi.mdg.service;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.*;
-import org.akashihi.mdg.entity.Account;
-import org.akashihi.mdg.entity.Operation;
-import org.akashihi.mdg.entity.Tag;
-import org.akashihi.mdg.entity.Transaction;
+import org.akashihi.mdg.entity.*;
+import org.akashihi.mdg.entity.Currency;
 import org.akashihi.mdg.indexing.IndexingService;
-import org.akashihi.mdg.indexing.TransactionDocument;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +24,7 @@ public class TransactionService {
     private final TagRepository tagRepository;
     private final OperationRepository operationRepository;
     private final IndexingService indexingService;
+    private final RateService rateService;
 
     protected Transaction enrichOperations(Transaction tx) {
         //Drop empty operations
@@ -163,6 +161,69 @@ public class TransactionService {
         indexingService.storeTransaction(tx);
 
         return Optional.of(finalTx);
+    }
+
+    /**
+     * Converts one of transaction currencies to another one. The process consists of two major steps: finding new default currency and rebalancing the transaction.
+     *
+     * Default currency is selected using the following rule: if there is default currency, which is not old or new, use it, otherwise pick new currency as the default on.
+     * In the latter case rates of operations on other account could be updated.
+     *
+     * Rebalancing is more tricky.We drop operations with modified account, find the sum of transaction (which is non-zero) and create a new operation to balance
+     * transaction back, with respect to the new currency and rate.
+     *
+     * @param tx Transaction to update
+     * @param account Account to update on the transsaction operations
+     * @param newCurrency New currency to use
+     * @return Updated transaction.
+     */
+    @Transactional
+    public Transaction replaceCurrency(Transaction tx, Account account, Currency newCurrency) {
+        var untouchedOps = tx.getOperations().stream().filter(o -> !o.getAccount().equals(account))
+                .collect(Collectors.toList());
+        tx.getOperations().removeAll(untouchedOps);
+        operationRepository.deleteAll(tx.getOperations());
+
+        var defaultCurrency =  untouchedOps.stream()
+                .filter(o -> o.getRate() == null || o.getRate().equals(BigDecimal.ONE))
+                .map(o -> o.getAccount().getCurrency()).findAny().orElse(newCurrency);
+        var rebalanceEverything = untouchedOps.stream()
+                .noneMatch(o -> o.getRate() == null || o.getRate().equals(BigDecimal.ONE));
+
+        if (rebalanceEverything) {
+            var replaced = untouchedOps.stream().peek(o -> {
+                if (o.getAccount().getCurrency().equals(newCurrency)) {
+                    o.setRate(BigDecimal.ONE);
+                } else {
+                    var rateToNew = rateService.getPair(tx.getTs(), o.getAccount().getCurrency(), newCurrency);
+                    o.setRate(rateToNew.getRate());
+                }
+            }).collect(Collectors.toList());
+            tx.setOperations(replaced);
+        } else {
+            tx.setOperations(untouchedOps);
+        }
+        operationRepository.saveAll(tx.getOperations());
+
+        var replacementOp = new Operation();
+        replacementOp.setAccount(account);
+        replacementOp.setTransaction(tx);
+
+        var txSum = untouchedOps.stream().map(o -> o.getAmount().multiply(o.getRate())).reduce(BigDecimal.ZERO, BigDecimal::add).negate();
+        if (defaultCurrency.equals(newCurrency)) {
+            replacementOp.setRate(BigDecimal.ONE);
+            replacementOp.setAmount(txSum);
+        } else {
+            var rate = rateService.getPair(tx.getTs(), defaultCurrency, newCurrency);
+            replacementOp.setRate(rate.getRate());
+            replacementOp.setAmount(txSum.divide(rate.getRate(), RoundingMode.HALF_UP));
+        }
+
+        tx.getOperations().add(replacementOp);
+        operationRepository.save(replacementOp);
+
+
+        return tx;
     }
 
     @Transactional

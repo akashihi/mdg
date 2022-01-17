@@ -38,6 +38,10 @@ public class RateService {
                 .orElse(new Rate(-1L, dt, dt, from, to, new BigDecimal(1)));
     }
 
+    public Rate getPair(LocalDateTime dt, Currency from, Currency to) {
+        return this.getPair(dt, from.getId(), to.getId());
+    }
+
     public Rate getCurrentRateForPair(Currency from, Currency to) {
         return this.getPair(LocalDateTime.now(), from.getId(), to.getId());
     }
