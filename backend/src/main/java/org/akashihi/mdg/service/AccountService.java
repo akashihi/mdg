@@ -26,6 +26,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final CategoryRepository categoryRepository;
     private final CurrencyRepository currencyRepository;
+    private final TransactionService transactionService;
     private final SettingService settingService;
     private final RateService rateService;
 
@@ -124,7 +125,11 @@ public class AccountService {
                 throw new RestException("ACCOUNT_CURRENCY_ASSET", 422, "/accounts/%d".formatted(id));
             }
         } else {
-            //TODO handle currency change
+            if (!account.getCurrency().getId().equals(newAccount.getCurrencyId())) {
+                var currencyValue = currencyRepository.findById(newAccount.getCurrencyId());
+                currencyValue.ifPresent(currency -> transactionService.updateTransactionsCurrencyForAccount(account, currency));
+                currencyValue.ifPresent(account::setCurrency);
+            }
             if ((newAccount.getFavorite() != null && newAccount.getFavorite()) || (newAccount.getOperational() != null && newAccount.getOperational())) {
                 throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts/%d".formatted(id));
             }

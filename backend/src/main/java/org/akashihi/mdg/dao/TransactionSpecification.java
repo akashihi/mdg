@@ -1,5 +1,6 @@
 package org.akashihi.mdg.dao;
 
+import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.Transaction;
 import org.akashihi.mdg.indexing.IndexingService;
 import org.springframework.data.jpa.domain.Specification;
@@ -12,6 +13,10 @@ import java.util.Collection;
 import java.util.Map;
 
 public class TransactionSpecification {
+    public static Specification<Transaction> transactionsForAccount(Account account) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.join("operations").<String>get("account"), account);
+    }
+
     public static Specification<Transaction> filteredTransactions(IndexingService indexingService, Map<String, String> filter, Long pointer) {
         return (root, query, criteriaBuilder) -> {
             Collection<Predicate> predicates = new ArrayList<>();

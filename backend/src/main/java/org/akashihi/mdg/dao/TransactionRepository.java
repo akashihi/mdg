@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.QueryHints;
 import javax.persistence.QueryHint;
 import java.util.stream.Stream;
 
-public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
+public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction>,TransactionRepositoryCustom {
     @QueryHints(value = @QueryHint(name = org.hibernate.jpa.QueryHints.HINT_FETCH_SIZE, value = "50"))
     Stream<Transaction> streamAllBy();
 }

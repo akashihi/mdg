@@ -163,6 +163,12 @@ public class TransactionService {
         return Optional.of(finalTx);
     }
 
+    @Transactional
+    public void updateTransactionsCurrencyForAccount(Account account, Currency newCurrency) {
+        transactionRepository.streamByAccount(TransactionSpecification.transactionsForAccount(account))
+                .forEach(tx -> this.replaceCurrency(tx, account, newCurrency));
+    }
+
     /**
      * Converts one of transaction currencies to another one. The process consists of two major steps: finding new default currency and rebalancing the transaction.
      *
