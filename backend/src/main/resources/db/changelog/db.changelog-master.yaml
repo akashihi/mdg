@@ -43,3 +43,5 @@ databaseChangeLog:
       file: db/changelog/21-language.sql
   - include:
       file: db/changelog/22-dropassetproperties.sql
+  - include:
+      file: db/changelog/23-balance_mqt.sql

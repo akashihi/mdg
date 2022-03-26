@@ -30,7 +30,9 @@ public class AccountService {
     private final SettingService settingService;
     private final RateService rateService;
 
-    protected Account setPrimaryBalance(Account a) {
+    protected Account applyBalance(Account a) {
+        var balance = accountRepository.getBalance(a.getId()).orElse(BigDecimal.ZERO);
+        a.setBalance(balance);
         var defaultCurrency = settingService.getCurrentCurrencyPrimary();
         if (defaultCurrency.isEmpty() || a.getCurrency().equals(defaultCurrency.get())) {
             a.setPrimaryBalance(a.getBalance());
@@ -67,25 +69,24 @@ public class AccountService {
             }
             account.setCategory(category);
         }
-        account.setBalance(BigDecimal.ZERO); //Accounts are created with balance 0
         account.setHidden(false);
         accountRepository.save(account);
         log.info("Created account {}", account);
-        return account;
+        return applyBalance(account);
     }
 
     @Transactional
     public Collection<Account> list(Optional<Map<String, String>> query) {
         var sort = Sort.by("accountType").ascending().and(Sort.by("name").ascending());
         if (query.isEmpty()) {
-            return accountRepository.findAll(sort).stream().map(this::setPrimaryBalance).toList();
+            return accountRepository.findAll(sort).stream().map(this::applyBalance).toList();
         }
-        return accountRepository.findAll(filteredAccount(query.get()), sort).stream().map(this::setPrimaryBalance).toList();
+        return accountRepository.findAll(filteredAccount(query.get()), sort).stream().map(this::applyBalance).toList();
     }
 
     @Transactional
     public Optional<Account> get(Long id) {
-        return accountRepository.findById(id).map(this::setPrimaryBalance);
+        return accountRepository.findById(id).map(this::applyBalance);
     }
 
     @Transactional
@@ -135,7 +136,7 @@ public class AccountService {
             }
         }
         accountRepository.save(account);
-        return Optional.of(setPrimaryBalance(account));
+        return Optional.of(applyBalance(account));
     }
 
     @Transactional

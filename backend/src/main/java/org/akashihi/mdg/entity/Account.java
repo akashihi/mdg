@@ -35,6 +35,7 @@ public class Account {
     @Transient
     @JsonProperty("category_id")
     private Long categoryId;
+    @Transient
     private BigDecimal balance;
     @Transient
     @JsonProperty("primary_balance")
