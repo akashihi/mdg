@@ -45,3 +45,5 @@ databaseChangeLog:
       file: db/changelog/22-dropassetproperties.sql
   - include:
       file: db/changelog/23-balance_mqt.sql
+  - include:
+      file: db/changelog/24-mqt_refresh.sql

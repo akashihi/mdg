@@ -1,0 +1,4 @@
+#Key and value types
+#Sat Mar 26 14:33:31 EET 2022
+valueType=org.akashihi.mdg.entity.Setting
+keyType=java.lang.String
