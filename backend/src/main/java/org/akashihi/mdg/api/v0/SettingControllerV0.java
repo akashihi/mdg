@@ -1,5 +1,6 @@
 package org.akashihi.mdg.api.v0;
 
+import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v0.dto.DataPlural;
 import org.akashihi.mdg.api.v0.dto.DataSingular;
 import org.akashihi.mdg.api.v0.dto.RequestException;
@@ -7,17 +8,16 @@ import org.akashihi.mdg.api.v0.dto.SettingData;
 import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.api.v1.dto.Settings;
 import org.akashihi.mdg.entity.Setting;
+import org.akashihi.mdg.indexing.IndexingService;
 import org.akashihi.mdg.service.SettingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 public class SettingControllerV0 {
     private final SettingService settingService;
-
-    public SettingControllerV0(SettingService settingService) {
-        this.settingService = settingService;
-    }
+    private final IndexingService indexingService;
 
     @GetMapping(value = "/api/setting", produces = "application/vnd.mdg+json")
     DataPlural<SettingData> list() {
@@ -53,5 +53,13 @@ public class SettingControllerV0 {
     DataSingular<SettingData> updateUiLanguage(@RequestBody DataSingular<SettingData> setting) {
         var newSetting = settingService.updateUiLanguage(setting.data().getAttributes().value());
         return new DataSingular<>(new SettingData(newSetting.getId(), "setting", new SettingData.Attributes(newSetting.getValue())));
+    }
+
+    @PutMapping(value = "/api/setting/mnt.transaction.reindex", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    DataSingular<SettingData> transactionReindex() {
+        var language = settingService.get("ui.language").map(Setting::getValue).orElse("en");
+        indexingService.reIndex(language);
+        return new DataSingular<>(new SettingData("mnt.transaction.reindex", "setting", new SettingData.Attributes("true")));
     }
 }
