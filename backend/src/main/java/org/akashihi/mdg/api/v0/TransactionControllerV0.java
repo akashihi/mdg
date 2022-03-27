@@ -76,7 +76,7 @@ public class TransactionControllerV0 {
         notEarlier.ifPresent(f -> filter.put("notEarlier", f));
         notLater.ifPresent(f -> filter.put("notLater", f));
         var transactions = transactionService.list(filter, Collections.singleton(sort.orElse("")), null, null).transactions().stream().map(this::toDto).toList();
-        return new DataPlural<>(transactions);
+        return new DataPlural<>(transactions, transactions.size());
     }
 
     @GetMapping(value = "/api/transaction/{id}", produces = "application/vnd.mdg+json")
