@@ -427,35 +427,25 @@ Resources related to budget management
 
 ## Budget [/budget/{YYYY}{MM}{DD}]
 
++ parameters
+    + YYYY: `2022` (required, number) - Budget's year
+    + MM: `03` (required, number) - Budget's month
+    + DD: `28` (required, number) - Budget's day. A budget with closest `term_beginning` before or equal to specified date will be retrieved
+
 + Attributes
     + term_beginning: `YYYY-MM-DD` (string, required) - Budget is not effective before specified point in time
     + term_end: `YYYY-MM-DD` (string, required) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
-    + incoming_amount (number, required) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
-    + outgoing_amount (BudgetPair, required) - for expected: Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency. For actual: Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
-    + state (object, required)
+    + incoming_amount: 8000 (number, required) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
+    + outgoing_amount: 9000 (BudgetPair, required) - for expected: Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency. For actual: Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
+    + state
       + income (BudgetPair, required) - For expected: Income expected to be received during budget validity period. Calculated as a sum of expected values on budget entries related to income accounts. Exposed in primary currency. For actual: Actual income, received during budget validity period. Calculated as a sum of income account operations, happened during transaction validity period. Exposed in primary currency.
       + expense (BudgetPair, required) - For expected: Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts. Exposed in primary currency. For actual: Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period. Exposed in primary currency.
       + change (BudgetPair, required) - For expected: Expected change on expense accounts amounts for today. Calculated as a sum of change values on budget entries related to expense accounts. For non-current account will be zero. Exposed in primary currency. For actual: Actual change on expense accounts amounts, happened today. Calculated as a sum of expense account operations, happened today. For non-current account will be zero. Exposed in primary currency.
 
 ### View Budget detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budget",
-                "id": 1,
-                "attributes": {
-                    "term_beginning": 123456,
-                    "term_end": 223456,
-                    "incoming_amount": 9000,
-                    "outgoing_amount": {
-                        "expected": 100500,
-                        "actual": 3.62
-                    }
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Budget)
 
 ### Delete a Budget [DELETE]
 
@@ -463,185 +453,104 @@ Resources related to budget management
 
 ## Budget collection [/budget]
 
-Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reaing specific budget object.
+Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reading specific budget object.
 
 ### Create a new budget [POST]
 
 Budgets effective dates are inclusive and should not overlap.
 
-+ Request (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budget",
-                "attributes": {
-                    "term_beginning": "2017-02-01",
-                    "term_end": "2017-02-28"
-                }
-            }
-        }
-
-+ Response 202 (application/vnd.mdg+json)
-  + Headers
-  
-            Location: /budget/20170201
-        
-  + Body
-  
-            {
-                "data": [
-                    {
-                        "type": "budget",
-                        "id": 20170201,
-                        "attributes": {
-                            "term_beginning": "2017-02-01",
-                            "term_end": "2017-02-28",
-                            "incoming_amount": 100.50
-                        }
-                    }
-                ]
-            }
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Budget)
+    
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Budget)
 
 
 ### List all Budgets [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + budgets (array[Budget], required) - Transactions covered by the request
+        + self: AAABBB (string, optional) - Cursor of the current page.
+        + first: AAABBB (string, optional) - Cursor of the first page
+        + next: AAABBB (string, optional) - Cursor of the following page
+        + left: 15 (number,optional) - Number of items left after the current page.
 
-        {
-            "data": [
-                {
-                    "type": "budget",
-                    "id": 20170201,
-                    "attributes": {
-                        "term_beginning": "2017-02-01",
-                        "term_end": "2017-02-28",
-                        "incoming_amount": 9000,
-                        "outgoing_amount": {
-                            "expected": 100500,
-                            "actual": 3.62
-                        }
-                    }
-                }
-            ]
-        }
-
-## BudgetEntry [/budget/{budget_id}/entry/{entry_id}]
+## BudgetEntry [/budget/{budget_id}/entry/{entry_id}&embed={embed}]
 
 BudgetEntry lifecycle is managed automatically. It will be created with budget and deleted with budget. During creation of new non-"asset" account, corresponding budget entries should be automatically provided to all existing budgets.
 
 + parameters
-    + budget_id: `YYYYMMDD` (number, required) - ID of owning budget in form of integer
-    + entry_id (number, required) - ID of a transaction in form of integer
+    + budget_id: YYYYMMDD (string, required) - ID of owning budget in form of integer
+    + entry_id: 1 (number, required) - ID of a transaction in form of integer
+    + embed: currency,category,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
-    + account_id (number, required) - id of account, linked to that BudgetEntry. Every account could be used only once per each Budget.
+    + account_id: 1 (number, required) - id of account, linked to that BudgetEntry. Every account could be used only once per each Budget.
+    + account (Account, optional) - Related account information.
+    + category_id: 1 (number, optional) - Related account's category id, may be missing in case account doesn't belongs to the any category.
+    + category (Category, optional) - Related account's associated category object.
     + even_distribution: `true` (boolean, required) - whether expected change on that account should be evenly distributes over Budget term or it is expected to be occasional based. For example, 'meal budget' is usually evenly distributed, you spent it in small pieces almost every day during Budget period. On the other hand, 'flat rent' is usually occasional, as you pay it only once during Budget period.
     + proration: `true` (boolean, optional) - affects the change_amount calculation. Only valid when `even_distribution` is `True`
-    + expected_amount (number, required) - your expected change on account_id amount during Budget effective period.
-    + actual_amount (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
-    + change_amount (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
-    + account_name (string, required) - Name of an account, linked to that BudgetEntry.
-    + account_type (enum[string], required) - Name of an account, linked to that BudgetEntry.
+    + expected_amount: 1000 (number, required) - your expected change on account_id amount during Budget effective period.
+    + actual_amount: 50 (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
+    + change_amount: 5 (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
 
 ### View an BudgetEntry detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budgetentry",
-                "id": 1,
-                "attributes": {
-                    "account_id": 1,
-                    "account_name": "Income",
-                    "account_type": "income",
-                    "even_distribution": false,
-                    "expected_amount": 100500,
-                    "actual_amount": 100501
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (BudgetEntry)
 
 ### Modify BudgetEntry data [PUT]
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (BudgetEntry)
 
-        {
-            "data": {
-                "type": "budgetentry",
-                "id": 1,
-                "attributes": {
-                    "even_distribution": false,
-                    "expected_amount": 100500,
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (BudgetEntry)
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budgetentry",
-                "id": 1,
-                "attributes": {
-                    "even_distribution": false,
-                    "expected_amount": 100500,
-                }
-            }
-        }
-
-## BudgetEntry collection [/budget/{budget_id}/entry]
+## BudgetEntry collection [/budget/{budget_id}/entry?fields={fields}]
 
 + parameters
-    + budget_id: `YYYYMMDD` (required, number) - ID of owning budget in form of integer
+    + budget_id: YYYYMMDD (required, string) - ID of owning budget in form of integer
+    + fields: compact (enum[string], required) - Either 'compact' or 'full', default is 'full'. In 'compact' mode categories information is omited from the listing.
 
 ### List budget entries [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
 
         {
-            "data": [
+            "budget_entries": [
                 {
-                    "type": "budgetentry",
-                    "id": 1,
-                    "attributes": {
-                        "account_id": 1,
-                        "account_name": "Income",
-                        "account_type": "income",
-                        "even_distribution": false,
-                        "expected_amount": 100500,
-                        "actual_amount": 100501
-                    }
-                },
-                {
-                    "type": "budgetentry",
                     "id": 2,
-                    "attributes": {
-                        "account_id": 2,
-                        "account_name": "Expense",
-                        "account_type": "expense",
-                        "even_distribution": True,
-                        "proration": True,
-                        "expected_amount": 9000,
-                        "actual_amount": 4500,
-                        "change_amount": 300
-                    }
-                },
+                    "account_id": 1,
+                    "even_distribution": false,
+                    "expected_amount": 100500,
+                    "actual_amount": 100501,
+                    "change_amount": 300
+                }
+            ],
+            "categories": [
                 {
-                    "type": "budgetentry",
-                    "id": 3,
-                    "attributes": {
-                        "account_id": 3,
-                        "account_name": "Rent",
-                        "account_type": "expense",
-                        "even_distribution": True,
-                        "proration": False,
-                        "expected_amount": 9000,
-                        "actual_amount": 4000,
-                        "change_amount": 800
+                    "id": 2,
+                    "name": "Houehold",
+                    "budget_entries": [
+                        {
+                            "id": 2,
+                            "account_id": 1,
+                            "even_distribution": true,
+                            "proration": True,
+                            "expected_amount": 100500,
+                            "actual_amount": 100501,
+                            "change_amount": 300
+                        }
+                    ],
+                    "categories": {
+                        "budget_entries": [],
+                        "categories": []
                     }
                 }
-            ]
+            ]    
         }
 
 
@@ -891,8 +800,8 @@ Single operation in a transation.
 Budget specific thing. As budget manages a predicted future and harsh reality at the same time, we usually operation with a pair of number, one is actual and another one is expected. This data structure is used for that
 
 + Attributes
-    + actual (number, required) - Amount that actually was reached during budget execution
-    + expected (number, required) - Amount that planned to be reached during budget execution
+    + actual: 1000 (number, required) - Amount that actually was reached during budget execution
+    + expected: 2000 (number, required) - Amount that planned to be reached during budget execution
 
 ## IdentifiedValue
 
