@@ -238,4 +238,9 @@ public class TransactionService {
         transactionRepository.deleteById(id);
         indexingService.removeTransaction(id);
     }
+
+    @Transactional
+    public Collection<Tag> listTags() {
+        return tagRepository.findAll(Sort.by("tag").ascending());
+    }
 }
