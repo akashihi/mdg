@@ -425,7 +425,7 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 Resources related to budget management
 
-## Budget [/budget/{YYYY}{MM}{DD}]
+## Budget [/budgets/{YYYY}{MM}{DD}]
 
 + parameters
     + YYYY: `2022` (required, number) - Budget's year
@@ -435,8 +435,8 @@ Resources related to budget management
 + Attributes
     + term_beginning: `YYYY-MM-DD` (string, required) - Budget is not effective before specified point in time
     + term_end: `YYYY-MM-DD` (string, required) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
-    + incoming_amount: 8000 (number, required) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
-    + outgoing_amount: 9000 (BudgetPair, required) - for expected: Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency. For actual: Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
+    + incoming_amount: 8000 (number, required, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
+    + outgoing_amount: 9000 (BudgetPair, required, readonly) - for expected: Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency. For actual: Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
     + state
       + income (BudgetPair, required) - For expected: Income expected to be received during budget validity period. Calculated as a sum of expected values on budget entries related to income accounts. Exposed in primary currency. For actual: Actual income, received during budget validity period. Calculated as a sum of income account operations, happened during transaction validity period. Exposed in primary currency.
       + expense (BudgetPair, required) - For expected: Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts. Exposed in primary currency. For actual: Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period. Exposed in primary currency.
@@ -451,7 +451,7 @@ Resources related to budget management
 
 + Response 204
 
-## Budget collection [/budget]
+## Budget collection [/budgets]
 
 Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reading specific budget object.
 
