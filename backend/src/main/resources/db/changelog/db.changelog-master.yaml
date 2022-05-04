@@ -47,3 +47,6 @@ databaseChangeLog:
       file: db/changelog/23-balance_mqt.sql
   - include:
       file: db/changelog/24-mqt_refresh.sql
+  - include:
+      file: db/changelog/25-nonegativebudgetentry.sql
+

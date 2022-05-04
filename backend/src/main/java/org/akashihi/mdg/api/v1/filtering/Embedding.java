@@ -1,9 +1,11 @@
 package org.akashihi.mdg.api.v1.filtering;
 
 import org.akashihi.mdg.entity.Account;
+import org.akashihi.mdg.entity.BudgetEntry;
 import org.akashihi.mdg.entity.Operation;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -36,6 +38,27 @@ public class Embedding {
                 }
             }
             return account;
+        };
+    }
+
+    public static Function<BudgetEntry, BudgetEntry> embedBudgetEntryObject(Optional<Collection<String>> embed) {
+        var accounts = embed.map(e-> e.contains("account")).orElse(false);
+        var categories = embed.map(e -> e.contains("category")).orElse(false);
+
+        return (entry) -> {
+            entry.setAccountId(entry.getAccount().getId());
+            if (Objects.nonNull(entry.getAccount().getCategory())) {
+                entry.setCategoryId(entry.getAccount().getCategory().getId());
+                if (categories) {
+                    entry.setCategory(entry.getAccount().getCategory());
+                }
+            }
+            if (!accounts) {
+                entry.setAccount(null);
+            } else {
+                entry.setAccount(embedAccountObjects(embed).apply(entry.getAccount()));
+            }
+            return entry;
         };
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -120,6 +121,16 @@ public class TransactionService {
             var page =  transactionRepository.findAll(spec, pageLimit);
             return new ListResult(page.getContent(), page.getTotalElements()-limit);
         }
+    }
+
+    @Transactional
+    public BigDecimal spendingOverPeriod(LocalDateTime from, LocalDateTime to, Account account) {
+        var spec = TransactionSpecification.filteredTransactions(from, to, account);
+        var transactions = transactionRepository.findAll(spec);
+        return transactions.stream().flatMap(tx -> tx.getOperations().stream())
+                .filter(o -> o.getAccount().equals(account))
+                .map(Operation::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Transactional

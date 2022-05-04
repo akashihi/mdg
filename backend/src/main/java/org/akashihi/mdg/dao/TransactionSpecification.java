@@ -7,14 +7,29 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 public class TransactionSpecification {
     public static Specification<Transaction> transactionsForAccount(Account account) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.join("operations").<String>get("account"), account);
+    }
+
+    public static Specification<Transaction> filteredTransactions(LocalDateTime notEarlier, LocalDateTime notLater, Account account) {
+        return (root, query, criteriaBuilder) -> {
+            Collection<Predicate> predicates = new ArrayList<>();
+
+            if (Objects.nonNull(notEarlier)) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("ts"), notEarlier));
+            }
+            if (Objects.nonNull(notLater)) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("ts"), notLater));
+            }
+            if (Objects.nonNull(account)) {
+                predicates.add(root.join("operations").<String>get("account").<String>get("id").in(account.getId()));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     public static Specification<Transaction> filteredTransactions(IndexingService indexingService, Map<String, String> filter, Long pointer) {
