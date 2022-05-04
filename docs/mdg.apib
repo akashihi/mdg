@@ -451,7 +451,7 @@ Resources related to budget management
 
 + Response 204
 
-## Budget collection [/budgets]
+## Budget collection [/budget]
 
 Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reading specific budget object.
 
@@ -476,13 +476,13 @@ Budgets effective dates are inclusive and should not overlap.
         + next: AAABBB (string, optional) - Cursor of the following page
         + left: 15 (number,optional) - Number of items left after the current page.
 
-## BudgetEntry [/budget/{budget_id}/entry/{entry_id}&embed={embed}]
+## BudgetEntry [/budgets/{budget_id}/entries/{entry_id}&embed={embed}]
 
 BudgetEntry lifecycle is managed automatically. It will be created with budget and deleted with budget. During creation of new non-"asset" account, corresponding budget entries should be automatically provided to all existing budgets.
 
 + parameters
     + budget_id: YYYYMMDD (string, required) - ID of owning budget in form of integer
-    + entry_id: 1 (number, required) - ID of a transaction in form of integer
+    + entry_id: 1 (number, required) - ID of a entry in form of integer
     + embed: currency,category,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
@@ -494,9 +494,10 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
     + proration: `true` (boolean, optional) - affects the change_amount calculation. Only valid when `even_distribution` is `True`
     + expected_amount: 1000 (number, required) - your expected change on account_id amount during Budget effective period.
     + actual_amount: 50 (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
-    + change_amount: 5 (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
+    + allowed_spendings: 5 (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
+    + spending_percent: 2 (number, required) - ratio of spent/planned amounts
 
-### View an BudgetEntry detail [GET]
+### View a BudgetEntry detail [GET]
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes (BudgetEntry)
@@ -509,50 +510,80 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes (BudgetEntry)
 
-## BudgetEntry collection [/budget/{budget_id}/entry?fields={fields}]
+## BudgetEntry collection [/budgets/{budget_id}/entries?embed={embed}]
 
 + parameters
     + budget_id: YYYYMMDD (required, string) - ID of owning budget in form of integer
-    + fields: compact (enum[string], required) - Either 'compact' or 'full', default is 'full'. In 'compact' mode categories information is omited from the listing.
+    + embed: currency,category,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 ### List budget entries [GET]
 
 + Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + budget_entries (array[BudgetEntry], required) - List of entries of that budget
+
+## Budget entries tree [/budgets/{budget_id}/entries/tree&embed={embed}&filter={filter}]
+
++ Parameters
+    + embed: currency,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly. Account objects are not populated with categories in the tree mode.
+    + filter: nonzero (enum[string], optional) - Either `nonzero` or `all`. Default is `nonzero`. In `nonzero` mode entries with zero actual spendings and zero expected spendings are not returned, alongside their parent categories. In `all` mode all entries and their categories are always returned.
+
+### Get all Budget entries [GET]
+
+In that mode statistics, similar to budget entry statistics, is calculated for each category. The rules of calculation (prorated/even/one-shot) is
+derived from owned entries/sub categories using the following rule: if at least one sub entry is one-shot, all other entries are considered one-show. 
+If there are no one-show entries, but at least one non-prorated entry, all of them are considered to be even distributed. Otherwise they are calculated
+as prorated.
+
++ Response 200 (application/vnd.mdg+json;version=1)
 
         {
-            "budget_entries": [
-                {
-                    "id": 2,
-                    "account_id": 1,
-                    "even_distribution": false,
-                    "expected_amount": 100500,
-                    "actual_amount": 100501,
-                    "change_amount": 300
-                }
-            ],
-            "categories": [
-                {
-                    "id": 2,
-                    "name": "Houehold",
-                    "budget_entries": [
-                        {
-                            "id": 2,
-                            "account_id": 1,
-                            "even_distribution": true,
-                            "proration": True,
-                            "expected_amount": 100500,
-                            "actual_amount": 100501,
-                            "change_amount": 300
-                        }
-                    ],
-                    "categories": {
-                        "budget_entries": [],
-                        "categories": []
+            "expense": {
+                "entries": [
+                    {
+                        "id": 291,
+                        "account": null,
+                        "category": null,
+                        "proration": false,
+                        "account_id": 2065,
+                        "category_id": null,
+                        "even_distribution": true,
+                        "expected_amount": 100500.00,
+                        "actual_amount": 0,
+                        "allowed_spendings": 0,
+                        "spending_percent": 0
                     }
-                }
+                ],
+                "categories": [
+                    {
+                        "id": 2,
+                        "name": "pets",
+                        "expected_amount": 100500.00,
+                        "actual_amount": 0,
+                        "allowed_spendings": 0,
+                        "spending_percent": 0
+                        "entries": [
+                            {
+                                "id": 291,
+                                "account": null,
+                                "category": null,
+                                "proration": false,
+                                "account_id": 2065,
+                                "category_id": null,
+                                "even_distribution": true,
+                                "expected_amount": 100500.00,
+                                "actual_amount": 0,
+                                "allowed_spendings": 0,
+                                "spending_percent": 0
+                            }
+                        ],
+                        "categories": {
+                            "entries": [],
+                            "categories": []
+                        }
+                    }
             ]    
         }
-
 
 # Group Report
 
