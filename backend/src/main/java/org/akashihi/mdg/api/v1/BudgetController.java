@@ -29,14 +29,14 @@ public class BudgetController {
     protected BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
         var topEntries = entries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
                 .filter(e -> Objects.isNull(e.getAccount().getCategory()))
+                .map(Embedding.embedBudgetEntryObject(embed))
                 .toList();
-        var enrichedEntries = topEntries.stream().map(Embedding.embedBudgetEntryObject(embed)).toList();
         var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
-        return new BudgetEntryTreeEntry(null, null, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, enrichedEntries, topCategories);
+        return new BudgetEntryTreeEntry(null, null, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, topEntries, topCategories);
     }
 
     protected Optional<BudgetEntryTreeEntry> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
-        var categoryEntries = entries.stream().filter(e -> e.getAccount().getCategory() != null).filter(e -> e.getAccount().getCategory().equals(category)).toList();
+        var categoryEntries = entries.stream().filter(e -> e.getAccount().getCategory() != null).filter(e -> e.getAccount().getCategory().equals(category)).map(Embedding.embedBudgetEntryObject(embed)).toList();
         var subCategories = category.getChildren().stream().map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
         if (categoryEntries.isEmpty() && subCategories.isEmpty()) {
             return Optional.empty();
