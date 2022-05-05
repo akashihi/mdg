@@ -47,4 +47,19 @@ public class BudgetEntry {
     @JsonProperty("spending_percent")
     @Transient
     private BigDecimal spendingPercent;
+
+    public BudgetEntry(BudgetEntry entry) {
+        this.id = entry.id;
+        this.budget = entry.budget;
+        this.accountId = entry.accountId;
+        this.account = entry.account;
+        this.categoryId = entry.categoryId;
+        this.category = entry.category;
+        this.evenDistribution = entry.evenDistribution;
+        this.proration = entry.proration;
+        this.expectedAmount = entry.expectedAmount;
+        this.actualAmount = entry.actualAmount;
+        this.allowedSpendings = entry.allowedSpendings;
+        this.spendingPercent = entry.spendingPercent;
+    }
 }

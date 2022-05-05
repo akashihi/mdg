@@ -46,19 +46,20 @@ public class Embedding {
         var categories = embed.map(e -> e.contains("category")).orElse(false);
 
         return (entry) -> {
-            entry.setAccountId(entry.getAccount().getId());
-            if (Objects.nonNull(entry.getAccount().getCategory())) {
-                entry.setCategoryId(entry.getAccount().getCategory().getId());
+            var embeddedEntry = new BudgetEntry(entry);
+            embeddedEntry.setAccountId(embeddedEntry.getAccount().getId());
+            if (Objects.nonNull(embeddedEntry.getAccount().getCategory())) {
+                embeddedEntry.setCategoryId(embeddedEntry.getAccount().getCategory().getId());
                 if (categories) {
-                    entry.setCategory(entry.getAccount().getCategory());
+                    embeddedEntry.setCategory(embeddedEntry.getAccount().getCategory());
                 }
             }
             if (!accounts) {
-                entry.setAccount(null);
+                embeddedEntry.setAccount(null);
             } else {
-                entry.setAccount(embedAccountObjects(embed).apply(entry.getAccount()));
+                embeddedEntry.setAccount(embedAccountObjects(embed).apply(embeddedEntry.getAccount()));
             }
-            return entry;
+            return embeddedEntry;
         };
     }
 }

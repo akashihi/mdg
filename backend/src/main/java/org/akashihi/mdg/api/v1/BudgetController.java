@@ -2,21 +2,48 @@ package org.akashihi.mdg.api.v1;
 
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.BudgetEntries;
+import org.akashihi.mdg.api.v1.dto.BudgetEntryTree;
+import org.akashihi.mdg.api.v1.dto.BudgetEntryTreeEntry;
 import org.akashihi.mdg.api.v1.dto.Budgets;
 import org.akashihi.mdg.api.v1.filtering.Embedding;
+import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
+import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.service.BudgetService;
+import org.akashihi.mdg.service.CategoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class BudgetController {
     private final BudgetService budgetService;
+    private final CategoryService categoryService;
+    
+    protected BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
+        var topEntries = entries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
+                .filter(e -> Objects.isNull(e.getAccount().getCategory()))
+                .toList();
+        var enrichedEntries = topEntries.stream().map(Embedding.embedBudgetEntryObject(embed)).toList();
+        var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
+        return new BudgetEntryTreeEntry(null, null, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, enrichedEntries, topCategories);
+    }
+
+    protected Optional<BudgetEntryTreeEntry> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
+        var categoryEntries = entries.stream().filter(e -> e.getAccount().getCategory() != null).filter(e -> e.getAccount().getCategory().equals(category)).toList();
+        var subCategories = category.getChildren().stream().map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
+        if (categoryEntries.isEmpty() && subCategories.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new BudgetEntryTreeEntry(category.getId(), category.getName(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, categoryEntries, subCategories));
+        }
+    }
 
     @PostMapping(value = "/budgets", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.CREATED)
@@ -49,6 +76,20 @@ public class BudgetController {
     @GetMapping(value = "/budgets/{budgetId}/entries", produces = "application/vnd.mdg+json;version=1")
     BudgetEntries listEntries(@PathVariable("budgetId") Long budgetId) {
         return new BudgetEntries(budgetService.listEntries(budgetId));
+    }
+
+    @GetMapping(value = "/budgets/{budgetId}/entries/tree", produces = "application/vnd.mdg+json;version=1")
+    BudgetEntryTree tree(@PathVariable("budgetId") Long budgetId, @RequestParam("embed") Optional<Collection<String>> embed, @RequestParam("filter") Optional<String> filter) {
+        var categories = categoryService.list();
+        var entries = budgetService.listEntries(budgetId);
+        var leaveEmtpy = filter.map(f -> f.equalsIgnoreCase("all")).orElse(false);
+        if (!leaveEmtpy) {
+            entries = entries.stream().filter(e -> !(e.getActualAmount().compareTo(BigDecimal.ZERO)==0 && e.getExpectedAmount().compareTo(BigDecimal.ZERO)==0)).toList();
+        }
+
+        var expenseEntry = convertTopCategory(AccountType.EXPENSE, categories, entries, embed);
+        var incomeEntry = convertTopCategory(AccountType.INCOME, categories, entries, embed);
+        return new BudgetEntryTree(expenseEntry ,incomeEntry);
     }
 
     @GetMapping(value = "/budgets/{budgetId}/entries/{entryId}", produces = "application/vnd.mdg+json;version=1")

@@ -44,6 +44,14 @@ public class BudgetService {
         return true;
     }
 
+    protected void applyActualAmount(BudgetEntry entry) {
+        var from = entry.getBudget().getBeginning();
+        var to = entry.getBudget().getEnd();
+
+        // Find actual spendings
+        entry.setActualAmount(transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), entry.getAccount()));
+    }
+
     public Budget create(Budget budget) {
         validateBudget(budget);
         String id = budget.getBeginning().format(DateTimeFormatter.BASIC_ISO_DATE);
@@ -132,12 +140,8 @@ public class BudgetService {
         }
 
         var entry = entryValue.get();
-        var from = entry.getBudget().getBeginning();
-        var to = entry.getBudget().getEnd();
 
-        // Find actual spendings
-        entry.setActualAmount(transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), entry.getAccount()));
-
+        this.applyActualAmount(entry);
         // Apply spendings analysis
         analyzeSpendings(entry, LocalDate.now());
 
@@ -164,12 +168,7 @@ public class BudgetService {
             entry.setProration(false);
         }
 
-        // Find actual spendings
-        var from = entry.getBudget().getBeginning();
-        var to = entry.getBudget().getEnd();
-        entry.setActualAmount(transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), entry.getAccount()));
-
-        // Apply spendings analysis
+        this.applyActualAmount(entry);
         analyzeSpendings(entry, LocalDate.now());
 
         budgetEntryRepository.save(entry);
@@ -182,7 +181,12 @@ public class BudgetService {
         if (budget.isEmpty()) {
             return Collections.emptyList();
         }
-        return budgetEntryRepository.findByBudget(budget.get());
+
+        var today = LocalDate.now();
+        var entries = budgetEntryRepository.findByBudget(budget.get());
+        entries.forEach(e -> {this.applyActualAmount(e); analyzeSpendings(e, today);});
+
+        return entries;
     }
 
     @Transactional
