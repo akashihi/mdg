@@ -88,8 +88,8 @@ public class BudgetController {
     }
 
     @GetMapping(value = "/budgets/{budgetId}/entries", produces = "application/vnd.mdg+json;version=1")
-    BudgetEntries listEntries(@PathVariable("budgetId") Long budgetId) {
-        return new BudgetEntries(budgetService.listEntries(budgetId));
+    BudgetEntries listEntries(@PathVariable("budgetId") Long budgetId, @RequestParam("embed") Optional<Collection<String>> embed) {
+        return new BudgetEntries(budgetService.listEntries(budgetId).stream().map(Embedding.embedBudgetEntryObject(embed)).toList());
     }
 
     @GetMapping(value = "/budgets/{budgetId}/entries/tree", produces = "application/vnd.mdg+json;version=1")
