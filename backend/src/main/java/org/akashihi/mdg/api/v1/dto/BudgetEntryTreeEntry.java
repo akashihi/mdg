@@ -9,8 +9,8 @@ import java.util.Collection;
 
 public record BudgetEntryTreeEntry(@JsonInclude(JsonInclude.Include.NON_NULL) Long id,
                                    @JsonInclude(JsonInclude.Include.NON_NULL) String name,
-                                   @JsonProperty("expected_amount") BigDecimal expectedAmount,
                                    @JsonProperty("actual_amount") BigDecimal actualAmount,
+                                   @JsonProperty("expected_amount") BigDecimal expectedAmount,
                                    @JsonProperty("allowed_spendings") BigDecimal allowedSpendings,
                                    @JsonProperty("spending_percent") BigDecimal spendingPercent,
                                    Collection<BudgetEntry> entries,
