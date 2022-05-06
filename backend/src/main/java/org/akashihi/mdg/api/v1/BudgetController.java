@@ -6,10 +6,7 @@ import org.akashihi.mdg.api.v1.dto.BudgetEntryTree;
 import org.akashihi.mdg.api.v1.dto.BudgetEntryTreeEntry;
 import org.akashihi.mdg.api.v1.dto.Budgets;
 import org.akashihi.mdg.api.v1.filtering.Embedding;
-import org.akashihi.mdg.entity.AccountType;
-import org.akashihi.mdg.entity.Budget;
-import org.akashihi.mdg.entity.BudgetEntry;
-import org.akashihi.mdg.entity.Category;
+import org.akashihi.mdg.entity.*;
 import org.akashihi.mdg.service.BudgetService;
 import org.akashihi.mdg.service.CategoryService;
 import org.springframework.http.HttpStatus;
@@ -20,6 +17,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +25,7 @@ public class BudgetController {
     private final BudgetService budgetService;
     private final CategoryService categoryService;
 
-    private record Subtotal(BudgetEntryTreeEntry entry, Boolean even, Boolean prorated, BigDecimal actual, BigDecimal expected) {}
+    private record Subtotal(BudgetEntryTreeEntry entry, BudgetEntryMode mode, BigDecimal actual, BigDecimal expected) {}
 
     public static BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
         var topEntries = entries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
@@ -35,26 +33,18 @@ public class BudgetController {
                 .map(Embedding.embedBudgetEntryObject(embed))
                 .toList();
         var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, entries, embed, from, to, forDay)).filter(Optional::isPresent).map(Optional::get).toList();
-        var prorated = topCategories.stream().allMatch(Subtotal::prorated);
-        var even = topCategories.stream().allMatch(Subtotal::even);
-        if (!even) {
-            prorated = false; //Should happen automatically, but let's ensure it.
-        }
+        var mode = BudgetEntryMode.flatten(topCategories.stream().map(Subtotal::mode).toList());
         var actualSpendingsCategories = topCategories.stream().map(Subtotal::actual).reduce(BigDecimal.ZERO, BigDecimal::add);
         var expectedSpendingsCategories = topCategories.stream().map(Subtotal::expected).reduce(BigDecimal.ZERO, BigDecimal::add);
         var percent = BudgetService.getSpendingPercent(actualSpendingsCategories, expectedSpendingsCategories);
-        var allowedSpendings = BudgetService.getAllowedSpendings(actualSpendingsCategories, expectedSpendingsCategories, from, to, forDay, even, prorated);
+        var allowedSpendings = BudgetService.getAllowedSpendings(actualSpendingsCategories, expectedSpendingsCategories, from, to, forDay, mode);
         return new BudgetEntryTreeEntry(null, null, actualSpendingsCategories, expectedSpendingsCategories, percent, allowedSpendings, topEntries, topCategories.stream().map(Subtotal::entry).toList());
     }
 
     public static Optional<Subtotal> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
         var categoryEntries = entries.stream().filter(e -> e.getAccount().getCategory() != null).filter(e -> e.getAccount().getCategory().equals(category)).map(Embedding.embedBudgetEntryObject(embed)).toList();
         var subCategories = category.getChildren().stream().map(c -> convertCategory(c, entries, embed, from, to, forDay)).filter(Optional::isPresent).map(Optional::get).toList();
-        var prorated = subCategories.stream().allMatch(Subtotal::prorated) && categoryEntries.stream().allMatch(BudgetEntry::getProration);
-        var even = subCategories.stream().allMatch(Subtotal::even) && categoryEntries.stream().allMatch(BudgetEntry::getEvenDistribution);
-        if (!even) {
-            prorated = false; //Should happen automatically, but let's ensure it.
-        }
+        var mode = BudgetEntryMode.flatten(Stream.concat(subCategories.stream().map(Subtotal::mode), categoryEntries.stream().map(BudgetEntryMode::from)).toList());
         var actualSpendingsEntries = categoryEntries.stream().map(BudgetEntry::getActualAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         var actualSpendingsCategories = subCategories.stream().map(Subtotal::actual).reduce(BigDecimal.ZERO, BigDecimal::add);
         var actualSpendings = actualSpendingsEntries.add(actualSpendingsCategories);
@@ -67,9 +57,9 @@ public class BudgetController {
             return Optional.empty();
         } else {
             var percent = BudgetService.getSpendingPercent(actualSpendings, expectedSpendings);
-            var allowedSpendings = BudgetService.getAllowedSpendings(actualSpendings, expectedSpendings, from, to, forDay, even, prorated);
+            var allowedSpendings = BudgetService.getAllowedSpendings(actualSpendings, expectedSpendings, from, to, forDay, mode);
             var upperEntry = new BudgetEntryTreeEntry(category.getId(), category.getName(), actualSpendings, expectedSpendings, percent, allowedSpendings, categoryEntries, subCategories.stream().map(Subtotal::entry).toList());
-            return Optional.of(new Subtotal(upperEntry, even, prorated, actualSpendings, expectedSpendings));
+            return Optional.of(new Subtotal(upperEntry, mode, actualSpendings, expectedSpendings));
         }
     }
 

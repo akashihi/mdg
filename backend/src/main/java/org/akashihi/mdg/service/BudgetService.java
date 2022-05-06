@@ -99,7 +99,7 @@ public class BudgetService {
         return value;
     }
 
-    public static BigDecimal getAllowedSpendings(BigDecimal actualAmount, BigDecimal expectedAmount, LocalDate from, LocalDate to, LocalDate forDay, Boolean even, Boolean prorated) {
+    public static BigDecimal getAllowedSpendings(BigDecimal actualAmount, BigDecimal expectedAmount, LocalDate from, LocalDate to, LocalDate forDay, BudgetEntryMode mode) {
         if (forDay.isBefore(from.minusDays(1)) || forDay.isAfter(to)) {
             // We are out of that budget, no spendings are allowed
             return BigDecimal.ZERO;
@@ -108,15 +108,14 @@ public class BudgetService {
         var daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(forDay.minusDays(1), to)); //Including today
         var daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), forDay)); //Including first day and today
 
-        BigDecimal allowed;
-        if (even) {
-            // Calculate for prorated by default
+        BigDecimal allowed = BigDecimal.ZERO;
+        if (mode == BudgetEntryMode.PRORATED) {
             allowed = ((expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN)).multiply(daysPassed)).subtract(actualAmount);
-            if (!prorated || allowed.compareTo(BigDecimal.ZERO) < 0) {
-                // Recalculate for even
-                allowed = (expectedAmount.subtract(actualAmount)).divide(daysLeft, RoundingMode.HALF_DOWN);
-            }
-        } else {
+        }
+        if (mode == BudgetEntryMode.EVEN || allowed.compareTo(BigDecimal.ZERO) < 0) { // Negative prorations are re-calculated in the even mode
+            allowed = (expectedAmount.subtract(actualAmount)).divide(daysLeft, RoundingMode.HALF_DOWN);
+        }
+        if (mode == BudgetEntryMode.SINGLE) {
             // Not evenly distributed, spend everything left
             allowed = expectedAmount.subtract(actualAmount);
         }
@@ -132,7 +131,7 @@ public class BudgetService {
 
         var from = entry.getBudget().getBeginning();
         var to = entry.getBudget().getEnd();
-        entry.setAllowedSpendings(getAllowedSpendings(entry.getActualAmount(), entry.getExpectedAmount(), from, to, forDay, Objects.nonNull(entry.getEvenDistribution()) && entry.getEvenDistribution(), Objects.nonNull(entry.getProration()) && entry.getProration()));
+        entry.setAllowedSpendings(getAllowedSpendings(entry.getActualAmount(), entry.getExpectedAmount(), from, to, forDay, BudgetEntryMode.from(entry)));
     }
 
     @Transactional

@@ -2,6 +2,7 @@ package org.akashihi.mdg.service;
 
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
+import org.akashihi.mdg.entity.BudgetEntryMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -31,7 +32,7 @@ class BudgetServiceTest {
             "5,true,false,130,100,0",
             "5,false,false,130,100,0"})
     void analyzeRecommendedSpendings(Integer month, Boolean even, Boolean proration, Long actualAmount, Long expectedAmount, Long expectedSpendings) {
-        var actualAllowed = BudgetService.getAllowedSpendings(BigDecimal.valueOf(actualAmount), BigDecimal.valueOf(expectedAmount), LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, month,5 ), even, proration);
+        var actualAllowed = BudgetService.getAllowedSpendings(BigDecimal.valueOf(actualAmount), BigDecimal.valueOf(expectedAmount), LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, month,5 ), BudgetEntryMode.from(even, proration));
 
         assertEquals(BigDecimal.valueOf(expectedSpendings), actualAllowed);
 
