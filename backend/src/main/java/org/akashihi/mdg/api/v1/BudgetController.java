@@ -29,7 +29,7 @@ public class BudgetController {
 
     private record Subtotal(BudgetEntryTreeEntry entry, Boolean even, Boolean prorated, BigDecimal actual, BigDecimal expected) {}
 
-    protected BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
+    public static BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
         var topEntries = entries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
                 .filter(e -> Objects.isNull(e.getAccount().getCategory()))
                 .map(Embedding.embedBudgetEntryObject(embed))
@@ -47,7 +47,7 @@ public class BudgetController {
         return new BudgetEntryTreeEntry(null, null, actualSpendingsCategories, expectedSpendingsCategories, percent, allowedSpendings, topEntries, topCategories.stream().map(Subtotal::entry).toList());
     }
 
-    protected Optional<Subtotal> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
+    public static Optional<Subtotal> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
         var categoryEntries = entries.stream().filter(e -> e.getAccount().getCategory() != null).filter(e -> e.getAccount().getCategory().equals(category)).map(Embedding.embedBudgetEntryObject(embed)).toList();
         var subCategories = category.getChildren().stream().map(c -> convertCategory(c, entries, embed, from, to, forDay)).filter(Optional::isPresent).map(Optional::get).toList();
         var prorated = subCategories.stream().allMatch(Subtotal::prorated) && categoryEntries.stream().allMatch(BudgetEntry::getProration);

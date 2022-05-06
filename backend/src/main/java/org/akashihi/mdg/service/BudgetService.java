@@ -7,6 +7,7 @@ import org.akashihi.mdg.dao.BudgetEntryRepository;
 import org.akashihi.mdg.dao.BudgetRepository;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
+import org.akashihi.mdg.entity.BudgetEntryMode;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
