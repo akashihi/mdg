@@ -87,49 +87,51 @@ public class BudgetService {
         return Optional.of(budget);
     }
 
-    public static void analyzeSpendings(BudgetEntry entry, LocalDate forDay) {
-        var from = entry.getBudget().getBeginning();
-        var to = entry.getBudget().getEnd();
-
-        // Execution percent
-        if (entry.getExpectedAmount().compareTo(BigDecimal.ZERO) == 0) {
-            entry.setSpendingPercent(BigDecimal.valueOf(100L));
-        } else {
-            var value = entry.getActualAmount().setScale(2, RoundingMode.HALF_UP).divide(entry.getExpectedAmount(), RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100L)).setScale(0, RoundingMode.HALF_UP);
-            if (value.compareTo(BigDecimal.valueOf(100L)) > 0) {
-                value = BigDecimal.valueOf(100L); // Cap overspending to 100%
-            }
-            entry.setSpendingPercent(value);
+    public static BigDecimal getSpendingPercent(BigDecimal actualAmount, BigDecimal expectedAmount) {
+        if (expectedAmount.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.valueOf(100L);
         }
+        var value = actualAmount.setScale(2, RoundingMode.HALF_UP).divide(expectedAmount, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100L)).setScale(0, RoundingMode.HALF_UP);
+        if (value.compareTo(BigDecimal.valueOf(100L)) > 0) {
+            value = BigDecimal.valueOf(100L); // Cap overspending to 100%
+        }
+        return value;
+    }
 
-        //Proposed spendings
+    public static BigDecimal getAllowedSpendings(BigDecimal actualAmount, BigDecimal expectedAmount, LocalDate from, LocalDate to, LocalDate forDay, Boolean even, Boolean prorated) {
         if (forDay.isBefore(from.minusDays(1)) || forDay.isAfter(to)) {
             // We are out of that budget, no spendings are allowed
-            entry.setAllowedSpendings(BigDecimal.ZERO);
-        } else {
-            var budgetLength = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), to)); //Including first day
-            var daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(forDay.minusDays(1), to)); //Including today
-            var daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), forDay)); //Including first day and today
-
-            if (Objects.nonNull(entry.getEvenDistribution()) && entry.getEvenDistribution()) {
-                // Calculate for prorated by default
-                BigDecimal allowed = ((entry.getExpectedAmount().divide(budgetLength, RoundingMode.HALF_DOWN)).multiply(daysPassed)).subtract(entry.getActualAmount());
-                if ((Objects.isNull(entry.getProration()) || !entry.getProration()) || allowed.compareTo(BigDecimal.ZERO) < 0) {
-                    // Recalculate for even
-                    allowed = (entry.getExpectedAmount().subtract(entry.getActualAmount())).divide(daysLeft, RoundingMode.HALF_DOWN);
-                }
-                entry.setAllowedSpendings(allowed);
-            } else {
-                // Not evenly distributed, spend everything left
-                var allowed = entry.getExpectedAmount().subtract(entry.getActualAmount());
-                entry.setAllowedSpendings(allowed);
-            }
-            if (entry.getAllowedSpendings().compareTo(BigDecimal.ZERO) < 0) {
-                //Nothing to spend
-                entry.setAllowedSpendings(BigDecimal.ZERO);
-            }
-            entry.setAllowedSpendings(entry.getAllowedSpendings().setScale(0, RoundingMode.HALF_DOWN));
+            return BigDecimal.ZERO;
         }
+        var budgetLength = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), to)); //Including first day
+        var daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(forDay.minusDays(1), to)); //Including today
+        var daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), forDay)); //Including first day and today
+
+        BigDecimal allowed;
+        if (even) {
+            // Calculate for prorated by default
+            allowed = ((expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN)).multiply(daysPassed)).subtract(actualAmount);
+            if (!prorated || allowed.compareTo(BigDecimal.ZERO) < 0) {
+                // Recalculate for even
+                allowed = (expectedAmount.subtract(actualAmount)).divide(daysLeft, RoundingMode.HALF_DOWN);
+            }
+        } else {
+            // Not evenly distributed, spend everything left
+            allowed = expectedAmount.subtract(actualAmount);
+        }
+        if (allowed.compareTo(BigDecimal.ZERO) < 0) {
+            //Nothing to spend
+            allowed = BigDecimal.ZERO;
+        }
+        return allowed.setScale(0, RoundingMode.HALF_DOWN);
+    }
+
+    public static void analyzeSpendings(BudgetEntry entry, LocalDate forDay) {
+        entry.setSpendingPercent(getSpendingPercent(entry.getActualAmount(), entry.getExpectedAmount()));
+
+        var from = entry.getBudget().getBeginning();
+        var to = entry.getBudget().getEnd();
+        entry.setAllowedSpendings(getAllowedSpendings(entry.getActualAmount(), entry.getExpectedAmount(), from, to, forDay, Objects.nonNull(entry.getEvenDistribution()) && entry.getEvenDistribution(), Objects.nonNull(entry.getProration()) && entry.getProration()));
     }
 
     @Transactional

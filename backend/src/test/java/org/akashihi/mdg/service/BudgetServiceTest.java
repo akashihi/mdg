@@ -14,16 +14,10 @@ class BudgetServiceTest {
 
     @ParameterizedTest
     @CsvSource({"25,100,25", "0,0,100", "0,100,0", "100,0,100", "100,100,100", "150,100,100"})
-    void analyzeSpendingsPercent(Long actualAmount, Long expectedAmount, Long expectedPercent) {
-        var budget = new Budget(1L, LocalDate.now(), LocalDate.now().plusDays(2));
-        var entry = new BudgetEntry();
-        entry.setBudget(budget);
-        entry.setActualAmount(BigDecimal.valueOf(actualAmount));
-        entry.setExpectedAmount(BigDecimal.valueOf(expectedAmount));
+    void testGetSpendingPercent(Long actualAmount, Long expectedAmount, Long expectedPercent) {
+        var actualPercent = BudgetService.getSpendingPercent(BigDecimal.valueOf(actualAmount), BigDecimal.valueOf(expectedAmount));
 
-        BudgetService.analyzeSpendings(entry, LocalDate.now());
-
-        assertEquals(BigDecimal.valueOf(expectedPercent), entry.getSpendingPercent());
+        assertEquals(BigDecimal.valueOf(expectedPercent), actualPercent);
     }
 
     @ParameterizedTest
@@ -37,18 +31,9 @@ class BudgetServiceTest {
             "5,true,false,130,100,0",
             "5,false,false,130,100,0"})
     void analyzeRecommendedSpendings(Integer month, Boolean even, Boolean proration, Long actualAmount, Long expectedAmount, Long expectedSpendings) {
-        var budget = new Budget(1L, LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31));
-        var entry = new BudgetEntry();
-        entry.setBudget(budget);
-        entry.setActualAmount(BigDecimal.valueOf(actualAmount));
-        entry.setExpectedAmount(BigDecimal.valueOf(expectedAmount));
+        var actualAllowed = BudgetService.getAllowedSpendings(BigDecimal.valueOf(actualAmount), BigDecimal.valueOf(expectedAmount), LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, month,5 ), even, proration);
 
-        entry.setEvenDistribution(even);
-        entry.setProration(proration);
-
-        BudgetService.analyzeSpendings(entry, LocalDate.of(2022, month, 5));
-
-        assertEquals(BigDecimal.valueOf(expectedSpendings), entry.getAllowedSpendings());
+        assertEquals(BigDecimal.valueOf(expectedSpendings), actualAllowed);
 
     }
 }

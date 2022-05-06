@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,20 +29,27 @@ public class BudgetController {
 
     private record Subtotal(BudgetEntryTreeEntry entry, Boolean even, Boolean prorated, BigDecimal actual, BigDecimal expected) {}
 
-    protected BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
+    protected BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
         var topEntries = entries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
                 .filter(e -> Objects.isNull(e.getAccount().getCategory()))
                 .map(Embedding.embedBudgetEntryObject(embed))
                 .toList();
-        var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
+        var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, entries, embed, from, to, forDay)).filter(Optional::isPresent).map(Optional::get).toList();
+        var prorated = topCategories.stream().allMatch(Subtotal::prorated);
+        var even = topCategories.stream().allMatch(Subtotal::even);
+        if (!even) {
+            prorated = false; //Should happen automatically, but let's ensure it.
+        }
         var actualSpendingsCategories = topCategories.stream().map(Subtotal::actual).reduce(BigDecimal.ZERO, BigDecimal::add);
         var expectedSpendingsCategories = topCategories.stream().map(Subtotal::expected).reduce(BigDecimal.ZERO, BigDecimal::add);
-        return new BudgetEntryTreeEntry(null, null, actualSpendingsCategories, expectedSpendingsCategories, BigDecimal.ZERO, BigDecimal.ZERO, topEntries, topCategories.stream().map(Subtotal::entry).toList());
+        var percent = BudgetService.getSpendingPercent(actualSpendingsCategories, expectedSpendingsCategories);
+        var allowedSpendings = BudgetService.getAllowedSpendings(actualSpendingsCategories, expectedSpendingsCategories, from, to, forDay, even, prorated);
+        return new BudgetEntryTreeEntry(null, null, actualSpendingsCategories, expectedSpendingsCategories, percent, allowedSpendings, topEntries, topCategories.stream().map(Subtotal::entry).toList());
     }
 
-    protected Optional<Subtotal> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
+    protected Optional<Subtotal> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed, LocalDate from, LocalDate to, LocalDate forDay) {
         var categoryEntries = entries.stream().filter(e -> e.getAccount().getCategory() != null).filter(e -> e.getAccount().getCategory().equals(category)).map(Embedding.embedBudgetEntryObject(embed)).toList();
-        var subCategories = category.getChildren().stream().map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
+        var subCategories = category.getChildren().stream().map(c -> convertCategory(c, entries, embed, from, to, forDay)).filter(Optional::isPresent).map(Optional::get).toList();
         var prorated = subCategories.stream().allMatch(Subtotal::prorated) && categoryEntries.stream().allMatch(BudgetEntry::getProration);
         var even = subCategories.stream().allMatch(Subtotal::even) && categoryEntries.stream().allMatch(BudgetEntry::getEvenDistribution);
         if (!even) {
@@ -58,7 +66,9 @@ public class BudgetController {
         if (categoryEntries.isEmpty() && subCategories.isEmpty()) {
             return Optional.empty();
         } else {
-            var upperEntry = new BudgetEntryTreeEntry(category.getId(), category.getName(), actualSpendings, expectedSpendings, BigDecimal.ZERO, BigDecimal.ZERO, categoryEntries, subCategories.stream().map(Subtotal::entry).toList());
+            var percent = BudgetService.getSpendingPercent(actualSpendings, expectedSpendings);
+            var allowedSpendings = BudgetService.getAllowedSpendings(actualSpendings, expectedSpendings, from, to, forDay, even, prorated);
+            var upperEntry = new BudgetEntryTreeEntry(category.getId(), category.getName(), actualSpendings, expectedSpendings, percent, allowedSpendings, categoryEntries, subCategories.stream().map(Subtotal::entry).toList());
             return Optional.of(new Subtotal(upperEntry, even, prorated, actualSpendings, expectedSpendings));
         }
     }
@@ -98,6 +108,7 @@ public class BudgetController {
 
     @GetMapping(value = "/budgets/{budgetId}/entries/tree", produces = "application/vnd.mdg+json;version=1")
     BudgetEntryTree tree(@PathVariable("budgetId") Long budgetId, @RequestParam("embed") Optional<Collection<String>> embed, @RequestParam("filter") Optional<String> filter) {
+        var budget = budgetService.get(budgetId).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/{%d}/entries/tree".formatted(budgetId)));
         var categories = categoryService.list();
         var entries = budgetService.listEntries(budgetId);
         var leaveEmtpy = filter.map(f -> f.equalsIgnoreCase("all")).orElse(false);
@@ -105,8 +116,8 @@ public class BudgetController {
             entries = entries.stream().filter(e -> !(e.getActualAmount().compareTo(BigDecimal.ZERO)==0 && e.getExpectedAmount().compareTo(BigDecimal.ZERO)==0)).toList();
         }
 
-        var expenseEntry = convertTopCategory(AccountType.EXPENSE, categories, entries, embed);
-        var incomeEntry = convertTopCategory(AccountType.INCOME, categories, entries, embed);
+        var expenseEntry = convertTopCategory(AccountType.EXPENSE, categories, entries, embed, budget.getBeginning(), budget.getEnd(), LocalDate.now());
+        var incomeEntry = convertTopCategory(AccountType.INCOME, categories, entries, embed, budget.getBeginning(), budget.getEnd(), LocalDate.now());
         return new BudgetEntryTree(expenseEntry ,incomeEntry);
     }
 
