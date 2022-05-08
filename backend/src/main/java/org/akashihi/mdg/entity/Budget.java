@@ -1,9 +1,11 @@
 package org.akashihi.mdg.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -13,6 +15,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Budget {
+
+    public record BudgetPair(BigDecimal actual, BigDecimal expected) {}
+    public record BudgetState(BudgetPair income, BudgetPair expense, BudgetPair allowed) {}
+
     @Id
     private Long id;
 
@@ -23,4 +29,24 @@ public class Budget {
     @Column(name = "term_end")
     @JsonProperty("term_end")
     private LocalDate end;
+
+    @Transient
+    @JsonProperty("incoming_amount")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private BigDecimal incomingAmount;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("outgoing_amount")
+    private BudgetPair outgoingAmount;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private BudgetState state;
+
+    public Budget(Long id, LocalDate beginning, LocalDate end) {
+        this.id = id;
+        this.beginning = beginning;
+        this.end = end;
+    }
 }

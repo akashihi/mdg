@@ -3,6 +3,7 @@ package org.akashihi.mdg.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.akashihi.mdg.api.v1.RestException;
+import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.BudgetEntryRepository;
 import org.akashihi.mdg.dao.BudgetRepository;
 import org.akashihi.mdg.entity.Budget;
@@ -26,10 +27,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class BudgetService {
+    private final AccountRepository accountRepository;
     private final BudgetRepository budgetRepository;
     private final BudgetEntryRepository budgetEntryRepository;
-
     private final TransactionService transactionService;
+    private final SettingService settingService;
+    private final RateService rateService;
 
     protected Boolean validateBudget(Budget budget) {
         if (budget.getBeginning().isAfter(budget.getEnd())) {
@@ -45,12 +48,13 @@ public class BudgetService {
         return true;
     }
 
-    protected void applyActualAmount(BudgetEntry entry) {
+    protected BudgetEntry applyActualAmount(BudgetEntry entry) {
         var from = entry.getBudget().getBeginning();
         var to = entry.getBudget().getEnd();
 
         // Find actual spendings
         entry.setActualAmount(transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), entry.getAccount()));
+        return entry;
     }
 
     public Budget create(Budget budget) {
@@ -69,7 +73,31 @@ public class BudgetService {
 
     @Transactional
     public Optional<Budget> get(Long id) {
-        return budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id);
+        var budgetValue = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id);
+        if (budgetValue.isEmpty()) {
+            return budgetValue;
+        }
+        var budget = budgetValue.get();
+        budget.setIncomingAmount(accountRepository.getTotalAssetsForDate(budget.getBeginning()).orElse(BigDecimal.ZERO));
+
+        var outgoingActual = accountRepository.getTotalAssetsForDate(budget.getEnd().plusDays(1)).orElse(BigDecimal.ZERO);
+
+        var primaryCurrency = settingService.getCurrentCurrencyPrimary();
+        var outgoingExpected = budgetEntryRepository.findByBudget(budget)
+                .stream()
+                .map(this::applyActualAmount)
+                .map(e -> BudgetService.analyzeSpendings(e, LocalDate.now()))
+                .map(e -> {
+                    if (primaryCurrency.map(c -> c.equals(e.getAccount().getCurrency())).orElse(true)) {
+                        return e.getExpectedAmount();
+                    }
+                    var rate = rateService.getCurrentRateForPair(e.getAccount().getCurrency(), primaryCurrency.get());
+                    return e.getExpectedAmount().multiply(rate.getRate());
+                })
+                .reduce(budget.getIncomingAmount(), BigDecimal::add);
+        var outgoing = new Budget.BudgetPair(outgoingActual, outgoingExpected);
+        budget.setOutgoingAmount(outgoing);
+        return Optional.of(budget);
     }
 
     @Transactional
@@ -126,12 +154,13 @@ public class BudgetService {
         return allowed.setScale(0, RoundingMode.HALF_DOWN);
     }
 
-    public static void analyzeSpendings(BudgetEntry entry, LocalDate forDay) {
+    public static BudgetEntry analyzeSpendings(BudgetEntry entry, LocalDate forDay) {
         entry.setSpendingPercent(getSpendingPercent(entry.getActualAmount(), entry.getExpectedAmount()));
 
         var from = entry.getBudget().getBeginning();
         var to = entry.getBudget().getEnd();
         entry.setAllowedSpendings(getAllowedSpendings(entry.getActualAmount(), entry.getExpectedAmount(), from, to, forDay, BudgetEntryMode.from(entry)));
+        return entry;
     }
 
     @Transactional
