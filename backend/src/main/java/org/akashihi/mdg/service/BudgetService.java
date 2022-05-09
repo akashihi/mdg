@@ -6,6 +6,7 @@ import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.BudgetEntryRepository;
 import org.akashihi.mdg.dao.BudgetRepository;
+import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
 import org.akashihi.mdg.entity.BudgetEntryMode;
@@ -20,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -71,6 +71,33 @@ public class BudgetService {
         return budgetRepository.findAll(Sort.by("beginning").descending());
     }
 
+    protected BigDecimal applyRateForEntry(BigDecimal amount, BudgetEntry entry) {
+        var primaryCurrency = settingService.getCurrentCurrencyPrimary();
+        if (primaryCurrency.map(c -> c.equals(entry.getAccount().getCurrency())).orElse(true)) {
+            return amount;
+        }
+        var rate = rateService.getCurrentRateForPair(entry.getAccount().getCurrency(), primaryCurrency.get());
+        return amount.multiply(rate.getRate());
+    }
+
+    protected Budget.BudgetPair getActualExpectedForDate(LocalDate from, LocalDate to, Collection<BudgetEntry> entries, AccountType type) {
+        var actual = entries.stream()
+                .filter(e -> e.getAccount().getAccountType().equals(type))
+                .map(e -> {
+                    var amount = transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), e.getAccount());
+                    return this.applyRateForEntry(amount, e);
+                }).reduce(BigDecimal.ZERO, BigDecimal::add);
+        var expected = entries.stream()
+                .filter(e -> e.getAccount().getAccountType().equals(type))
+                .map(e -> this.applyRateForEntry(e.getExpectedAmount(), e))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new Budget.BudgetPair(actual, expected);
+    }
+
+    protected Budget.BudgetPair getActualExpectedForBudget(Budget budget, Collection<BudgetEntry> entries, AccountType type) {
+        return this.getActualExpectedForDate(budget.getBeginning(), budget.getEnd(), entries, type);
+    }
+
     @Transactional
     public Optional<Budget> get(Long id) {
         var budgetValue = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id);
@@ -82,21 +109,28 @@ public class BudgetService {
 
         var outgoingActual = accountRepository.getTotalAssetsForDate(budget.getEnd().plusDays(1)).orElse(BigDecimal.ZERO);
 
-        var primaryCurrency = settingService.getCurrentCurrencyPrimary();
-        var outgoingExpected = budgetEntryRepository.findByBudget(budget)
-                .stream()
+        var entries = budgetEntryRepository.findByBudget(budget).stream()
                 .map(this::applyActualAmount)
                 .map(e -> BudgetService.analyzeSpendings(e, LocalDate.now()))
+                .toList();
+        var outgoingExpected = entries.stream()
                 .map(e -> {
-                    if (primaryCurrency.map(c -> c.equals(e.getAccount().getCurrency())).orElse(true)) {
-                        return e.getExpectedAmount();
+                    var amount = e.getExpectedAmount();
+                    if (e.getAccount().getAccountType().equals(AccountType.EXPENSE)) {
+                        amount = amount.negate(); // Expense account decrease expected performance
                     }
-                    var rate = rateService.getCurrentRateForPair(e.getAccount().getCurrency(), primaryCurrency.get());
-                    return e.getExpectedAmount().multiply(rate.getRate());
+                    return this.applyRateForEntry(amount, e);
                 })
                 .reduce(budget.getIncomingAmount(), BigDecimal::add);
         var outgoing = new Budget.BudgetPair(outgoingActual, outgoingExpected);
         budget.setOutgoingAmount(outgoing);
+
+        var incomeTotals = getActualExpectedForBudget(budget, entries, AccountType.INCOME);
+        var expenseTotals = getActualExpectedForBudget(budget, entries, AccountType.EXPENSE);
+        var allowedSpendingsTotals = getActualExpectedForDate(LocalDate.now(), LocalDate.now(), entries, AccountType.EXPENSE);
+
+        var state = new Budget.BudgetState(incomeTotals, expenseTotals, allowedSpendingsTotals);
+        budget.setState(state);
         return Optional.of(budget);
     }
 
@@ -215,7 +249,10 @@ public class BudgetService {
 
         var today = LocalDate.now();
         var entries = budgetEntryRepository.findByBudget(budget.get());
-        entries.forEach(e -> {this.applyActualAmount(e); analyzeSpendings(e, today);});
+        entries.forEach(e -> {
+            this.applyActualAmount(e);
+            analyzeSpendings(e, today);
+        });
 
         return entries;
     }

@@ -21,8 +21,17 @@ public class BudgetControllerV0 {
         return new Budget(data.getId(), LocalDate.parse(data.getAttributes().term_beginning(), DateTimeFormatter.ISO_LOCAL_DATE), LocalDate.parse(data.getAttributes().term_end(), DateTimeFormatter.ISO_LOCAL_DATE));
     }
 
+    private BudgetData.Attributes toFullDto(Budget budget) {
+        var outgoing = new BudgetData.BudgetPair(budget.getOutgoingAmount().actual(),budget.getOutgoingAmount().actual());
+        var income = new BudgetData.BudgetPair(budget.getState().income().actual(), budget.getState().income().expected());
+        var expense = new BudgetData.BudgetPair(budget.getState().expense().actual(), budget.getState().expense().expected());
+        var change = new BudgetData.BudgetPair(budget.getState().allowed().actual(), budget.getState().allowed().expected());
+        var state = new BudgetData.BudgetState(income, expense, change);
+        return new BudgetData.Attributes(budget.getBeginning().format(DateTimeFormatter.ISO_LOCAL_DATE), budget.getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE), budget.getIncomingAmount(), outgoing, state);
+    }
+
     private BudgetData.Attributes toDto(Budget budget) {
-        return new BudgetData.Attributes(budget.getBeginning().format(DateTimeFormatter.ISO_LOCAL_DATE), budget.getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        return new BudgetData.Attributes(budget.getBeginning().format(DateTimeFormatter.ISO_LOCAL_DATE), budget.getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE), null, null, null);
     }
 
     private BudgetEntry fromDto(BudgetEntryData data) {
@@ -45,7 +54,7 @@ public class BudgetControllerV0 {
     @GetMapping(value = "/api/budget/{id}", produces = "application/vnd.mdg+json")
     DataSingular<BudgetData> get(@PathVariable("id") Long id) {
         var budget =  budgetService.get(id).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/%d".formatted(id)));
-        return new DataSingular<>(new BudgetData(budget.getId(), "budget", toDto(budget)));
+        return new DataSingular<>(new BudgetData(budget.getId(), "budget", toFullDto(budget)));
     }
 
     @PostMapping(value = "/api/budget", consumes = {"application/vnd.mdg+json", "application/json"}, produces = "application/vnd.mdg+json")
