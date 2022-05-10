@@ -126,6 +126,7 @@ public class BudgetService {
         budget.setOutgoingAmount(outgoing);
 
         var incomeTotals = getActualExpectedForBudget(budget, entries, AccountType.INCOME);
+        incomeTotals = new Budget.BudgetPair(incomeTotals.actual().negate(), incomeTotals.expected()); // Incomes are subtractions from income account, so they are always negative. But for the budget purposes it should be positive
         var expenseTotals = getActualExpectedForBudget(budget, entries, AccountType.EXPENSE);
         var allowedSpendingsTotals = getActualExpectedForDate(LocalDate.now(), LocalDate.now(), entries, AccountType.EXPENSE);
 
