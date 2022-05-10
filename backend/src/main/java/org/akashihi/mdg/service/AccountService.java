@@ -85,6 +85,11 @@ public class AccountService {
     }
 
     @Transactional
+    public Collection<Account> listByType(AccountType type) {
+        return accountRepository.findAllByAccountType(type).stream().map(this::applyBalance).toList();
+    }
+
+    @Transactional
     public Optional<Account> get(Long id) {
         return accountRepository.findById(id).map(this::applyBalance);
     }
