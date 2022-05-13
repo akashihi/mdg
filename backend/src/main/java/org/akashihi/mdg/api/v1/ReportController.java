@@ -24,4 +24,15 @@ public class ReportController {
     @GetMapping(value = "/reports/assets/simple", produces = "application/vnd.mdg+json;version=1")
     public SimpleReport simpleAssetsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
         return reportService.simpleAssetReport(startDate, endDate, granularity);
-    }}
+    }
+
+    @GetMapping(value = "/reports/assets/currency", produces = "application/vnd.mdg+json;version=1")
+    public SimpleReport byCurrencyAssetsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
+        return reportService.assetByCurrencyReport(startDate, endDate, granularity);
+    }
+
+    @GetMapping(value = "/reports/assets/type", produces = "application/vnd.mdg+json;version=1")
+    public SimpleReport byTypeAssetsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
+        return reportService.assetByTypeReport(startDate, endDate, granularity);
+    }
+}

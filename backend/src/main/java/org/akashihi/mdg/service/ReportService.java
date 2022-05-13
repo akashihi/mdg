@@ -2,6 +2,7 @@ package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.dao.AccountRepository;
+import org.akashihi.mdg.dao.projections.AmountAndName;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Category;
@@ -18,6 +19,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -37,7 +40,7 @@ public class ReportService {
 
     public TotalsReport totalsReport() {
         var primaryCurrency = settingService.getCurrentCurrencyPrimary();
-        Comparator<Amount> primaryCurrencyComparator =(l, r) -> { if (l.currencyCode().equals(primaryCurrency.map(Currency::getCode).orElse(""))) { return -1;} else { return l.currencyCode().compareTo(r.currencyCode());}};
+        Comparator<Amount> primaryCurrencyComparator =(l, r) -> { if (l.name().equals(primaryCurrency.map(Currency::getCode).orElse(""))) { return -1;} else { return l.name().compareTo(r.name());}};
 
         var accounts = accountService.listByType(AccountType.ASSET)
                 .stream().collect(Collectors.groupingBy(Account::getCategory));
@@ -68,8 +71,20 @@ public class ReportService {
             var amount = accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO);
             return new Amount(amount, currentPrimary, d);
         })
-                .filter(a -> a.amount().compareTo(BigDecimal.ZERO) != 0)
                 .toList();
         return new SimpleReport(amounts);
+    }
+
+    protected SimpleReport typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {
+        var dates = expandPeriod(from, to, granularity);
+        var amounts = dates.stream().flatMap( d -> query.apply(d).stream().map(t -> new Amount(t.getAmount(), t.getName(), d)))
+                .toList();
+        return new SimpleReport(amounts);
+    }
+    public SimpleReport assetByCurrencyReport(LocalDate from, LocalDate to, Integer granularity) {
+        return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency);
+    }
+    public SimpleReport assetByTypeReport(LocalDate from, LocalDate to, Integer granularity) {
+        return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType);
     }
 }
