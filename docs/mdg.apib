@@ -532,8 +532,7 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
 
 In that mode statistics, similar to budget entry statistics, is calculated for each category. The rules of calculation (prorated/even/one-shot) is
 derived from owned entries/sub categories using the following rule: if at least one sub entry is one-shot, all other entries are considered one-show. 
-If there are no one-show entries, but at least one non-prorated entry, all of them are considered to be even distributed. Otherwise they are calculated
-as prorated.
+If there are no one-show entries, but at least one non-prorated entry, all of them are considered to be even distributed. OTherwise 
 
 + Response 200 (application/vnd.mdg+json;version=1)
 
@@ -589,36 +588,31 @@ as prorated.
 
 Various reporting data, mostly read-only
 
-## TotalsReport [/report/totals]
+## TotalsReport [/reports/totals]
 
-+ Attributes
-    + value (array[TotalsReportEntry], required) - Array of TotalsReportEntries
+Provides assets overview information.
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[TotalsReportEntry], required) - Array of report entries.
+
+## AssetSimpleReport [/reports/assets/simple?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+
++ Parameters
+  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
+  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
+  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
 
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {
-                            "asset_type": "cash",
-                            "primary": 100.500,
-                            "value": [
-                                {
-                                    "value": 9000,
-                                    "id", 978
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        }
 
 ## AssetCurrencyReport [/report/asset/currency?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -627,25 +621,24 @@ Various reporting data, mostly read-only
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
-+ Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all asset accounts of that currency for a specified date, id is id of associtated currency
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
+
+## AssetTypeReport [/report/asset/type?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+
++ Parameters
+  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
+  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
+  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
 ## IncomeEventsReport [/report/income/events?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -654,25 +647,11 @@ Various reporting data, mostly read-only
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
-+ Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all income operations on specified account, id is a id of associated account.
-
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
 ## ExpenseEventsReport [/report/expense/events?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -681,25 +660,11 @@ Various reporting data, mostly read-only
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
-+ Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
-
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
 ## IncomeStructureReport [/report/income/accounts?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -709,7 +674,7 @@ Various reporting data, mostly read-only
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
 + Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all income operations on specified account, id is a id of associated account.
+    + value (array[Amount], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all income operations on specified account, id is a id of associated account.
 
 ### View a report [GET]
 
@@ -736,7 +701,7 @@ Various reporting data, mostly read-only
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
 + Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
+    + value (array[Amount], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
 
 ### View a report [GET]
 
@@ -750,34 +715,6 @@ Various reporting data, mostly read-only
                     "value": [
                         {"date": "2018-01-01", "value": 9000, id: 978},
                         {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
-
-## AssetSimpleReport [/report/asset/simple?startDate={startDate}&endDate={endDate}&granularity={granularity}]
-
-+ Parameters
-  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
-  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
-  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
-
-
-+ Attributes
-    + value (array[ValueInTime], required) - Array of ValueInTime, where value is a sum of all asset accounts for a specified date. 
-
-### View a report [GET]
-
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000},
-                        {"date": "2018-02-01", "value": 100.500}
                     ]
                 }
             }
@@ -834,29 +771,13 @@ Budget specific thing. As budget manages a predicted future and harsh reality at
     + actual: 1000 (number, required) - Amount that actually was reached during budget execution
     + expected: 2000 (number, required) - Amount that planned to be reached during budget execution
 
-## IdentifiedValue
+## Amount
 
-A report usually sends data in pairs of a vule and id of a linked object (currency, account, etc). This generic structure describes that approach
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
-
-## ValueInTime
-
-Report may have some value, related to point in time, not a entity. For that case we provide separate generic structure.
+Amount holds a pair of a some balance amoutn and related currency code. Only code is used there, as reports are provided only for rendering, not editing.
 
 + Attributes
-    + value (number, required) - Some value, usually decimal
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
-
-## IdentifiedValueInTime
-
-Combination of IdentifiedValue and ValueInTime
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
+    + amount (number, required) - Balance amount value.
+    + name (string, optional) - Related entry name, such as currency, category etc
     + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
 
 ## TotalsReportEntry
@@ -864,9 +785,9 @@ Combination of IdentifiedValue and ValueInTime
 Data structure for a single totals report entry, linked to a specific asset type.
 
 + Attributes
-    + category_id (number, required) - Asset category
-    + primary_balance (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
-    + value (array[IdentifiedValue, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency. Entry id is a currency id of the sum above.
+    + category_name: Cash (string, required) - Asset category name.
+    + primary_balance: 100500 (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
+    + amounts (array[Amount, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency.
 
 ## BudgetReportEntry
 

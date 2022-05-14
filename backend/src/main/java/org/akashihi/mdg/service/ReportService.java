@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 @Service
@@ -31,7 +32,7 @@ public class ReportService {
     private final SettingService settingService;
     private final AccountRepository accountRepository;
 
-    protected static Collection<LocalDate> expandPeriod(LocalDate from, LocalDate to, Integer granularity) {
+    protected static List<LocalDate> expandPeriod(LocalDate from, LocalDate to, Integer granularity) {
         var numberOfDays = ChronoUnit.DAYS.between(from, to) / granularity;
         var days = new ArrayList<>(LongStream.range(0, numberOfDays).mapToObj(d -> from.plusDays(d * granularity)).toList());
         days.add(to);
@@ -86,5 +87,15 @@ public class ReportService {
     }
     public SimpleReport assetByTypeReport(LocalDate from, LocalDate to, Integer granularity) {
         return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType);
+    }
+
+    public SimpleReport eventsByAccountReport(LocalDate from, LocalDate to, Integer granularity, AccountType type) {
+        var dates = expandPeriod(from, to, granularity);
+        var amounts = IntStream.range(0, dates.size()-2+1)
+                .mapToObj(start -> dates.subList(start, start+2))
+                .flatMap(d -> {
+                    return accountRepository.getTotalByAccountTypeForRange(type.toDbValue(),d.get(0), d.get(1)).stream().map(t -> new Amount(t.getAmount(), t.getName(), d.get(0)));
+                }).toList();
+        return new SimpleReport(amounts);
     }
 }

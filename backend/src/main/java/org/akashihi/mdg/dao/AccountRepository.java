@@ -31,5 +31,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     @Query(nativeQuery = true, value = "select sum(o.amount*coalesce(r.rate,1)), c.name from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') inner join category c on c.id = a.category_id left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type='asset' and tx.ts < ?1 group by c.name")
     List<AmountAndName> getTotalAssetsForDateByType(LocalDate dt);
 
+    @Query(nativeQuery = true, value = "select sum(o.amount*coalesce(r.rate,1)), a.name from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type=?1 and tx.ts between ?2 and ?3 group by a.name order by a.name")
+    List<AmountAndName> getTotalByAccountTypeForRange(String type, LocalDate from, LocalDate to);
+
     Collection<Account> findAllByAccountType(AccountType type);
 }
