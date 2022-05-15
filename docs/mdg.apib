@@ -666,59 +666,32 @@ Provides assets overview information.
     + Attributes
         + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
-## IncomeStructureReport [/report/income/accounts?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+## IncomeStructureReport [/report/income/accounts?startDate={startDate}&endDate={endDate}]
 
 + Parameters
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
-  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
-
-+ Attributes
-    + value (array[Amount], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all income operations on specified account, id is a id of associated account.
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all income accounts for a specified range. 
 
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
-
-## ExpenseStructureReport [/report/expense/accounts?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+## ExpenseStructureReport [/report/expense/accounts?startDate={startDate}&endDate={endDate}]
 
 + Parameters
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
-  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
 + Attributes
     + value (array[Amount], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all expense accounts for a specified range. 
 
 ## BudgetExecutionReport [/report/budget/execution?startDate={startDate}&endDate={endDate}]
 
@@ -726,26 +699,11 @@ Provides assets overview information.
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format. It will include budget, that may have been started earlier, then that date, but have ended after it.
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format. And vice versa, budget, that have been finished after that date, but it's beginning is earlier, will be included.
 
-
-+ Attributes
-    + value (array[BudgetReportEntry], required) - Array of BudgetReportEntry, where value is a budget execution data for a specified date.
-
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000},
-                        {"date": "2018-02-01", "value": 100.500}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + value (array[BudgetReportEntry], required) - Array of BudgetReportEntry, where value is a budget execution data for a specified date.
 
 # Data Structures
 
