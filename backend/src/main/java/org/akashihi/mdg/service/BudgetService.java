@@ -71,6 +71,14 @@ public class BudgetService {
         return budgetRepository.findAll(Sort.by("beginning").descending());
     }
 
+    @Transactional
+    public Collection<Budget> listInRange(LocalDate from, LocalDate to) {
+        return budgetRepository.findByBeginningGreaterThanEqualAndEndIsLessThanEqualOrderByBeginningAsc(from, to)
+                .stream()
+                .map(this::enrichBudget)
+                .toList();
+    }
+
     protected BigDecimal applyRateForEntry(BigDecimal amount, BudgetEntry entry) {
         var primaryCurrency = settingService.getCurrentCurrencyPrimary();
         if (primaryCurrency.map(c -> c.equals(entry.getAccount().getCurrency())).orElse(true)) {
@@ -105,6 +113,11 @@ public class BudgetService {
             return budgetValue;
         }
         var budget = budgetValue.get();
+        enrichBudget(budget);
+        return Optional.of(budget);
+    }
+
+    protected Budget enrichBudget(Budget budget) {
         budget.setIncomingAmount(accountRepository.getTotalAssetsForDate(budget.getBeginning()).orElse(BigDecimal.ZERO));
 
         var outgoingActual = accountRepository.getTotalAssetsForDate(budget.getEnd().plusDays(1)).orElse(BigDecimal.ZERO);
@@ -132,7 +145,7 @@ public class BudgetService {
 
         var state = new Budget.BudgetState(incomeTotals, expenseTotals, allowedSpendingsTotals);
         budget.setState(state);
-        return Optional.of(budget);
+        return budget;
     }
 
     @Transactional
