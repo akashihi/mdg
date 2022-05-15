@@ -5,425 +5,179 @@ HOST: https://localhost/api
 
 MDG is a self-hosted personal accounting web service.
 
-This API document is edited at https://mdg1.docs.apiary.io/
+This API document is available at https://mdg2.docs.apiary.io/ and describes API v1
 
-# Data Structures
-
-## Operation (object)
-
-Single operation in a transation.
-
-+ Attributes
-    + account_id (number, required) - Related account id
-    + amount (number, required) - account balance change
-    + rate (number, optional) - exchange rate to be applied
-
-## BudgetPair (object)
-
-Budget specific thing. As budget manages a predicted future and harsh reality at the same time, we usually operation with a pair of number, one is actual and another one is expected. This data structure is used for that
-
-+ Attributes
-    + actual (number, required) - Amount that actually was reached during budget execution
-    + expected (number, required) - Amount that planned to be reached during budget execution
-
-## IdentifiedValue
-
-A report usually sends data in pairs of a vule and id of a linked object (currency, account, etc). This generic structure describes that approach
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
-
-## ValueInTime
-
-Report may have some value, related to point in time, not a entity. For that case we provide separate generic structure.
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
-
-## IdentifiedValueInTime
-
-Combination of IdentifiedValue and ValueInTime
-
-+ Attributes
-    + value (number, required) - Some value, usually decimal
-    + id (number, required) - Id of a entity, linked to that value (currency, account, etc)
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
-
-## TotalsReportEntry
-
-Data structure for a single totals report entry, linked to a specific asset type.
-
-+ Attributes
-    + category_id (number, required) - Asset category
-    + primary_balance (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
-    + value (array[IdentifiedValue, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency. Entry id is a currency id of the sum above.
-
-## BudgetReportEntry
-
-Data structure for a single totals report entry, linked to a specific asset type.
-
-+ Attributes
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid (beginning of a reported budget)
-    + income (BudgetPair, required) - Value of expected/actual income for that budget
-    + expense (BudgetPair, required) - Value of expected/actual expense for that budget
-    + profit (number, required) - Increase of the asset balance between first and last dates of the budget.
+Previous API document is available at https://mdg1.docs.apiary.io/ and describes API v0, 
+which is going to be deprecated soon.
 
 # Group Settings
 
 Resources describing system configuration variables.
 
-## Settings Collection [/setting]
+## Setting [/settings/{id}]
 
-### List All Settings [GET]
++ parameters
+    + id (required, string) - Name of the setting
+        Valid setting names are:
+        
+        * currency.primary - Changes primary currency of the MDG. Value is a currency id
+        * ui.transaction.closedialog - Configures auto-closing of transaction dialog, values are "true" or "false"
+        * mnt.transaction.reindex - Triggers transaction reindexing. This setting can only be written.
 
-+ Response 200 (application/vnd.mdg+json)
++ Attributes (object)
+    + id: currency.primary (string, required) - Seting name
+    + value: 978 (string, required) - Setting value as a string. As different settings may have different meaning, they values are transferred as strings.
 
-        {
-            "data": [
-                {
-                    "type": "setting",
-                    "id": "currency.primary",
-                    "attributes": {
-                        "value": "840"
-                    }
-                }
-            ]
-        }
-    
-## Setting [/setting/{setting_id}]
-
-Valid setting names are:
-
-* currency.primary - Changes primary currency of the MDG. Value is a currency id
-* ui.transaction.closedialog - Configures auto-closing of transaction dialog, values are "true" or "false"
-* mnt.transaction.reindex - Triggers transaction reindexing. This setting can only be written.
-
-+ Parameters
-    + setting_id (string) - Name of the setting
-    
 ### View a Setting [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-        "data": {
-                "type": "setting",
-                "id": "currency.primary",
-                "attributes": {
-                    "value": "840"
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Setting)
++ Response 404 (application/vnd.mdg+json;version=1)
+    + Attributes (Problem)
++ Response 422 (application/vnd.mdg+json;version=1)
+    + Attributes (Problem)
 
 ### Modify setting value [PUT]
 
-Settings may have different valid values for different names. Invalid named will not be accepted
+Settings may have different valid values for different names. Invalid values will not be accepted
 
-+ Request (application/vnd.mdg+json)
-
-        {
-        "data": {
-                "type": "setting",
-                "id": "currency.primary"
-                "attributes": {
-                    "value": "978"
-                }
-            }
-        }
-
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Setting)
+    
 + Response 202 (application/vnd.mdg+json)
-  + Body
-  
-            {
-                "data": {
-                    "type": "setting",
-                    "id": "currency.primary"
-                    "attributes": {
-                        "value": "978"
-                    }
-                }
-            }
+    + Attributes (Setting)
+## Settings Collection [/settings]
+
+### List All Settings [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + settings (array[Setting], required) - Array of settings
 
 # Group Currencies
 
-Resources describing currencies
+Resources describing currencies known to the system. 
+Currencies are identified by their numeric ISO 4217 code 
 
-## Currency [/currency/{currency_id}]
+## Currency [/currencies/{id}]
 
 + parameters
-    + currency_id (required, number) - ID of a currency in form of ISO 4217 number-3 code
+    + id (required, number) - ID of a currency in form of ISO 4217 number-3 code
 
-+ Attributes
-    + code (string, required) - Currency ISO 4217 alfa-3 code
-    + name (string, required) - Human friendly currency name
-    + active (boolean, required) - Whether this currency is used or not
++ Attributes (object)
+    + id: 978 (string, required) - Currency ISO 4217 alfa-3 code
+    + code: EUR (string, required) - Short currency code 
+    + name: € (string, required) - Human friendly currency name
+    + active: true (boolean, required) - Whether this currency is used or not
+        Inactive currencies are known by the system, but do not participate in other activities, like rate retireval account management etc
 
+        
 ### View a currency detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-        
-        {
-        "data": {
-                "type": "currency",
-                "id": 840,
-                "attributes": {
-                    "code": "USD",
-                    "name": "$",
-                    "active": true
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Currency)
++ Response 404 (application/vnd.mdg+json;version=1)
+    + Attributes (Problem)
 
+    
 ### Modify currency data [PUT]
 
-Only `active` field could be changed. Values in other fields will be silently ignored.
+Only `active` field could be changed. Values in the other fields will be silently ignored.
 
-+ Request (application/vnd.mdg+json)
-
-        {
-        "data": {
-                "type": "currency",
-                "id": 840,
-                "attributes": {
-                    "code": "USD",
-                    "name": "$",
-                    "active": false
-                }
-            }
-        }
-
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Currency)
+    
 + Response 202 (application/vnd.mdg+json)
+    + Attributes (Currency)
 
-        {
-        "data": {
-                "type": "currency",
-                "id": 840,
-                "attributes": {
-                    "code": "USD",
-                    "name": "$",
-                    "active": false
-                }
-            }
-        }
-
-## Currency collection [/currency]
+## Currencies [/currencies]
 
 ### List All Currencies [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "currency",
-                    "id": 840,
-                    "attributes": {
-                        "code": "USD",
-                        "name": "$",
-                        "active": true
-                    }
-                },
-                {
-                    "type": "currency",
-                    "id": 978,
-                    "attributes": {
-                        "code": "EUR",
-                        "name": "€",
-                        "active": false
-                    }
-                }
-            ]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + currencies (array[Currency], required) - Array of currencies
 
 # Group Rates
 
 Resources describing currency exchange rates
 
-## Rate [/rate/{timestamp}/{from}/{to}]
+## Rate [/rates/{timestamp}/{from}/{to}]
 
 + parameters
     + timestamp: `YYYY-MM-DDTHH:MM:SS (string, required) - Point in time in format YYYY-MM-DDTHH:MM:SS for which exchange rates should be valid
-    + from (number, required) - ID of a "sell" currency in form of ISO 4217 number-3 code
-    + to (number, required) - ID of a "buy" currency in form of ISO 4217 number-3 code
+    + from: 978 (number, required) - ID of a "sell" currency in form of ISO 4217 number-3 code
+    + to: 840 (number, required) - ID of a "buy" currency in form of ISO 4217 number-3 code
 
 + Attributes
-    + from (string, required) - "Sell" currency ISO 4217 number-3 code
-    + to (string, required) - "Buy" currency ISO 4217 number-3 code
-    + rate (number, required) - Exchange rate, telling you how much 'from' currency should be spent, to by a single 'to' currency unit
+    + id: 1 (number, required) - Syntetic id value
+    + from: 978 (string, required) - "Sell" currency ISO 4217 number-3 code
+    + to: 840 (string, required) - "Buy" currency ISO 4217 number-3 code
+    + rate: 1.19 (number, required) - Exchange rate, telling you how much 'from' currency should be spent, to by a single 'to' currency unit
     + beginning: `YYYY-MM-DDTHH:MM:SS` (string, required) - Timestamp of the rate validity period beginning
     + end: `YYYY-MM-DDTHH:MM:SS` (string, required) - Timestamp of the rate validity period end
 
 ### View a rate detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-        "data": {
-                "type": "rate",
-                "id": 1,
-                "attributes": {
-                    "from": 978,
-                    "to": 840,
-                    "rate": 1.19,
-                    "beginning": "2017-09-18T17:00:00",
-                    "end": "2017-09-18T18:00:00"
-                }
-            }
-        }
-        }
-
-## Rate collection [/rate/{timestamp}]
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Rate)
+        
+## Rate collection [/rates/{timestamp}]
 
 + parameters
     + timestamp: `YYYY-MM-DDTHH:MM:SS` (string, required) - Point in time for which exchange rates should be valid
 
 ### List All Rates [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200  (application/vnd.mdg+json;version=1)
+    + Attributes
+        + rates (array[Rate], required) - Array of rates for the specified point in time
 
-        {
-        "data": [
-            {
-                "type": "rate",
-                "id": 1,
-                "attributes": {
-                    "from": 978,
-                    "to": 840,
-                    "rate": 1.19,
-                    "beginning": "2017-09-18T17:00:00",
-                    "end": "2017-09-18T18:00:00"
-                }
-            },
-            {
-                "type": "rate",
-                "id": 1,
-                "attributes": {
-                    "from": 356,
-                    "to": 348,
-                    "rate": 4.0396,
-                    "beginning": "2017-09-18T17:00:00",
-                    "end": "2017-09-18T18:00:00"
-                }
-            },
-        ]
-        }
+## Rate Status [/rates/status]
+
++ Attributes
+    + ts: `YYYY-MM-DDTHH:MM:SS` (string, required) - Last successful rate update timestamp
+
+### View rate update status [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Rate Status)
 
 # Group Categories
 
 Resources describing account categories. A category is just an account label, used in analysis, statistics, rendering etc.
 
-## Category [/category/{category_id}]
+## Category [/categories/{category_id}]
 
 + parameters
     + category_id (number, required) - ID of a category
     
 + Attributes
-    + id (number, required) - Due to hierarchical nature of categories, category is an exception and provides id twice: inside of a attributes and in a wrapper object.
-    + parent_id (number, optional) - Category's parent category id. May be missing for top level categories
-    + name (string, required) - Category name
-    + priority (number, required) - Ordering weight of that category. Categories output will be sorted ascendant by that weight. Same rule applies to the chidlren attribute.
-    + account_type (enum, required) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
-        + `asset`
-        + `expense`
-        + `income`
-    + children (array[Category], optional) - Array of subcategories of that categories, may be empty or missing. Only 'attributes' section is included
+    + id: 2 (number, required) - Due to hierarchical nature of categories, category is an exception and provides id twice: inside of a attributes and in a wrapper object.
+    + parent_id: 1 (number, optional) - Category's parent category id. May be missing for top level categories
+    + name: "Pet expenses" (string, required) - Category name
+    + priority: 7 (number, required) - Ordering weight of that category. Categories output will be sorted ascendant by that weight. Same rule applies to the chidlren attribute.
+    + account_type: "EXPENSE" (enum, required) - Type of the accounts suitable for that category. Can only be set during category creation. Category may only have children of same category.
+        + `ASSET`
+        + `EXPENSE`
+        + `INCOME`
+    + children (array[Category], optional) - Array of subcategories of that categories, may be empty or missing. 
 
 ### View a category detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
-        {
-            "data": {
-                    "type": "category",
-                    "id": 1,
-                    "attributes": {
-                        "name": "Flat payments",
-                        "priority": 1,
-                        "account_type": "expense",
-                        "children": [
-                            {
-                               "id": 2,
-                                "parent_id": 1,
-                                "name": "Rent",
-                                "priority": 1,
-                                "account_type": "expense"
-                            },
-                            {
-                                "id": 3,
-                                "parent_id": 1,
-                                "name": "Facilities",
-                                "priority": 1,
-                                "account_type": "expense"
-                            }
-                        ]
-                    },
-                    {
-                    "type": "category",
-                    "id": 4,
-                    "attributes": {
-                        "name": "Work income",
-                        "priority": 1,
-                        "account_type": "income",
-                        "children": [
-                            {
-                                "id": 5,
-                                "parent_id": 4,
-                                "name": "Salary",
-                                "priority": 1,
-                                "account_type": "income"
-                            },
-                            {
-                                "id": 6,
-                                "parent_id": 4,
-                                "name": "Bnouses",
-                                "priority": 1,
-                                "account_type": "income"
-                            }
-                        ]
-                    }   
-                }
-            }
-        }
-
+    
 ### Modify category data [PUT]
 
-Only `parent_id`, `name` and `order` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, error will be returned. Set parent_id to the category id (self) to make that category a top level category. Parenting category to the parent with different account_type is not possible.
+Only `parent_id`, `name` and `priority` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, error will be returned. Set parent_id to the category id (self) to make that category a top level category. Parenting category to the parent with different account_type is not possible.
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
-        {
-            "data": {
-                "type": "account",
-                "id": 4
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
-
-+ Response 202 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "account",
-                "id": 4
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
 ### Delete a category [DELETE]
 
@@ -435,294 +189,166 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
 
 ### List all Categories [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [{
-                    "type": "category",
-                    "id": 1,
-                    "attributes": {
-                        "id": 1,
-                        "name": "Flat payments",
-                        "priority": 1,
-                        "account_type": "expense",
-                        "children": [
-                            {
-                                "id": 2,
-                                "parent_id": 1,
-                                "name": "Rent",
-                                "priority": 1,
-                                "account_type": "expense"
-                            },
-                            {
-                                "id": 3,
-                                "parent_id": 1,
-                                "name": "Facilities",
-                                "priority": 1,
-                                "account_type": "expense"
-                            }
-                        ]
-                    },
-                    {
-                    "type": "category",
-                    "id": 4,
-                    "attributes": {
-                        "id": 4,
-                        "name": "Work income",
-                        "priority": 1,
-                        "account_type": "income",
-                        "children": [
-                            {
-                                "parent_id": 4,
-                                "id": 5,
-                                "name": "Salary",
-                                "priority": 1,
-                                "account_type": "income"
-                            },
-                            {
-                                "id": 6,
-                                "parent_id": 4,
-                                "name": "Bnouses",
-                                "priority": 1,
-                                "account_type": "income"
-                            }
-                        ]
-                    }   
-                }
-            }]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + categories (array[Category], required) - Array of categories
 
 ### Create a new category [POST]
 
-+ Request (application/vnd.mdg+json)
-
-        {
-            "data": {
-                        "type": "category",
-                        "attributes": {
-                            "parent_id": 4,
-                            "name": "Bonuses",
-                            "priority": 1,
-                            "account_type": "income"
-                        }
-                    }
-                }
-        }
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Category)
 
 + Response 201 (application/vnd.mdg+json)
     + Headers
     
             Location: /category/5
             
-    + Body
-    
-            {
-                "data": {
-                        "id": 5,
-                        "type": "category",
-                        "attributes": {
-                            "parent_id": 4,
-                            "name": "Bnouses",
-                            "priority": 1,
-                            "account_type": "income"
-                        }
-                    }
-                }
-            }
-
+    + Attributes (Category)
 
 # Group Accounts
 
 Resources related to account management
 
-## Account [/account/{account_id}]
+## Account [/accounts/{account_id}?embed={embed}]
 
 + parameters
-    + account_id (number, required) - ID of an account in form of integer
+    + account_id: 2 (number, required) - ID of an account in form of integer
+    + embed: currency,category (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
-    + account_type (enum[string], required) - type of the account
+    + id: 2 (number, required) - Account id
+    + account_type: 'ASSET' (enum[string], required) - type of the account
       + Members
-        + `asset`
-        + `expense`
-        + `income`
-    + currency_id (number, required) - account's currency id
-    + category_id (number, optional) - account's category id, may be missing in case account doesn't belongs to the any category.
-    + name (string, required) - Account name
-    + balance (number, required) - Account balance, read only attribute.
-    + primary_balance (number, required) - Account balance in primary currency, read only attribute. Automatically converted from the 'balance' field by applying correspondent rate.
-    + hidden (boolean, optional) - Marks deleted accounts
-    + favorite (boolean, optional) - Marks account as favorite. Applicable only to the 'asset' accounts
-    + operational (boolean, optional) - Marks account as operational. Applicable only to the 'asset' accounts
+        + `ASSET`
+        + `EXPENSE`
+        + `INCOME`
+    + currency_id: 978 (number, required) - account's currency id
+    + currency (Currency, optional) - account's associated currency object.
+    + category_id: 1 (number, optional) - account's category id, may be missing in case account doesn't belongs to the any category.
+    + category (Category, optional) - account's associated category object.
+    + name: 'wallet' (string, required) - Account name
+    + balance: 3.62 (number, required) - Account balance, read only attribute.
+    + primary_balance: 2.98 (number, required) - Account balance in primary currency, read only attribute. Automatically converted from the 'balance' field by applying correspondent rate.
+    + hidden: false (boolean, optional) - Marks deleted accounts
+    + operational: true (boolean, required) - Whether asset account is marked boolean. Valid for asset accounts only.
+    + favorite: true (boolean, required) - Whether asset account is marked favorite. Valid for asset accounts only.
 
 ### View an account detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "account",
-                "id": 4,
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
 
 ### Modify account data [PUT]
 
 Only `hidden`, `name`, `category_id`, `favorite` and `operational` fields could be changed. Values in other fields will be silently ignored.
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
+    
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
 
-        {
-            "data": {
-                "type": "account",
-                "id": 4
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
-
-+ Response 202 (application/vnd.mdg+json)
-
-        {
-          "data": {
-                "type": "account",
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Montlhy rent",
-                    "balance": 9000,
-                    "primary_balance": 10100,
-                    "parent_id": 3
-                }
-            }
-        }
-
+    
 ### Delete an account [DELETE]
 
 Actually accounts are immortal, deleting an account puts a 'hidden' flag on it.
 
 + Response 204
 
-## Account collection [/account?filter={filter}]
+## Account collection [/accounts?q={query}&embed={embed}]
 
 + Parameters
-    + filter (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
+    + query (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
+    + embed: currency,category (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 ### List all Accounts [GET]
 
 Accounts with attribute 'hidden' equal to 'true' are shown if no filter is specified.
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "account",
-                    "id": 1,
-                    "attributes": {
-                        "account_type": "asset",
-                        "currency_id": 840,
-                        "name": "Current USD",
-                        "balance": 100500,
-                        "primary_balance": 100500,
-                        "operational": true,
-                        "favorite": true
-                    }
-                },
-                {
-                    "type": "account",
-                    "id": 2,
-                    "attributes": {
-                        "account_type": "asset",
-                        "currency_id": 978,
-                        "name": "Savings EUR",
-                        "primary_balance": 10100,
-                        "balance": 9000
-                    }
-                }
-                {
-                    "type": "account",
-                    "id": 3,
-                    "attributes": {
-                        "account_type": "expense",
-                        "currency_id": 978,
-                        "name": "Household expenses",
-                        "balance": 9000,
-                        "primary_balance": 10100
-                    }
-                }
-                {
-                    "type": "account",
-                    "id": 4,
-                    "attributes": {
-                        "account_type": "expense",
-                        "currency_id": 978,
-                        "name": "Rent",
-                        "balance": 9000,
-                        "primary_balance": 10100,
-                        "parent_id": 3
-                    }
-                }
-            ]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + accounts (array[Account], required) - Array of accounts (flat)
 
 ### Create a new account [POST]
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
+
++ Response 201 (application/vnd.mdg+json;version=1)
+    + Attributes (Account)
+  
+
+## Account tree [/accounts/tree?q={query}&embed={embed}]
+
++ Parameters
+    + query (object, optional) - dictionary of fields and their values, to be applied as a filter to accounts list.
+    + embed: [currency,category] (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
+
+### Get all Accounts [GET]
+
+Accounts with attribute 'hidden' equal to 'true' are shown if no filter is specified.
+
++ Response 200 (application/vnd.mdg+json;version=1)
 
         {
-            "data": {
-                "type": "account",
-                "attributes": {
-                    "account_type": "expense",
-                    "currency_id": 978,
-                    "name": "Rent",
-                    "parent_id": 3
-                }
-            }
+            "asset": {
+                "accounts": [
+                    {
+                        "id": 2,
+                        "account_type": "ASSET",
+                        "currency_id": 978,
+                        "name": "wallet",
+                        "balance": 3.62,
+                        "primary_balance": 2.98,
+                        "hidden": false,
+                        "favorite": false,
+                        "operational": false
+                    }
+                ],
+                "categories": [
+                    {
+                        "id": 2,
+                        "name": "cash",
+                        "accounts": [
+                            {
+                                "id": 3,
+                                "account_type": "ASSET",
+                                "currency_id": 978,
+                                "name": "wallet",
+                                "balance": 3.62,
+                                "primary_balance": 2.98,
+                                "hidden": false,
+                                "favorite": false,
+                                "operational": false
+                            }
+                        ],
+                        "categories": {
+                            "accounts": [],
+                            "categories": []
+                        }
+                    }
+            ]    
         }
 
-+ Response 201 (application/vnd.mdg+json)
-  + Headers
-        
-            Location: /account/4
-        
-  + Body
-  
-            {
-              "data": {
-                    "type": "account",
-                    "id": 4
-                    "attributes": {
-                        "account_type": "expense",
-                        "currency_id": 978,
-                        "name": "Rent",
-                        "balance": 0,
-                        "primary_balance": 0,
-                        "parent_id": 3
-                    }
-                }
-            }
+# Group Tags
+
+Transaction tags dictionary. Each tag is an unique, case-insensitive string.
+
+## Tag [/tags]
+
+Tags are managed using a transaction. It is only possible to view list of tags, but not modify, neither remove them
+
+### List all Tags [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + tags (array[string], required) - All tags used in the MDG
 
 # Group Transactions
 
 Resources related to Transaction management
 
-## Transaction [/account/{transaction_id}]
+## Transaction [/transactions/{transaction_id}?embed={embed}]
 
 Transaction object have some limitations:
   - Operations with amount equal to zero are ignored
@@ -738,254 +364,88 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + parameters
     + transaction_id (required, number) - ID of a transaction in form of integer
+    + embed: currency,category,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
     - timestamp: `YYYY-MM-DDTHH:MM:SS` (string, required) - transaction timestamp
-    - comment (string, optional) - transaction description
-    - tags (array[string], optional) - tags, associated with transaction
+    - comment: 'Salary payment' (string, optional) - transaction description
+    - tags: 'income','salary' (array[string], optional) - tags, associated with transaction
     - operations (array[Operation], required) - Each operation has the following attributes
 
-### View an transaction detail [GET]
+### View a transaction detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 4,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 100
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 0.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
+    
 ### Modify transaction data [PUT]
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 4,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 90
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 10.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 4,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 90
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 10.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-
+    
 ### Delete an transaction [DELETE]
 
 + Response 204
 
-## Transaction collection [/transaction?filter={filter}&sort={sort},comment&page%5Bnumber%5D={pageNumber}&page%5Bsize%5D={pageSize}&timestamp%5BnotEarlier%5D={notEarlier}&timeStamp%5BnotLater%5D={notLater}]
-
+## Transaction collection [/transactions?q={q}&sort={sort}&embed={embed}&limit={limit}&cursor={cursor}]
 
 ### List all Transactions [GET]
 
 + Parameters
-  + filter (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes
-  + sort (string, optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order. Sorting could be done only by `timestamp` field. Only first item in a list is used as a sortf eidl at the moment.
-  + pageNumber (optional, number) - Paginate list and return only data, matching specified page number. This parameter is required to activate pagination.
-  + pageSize: 10 (optional, number) - Paginate list using specified page size (max transactions on page).
-  + notEarlier (optional, number) - Optional, range based filter on timestamp. Will filter out all transactions happened before specified point in time.
-  + notLater (optional, number) - Optional, range based filter on timestamp. Will filter out all transactions happened after specified point in time.
+  + q (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes. Timestmap filtering is supported with 'notEarlier' and 'notLater' keys
+  + sort: timestamp (array[string], optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order. 
+  + embed: account,currency,category (array[string], optional) - Objects to embed. accout_id and other _id fields are always provided.
+  + limit: 10 (number, optional) - Paginate list using specified page size. Setting limit will trigger pagionation and will put pagination related field to the reply.
+  + cursor: AAABBB (string, optional) - A pointer to the next page. Only valid if cursor value was previously set by the backend.
+    The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit` 
+    number of trasactions will be returned along side with additional cursor fields (see below). Each cursor is 
+    self-contained and can be used without repeating other parameters.
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + transactions (array[Transaction], required) - Transactions covered by the request
+        + self: AAABBB (string, optional) - Cursor of the current page.
+        + first: AAABBB (string, optional) - Cursor of the first page
+        + next: AAABBB (string, optional) - Cursor of the following page
+        + left: 15 (number,optional) - Number of items left after the current page.
 
-        {
-            "data": [
-                {
-                    "type": "transaction",
-                    "id": 1,
-                    "attributes": {
-                        "timestamp": "123456",
-                        "comment": "A sample transaction",
-                        "tags": ["USD", "New year party"],
-                        "operations": [
-                            {
-                                "account_id": 1,
-                                "amount": -100.50
-                            },
-                            {
-                                "account_id": 2,
-                                "amount": 100
-                            },
-                            {
-                                "account_id": 3,
-                                "amount": 0.50
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
 
 ### Create a new transaction [POST]
 
-+ Request (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "transaction",
-                "attributes": {
-                    "timestamp": "123456",
-                    "comment": "A sample transaction",
-                    "tags": ["USD", "New year party"],
-                    "operations": [
-                        {
-                            "account_id": 1,
-                            "amount": -100.50
-                        },
-                        {
-                            "account_id": 2,
-                            "amount": 100
-                        },
-                        {
-                            "account_id": 3,
-                            "amount": 0.50
-                        }
-                    ]
-                }
-            }
-        }
-
-+ Response 202 (application/vnd.mdg+json)
-  + Headers
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
     
-            Location: /transaction/4
-  
-  + Body
-    
-            {
-                "data": [
-                    {
-                        "type": "transaction",
-                        "id": 4,
-                        "attributes": {
-                            "timestamp": "123456",
-                            "comment": "A sample transaction",
-                            "tags": ["USD", "New year party"],
-                            "operations": [
-                                {
-                                    "account_id": 1,
-                                    "amount": -100.50
-                                },
-                                {
-                                    "account_id": 2,
-                                    "amount": 100
-                                },
-                                {
-                                    "account_id": 3,
-                                    "amount": 0.50
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Transaction)
 
 # Group Budget
 
 Resources related to budget management
 
-## Budget [/budget/{YYYY}{MM}{DD}]
+## Budget [/budgets/{YYYY}{MM}{DD}]
+
++ parameters
+    + YYYY: `2022` (required, number) - Budget's year
+    + MM: `03` (required, number) - Budget's month
+    + DD: `28` (required, number) - Budget's day. A budget with closest `term_beginning` before or equal to specified date will be retrieved
 
 + Attributes
     + term_beginning: `YYYY-MM-DD` (string, required) - Budget is not effective before specified point in time
     + term_end: `YYYY-MM-DD` (string, required) - Budget is not effective after specified point in time. Minimum Budget effectivity period is a day (24 hours).
-    + incoming_amount (number, required) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
-    + outgoing_amount (BudgetPair, required) - for expected: Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency. For actual: Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
-    + state (object, required)
+    + incoming_amount: 8000 (number, required, readonly) - Sum of all amounts on accounts with account_type 'asset'. Value is not fixed and subject to change until term_beginning comes. It will be automatically filled. Exposed in primary currency.
+    + outgoing_amount: 9000 (BudgetPair, required, readonly) - for expected: Estimated sum of all amounts on accounts with account_type 'asset' *after* budget completion. Value is calculated automatically when related BudgetEntries are added/removed/modified. Exposed in primary currency. For actual: Sum of all amounts on accounts with account_type 'asset' *after* budget completion. Calculated during budget execution. Exposed in primary currency.
+    + state
       + income (BudgetPair, required) - For expected: Income expected to be received during budget validity period. Calculated as a sum of expected values on budget entries related to income accounts. Exposed in primary currency. For actual: Actual income, received during budget validity period. Calculated as a sum of income account operations, happened during transaction validity period. Exposed in primary currency.
       + expense (BudgetPair, required) - For expected: Expected expenses during budget validity period. Calculated as a sum of expected values on budget entries related to expense accounts. Exposed in primary currency. For actual: Actual expenses, happened during budget validity period. Calculated as a sum of expense account operations, happened during transaction validity period. Exposed in primary currency.
       + change (BudgetPair, required) - For expected: Expected change on expense accounts amounts for today. Calculated as a sum of change values on budget entries related to expense accounts. For non-current account will be zero. Exposed in primary currency. For actual: Actual change on expense accounts amounts, happened today. Calculated as a sum of expense account operations, happened today. For non-current account will be zero. Exposed in primary currency.
 
 ### View Budget detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budget",
-                "id": 1,
-                "attributes": {
-                    "term_beginning": 123456,
-                    "term_end": 223456,
-                    "incoming_amount": 9000,
-                    "outgoing_amount": {
-                        "expected": 100500,
-                        "actual": 3.62
-                    }
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (Budget)
 
 ### Delete a Budget [DELETE]
 
@@ -993,222 +453,166 @@ Resources related to budget management
 
 ## Budget collection [/budget]
 
-Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reaing specific budget object.
+Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reading specific budget object.
 
 ### Create a new budget [POST]
 
 Budgets effective dates are inclusive and should not overlap.
 
-+ Request (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budget",
-                "attributes": {
-                    "term_beginning": "2017-02-01",
-                    "term_end": "2017-02-28"
-                }
-            }
-        }
-
-+ Response 202 (application/vnd.mdg+json)
-  + Headers
-  
-            Location: /budget/20170201
-        
-  + Body
-  
-            {
-                "data": [
-                    {
-                        "type": "budget",
-                        "id": 20170201,
-                        "attributes": {
-                            "term_beginning": "2017-02-01",
-                            "term_end": "2017-02-28",
-                            "incoming_amount": 100.50
-                        }
-                    }
-                ]
-            }
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (Budget)
+    
++ Response 202 (application/vnd.mdg+json;version=1)
+    + Attributes (Budget)
 
 
 ### List all Budgets [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + budgets (array[Budget], required) - Transactions covered by the request
+        + self: AAABBB (string, optional) - Cursor of the current page.
+        + first: AAABBB (string, optional) - Cursor of the first page
+        + next: AAABBB (string, optional) - Cursor of the following page
+        + left: 15 (number,optional) - Number of items left after the current page.
 
-        {
-            "data": [
-                {
-                    "type": "budget",
-                    "id": 20170201,
-                    "attributes": {
-                        "term_beginning": "2017-02-01",
-                        "term_end": "2017-02-28",
-                        "incoming_amount": 9000,
-                        "outgoing_amount": {
-                            "expected": 100500,
-                            "actual": 3.62
-                        }
-                    }
-                }
-            ]
-        }
-
-## BudgetEntry [/budget/{budget_id}/entry/{entry_id}]
+## BudgetEntry [/budgets/{budget_id}/entries/{entry_id}&embed={embed}]
 
 BudgetEntry lifecycle is managed automatically. It will be created with budget and deleted with budget. During creation of new non-"asset" account, corresponding budget entries should be automatically provided to all existing budgets.
 
 + parameters
-    + budget_id: `YYYYMMDD` (number, required) - ID of owning budget in form of integer
-    + entry_id (number, required) - ID of a transaction in form of integer
+    + budget_id: YYYYMMDD (string, required) - ID of owning budget in form of integer
+    + entry_id: 1 (number, required) - ID of a entry in form of integer
+    + embed: currency,category,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 + Attributes
-    + account_id (number, required) - id of account, linked to that BudgetEntry. Every account could be used only once per each Budget.
+    + account_id: 1 (number, required) - id of account, linked to that BudgetEntry. Every account could be used only once per each Budget.
+    + account (Account, optional) - Related account information.
+    + category_id: 1 (number, optional) - Related account's category id, may be missing in case account doesn't belongs to the any category.
+    + category (Category, optional) - Related account's associated category object.
     + even_distribution: `true` (boolean, required) - whether expected change on that account should be evenly distributes over Budget term or it is expected to be occasional based. For example, 'meal budget' is usually evenly distributed, you spent it in small pieces almost every day during Budget period. On the other hand, 'flat rent' is usually occasional, as you pay it only once during Budget period.
     + proration: `true` (boolean, optional) - affects the change_amount calculation. Only valid when `even_distribution` is `True`
-    + expected_amount (number, required) - your expected change on account_id amount during Budget effective period.
-    + actual_amount (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
-    + change_amount (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
-    + account_name (string, required) - Name of an account, linked to that BudgetEntry.
-    + account_type (enum[string], required) - Name of an account, linked to that BudgetEntry.
+    + expected_amount: 1000 (number, required) - your expected change on account_id amount during Budget effective period.
+    + actual_amount: 50 (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
+    + allowed_spendings: 5 (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
+    + spending_percent: 2 (number, required) - ratio of spent/planned amounts
 
-### View an BudgetEntry detail [GET]
+### View a BudgetEntry detail [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budgetentry",
-                "id": 1,
-                "attributes": {
-                    "account_id": 1,
-                    "account_name": "Income",
-                    "account_type": "income",
-                    "even_distribution": false,
-                    "expected_amount": 100500,
-                    "actual_amount": 100501
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (BudgetEntry)
 
 ### Modify BudgetEntry data [PUT]
 
-+ Request (application/vnd.mdg+json)
++ Request (application/vnd.mdg+json;version=1)
+    + Attributes (BudgetEntry)
 
-        {
-            "data": {
-                "type": "budgetentry",
-                "id": 1,
-                "attributes": {
-                    "even_distribution": false,
-                    "expected_amount": 100500,
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes (BudgetEntry)
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "budgetentry",
-                "id": 1,
-                "attributes": {
-                    "even_distribution": false,
-                    "expected_amount": 100500,
-                }
-            }
-        }
-
-## BudgetEntry collection [/budget/{budget_id}/entry]
+## BudgetEntry collection [/budgets/{budget_id}/entries?embed={embed}]
 
 + parameters
-    + budget_id: `YYYYMMDD` (required, number) - ID of owning budget in form of integer
+    + budget_id: YYYYMMDD (required, string) - ID of owning budget in form of integer
+    + embed: currency,category,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly
 
 ### List budget entries [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + budget_entries (array[BudgetEntry], required) - List of entries of that budget
+
+## Budget entries tree [/budgets/{budget_id}/entries/tree&embed={embed}&filter={filter}]
+
++ Parameters
+    + embed: currency,account (array[string], optional) - Embed actual objects into response. Respective `_id` fields are always filled, but objects are not sent if not requested explicitly. Account objects are not populated with categories in the tree mode.
+    + filter: nonzero (enum[string], optional) - Either `nonzero` or `all`. Default is `nonzero`. In `nonzero` mode entries with zero actual spendings and zero expected spendings are not returned, alongside their parent categories. In `all` mode all entries and their categories are always returned.
+
+### Get all Budget entries [GET]
+
+In that mode statistics, similar to budget entry statistics, is calculated for each category. The rules of calculation (prorated/even/one-shot) is
+derived from owned entries/sub categories using the following rule: if at least one sub entry is one-shot, all other entries are considered one-show. 
+If there are no one-show entries, but at least one non-prorated entry, all of them are considered to be even distributed. OTherwise 
+
++ Response 200 (application/vnd.mdg+json;version=1)
 
         {
-            "data": [
-                {
-                    "type": "budgetentry",
-                    "id": 1,
-                    "attributes": {
-                        "account_id": 1,
-                        "account_name": "Income",
-                        "account_type": "income",
-                        "even_distribution": false,
-                        "expected_amount": 100500,
-                        "actual_amount": 100501
+            "expense": {
+                "entries": [
+                    {
+                        "id": 291,
+                        "account": null,
+                        "category": null,
+                        "proration": false,
+                        "account_id": 2065,
+                        "category_id": null,
+                        "even_distribution": true,
+                        "expected_amount": 100500.00,
+                        "actual_amount": 0,
+                        "allowed_spendings": 0,
+                        "spending_percent": 0
                     }
-                },
-                {
-                    "type": "budgetentry",
-                    "id": 2,
-                    "attributes": {
-                        "account_id": 2,
-                        "account_name": "Expense",
-                        "account_type": "expense",
-                        "even_distribution": True,
-                        "proration": True,
-                        "expected_amount": 9000,
-                        "actual_amount": 4500,
-                        "change_amount": 300
+                ],
+                "categories": [
+                    {
+                        "id": 2,
+                        "name": "pets",
+                        "expected_amount": 100500.00,
+                        "actual_amount": 0,
+                        "allowed_spendings": 0,
+                        "spending_percent": 0
+                        "entries": [
+                            {
+                                "id": 291,
+                                "account": null,
+                                "category": null,
+                                "proration": false,
+                                "account_id": 2065,
+                                "category_id": null,
+                                "even_distribution": true,
+                                "expected_amount": 100500.00,
+                                "actual_amount": 0,
+                                "allowed_spendings": 0,
+                                "spending_percent": 0
+                            }
+                        ],
+                        "categories": {
+                            "entries": [],
+                            "categories": []
+                        }
                     }
-                },
-                {
-                    "type": "budgetentry",
-                    "id": 3,
-                    "attributes": {
-                        "account_id": 3,
-                        "account_name": "Rent",
-                        "account_type": "expense",
-                        "even_distribution": True,
-                        "proration": False,
-                        "expected_amount": 9000,
-                        "actual_amount": 4000,
-                        "change_amount": 800
-                    }
-                }
-            ]
+            ]    
         }
-
 
 # Group Report
 
 Various reporting data, mostly read-only
 
-## TotalsReport [/report/totals]
+## TotalsReport [/reports/totals]
 
-+ Attributes
-    + value (array[TotalsReportEntry], required) - Array of TotalsReportEntries
+Provides assets overview information.
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[TotalsReportEntry], required) - Array of report entries.
+
+## AssetSimpleReport [/reports/assets/simple?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+
++ Parameters
+  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
+  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
+  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
 
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {
-                            "asset_type": "cash",
-                            "primary": 100.500,
-                            "value": [
-                                {
-                                    "value": 9000,
-                                    "id", 978
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        }
 
 ## AssetCurrencyReport [/report/asset/currency?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -1217,25 +621,24 @@ Various reporting data, mostly read-only
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
-+ Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all asset accounts of that currency for a specified date, id is id of associtated currency
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
+
+## AssetTypeReport [/report/asset/type?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+
++ Parameters
+  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
+  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
+  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
 ## IncomeEventsReport [/report/income/events?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -1244,25 +647,11 @@ Various reporting data, mostly read-only
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
-+ Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all income operations on specified account, id is a id of associated account.
-
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
 ## ExpenseEventsReport [/report/expense/events?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -1271,107 +660,38 @@ Various reporting data, mostly read-only
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
   + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
-+ Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
-
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
 
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
-
-## IncomeStructureReport [/report/income/accounts?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+## IncomeStructureReport [/report/income/accounts?startDate={startDate}&endDate={endDate}]
 
 + Parameters
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
-  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
-
-+ Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all income operations on specified account, id is a id of associated account.
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all income accounts for a specified range. 
 
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
-
-## ExpenseStructureReport [/report/expense/accounts?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+## ExpenseStructureReport [/report/expense/accounts?startDate={startDate}&endDate={endDate}]
 
 + Parameters
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
-  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
 
 + Attributes
-    + value (array[IdentifiedValueInTime], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
+    + value (array[Amount], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
 
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000, id: 978},
-                        {"date": "2018-02-01", "value": 100.500, id: 840}
-                    ]
-                }
-            }
-        }
-
-## AssetSimpleReport [/report/asset/simple?startDate={startDate}&endDate={endDate}&granularity={granularity}]
-
-+ Parameters
-  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
-  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
-  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
-
-
-+ Attributes
-    + value (array[ValueInTime], required) - Array of ValueInTime, where value is a sum of all asset accounts for a specified date. 
-
-### View a report [GET]
-
-+ Response 200 (application/vnd.mdg+json)
-
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000},
-                        {"date": "2018-02-01", "value": 100.500}
-                    ]
-                }
-            }
-        }
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all expense accounts for a specified range. 
 
 ## BudgetExecutionReport [/report/budget/execution?startDate={startDate}&endDate={endDate}]
 
@@ -1379,23 +699,60 @@ Various reporting data, mostly read-only
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format. It will include budget, that may have been started earlier, then that date, but have ended after it.
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format. And vice versa, budget, that have been finished after that date, but it's beginning is earlier, will be included.
 
-
-+ Attributes
-    + value (array[BudgetReportEntry], required) - Array of BudgetReportEntry, where value is a budget execution data for a specified date.
-
 ### View a report [GET]
 
-+ Response 200 (application/vnd.mdg+json)
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + value (array[BudgetReportEntry], required) - Array of BudgetReportEntry, where value is a budget execution data for a specified date.
 
-        {
-            "data": {
-                "type": "report",
-                "id": 1,
-                "attributes": {
-                    "value": [
-                        {"date": "2018-01-01", "value": 9000},
-                        {"date": "2018-02-01", "value": 100.500}
-                    ]
-                }
-            }
-        }
+# Data Structures
+
+## Problem (object)
++ title: CURRENCY_NOT_FOUND (string, required) - Human-friendly error code
++ status: 404 (number, required) - HTTP Status code, must match response status code
++ instance: /currency/1 (string, optional) - URL of errored object if applicable
+
+## Operation (object)
+
+Single operation in a transation.
+
++ Attributes
+    + account_id: 1 (number, required) - Related account id
+    + amount: 7.40 (number, required) - account balance change
+    + rate: 0.04 (number, optional) - exchange rate to be applied
+
+## BudgetPair (object)
+
+Budget specific thing. As budget manages a predicted future and harsh reality at the same time, we usually operation with a pair of number, one is actual and another one is expected. This data structure is used for that
+
++ Attributes
+    + actual: 1000 (number, required) - Amount that actually was reached during budget execution
+    + expected: 2000 (number, required) - Amount that planned to be reached during budget execution
+
+## Amount
+
+Amount holds a pair of a some balance amoutn and related currency code. Only code is used there, as reports are provided only for rendering, not editing.
+
++ Attributes
+    + amount (number, required) - Balance amount value.
+    + name (string, optional) - Related entry name, such as currency, category etc
+    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid
+
+## TotalsReportEntry
+
+Data structure for a single totals report entry, linked to a specific asset type.
+
++ Attributes
+    + category_name: Cash (string, required) - Asset category name.
+    + primary_balance: 100500 (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
+    + amounts (array[Amount, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency.
+
+## BudgetReportEntry
+
+Data structure for a single totals report entry, linked to a specific asset type.
+
++ Attributes
+    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid (beginning of a reported budget)
+    + income (BudgetPair, required) - Value of expected/actual income for that budget
+    + expense (BudgetPair, required) - Value of expected/actual expense for that budget
+    + profit (number, required) - Increase of the asset balance between first and last dates of the budget.
