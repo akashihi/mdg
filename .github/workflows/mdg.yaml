@@ -18,4 +18,5 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Build with Maven
+        working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean package spring-boot:repackage
