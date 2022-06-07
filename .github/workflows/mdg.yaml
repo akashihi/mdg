@@ -22,9 +22,9 @@ jobs:
         with:
           version: '6.46.0'
           sourcePath: 'backend/src/main/java'
+          analyzeModifiedFilesOnly: 'false'
       - name: Fail build if there a PMD violations
         if: steps.pmd.outputs.violations != 0
         run: exit 1
       - name: Build with Maven
-        working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean package spring-boot:repackage
