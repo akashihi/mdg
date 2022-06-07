@@ -6,12 +6,16 @@ import org.akashihi.mdg.api.v0.dto.DataSingular;
 import org.akashihi.mdg.api.v0.dto.RequestException;
 import org.akashihi.mdg.api.v0.dto.SettingData;
 import org.akashihi.mdg.api.v1.RestException;
-import org.akashihi.mdg.api.v1.dto.Settings;
 import org.akashihi.mdg.entity.Setting;
 import org.akashihi.mdg.indexing.IndexingService;
 import org.akashihi.mdg.service.SettingService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,7 +48,7 @@ public class SettingControllerV0 {
             var newSetting = settingService.updateCurrencyPrimary(setting.data().getAttributes().value());
             return new DataSingular<>(new SettingData(newSetting.getId(), "setting", new SettingData.Attributes(newSetting.getValue())));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 

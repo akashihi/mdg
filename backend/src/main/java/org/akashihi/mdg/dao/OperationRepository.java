@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.Query;
 public interface OperationRepository extends JpaRepository<Operation, Long> {
     @Modifying
     @Query(nativeQuery = true, value = "DELETE FROM operation where tx_id = ?1")
-    void deleteOperationsForTransaction(Long tx_id);
+    void deleteOperationsForTransaction(Long txId);
 }

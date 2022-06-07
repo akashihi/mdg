@@ -8,9 +8,9 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface RateRepository extends JpaRepository<Rate, Long> {
-    Collection<Rate> findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(LocalDateTime rate_beginning, LocalDateTime rate_end);
+    Collection<Rate> findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(LocalDateTime rateBeginning, LocalDateTime rateEnd);
 
-    Optional<Rate> findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(LocalDateTime rate_beginning, LocalDateTime rate_end, Long from_id, Long to_id);
+    Optional<Rate> findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(LocalDateTime rateBeginning, LocalDateTime rateEnd, Long fromId, Long toId);
 
-    Optional<Rate> findByBeginningGreaterThanEqualAndFromEqualsAndToEquals(LocalDateTime rate_beginning, Long from_id, Long to_id);
+    Optional<Rate> findByBeginningGreaterThanEqualAndFromEqualsAndToEquals(LocalDateTime rateBeginning, Long fromId, Long toId);
 }

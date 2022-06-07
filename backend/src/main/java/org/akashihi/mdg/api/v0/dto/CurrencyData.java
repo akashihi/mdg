@@ -8,6 +8,6 @@ import lombok.Data;
 public class CurrencyData {
     private Long id;
     private String type;
-    public record Attributes(String code, String name, Boolean active) {};
+    public record Attributes(String code, String name, Boolean active) {}
     private Attributes attributes;
 }

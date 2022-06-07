@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class FilterConverter {
+public final class FilterConverter {
+    private FilterConverter() {}
+
     public static Optional<Map<String, String>> buildFilter(Optional<String> query, ObjectMapper objectMapper) {
         return query.map(s -> {
             try {

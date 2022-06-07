@@ -136,7 +136,7 @@ public class AccountService {
                 currencyValue.ifPresent(currency -> transactionService.updateTransactionsCurrencyForAccount(account, currency));
                 currencyValue.ifPresent(account::setCurrency);
             }
-            if ((newAccount.getFavorite() != null && newAccount.getFavorite()) || (newAccount.getOperational() != null && newAccount.getOperational())) {
+            if (newAccount.getFavorite() != null && newAccount.getFavorite() || newAccount.getOperational() != null && newAccount.getOperational()) {
                 throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts/%d".formatted(id));
             }
         }

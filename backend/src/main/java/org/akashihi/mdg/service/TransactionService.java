@@ -2,9 +2,16 @@ package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.RestException;
-import org.akashihi.mdg.dao.*;
-import org.akashihi.mdg.entity.*;
+import org.akashihi.mdg.dao.AccountRepository;
+import org.akashihi.mdg.dao.OperationRepository;
+import org.akashihi.mdg.dao.TagRepository;
+import org.akashihi.mdg.dao.TransactionRepository;
+import org.akashihi.mdg.dao.TransactionSpecification;
+import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.Currency;
+import org.akashihi.mdg.entity.Operation;
+import org.akashihi.mdg.entity.Tag;
+import org.akashihi.mdg.entity.Transaction;
 import org.akashihi.mdg.indexing.IndexingService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -66,7 +73,7 @@ public class TransactionService {
         // For multi currency transactions relatively small disbalance is allowed
         var multicurrency = tx.getOperations().stream().anyMatch(o -> o.getRate() != null);
         var balance = tx.getOperations().stream().map(o -> o.getAmount().multiply(o.getRate())).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if ((!balance.equals(BigDecimal.ZERO) && !multicurrency) || !(balance.compareTo(BigDecimal.ONE.negate()) > 0 && balance.compareTo(BigDecimal.ONE) < 0)) {
+        if (!balance.equals(BigDecimal.ZERO) && !multicurrency || !(balance.compareTo(BigDecimal.ONE.negate()) > 0 && balance.compareTo(BigDecimal.ONE) < 0)) {
             throw new RestException("TRANSACTION_NOT_BALANCED", 412, "/transactions");
         }
         return tx;

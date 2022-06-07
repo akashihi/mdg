@@ -1,13 +1,24 @@
 package org.akashihi.mdg.api.v0;
 
 import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v0.dto.*;
+import org.akashihi.mdg.api.v0.dto.BudgetData;
+import org.akashihi.mdg.api.v0.dto.BudgetEntryData;
+import org.akashihi.mdg.api.v0.dto.DataPlural;
+import org.akashihi.mdg.api.v0.dto.DataSingular;
+import org.akashihi.mdg.api.v0.dto.RequestException;
 import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
 import org.akashihi.mdg.service.BudgetService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -64,7 +75,7 @@ public class BudgetControllerV0 {
             var budget= budgetService.create(fromDto(data.data()));
             return new DataSingular<>(new BudgetData(budget.getId(), "budget", toDto(budget)));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
@@ -75,11 +86,11 @@ public class BudgetControllerV0 {
             var budget = budgetService.update(id, fromDto(data.data())).orElseThrow(() -> new RequestException(404, "BUDGET_NOT_FOUND"));
             return new DataSingular<>(new BudgetData(budget.getId(), "budget", toDto(budget)));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
-    @DeleteMapping(value = "/api/budget/{id}")
+    @DeleteMapping("/api/budget/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable("id") Long id) {
         budgetService.delete(id);
@@ -104,7 +115,7 @@ public class BudgetControllerV0 {
             var entry = budgetService.updateBudgetEntry(entryId, fromDto(data.data())).orElseThrow(() -> new RequestException(404, "BUDGETENTRY_NOT_FOUND"));
             return new DataSingular<>(new BudgetEntryData(entry.getId(), "budgetentry", toDto(entry)));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 }

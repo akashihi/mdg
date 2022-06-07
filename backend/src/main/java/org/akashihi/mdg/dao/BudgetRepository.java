@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
-    Boolean existsByEndGreaterThanEqualAndBeginningLessThanEqual(LocalDate other_beginning, LocalDate other_end);
+    Boolean existsByEndGreaterThanEqualAndBeginningLessThanEqual(LocalDate otherBeginning, LocalDate otherEnd);
     Optional<Budget> findFirstByIdLessThanEqualOrderByIdDesc(Long id);
 
     Collection<Budget> findByBeginningGreaterThanEqualAndEndIsLessThanEqualOrderByBeginningAsc(LocalDate from, LocalDate to);

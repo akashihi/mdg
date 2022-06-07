@@ -9,7 +9,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class Embedding {
+public final class Embedding {
+    private Embedding() {}
+
     public static Function<Operation, Operation> embedOperationObjects(Optional<Collection<String>> embed) {
         var accounts = embed.map(e-> e.contains("account")).orElse(false);
         return (operation) -> {

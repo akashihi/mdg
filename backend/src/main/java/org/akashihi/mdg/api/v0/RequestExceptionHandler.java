@@ -2,7 +2,6 @@ package org.akashihi.mdg.api.v0;
 
 import org.akashihi.mdg.api.v0.dto.DataError;
 import org.akashihi.mdg.api.v0.dto.RequestException;
-import org.akashihi.mdg.api.v1.dto.Problem;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,7 +10,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.Collections;
-import java.util.List;
 
 @ControllerAdvice
 public class RequestExceptionHandler extends ResponseEntityExceptionHandler {

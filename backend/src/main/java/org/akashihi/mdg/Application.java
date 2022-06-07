@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableScheduling
 @EnableElasticsearchRepositories(basePackages = "org.akashihi.mdg.indexing")
+@SuppressWarnings("PMD")
 public class Application {
 
     public static void main(String[] args) {

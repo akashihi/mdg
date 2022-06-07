@@ -6,5 +6,5 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.stream.Stream;
 
 public interface TransactionRepositoryCustom {
-    public Stream<Transaction> streamByAccount(Specification<Transaction> spec);
+    Stream<Transaction> streamByAccount(Specification<Transaction> spec);
 }

@@ -29,12 +29,12 @@ public class CurrencyService {
 
     @Transactional
     public Optional<Currency> update(Long id, Currency currency) {
-        var existing_currency = currencyRepository.findById(id);
-        if (existing_currency.isPresent()) {
-            var updated_currency = existing_currency.get();
-            updated_currency.setActive(currency.getActive());
-            currencyRepository.save(updated_currency);
-            return Optional.of(updated_currency);
+        var existingCurrency = currencyRepository.findById(id);
+        if (existingCurrency.isPresent()) {
+            var updatedCurrency = existingCurrency.get();
+            updatedCurrency.setActive(currency.getActive());
+            currencyRepository.save(updatedCurrency);
+            return Optional.of(updatedCurrency);
         }
         return Optional.empty();
     }}

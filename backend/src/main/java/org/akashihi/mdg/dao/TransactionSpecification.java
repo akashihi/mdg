@@ -9,7 +9,9 @@ import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class TransactionSpecification {
+public final class TransactionSpecification {
+    private TransactionSpecification() {}
+
     public static Specification<Transaction> transactionsForAccount(Account account) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.join("operations").<String>get("account"), account);
     }

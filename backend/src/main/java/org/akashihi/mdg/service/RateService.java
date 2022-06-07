@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 public class RateService {
+    private static final String YF_URL = "https://query1.finance.yahoo.com/v7/finance/spark?range=1d&interval=60m&indicators=close&includeTimestamps=true&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance&symbols={symbols}";
     private final CurrencyService currencyService;
     private final RateRepository rateRepository;
 
@@ -35,7 +36,7 @@ public class RateService {
 
     public Rate getPair(LocalDateTime dt, Long from, Long to) {
         return rateRepository.findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(dt, dt, from, to)
-                .orElse(new Rate(-1L, dt, dt, from, to, new BigDecimal(1)));
+                .orElse(new Rate(-1L, dt, dt, from, to, BigDecimal.ONE));
     }
 
     public Rate getPair(LocalDateTime dt, Currency from, Currency to) {
@@ -63,7 +64,6 @@ public class RateService {
 
     protected Optional<BigDecimal> queryYf(String from, String to) {
         var symbols = "%s%s=X".formatted(from, to);
-        String YF_URL = "https://query1.finance.yahoo.com/v7/finance/spark?range=1d&interval=60m&indicators=close&includeTimestamps=true&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance&symbols={symbols}";
         var uriTemplate = new UriTemplate(YF_URL);
         var uri = uriTemplate.expand(symbols);
         var client = WebClient.create();
@@ -79,7 +79,9 @@ public class RateService {
     }
 
     protected void updateRateForPair(ImmutablePair<Currency, Currency> currencyPair) {
-        log.info("Updating pair {}/{}", currencyPair.left.getCode(), currencyPair.right.getCode());
+        if (log.isInfoEnabled()){
+            log.info("Updating pair {}/{}", currencyPair.left.getCode(), currencyPair.right.getCode());
+        }
         var rate = this.queryYf(currencyPair.left.getCode(), currencyPair.right.getCode());
         if (rate.isEmpty()) {
             //Try to find an exchange rate via base currency USD
@@ -97,7 +99,9 @@ public class RateService {
 
             var exteriorRate = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(rateEntry.getBeginning(), rateEntry.getEnd(), rateEntry.getFrom(), rateEntry.getTo());
             if (exteriorRate.isEmpty()) {
-                log.warn("Creating first ever rate for: {}/{}", currencyPair.left.getCode(), currencyPair.right.getCode());
+                if (log.isWarnEnabled()){
+                    log.warn("Creating first ever rate for: {}/{}", currencyPair.left.getCode(), currencyPair.right.getCode());
+                }
                 rateEntry.setBeginning(LocalDateTime.of(1,1, 1, 0, 0, 0));
                 rateEntry.setEnd(LocalDateTime.of(9999,12, 31, 23, 59, 59));
                 rateRepository.save(rateEntry);
@@ -119,7 +123,9 @@ public class RateService {
             rateRepository.save(next);
             rateRepository.save(rateEntry);
         } else {
-            log.warn("Unable to load rate for {}/{} pair", currencyPair.left.getCode(), currencyPair.right.getCode());
+            if (log.isWarnEnabled()) {
+                log.warn("Unable to load rate for {}/{} pair", currencyPair.left.getCode(), currencyPair.right.getCode());
+            }
         }
     }
 }
