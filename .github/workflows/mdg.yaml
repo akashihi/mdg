@@ -23,6 +23,7 @@ jobs:
           version: '6.46.0'
           sourcePath: 'backend/src/main/java'
           analyzeModifiedFilesOnly: 'false'
+          rulesets: 'rulesets/java/quickstart.xml,ruleset.xml'
       - name: Fail build if there a PMD violations
         if: steps.pmd.outputs.violations != 0
         run: exit 1
