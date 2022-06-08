@@ -27,6 +27,9 @@ jobs:
       - name: Fail build if there a PMD violations
         if: steps.pmd.outputs.violations != 0
         run: exit 1
+      - name: Run spotbugs checks
+        working-directory: ./backend
+        run: mvn --batch-mode --update-snapshots clean compile spotbugs:check
       - name: Build with Maven
         working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean package spring-boot:repackage
