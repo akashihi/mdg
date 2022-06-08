@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.dto.TransactionCursor;
 import org.akashihi.mdg.api.v1.dto.Transactions;
 import org.akashihi.mdg.api.v1.filtering.Embedding;
-import org.akashihi.mdg.api.v1.filtering.FilterConverter;
+import org.akashihi.mdg.api.util.FilterConverter;
 import org.akashihi.mdg.entity.Transaction;
 import org.akashihi.mdg.service.TransactionService;
 import org.springframework.http.HttpStatus;

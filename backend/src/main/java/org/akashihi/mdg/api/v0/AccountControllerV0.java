@@ -1,6 +1,5 @@
 package org.akashihi.mdg.api.v0;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v0.dto.AccountData;
@@ -8,6 +7,7 @@ import org.akashihi.mdg.api.v0.dto.DataPlural;
 import org.akashihi.mdg.api.v0.dto.DataSingular;
 import org.akashihi.mdg.api.v0.dto.RequestException;
 import org.akashihi.mdg.api.v1.RestException;
+import org.akashihi.mdg.api.util.FilterConverter;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.service.AccountService;
@@ -76,18 +76,7 @@ public class AccountControllerV0 {
 
     @GetMapping(value = "/api/account", produces = "application/vnd.mdg+json")
     DataPlural<AccountData> list(@RequestParam("filter") Optional<String> query) {
-        Optional<Map<String, String>> filter = query.map(s -> {
-            try {
-                var queryMap = new HashMap<String,String>();
-                var parsedQuery = objectMapper.readValue(s, Map.class);
-                parsedQuery
-                        .keySet().stream().filter(k -> k instanceof String && parsedQuery.get(k) instanceof String)
-                        .forEach(k -> queryMap.put((String) k, (String) parsedQuery.get(k)));
-                return queryMap;
-            } catch (JsonProcessingException e) {
-                return Collections.EMPTY_MAP;
-            }
-        });
+        var  filter = FilterConverter.buildFilter(query, objectMapper);
 
         var accounts = accountService.list(filter).stream().map(this::toDto).toList();
         return new DataPlural<>(accounts);

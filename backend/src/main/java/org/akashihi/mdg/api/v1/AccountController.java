@@ -6,7 +6,7 @@ import org.akashihi.mdg.api.v1.dto.Accounts;
 import org.akashihi.mdg.api.v1.dto.CategoryTree;
 import org.akashihi.mdg.api.v1.dto.CategoryTreeEntry;
 import org.akashihi.mdg.api.v1.filtering.Embedding;
-import org.akashihi.mdg.api.v1.filtering.FilterConverter;
+import org.akashihi.mdg.api.util.FilterConverter;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Category;

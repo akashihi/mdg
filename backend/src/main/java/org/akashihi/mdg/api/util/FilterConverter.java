@@ -1,4 +1,4 @@
-package org.akashihi.mdg.api.v1.filtering;
+package org.akashihi.mdg.api.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

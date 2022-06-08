@@ -53,12 +53,10 @@ public class AccountService {
                 throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts");
             }
         }
-        if (account.getAccountType().equals(AccountType.ASSET)) {
-            if (account.getCategoryId() == null) { //Default category for asset accounts
+        if (account.getAccountType().equals(AccountType.ASSET) && account.getCategoryId() == null) { //Default category for asset accounts
                 var defaultCategory = categoryRepository.findByNameAndAccountType("Current", AccountType.ASSET).orElseThrow(() ->new RestException("CATEGORY_NOT_FOUND", 404, "/accounts"));
                 account.setCategory(defaultCategory);
                 account.setCategoryId(defaultCategory.getId());
-            }
         }
         var currency = currencyRepository.findById(account.getCurrencyId()).orElseThrow(() ->new RestException("CURRENCY_NOT_FOUND", 404, "/accounts"));
         account.setCurrency(currency);
