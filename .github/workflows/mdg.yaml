@@ -74,15 +74,21 @@ jobs:
       elasticsearch:
         image: library/elasticsearch:7.16.1
         env:
-          DISCOVERY.TYPE: single
-          HTTP.PUBLISH_HOST: localhost
-          HTTP.PUBLISH_PORT: 9200
-        volumes:
-          - /home/runner/work/mdg/mdg/dictionaries:/usr/share/elasticsearch/config/hunspell/ # For some reason $GITHUB_WORKSPACE doesn't work
+          discovery.type: single-node
+          http.publish_host: localhost
+          http.publish_port: 9200
         ports:
           - 9200:9200
           - 9300:9300
+        options: >-
+          --health-cmd="curl http://localhost:9200/_cluster/health" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=10
     steps:
+      - name: Dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v2
       - name: Set up JDK 17
