@@ -27,6 +27,9 @@ jobs:
       - name: Fail build if there a PMD violations
         if: steps.pmd.outputs.violations != 0
         run: exit 1
+      - name: Run code duplicates detection
+        working-directory: ./backend
+        run: mvn --batch-mode --update-snapshots clean pmd:cpd-check
       - name: Run spotbugs checks
         working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean compile spotbugs:check
