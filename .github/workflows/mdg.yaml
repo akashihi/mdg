@@ -96,6 +96,12 @@ jobs:
       - name: Start MDG service
         working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean compile spring-boot:start
+      - name: Install API test dependencies
+        working-directory: ./api-test
+        run: npm ci
+      - name: Run API tests
+        working-directory: ./api-test
+        run: npx gulp test
       - name: Stop MDG service
         if: always()
         working-directory: ./backend
