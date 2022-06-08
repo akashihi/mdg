@@ -1,0 +1,6 @@
+<FindBugsFilter>
+    <Match>
+        <!-- Override issues with records -->
+        <Bug code="EI,EI2" />
+    </Match>
+</FindBugsFilter>

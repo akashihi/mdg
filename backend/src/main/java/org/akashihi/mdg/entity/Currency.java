@@ -1,5 +1,6 @@
 package org.akashihi.mdg.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -20,6 +21,7 @@ public class Currency {
     private Boolean active;
 
     @Override
+    @SuppressFBWarnings(value = "BC_EQUALS_METHOD_SHOULD_WORK_FOR_ALL_OBJECTS", justification = "Checked with Hibernate.getClass()")
     public boolean equals(Object o) {
         if (this == o) {
             return true;

@@ -19,7 +19,7 @@ public enum BudgetEntryMode {
     }
 
     public static BudgetEntryMode from(Boolean even, Boolean prorated) {
-        if (even & prorated) {
+        if (even && prorated) {
             return PRORATED;
         } else if (even) {
             return EVEN;

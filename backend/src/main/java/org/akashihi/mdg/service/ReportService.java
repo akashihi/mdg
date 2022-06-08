@@ -20,6 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -47,20 +48,20 @@ public class ReportService {
         var accounts = accountService.listByType(AccountType.ASSET)
                 .stream().collect(Collectors.groupingBy(Account::getCategory));
         var totals = new ArrayList<TotalsReportEntry>();
-        for (Category totalsCategory : accounts.keySet()) {
-            var currencyGroups = accounts.get(totalsCategory).stream().collect(Collectors.groupingBy(Account::getCurrency));
+        for (Map.Entry<Category, List<Account>> totalsCategory: accounts.entrySet()) {
+            var currencyGroups = totalsCategory.getValue().stream().collect(Collectors.groupingBy(Account::getCurrency));
             var currencyTotals = new ArrayList<Amount>();
             if (!(currencyGroups.size() == 1 && primaryCurrency.map(currencyGroups::containsKey).orElse(false))) {
                 //Only fill detailed totals if there is more than just primary currency
-                for (Currency currencyGroup: currencyGroups.keySet()) {
-                    var totalAmount = currencyGroups.get(currencyGroup).stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
-                    currencyTotals.add(new Amount(totalAmount, currencyGroup.getCode(), null));
+                for (Map.Entry<Currency,List<Account>> currencyGroup: currencyGroups.entrySet()) {
+                    var totalAmount = currencyGroup.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    currencyTotals.add(new Amount(totalAmount, currencyGroup.getKey().getCode(), null));
                 }
                 currencyTotals.sort(primaryCurrencyComparator);
             }
 
-            var primaryTotal = accounts.get(totalsCategory).stream().map(Account::getPrimaryBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
-            totals.add(new TotalsReportEntry(totalsCategory.getName(), primaryTotal, currencyTotals));
+            var primaryTotal = totalsCategory.getValue().stream().map(Account::getPrimaryBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+            totals.add(new TotalsReportEntry(totalsCategory.getKey().getName(), primaryTotal, currencyTotals));
         }
         totals.sort(Comparator.comparing(TotalsReportEntry::categoryName));
         return new TotalsReport(totals);
