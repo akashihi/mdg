@@ -33,6 +33,9 @@ jobs:
       - name: Run spotbugs checks
         working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean compile spotbugs:check
+      - name: Test the tests with mutation
+        working-directory: ./backend
+        run: mvn --batch-mode --update-snapshots clean test-compile org.pitest:pitest-maven:mutationCoverage
       - name: Build with Maven
         working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean package spring-boot:repackage
