@@ -45,9 +45,9 @@ jobs:
       - name: Run spotbugs checks
         working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean compile spotbugs:check
-      - name: Test the tests with mutation
+      - name: Unit tests
         working-directory: ./backend
-        run: mvn --batch-mode --update-snapshots clean test-compile org.pitest:pitest-maven:mutationCoverage
+        run: mvn --batch-mode --update-snapshots clean test-compile test org.pitest:pitest-maven:mutationCoverage
 #      - name: Build with Maven
 #        working-directory: ./backend
 #        run: mvn --batch-mode --update-snapshots clean package spring-boot:repackage
@@ -72,13 +72,13 @@ jobs:
         ports:
           - 5432:5432
       elasticsearch:
-        image: elasticsearch:7.6.12
+        image: library/elasticsearch:7.16.1
         env:
           DISCOVERY.TYPE: single
           HTTP.PUBLISH_HOST: localhost
           HTTP.PUBLISH_PORT: 9200
         volumes:
-          - ./dictionaries:/usr/share/elasticsearch/config/hunspell/
+          - /home/runner/work/mdg/mdg/dictionaries:/usr/share/elasticsearch/config/hunspell/ # For some reason $GITHUB_WORKSPACE doesn't work
         ports:
           - 9200:9200
           - 9300:9300
@@ -95,7 +95,7 @@ jobs:
         run: npm ci
       - name: Start MDG service
         working-directory: ./backend
-        run: mvn --batch-mode --update-snapshots clean spring-boot:start
+        run: mvn --batch-mode --update-snapshots clean compile spring-boot:start
       - name: Stop MDG service
         if: always()
         working-directory: ./backend
