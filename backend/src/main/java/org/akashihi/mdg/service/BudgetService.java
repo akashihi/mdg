@@ -57,6 +57,7 @@ public class BudgetService {
         return entry;
     }
 
+    @Transactional
     public Budget create(Budget budget) {
         validateBudget(budget);
         String id = budget.getBeginning().format(DateTimeFormatter.BASIC_ISO_DATE);

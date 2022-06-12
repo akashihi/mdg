@@ -13,6 +13,12 @@ describe('Budget <-> Transaction operations', () => {
             .clean()
             .delete('/budgets/{id}')
             .withPathParams('id', '$S{BudgetID}');
+
+        await e2e.step("Read initial actual")
+          .spec("read")
+          .get('/budgets/{id}')
+          .withPathParams('id', '$S{BudgetID}')
+          .stores('BudgetActualAmount', 'outgoing_amount.actual');
     });
 
     it('Budget actual amount is updated after transaction creation', async () => {

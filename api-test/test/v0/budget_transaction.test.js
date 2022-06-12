@@ -9,10 +9,15 @@ describe('Budget <-> Transaction operations', () => {
     await e2e.step('Post budget')
       .spec('Create Budget', { '@DATA:TEMPLATE@': 'Budget:Feb' })
       .stores('BudgetID', 'data.id')
-      .stores('BudgetActualAmount', 'data.attributes.outgoing_amount.actual')
       .clean()
       .delete('/budget/{id}')
       .withPathParams('id', '$S{BudgetID}');
+
+    await e2e.step("Read initial actual")
+      .spec("read")
+      .get('/budget/{id}')
+      .withPathParams('id', '$S{BudgetID}')
+     .stores('BudgetActualAmount', 'data.attributes.outgoing_amount.actual');
   });
 
   it('Budget actual amount is updated after transaction creation', async () => {
