@@ -21,7 +21,7 @@ public class RateControllerV0 {
 
     @GetMapping(value = "/api/rate/{ts}", produces = "application/vnd.mdg+json")
     public DataPlural<RateData> listForTs(@PathVariable("ts") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ts) {
-        return new DataPlural<>((rateService.listForTs(ts).stream().map(r -> new RateData(r.getId(), "rate", new RateData.Attributes(r.getFrom(), r.getTo(), r.getRate(), r.getBeginning(), r.getEnd()))).toList()));
+        return new DataPlural<>(rateService.listForTs(ts).stream().map(r -> new RateData(r.getId(), "rate", new RateData.Attributes(r.getFrom(), r.getTo(), r.getRate(), r.getBeginning(), r.getEnd()))).toList());
     }
 
     @GetMapping(value = "/api/rate/{ts}/{from}/{to}", produces = "application/vnd.mdg+json")

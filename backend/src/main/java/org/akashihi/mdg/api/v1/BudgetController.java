@@ -13,7 +13,16 @@ import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.service.BudgetService;
 import org.akashihi.mdg.service.CategoryService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -81,7 +90,7 @@ public class BudgetController {
         return budgetService.update(id, budget).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/%d".formatted(id)));
     }
 
-    @DeleteMapping(value = "/budgets/{id}")
+    @DeleteMapping("/budgets/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable("id") Long id) {
         budgetService.delete(id);
@@ -94,10 +103,10 @@ public class BudgetController {
 
     @GetMapping(value = "/budgets/{budgetId}/entries/tree", produces = "application/vnd.mdg+json;version=1")
     BudgetEntryTree tree(@PathVariable("budgetId") Long budgetId, @RequestParam("embed") Optional<Collection<String>> embed, @RequestParam("filter") Optional<String> filter) {
-        var budget = budgetService.get(budgetId).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/{%d}/entries/tree".formatted(budgetId)));
+        budgetService.get(budgetId).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/{%d}/entries/tree".formatted(budgetId)));
         var categories = categoryService.list();
         var entries = budgetService.listEntries(budgetId);
-        var leaveEmtpy = filter.map(f -> f.equalsIgnoreCase("all")).orElse(false);
+        var leaveEmtpy = filter.map("all"::equalsIgnoreCase).orElse(false);
         if (!leaveEmtpy) {
             entries = entries.stream().filter(e -> !(e.getActualAmount().compareTo(BigDecimal.ZERO)==0 && e.getExpectedAmount().compareTo(BigDecimal.ZERO)==0)).toList();
         }

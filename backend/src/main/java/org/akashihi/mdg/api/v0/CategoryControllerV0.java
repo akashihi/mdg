@@ -10,11 +10,19 @@ import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.service.CategoryService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,7 +30,7 @@ public class CategoryControllerV0 {
     private final CategoryService categoryService;
 
     private Category fromDto(CategoryData data) {
-        return new Category(data.getId(), AccountType.from(data.getAttributes().account_type().toUpperCase()), data.getAttributes().name(), data.getAttributes().priority(), data.getAttributes().parent_id(), Collections.EMPTY_LIST);
+        return new Category(data.getId(), AccountType.from(data.getAttributes().account_type().toUpperCase(Locale.US)), data.getAttributes().name(), data.getAttributes().priority(), data.getAttributes().parent_id(), Collections.EMPTY_LIST);
     }
 
     private CategoryData.Attributes toDto(Category category) {
@@ -30,7 +38,7 @@ public class CategoryControllerV0 {
         if (category.getChildren() != null) {
             children = category.getChildren().stream().map(this::toDto).toList();
         }
-        return new CategoryData.Attributes(category.getId(), category.getAccountType().name().toLowerCase(), category.getName(), category.getPriority(), category.getParentId(), children);
+        return new CategoryData.Attributes(category.getId(), category.getAccountType().name().toLowerCase(Locale.US), category.getName(), category.getPriority(), category.getParentId(), children);
     }
 
     @GetMapping(value = "/api/category", produces = "application/vnd.mdg+json")
@@ -51,7 +59,7 @@ public class CategoryControllerV0 {
             var category= categoryService.create(fromDto(data.data()));
             return new DataSingular<>(new CategoryData(category.getId(), "category", toDto(category)));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
@@ -62,11 +70,11 @@ public class CategoryControllerV0 {
             var category = categoryService.update(id, fromDto(data.data())).orElseThrow(() -> new RequestException(404, "CATEGORY_NOT_FOUND"));
             return new DataSingular<>(new CategoryData(category.getId(), "category", toDto(category)));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
-    @DeleteMapping(value = "/api/category/{id}")
+    @DeleteMapping("/api/category/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable("id") Long id) {
         categoryService.delete(id);

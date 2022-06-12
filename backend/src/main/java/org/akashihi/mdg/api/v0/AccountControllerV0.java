@@ -1,6 +1,5 @@
 package org.akashihi.mdg.api.v0;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v0.dto.AccountData;
@@ -8,12 +7,20 @@ import org.akashihi.mdg.api.v0.dto.DataPlural;
 import org.akashihi.mdg.api.v0.dto.DataSingular;
 import org.akashihi.mdg.api.v0.dto.RequestException;
 import org.akashihi.mdg.api.v1.RestException;
-import org.akashihi.mdg.api.v1.dto.Accounts;
+import org.akashihi.mdg.api.util.FilterConverter;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.service.AccountService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
@@ -25,7 +32,7 @@ public class AccountControllerV0 {
 
     protected Account fromDto(DataSingular<AccountData> dto) {
         return new Account(dto.data().getId(),
-                AccountType.from(dto.data().getAttributes().account_type().toUpperCase()),
+                AccountType.from(dto.data().getAttributes().account_type().toUpperCase(Locale.US)),
                 dto.data().getAttributes().name(),
                 null,
                 dto.data().getAttributes().currency_id(),
@@ -45,7 +52,7 @@ public class AccountControllerV0 {
         }
         return new AccountData(account.getId(),
                 "account",
-                new AccountData.Attributes(account.getAccountType().toString().toLowerCase(),
+                new AccountData.Attributes(account.getAccountType().toString().toLowerCase(Locale.US),
                         account.getCurrency().getId(),
                         categoryId,
                         account.getName(),
@@ -63,24 +70,13 @@ public class AccountControllerV0 {
             var newAccount = accountService.create(fromDto(account));
             return new DataSingular<>(toDto(newAccount));
         }catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
     @GetMapping(value = "/api/account", produces = "application/vnd.mdg+json")
     DataPlural<AccountData> list(@RequestParam("filter") Optional<String> query) {
-        Optional<Map<String, String>> filter = query.map(s -> {
-            try {
-                var queryMap = new HashMap<String,String>();
-                var parsedQuery = objectMapper.readValue(s, Map.class);
-                parsedQuery
-                        .keySet().stream().filter(k -> k instanceof String && parsedQuery.get(k) instanceof String)
-                        .forEach(k -> queryMap.put((String) k, (String) parsedQuery.get(k)));
-                return queryMap;
-            } catch (JsonProcessingException e) {
-                return Collections.EMPTY_MAP;
-            }
-        });
+        var  filter = FilterConverter.buildFilter(query, objectMapper);
 
         var accounts = accountService.list(filter).stream().map(this::toDto).toList();
         return new DataPlural<>(accounts);
@@ -99,11 +95,11 @@ public class AccountControllerV0 {
             var newAccount = accountService.update(id, fromDto(account)).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
             return new DataSingular<>(toDto(newAccount));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
-    @DeleteMapping(value = "/api/account/{id}")
+    @DeleteMapping("/api/account/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable("id") Long id) {
         accountService.delete(id);

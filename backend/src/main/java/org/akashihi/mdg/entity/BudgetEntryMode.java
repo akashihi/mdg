@@ -1,6 +1,7 @@
 package org.akashihi.mdg.entity;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -10,15 +11,15 @@ public enum BudgetEntryMode {
     PRORATED;
 
     public String toDbValue() {
-        return this.name().toLowerCase();
+        return this.name().toLowerCase(Locale.US);
     }
 
     public static BudgetEntryMode from(String status) {
-        return BudgetEntryMode.valueOf(status.toUpperCase());
+        return BudgetEntryMode.valueOf(status.toUpperCase(Locale.US));
     }
 
     public static BudgetEntryMode from(Boolean even, Boolean prorated) {
-        if (even & prorated) {
+        if (even && prorated) {
             return PRORATED;
         } else if (even) {
             return EVEN;

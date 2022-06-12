@@ -2,7 +2,6 @@ package org.akashihi.mdg.api.v0.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.akashihi.mdg.entity.AccountType;
 
 import java.math.BigDecimal;
 

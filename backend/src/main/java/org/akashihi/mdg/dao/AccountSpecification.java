@@ -7,14 +7,17 @@ import org.springframework.data.jpa.domain.Specification;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 
-public class AccountSpecification {
+public final class AccountSpecification {
+    private AccountSpecification() {}
+
     public static Specification<Account> filteredAccount(Map<String, String> filter) {
         return (root, query, criteriaBuilder) -> {
             Collection<Predicate> predicates = new ArrayList<>();
             if (filter.containsKey("account_type")) {
-                var at = AccountType.from(filter.get("account_type").toUpperCase());
+                var at = AccountType.from(filter.get("account_type").toUpperCase(Locale.US));
                 predicates.add(criteriaBuilder.equal(root.get("accountType"), at));
             }
             if (filter.containsKey("currency_id")) {

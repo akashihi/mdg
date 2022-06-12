@@ -1,6 +1,5 @@
 package org.akashihi.mdg.dao;
 
-import liquibase.pro.packaged.Q;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.entity.CategoryTree;

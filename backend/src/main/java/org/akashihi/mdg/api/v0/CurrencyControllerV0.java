@@ -6,7 +6,12 @@ import org.akashihi.mdg.api.v0.dto.DataSingular;
 import org.akashihi.mdg.api.v0.dto.RequestException;
 import org.akashihi.mdg.service.CurrencyService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CurrencyControllerV0 {
@@ -34,8 +39,8 @@ public class CurrencyControllerV0 {
     DataSingular<CurrencyData> update(@PathVariable("id") Long id, @RequestBody DataSingular<CurrencyData> currencyData) {
         var currency = currencyService.get(id).orElseThrow(() -> new RequestException(404, "CURRENCY_NOT_FOUND"));
         currency.setActive(currencyData.data().getAttributes().active());
-        var updated_currency = currencyService.update(id, currency).orElseThrow(() -> new RequestException(404, "CURRENCY_NOT_FOUND"));
-        var currencyDto = new CurrencyData(id, "currency", new CurrencyData.Attributes(updated_currency.getCode(), updated_currency.getName(), updated_currency.getActive()));
+        var updatedCurrency = currencyService.update(id, currency).orElseThrow(() -> new RequestException(404, "CURRENCY_NOT_FOUND"));
+        var currencyDto = new CurrencyData(id, "currency", new CurrencyData.Attributes(updatedCurrency.getCode(), updatedCurrency.getName(), updatedCurrency.getActive()));
         return new DataSingular<>(currencyDto);
     }
 }

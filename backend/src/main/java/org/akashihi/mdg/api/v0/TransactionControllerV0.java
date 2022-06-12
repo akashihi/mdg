@@ -3,15 +3,30 @@ package org.akashihi.mdg.api.v0;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v0.dto.*;
+import org.akashihi.mdg.api.v0.dto.DataPlural;
+import org.akashihi.mdg.api.v0.dto.DataSingular;
+import org.akashihi.mdg.api.v0.dto.RequestException;
+import org.akashihi.mdg.api.v0.dto.TransactionData;
 import org.akashihi.mdg.api.v1.RestException;
-import org.akashihi.mdg.entity.*;
-import org.akashihi.mdg.service.AccountService;
+import org.akashihi.mdg.entity.Operation;
+import org.akashihi.mdg.entity.Tag;
+import org.akashihi.mdg.entity.Transaction;
 import org.akashihi.mdg.service.TransactionService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -54,7 +69,7 @@ public class TransactionControllerV0 {
             var newTx = transactionService.create(fromDto(transaction));
             return new DataSingular<>(toDto(newTx));
         }catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
@@ -92,11 +107,11 @@ public class TransactionControllerV0 {
             var newTransaction = transactionService.update(id, fromDto(transaction)).orElseThrow(() -> new RestException("TRANSACTION_NOT_FOUND", 404, "/transaction/%d".formatted(id)));
             return new DataSingular<>(toDto(newTransaction));
         } catch (RestException ex) {
-            throw new RequestException(ex.getStatus(), ex.getTitle());
+            throw new RequestException(ex.getStatus(), ex.getTitle(), ex);
         }
     }
 
-    @DeleteMapping(value = "/api/transaction/{id}")
+    @DeleteMapping("/api/transaction/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable("id") Long id) {
         transactionService.delete(id);

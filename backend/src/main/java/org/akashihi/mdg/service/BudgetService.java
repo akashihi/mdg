@@ -57,6 +57,7 @@ public class BudgetService {
         return entry;
     }
 
+    @Transactional
     public Budget create(Budget budget) {
         validateBudget(budget);
         String id = budget.getBeginning().format(DateTimeFormatter.BASIC_ISO_DATE);
@@ -186,10 +187,10 @@ public class BudgetService {
 
         BigDecimal allowed = BigDecimal.ZERO;
         if (mode == BudgetEntryMode.PRORATED) {
-            allowed = ((expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN)).multiply(daysPassed)).subtract(actualAmount);
+            allowed = expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN).multiply(daysPassed).subtract(actualAmount);
         }
         if (mode == BudgetEntryMode.EVEN || allowed.compareTo(BigDecimal.ZERO) < 0) { // Negative prorations are re-calculated in the even mode
-            allowed = (expectedAmount.subtract(actualAmount)).divide(daysLeft, RoundingMode.HALF_DOWN);
+            allowed = expectedAmount.subtract(actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN);
         }
         if (mode == BudgetEntryMode.SINGLE) {
             // Not evenly distributed, spend everything left

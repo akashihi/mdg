@@ -32,7 +32,7 @@ public class SettingService {
 
     @CacheEvict(value = "settingsCache", key="#result.id")
     public Setting updateUiTransactionCloseDialog(String newValue) {
-        if (!newValue.equalsIgnoreCase("true") && !newValue.equalsIgnoreCase("false")) {
+        if (!"true".equalsIgnoreCase(newValue) && !"false".equalsIgnoreCase(newValue)) {
             throw new RestException("SETTING_DATA_INVALID", 422, "/settings/ui.transaction.closedialog");
         }
         var setting = settingRepository.findById("ui.transaction.closedialog").orElseThrow(() -> new RestException("SETTING_NOT_FOUND", 404, "/settings/ui.transaction.closedialog"));
@@ -54,7 +54,7 @@ public class SettingService {
             settingRepository.save(setting);
             return setting;
         } catch (NumberFormatException ex) {
-            throw new RestException("SETTING_DATA_INVALID", 422, "/settings/currency.primary");
+            throw new RestException("SETTING_DATA_INVALID", 422, "/settings/currency.primary", ex);
         }
     }
 
