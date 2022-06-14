@@ -8,8 +8,13 @@ networks:
   frontend:
   backend:
 
+x-service: &service
+    restart: always
+    init: true
+
 services:
   postgres:
+    <<: *service
     image: postgres:14.3
     volumes:
       - db-data:/var/lib/postgresql/data
@@ -19,10 +24,10 @@ services:
       - POSTGRES_DB=mdg
       - POSTGRES_USER=mdg
       - POSTGRES_PASSWORD=mdg
-    restart: always
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "postgresql://mdg:mdg@mdg"]
   elasticsearch:
+    <<: *service
     image: elasticsearch:7.16.2
     volumes:
       - es-data:/usr/share/elasticsearch/data
@@ -31,27 +36,26 @@ services:
       - backend
     environment:
       - discovery.type=single-node
-    restart: always
     healthcheck:
       test: ["CMD", "curl", "http://localhost:9200/_cluster/health"]
   mdg:
-    image: akashihi/mdg:master
+    <<: *service
+    image: akashihi/mdg:${MDG_TAG}
     networks:
       - backend
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-    restart: always
     depends_on:
       - postgres
       - elasticsearch
   ui:
-    image: akashihi/mdg-web-ui:latest
+    <<: *service
+    image: akashihi/mdg-web-ui:${UI_TAG}
     networks:
       - backend
       - frontend
     ports:
       - "80:80"
       - "443:443"
-    restart: always
     depends_on:
       - mdg
