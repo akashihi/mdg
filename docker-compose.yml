@@ -1,0 +1,57 @@
+version: "3"
+
+volumes:
+  db-data:
+  es-data:
+
+networks:
+  frontend:
+  backend:
+
+services:
+  postgres:
+    image: postgres:14.3
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    environment:
+      - POSTGRES_DB=mdg
+      - POSTGRES_USER=mdg
+      - POSTGRES_PASSWORD=mdg
+    restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "postgresql://mdg:mdg@mdg"]
+  elasticsearch:
+    image: elasticsearch:7.16.2
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - ./dictionaries:/usr/share/elasticsearch/config/hunspell
+    networks:
+      - backend
+    environment:
+      - discovery.type=single-node
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:9200/_cluster/health"]
+  mdg:
+    image: akashihi/mdg:master
+    networks:
+      - backend
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    restart: always
+    depends_on:
+      - postgres
+      - elasticsearch
+  ui:
+    image: akashihi/mdg-web-ui:latest
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    depends_on:
+      - mdg
