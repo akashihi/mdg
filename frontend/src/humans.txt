@@ -1,0 +1,16 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    Denis Chaplygin -- Initial work -- https://github.com/akashihi
+
+# THANKS
+
+    * Cloud based personal accounting services, that love to spy on you
+      and inspired me to make an open one.
+
+# TECHNOLOGY COLOPHON
+
+    CSS3, HTML5
+    Nginx, React, Redux, Material-UI
