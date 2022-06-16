@@ -142,6 +142,7 @@ jobs:
 
   web-ui-build:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -162,5 +163,5 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: frontend/
-          push: false
+          push: true
           tags: akashihi/mdg-web-ui:master,akashihi/mdg-web-ui:build-${{ github.run_number }}
