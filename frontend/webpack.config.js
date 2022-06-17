@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ArchivePlugin = require('webpack-archive-plugin');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 const build = {
     context: path.resolve(__dirname, 'src'), // `__dirname` is root of project and `src` is source
@@ -14,21 +14,19 @@ const build = {
         new HtmlWebpackPlugin({
             template: 'index.html'
         }),
-        new CopyWebpackPlugin([{from: 'css', to: 'css'}], {})
+        new CopyWebpackPlugin({
+            patterns: [
+                {from: 'css', to: 'css'}
+            ]
+        })
     ],
     output: {
         path: path.resolve(__dirname, 'dist'), // `dist` is the destination
-        filename: 'bundle.[hash].js',
+        filename: 'bundle.[contenthash].js',
         clean: true
     },
     module: {
         rules: [
-            {
-                enforce: 'pre',
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: 'eslint-loader',
-            },
             {
                 test: /\.js$/, // Check for all js files
                 exclude: /node_modules/,
@@ -39,7 +37,10 @@ const build = {
             {
                 test: /\.css$/,
                 include: /node_modules/,
-                loaders: ['style-loader', 'css-loader'],
+                use: [
+                    {loader: 'style-loader'},
+                    {loader: 'css-loader'}
+                ]
             }
         ]
     }
@@ -49,8 +50,7 @@ const development = {
     mode: 'development',
     devtool: 'eval-source-map',
     devServer: {
-        contentBase: path.resolve(__dirname, 'src'), // `__dirname` is root of the project
-        watchContentBase: true,
+        static: path.resolve(__dirname, 'src'), // `__dirname` is root of the project
         historyApiFallback: true,
         proxy: {
             '/api': {
@@ -71,9 +71,9 @@ const production = {
 };
 let config;
 if (process.env.NODE_ENV === 'production') {
-    config = merge(build, production)
+    config = merge(build, production);
 } else {
-    config = merge(build, development)
+    config = merge(build, development);
 }
 
 module.exports = config;

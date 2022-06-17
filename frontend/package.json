@@ -12,6 +12,7 @@
     "license": "GPL-3.0",
     "devDependencies": {
         "@babel/core": "^7.18.5",
+        "@babel/plugin-proposal-function-bind": "^7.16.7",
         "@babel/preset-env": "^7.18.2",
         "@babel/preset-react": "^7.17.12",
         "@babel/preset-typescript": "^7.17.12",
