@@ -2,8 +2,9 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ArchivePlugin = require('webpack-archive-plugin');
+const WebpackFilesArchivePlugin = require('webpack-files-archive-plugin');
 const { merge } = require('webpack-merge');
+const webpackDashboard = require('webpack-dashboard/plugin');
 
 const build = {
     context: path.resolve(__dirname, 'src'), // `__dirname` is root of project and `src` is source
@@ -18,7 +19,8 @@ const build = {
             patterns: [
                 {from: 'css', to: 'css'}
             ]
-        })
+        }),
+        new webpackDashboard()
     ],
     output: {
         path: path.resolve(__dirname, 'dist'), // `dist` is the destination
@@ -63,11 +65,13 @@ const development = {
 
 const production = {
     mode: 'production',
-    devtool: 'none',
     plugins: [
-        new TerserPlugin(),
-        new ArchivePlugin()
-    ]
+        new WebpackFilesArchivePlugin()
+    ],
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin()],
+    },
 };
 let config;
 if (process.env.NODE_ENV === 'production') {
