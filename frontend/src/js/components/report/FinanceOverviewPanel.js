@@ -1,10 +1,10 @@
-import React, {Component, Fragment} from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
-import {Grid, Row, Col} from 'react-flexbox-grid';
+import React, { Component, Fragment } from 'react'
+import { withStyles } from '@material-ui/core/styles'
+import CardContent from '@material-ui/core/CardContent'
+import CardHeader from '@material-ui/core/CardHeader'
+import GridList from '@material-ui/core/GridList'
+import GridListTile from '@material-ui/core/GridListTile'
+import { Grid, Row, Col } from 'react-flexbox-grid'
 
 const styles = {
   content: {
@@ -14,104 +14,101 @@ const styles = {
   panel: {
     height: 300
   }
-};
-
+}
 
 class FinanceOverviewPanel extends Component {
+  cardHeaderStyle = {
+    paddingTop: '0px',
+    textAlign: 'center'
+  }
 
-    cardHeaderStyle = {
-        paddingTop: '0px',
-        textAlign: 'center'
-    };
+  constructor (props) {
+    super(props)
+    this.entryId = 0
+  }
 
-    constructor(props) {
-        super(props);
-        this.entryId = 0;
+  renderAsset (props, item) {
+    const getCurrency = function (id) {
+      const currency = props.currencies.get(parseInt(id))
+      if (currency) {
+        return currency.get('code')
+      }
+      return ''
     }
 
-    renderAsset(props, item) {
+    const getCategory = function (id) {
+      const category = props.categoryList.get(id)
+      if (category) {
+        return category.get('name')
+      }
+      return 'Unknown asset'
+    }
 
-      const getCurrency = function(id) {
-          const currency = props.currencies.get(parseInt(id));
-          if (currency) {
-            return currency.get('code');
-          }
-          return '';
-      };
+    const primaryCurrencyCode = getCurrency(props.primaryCurrency)
 
-      const getCategory = function (id) {
-          const category = props.categoryList.get(id);
-          if (category) {
-              return category.get('name');
-          }
-          return 'Unknown asset';
-      };
+    let details
+    if (!(item.totals.length === 1 && item.totals[0].id === props.primaryCurrency)) {
+      const detailed = item.totals.map((subitem) => {
+        const currencyCode = getCurrency(subitem.id)
+        return subitem.value.toFixed(2) + ' ' + currencyCode
+      })
+      details = <>({detailed.join(', ')})</>
+    }
 
-      const primaryCurrencyCode = getCurrency(props.primaryCurrency);
+    let color = 'black'
+    if (item.primary_balance < 0) {
+      color = 'red'
+    }
 
-      let details;
-      if (!(item.totals.length === 1 && item.totals[0].id === props.primaryCurrency)) {
-        const detailed = item.totals.map((subitem) => {
-          const currencyCode = getCurrency(subitem.id);
-          return subitem.value.toFixed(2)+' '+currencyCode
-        });
-        details = <Fragment>({detailed.join(', ')})</Fragment>
+    return (
+      <GridListTile key={this.entryId++}>
+        <Grid fluid>
+          <Row style={{ fontSize: '0.9em' }}>
+            <Col xs={2} sm={2} md={2} lg={2}>
+              <div style={{ textTransform: 'capitalize' }}>{getCategory(item.category_id)}:</div>
+            </Col>
+            <Col xs={3} sm={3} md={3} lg={3}>
+              <span style={{ color }}>{item.primary_balance.toFixed(2)}</span> {primaryCurrencyCode}
+            </Col>
+            <Col xs={7} sm={7} md={7} lg={7}>
+              {details}
+            </Col>
+          </Row>
+        </Grid>
+      </GridListTile>
+    )
+  }
+
+  render () {
+    const props = this.props
+
+    const sorted = props.totals.sort((l, r) => {
+      const lc = props.categoryList.get(l.category_id)
+      if (!lc) {
+        return 0
       }
 
-      let color = 'black';
-      if (item.primary_balance < 0) {
-        color = 'red'
+      const rc = props.categoryList.get(r.category_id)
+      if (!rc) {
+        return 0
       }
 
-      return (
-          <GridListTile key={this.entryId++}>
-            <Grid fluid>
-              <Row style={{'fontSize': '0.9em'}}>
-                <Col xs={2} sm={2} md={2} lg={2}>
-                  <div style={{'textTransform': 'capitalize'}}>{getCategory(item.category_id)}:</div>
-                </Col>
-                <Col xs={3} sm={3} md={3} lg={3}>
-                  <span style={{color: color}}>{item.primary_balance.toFixed(2)}</span> {primaryCurrencyCode}
-                </Col>
-                <Col xs={7} sm={7} md={7} lg={7}>
-                  {details}
-                </Col>
-              </Row>
-            </Grid>
-          </GridListTile>
-      )
-    }
+      return lc.get('priority') - rc.get('priority')
+    })
 
-    render() {
-        const props = this.props;
+    const result = sorted.map((item) => this.renderAsset(props, item))
 
-        const sorted = props.totals.sort((l, r) => {
-            const lc = props.categoryList.get(l.category_id);
-            if (!lc) {
-                return 0;
-            }
-
-            const rc = props.categoryList.get(r.category_id);
-            if (!rc) {
-                return 0;
-            }
-
-            return lc.get('priority') - rc.get('priority');
-        });
-
-        const result = sorted.map((item) => this.renderAsset(props, item));
-
-        return (
-            <Fragment>
-                <CardHeader title='Financial status' style={this.cardHeaderStyle}/>
-                  <CardContent className={this.props.classes.content}>
-                    <GridList cellHeight={36} cols={1} className={this.props.classes.panel}>
-                        {result}
-                    </GridList>
-                  </CardContent>
-            </Fragment>
-        )
-    }
+    return (
+      <>
+        <CardHeader title='Financial status' style={this.cardHeaderStyle} />
+        <CardContent className={this.props.classes.content}>
+          <GridList cellHeight={36} cols={1} className={this.props.classes.panel}>
+            {result}
+          </GridList>
+        </CardContent>
+      </>
+    )
+  }
 }
 
 export default withStyles(styles)(FinanceOverviewPanel)

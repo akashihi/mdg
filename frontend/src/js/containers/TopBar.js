@@ -10,20 +10,20 @@ import * as BudgetActions from '../actions/BudgetActions'
 import * as RateActions from '../actions/RateActions'
 
 const mapStateToProps = (state) => {
-    return {
-        path: state.router.location.pathname
-    }
-};
+  return {
+    path: state.router.location.pathname
+  }
+}
 
-function mapDispatchToProps(dispatch) {
-    return {
-        currencyActions: bindActionCreators(CurrencyActions, dispatch),
-        settingActions: bindActionCreators(SettingActions, dispatch),
-        tagActions: bindActionCreators(TagActions, dispatch),
-        budgetActions: bindActionCreators(BudgetActions, dispatch),
-        rateActions: bindActionCreators(RateActions, dispatch),
-        push: bindActionCreators(push, dispatch),
-    }
+function mapDispatchToProps (dispatch) {
+  return {
+    currencyActions: bindActionCreators(CurrencyActions, dispatch),
+    settingActions: bindActionCreators(SettingActions, dispatch),
+    tagActions: bindActionCreators(TagActions, dispatch),
+    budgetActions: bindActionCreators(BudgetActions, dispatch),
+    rateActions: bindActionCreators(RateActions, dispatch),
+    push: bindActionCreators(push, dispatch)
+  }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TopBarWidget)
