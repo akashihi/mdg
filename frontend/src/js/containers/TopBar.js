@@ -1,19 +1,18 @@
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import { push } from 'connected-react-router'
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
-import TopBarWidget from '../components/TopBar'
-import * as CurrencyActions from '../actions/CurrencyActions'
-import * as SettingActions from '../actions/SettingActions'
-import * as TagActions from '../actions/TagActions'
-import * as BudgetActions from '../actions/BudgetActions'
-import * as RateActions from '../actions/RateActions'
+import TopBarWidget from '../components/TopBar';
+import * as CurrencyActions from '../actions/CurrencyActions';
+import * as SettingActions from '../actions/SettingActions';
+import * as TagActions from '../actions/TagActions';
+import * as BudgetActions from '../actions/BudgetActions';
+import * as RateActions from '../actions/RateActions';
 
 const mapStateToProps = (state) => {
   return {
     path: state.router.location.pathname
-  }
-}
+  };
+};
 
 function mapDispatchToProps (dispatch) {
   return {
@@ -22,8 +21,7 @@ function mapDispatchToProps (dispatch) {
     tagActions: bindActionCreators(TagActions, dispatch),
     budgetActions: bindActionCreators(BudgetActions, dispatch),
     rateActions: bindActionCreators(RateActions, dispatch),
-    push: bindActionCreators(push, dispatch)
-  }
+  };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TopBarWidget)
+export default connect(mapStateToProps, mapDispatchToProps)(TopBarWidget);

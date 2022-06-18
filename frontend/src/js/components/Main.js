@@ -1,20 +1,20 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 
-import { Grid, Row, Col } from 'react-flexbox-grid'
-import { Route, Switch } from 'react-router'
+import { Grid, Row, Col } from 'react-flexbox-grid';
+import {Switch, Route} from 'react-router-dom';
 
-import TopBar from '../containers/TopBar'
-import TransactionCreate from '../containers/TransactionCreate'
-import Overview from './Overview'
-import BudgetViewer from '../containers/BudgetViewer'
-import AccountsViewer from '../containers/AccountsViewer'
-import TransactionsViewer from '../containers/TransactionsViewer'
-import SettingsViewer from '../containers/SettingsViewer'
-import RateViewer from '../containers/RateViewer'
-import TransactionEditor from '../containers/TransactionEditor'
-import ReportsViewer from '../containers/ReportsViewer'
+import TopBar from '../containers/TopBar';
+//import TransactionCreate from '../containers/TransactionCreate';
+//import Overview from './Overview';
+//import BudgetViewer from '../containers/BudgetViewer';
+//import AccountsViewer from '../containers/AccountsViewer';
+//import TransactionsViewer from '../containers/TransactionsViewer';
+//import SettingsViewer from '../containers/SettingsViewer';
+import RateViewer from '../containers/RateViewer';
+//import TransactionEditor from '../containers/TransactionEditor';
+//import ReportsViewer from '../containers/ReportsViewer';
 
-window.notifications = React.createRef()
+window.notifications = React.createRef();
 
 export default class Main extends Component {
   render () {
@@ -25,12 +25,30 @@ export default class Main extends Component {
           <Row>
             <Col xs={12} sm={12} md={11} lg={11}>
               <Switch>
-                <Route exact path='/' render={() => <Overview />} />
-                <Route path='/budget' render={() => <BudgetViewer />} />
-                <Route path='/transactions' render={() => <TransactionsViewer />} />
-                <Route path='/reports' render={() => <ReportsViewer />} />
-                <Route path='/accounts' render={() => <AccountsViewer />} />
-                <Route path='/settings' render={() => <SettingsViewer />} />
+                <Route exact path='/'>
+                    {/*<Overview />*/}
+                    Overview
+                </Route>
+                <Route path='/budget' >
+                    {/*<BudgetViewer />*/}
+                    BudgetViewer
+                </Route>
+                <Route path='/transactions'>
+                    {/*<TransactionsViewer />*/}
+                    TransactionsViewer
+                </Route>
+                <Route path='/reports'>
+                    {/*<ReportsViewer />*/}
+                    ReportsViewer
+                </Route>
+                  <Route path='/accounts'>
+                      {/*<AccountsViewer />*/}
+                      AccountsViewer
+                  </Route>
+                  <Route path='/settings'>
+                      {/*<SettingsViewer />*/}
+                      SettingsViewer
+                  </Route>
               </Switch>
             </Col>
             <Col xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
@@ -38,8 +56,8 @@ export default class Main extends Component {
             </Col>
           </Row>
         </Grid>
-        <TransactionCreate />
-        <TransactionEditor unmountOnExit />
+          {/*<TransactionCreate />
+        <TransactionEditor unmountOnExit />*/}
       </div>
     )
   }

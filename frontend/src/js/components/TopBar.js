@@ -8,6 +8,7 @@ import MenuIcon from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { NavLink } from 'react-router-dom'
 
 export default class TopBar extends Component {
     state = {
@@ -19,48 +20,27 @@ export default class TopBar extends Component {
         this.props.settingActions.loadSettingList();
         this.props.budgetActions.loadBudgetList();
         this.props.tagActions.loadTagList();
-        this.props.rateActions.loadRatesList()
+        this.props.rateActions.loadRatesList();
     }
 
     openMenu(event){
         this.setState({anchorEl: event.currentTarget});
     }
 
-
-    setPath = function (path) {
-        this.props.push(path);
-        this.setState({anchorEl: null})
-    };
-
-    setSelectedStyle(path) {
-        if (this.props.path == path) {
-            return 'outlined'
-        }
-        else {
-            return 'text'
-        }
-    }
-
     primaryTopBar() {
-        var leftButtons = (
+        const leftButtons = (
             <Fragment>
-                <Button onClick={() => ::this.setPath('/')} variant={::this.setSelectedStyle('/')}
-                        color='inherit'>Overview</Button>
-                <Button onClick={() => ::this.setPath('/budget')} variant={::this.setSelectedStyle('/budget')}
-                        color='inherit'>Budget</Button>
-                <Button onClick={() => ::this.setPath('/transactions')}
-                        variant={::this.setSelectedStyle('/transactions')} color='inherit'>Transactions</Button>
-                <Button onClick={() => ::this.setPath('/reports')} variant={::this.setSelectedStyle('/reports')}
-                        color='inherit'>Reports</Button>
-                <Button onClick={() => ::this.setPath('/accounts')} variant={::this.setSelectedStyle('/accounts')}
-                        color='inherit'>Accounts</Button>
+                <NavLink to='/'>Overview</NavLink>
+                <NavLink to='/budget'>Budget</NavLink>
+                <NavLink to='/transactions'>Transactions</NavLink>
+                <NavLink to='/reports'>Reports</NavLink>
+                <NavLink to='/accounts'>Accounts</NavLink>
             </Fragment>
         );
 
-        var rightButtons = (
+        const rightButtons = (
             <Fragment>
-                <Button onClick={() => ::this.setPath('/settings')} variant={::this.setSelectedStyle('/settings')}
-                        color='inherit'>Settings</Button>
+                <NavLink to='/settings'>Settings</NavLink>
             </Fragment>
         );
         return (
@@ -107,19 +87,19 @@ export default class TopBar extends Component {
                 <Button variant='outlined' color='inherit'>{currentPage}</Button>
             </Toolbar>
             <Menu id='top-small-menu' anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleClose}>
-                <MenuItem onClick={() => ::this.setPath('/')}>Overview</MenuItem>
-                <MenuItem onClick={() => ::this.setPath('/budget')}>Budget</MenuItem>
-                <MenuItem onClick={() => ::this.setPath('/transactions')}>Transactions</MenuItem>
-                <MenuItem onClick={() => ::this.setPath('/reports')}>Reports</MenuItem>
-                <MenuItem onClick={() => ::this.setPath('/accounts')}>Accounts</MenuItem>
-                <MenuItem onClick={() => ::this.setPath('/settings')}>Settings</MenuItem>
+                <MenuItem><NavLink to='/'>Overview</NavLink></MenuItem>
+                <MenuItem><NavLink to='/budget'>Budget</NavLink></MenuItem>
+                <MenuItem><NavLink to='/transactions'>Transactions</NavLink></MenuItem>
+                <MenuItem><NavLink to='/reports'>Reports</NavLink></MenuItem>
+                <MenuItem><NavLink to='/accounts'>Accounts</NavLink></MenuItem>
+                <MenuItem><NavLink to='/settings'>Settings</NavLink></MenuItem>
             </Menu>
         </AppBar>)
     }
 
     render() {
-        var mainTopBar = this.primaryTopBar();
-        var smallTopBar = this.smallTopBar();
+        const mainTopBar = this.primaryTopBar();
+        const smallTopBar = this.smallTopBar();
 
         return (
             <Fragment>
