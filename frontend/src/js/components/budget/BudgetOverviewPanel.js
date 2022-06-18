@@ -52,10 +52,10 @@ export default class BudgetOverviewPanel extends Component {
       }
     }
 
-    let actual_profit = (budget.get('outgoing_amount').actual - budget.get('incoming_amount')).toFixed(2)
-    actual_profit = (actual_profit <= 0 ? '' : '+') + actual_profit
-    let expected_profit = (budget.get('outgoing_amount').expected - budget.get('incoming_amount')).toFixed(2)
-    expected_profit = (expected_profit <= 0 ? '' : '+') + expected_profit
+    let actualProfit = (budget.get('outgoing_amount').actual - budget.get('incoming_amount')).toFixed(2)
+    actualProfit = (actualProfit <= 0 ? '' : '+') + actualProfit
+    let expectedProfit = (budget.get('outgoing_amount').expected - budget.get('incoming_amount')).toFixed(2)
+    expectedProfit = (expectedProfit <= 0 ? '' : '+') + expectedProfit
 
     const title = 'Budget for: ' + budget.get('term_beginning') + ' - ' + budget.get('term_end')
 
@@ -70,12 +70,12 @@ export default class BudgetOverviewPanel extends Component {
               </Col>
               <Col xs={4} sm={4} md={4} lg={4}>
                 <div style={{ textAlign: 'center' }}>Actual assets last
-                  day: {budget.get('outgoing_amount').actual.toFixed(2)} ({actual_profit})
+                  day: {budget.get('outgoing_amount').actual.toFixed(2)} ({actualProfit})
                 </div>
               </Col>
               <Col xs={4} sm={4} md={4} lg={4}>
                 <div style={{ textAlign: 'right' }}>Expected assets last
-                  day: {budget.get('outgoing_amount').expected.toFixed(2)} ({expected_profit})
+                  day: {budget.get('outgoing_amount').expected.toFixed(2)} ({expectedProfit})
                 </div>
               </Col>
             </Row>

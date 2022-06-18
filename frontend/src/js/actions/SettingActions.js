@@ -30,7 +30,7 @@ export function loadSettingList () {
   }
 }
 
-export function setPrimaryCurrency (currency_id) {
+export function setPrimaryCurrency (currencyId) {
   return (dispatch) => {
     dispatch({
       type: GET_SETTING_REQUEST,
@@ -39,7 +39,7 @@ export function setPrimaryCurrency (currency_id) {
 
     const url = '/api/setting/currency.primary'
     const method = 'PUT'
-    const setting = { type: 'setting', id: 'currency.primary', attributes: { value: currency_id.toString() } }
+    const setting = { type: 'setting', id: 'currency.primary', attributes: { value: currencyId.toString() } }
 
     fetch(url, {
       method,

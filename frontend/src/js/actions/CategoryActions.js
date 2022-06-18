@@ -89,7 +89,7 @@ function findCategoryInListById (categoryId, categoryList) {
   }
 
   let result = Map({ account_type: 'income', priority: 1, name: '' })
-  var getEntry = function (id, category) {
+  const getEntry = function (id, category) {
     if (id === categoryId) {
       result = category
     }

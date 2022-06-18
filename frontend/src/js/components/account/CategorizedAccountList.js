@@ -14,9 +14,9 @@ export default class CategorizedAccountList extends Component {
       entries.push(entry)
 
       // If we have related accounts - add them
-      const category_accounts = accounts.filter((item) => item.get('category_id') === category.get('id'))
-      const category_list = <AccountList key={'accountlist-' + category.get('id')} actions={props.actions} currencies={props.currencies} accounts={category_accounts} hiddenVisible={props.hiddenVisible} />
-      entries.push(category_list)
+      const categoryAccounts = accounts.filter((item) => item.get('category_id') === category.get('id'))
+      const categoryList = <AccountList key={'accountlist-' + category.get('id')} actions={props.actions} currencies={props.currencies} accounts={categoryAccounts} hiddenVisible={props.hiddenVisible} />
+      entries.push(categoryList)
 
       if (category.has('children')) {
         category.get('children').forEach((item) => mapEntry(item, prefix + 1))
@@ -31,24 +31,24 @@ export default class CategorizedAccountList extends Component {
   render () {
     const props = this.props
 
-    const filtered_accounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible)
+    const filteredAccounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible)
 
     // First of all - get list of accounts categories
-    const categories_ids = filtered_accounts.map((item) => item.get('category_id')).valueSeq()
+    const categoriesIds = filteredAccounts.map((item) => item.get('category_id')).valueSeq()
 
     // Recursively remove categories, that are not in categories_ids
-    const categories = filterNonListedCategories(categories_ids, props.categoryList)
+    const categories = filterNonListedCategories(categoriesIds, props.categoryList)
 
     // Recursively draw categories and related accounts
-    const categorized_accounts = this.renderCategorizedList(filtered_accounts, categories)
+    const categorizedAccounts = this.renderCategorizedList(filteredAccounts, categories)
 
     // Draw uncategorized accounts
-    const simple_accounts = filtered_accounts.filter((item) => !item.get('category_id'))
+    const simpleAccounts = filteredAccounts.filter((item) => !item.get('category_id'))
 
     return (
       <>
-        <AccountList actions={props.actions} currencies={props.currencies} accounts={simple_accounts} hiddenVisible={props.hiddenVisible} />
-        {categorized_accounts}
+        <AccountList actions={props.actions} currencies={props.currencies} accounts={simpleAccounts} hiddenVisible={props.hiddenVisible} />
+        {categorizedAccounts}
       </>
     )
   }

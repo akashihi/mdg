@@ -29,14 +29,14 @@ export default class Account extends Component {
       return <ClipLoader sizeUnit='px' size={15} loading />
     }
 
-    let balance_style = {
+    let balanceStyle = {
       color: 'black',
       fontWeight: 'normal'
     }
 
     if (account.get('account_type') === 'asset') {
       if (account.get('balance') < 0) {
-        balance_style = {
+        balanceStyle = {
           color: 'red',
           fontWeight: 'bold'
         }
@@ -66,7 +66,7 @@ export default class Account extends Component {
             {account.get('name')}
           </Col>
           <Col xs={6} sm={6} md={4} lg={4}>
-            <div style={balance_style}>{account.get('balance')} {currency}</div>
+            <div style={balanceStyle}>{account.get('balance')} {currency}</div>
           </Col>
           <Col xs={12} sm={12} md={4} lg={4} className='hide-on-small'>
             {favIcon}

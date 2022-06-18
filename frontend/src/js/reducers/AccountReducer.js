@@ -35,9 +35,9 @@ const initialState = Map({
 
 function splitAccountList (state) {
   const accountList = state.get('accountList')
-  return state.set('incomeAccountList', accountList.filter((item) => item.get('account_type') == 'income'))
-    .set('assetAccountList', accountList.filter((item) => item.get('account_type') == 'asset'))
-    .set('expenseAccountList', accountList.filter((item) => item.get('account_type') == 'expense'))
+  return state.set('incomeAccountList', accountList.filter((item) => item.get('account_type') === 'income'))
+    .set('assetAccountList', accountList.filter((item) => item.get('account_type') === 'asset'))
+    .set('expenseAccountList', accountList.filter((item) => item.get('account_type') === 'expense'))
 }
 
 export default function accountViewReducer (state = initialState, action) {

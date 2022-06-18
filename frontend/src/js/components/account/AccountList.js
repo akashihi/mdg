@@ -15,9 +15,9 @@ export default class AccountsList extends Component {
     const props = this.props
     const ths = this
 
-    const filtered_accounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible)
+    const filteredAccounts = props.accounts.filter((item) => item.get('hidden') === this.props.hiddenVisible)
 
-    const accounts = filtered_accounts.map(function (item, k) {
+    const accounts = filteredAccounts.map(function (item, k) {
       return (
         <div key={k}><Account
           preview={props.preview} account={item} currencies={props.currencies}

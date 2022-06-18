@@ -72,7 +72,7 @@ export function updateAccount (id, account) {
 
     let url = '/api/account'
     let method = 'POST'
-    if (id != -1) {
+    if (id !== -1) {
       url = url + '/' + id
       method = 'PUT'
     }
@@ -88,7 +88,7 @@ export function updateAccount (id, account) {
       .then(singleToMap)
       .then(checkApiError)
       .then(map => {
-        if (id == -1) {
+        if (id === -1) {
           dispatch(loadAccountList())
         } else {
           dispatch({
