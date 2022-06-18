@@ -5,13 +5,13 @@ import TransactionCreateButton from '../components/transaction/TransactionCreate
 import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = () => {
-    return { }
-};
+  return { }
+}
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators(TransactionActions, dispatch)
-    }
+function mapDispatchToProps (dispatch) {
+  return {
+    actions: bindActionCreators(TransactionActions, dispatch)
+  }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TransactionCreateButton)

@@ -1,164 +1,170 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Button from '@material-ui/core/Button';
-import NavigationFirstPage from '@material-ui/icons/FirstPage';
-import NavigationLastPage from '@material-ui/icons/LastPage';
+import React from 'react'
+import PropTypes from 'prop-types'
+import Button from '@material-ui/core/Button'
+import NavigationFirstPage from '@material-ui/icons/FirstPage'
+import NavigationLastPage from '@material-ui/icons/LastPage'
 
 const flatButtonStyle = {
-  minWidth: 16,
-};
+  minWidth: 16
+}
 
 const calculateRange = arg => {
-  const { total, current, display } = arg;
-  let end = total;
-  let start = 1;
+  const { total, current, display } = arg
+  let end = total
+  let start = 1
   if (display < end) {
     // rounded to the nearest integer smaller
-    let beforeNumber = Math.round(display / 2 - 0.5);
-    const afterNumber = beforeNumber;
+    let beforeNumber = Math.round(display / 2 - 0.5)
+    const afterNumber = beforeNumber
     if (display % 2 === 0) {
-      beforeNumber -= 1;
+      beforeNumber -= 1
     }
 
     if (current <= beforeNumber + 1) {
-      end = display;
+      end = display
     } else if (current >= (total - afterNumber)) {
-      start = total - display + 1;
+      start = total - display + 1
     } else {
-      start = current - beforeNumber;
-      end = current + afterNumber;
+      start = current - beforeNumber
+      end = current + afterNumber
     }
   }
 
-  return { end, start };
-};
+  return { end, start }
+}
 
 const getStateFromProps = props => {
-  let { total, current, display } = props;
-  total = total > 0 ? total : 1;
-  current = current > 0 ? current : 1;
-  display = display > 0 ? display : 1;
-  current = current < total ? current : total;
-  display = display < total ? display : total;
-  return { current, display, total };
-};
+  let { total, current, display } = props
+  total = total > 0 ? total : 1
+  current = current > 0 ? current : 1
+  display = display > 0 ? display : 1
+  current = current < total ? current : total
+  display = display < total ? display : total
+  return { current, display, total }
+}
 
 const Page = ({ value, isActive, onClick, styleButton, stylePrimary }) => {
-  return !styleButton ? (<Button
-    variant='text'
-    style = { flatButtonStyle }
-    color = { isActive ? 'primary' : 'default'}
-    onClick = { onClick }
-  >{ value.toString() }
-</Button>) : (<div
-    style = { isActive ? stylePrimary : styleButton }
-    label = { value.toString() }
-    onClick = { onClick }
-  >
-    {value}
-  </div>)
-
-};
+  return !styleButton
+    ? (<Button
+        variant='text'
+        style={flatButtonStyle}
+        color={isActive ? 'primary' : 'default'}
+        onClick={onClick}
+       >{value.toString()}
+    </Button>)
+    : (<div
+        style={isActive ? stylePrimary : styleButton}
+        label={value.toString()}
+        onClick={onClick}
+       >
+      {value}
+    </div>)
+}
 Page.propTypes = {
   value: PropTypes.number,
   isActive: PropTypes.bool,
   onClick: PropTypes.func,
   styleButton: PropTypes.object,
-  stylePrimary: PropTypes.object,
-};
+  stylePrimary: PropTypes.object
+}
 
 const FirstPageLink = ({ onClick, styleFirstPageLink }) => {
-  return !styleFirstPageLink ? (<Button
-    variant='text'
-    style = { flatButtonStyle }
-    onClick = { onClick }
-  ><NavigationFirstPage/></Button>) : (<div
-    style = { styleFirstPageLink }
-    onClick = { onClick }
-  />);
-};
+  return !styleFirstPageLink
+    ? (<Button
+        variant='text'
+        style={flatButtonStyle}
+        onClick={onClick}
+       ><NavigationFirstPage />
+    </Button>)
+    : (<div
+        style={styleFirstPageLink}
+        onClick={onClick}
+       />)
+}
 
 FirstPageLink.propTypes = {
   onClick: PropTypes.func,
-  styleFirstPageLink: PropTypes.object,
-};
+  styleFirstPageLink: PropTypes.object
+}
 
 const LastPageLink = ({ onClick, styleLastPageLink }) => {
-  return !styleLastPageLink ? (<Button
-    variant='text'
-    style = { flatButtonStyle }
-    onClick = { onClick }
-  ><NavigationLastPage/></Button>) : (<div
-    style = { styleLastPageLink }
-    onClick = { onClick }
-  />);
-};
+  return !styleLastPageLink
+    ? (<Button
+        variant='text'
+        style={flatButtonStyle}
+        onClick={onClick}
+       ><NavigationLastPage />
+    </Button>)
+    : (<div
+        style={styleLastPageLink}
+        onClick={onClick}
+       />)
+}
 
 LastPageLink.propTypes = {
   onClick: PropTypes.func,
-  styleLastPageLink: PropTypes.object,
-};
+  styleLastPageLink: PropTypes.object
+}
 
 class Pagination extends React.Component {
-
-  constructor(props) {
-    super(props);
-    const tem = getStateFromProps(props);
-    this.setCurrent = this.setCurrent.bind(this);
+  constructor (props) {
+    super(props)
+    const tem = getStateFromProps(props)
+    this.setCurrent = this.setCurrent.bind(this)
 
     this.state = {
       ...tem,
-      ...calculateRange(tem),
-    };
+      ...calculateRange(tem)
+    }
   }
 
-  componentWillReceiveProps(nextProps) {
-    const tem = getStateFromProps(nextProps);
+  componentWillReceiveProps (nextProps) {
+    const tem = getStateFromProps(nextProps)
     this.setState({
       ...tem,
-      ...calculateRange(tem),
-    });
+      ...calculateRange(tem)
+    })
   }
 
-  setCurrent(current) {
-    const tem = { ...this.state, current };
-    this.props.onChange(current);
+  setCurrent (current) {
+    const tem = { ...this.state, current }
+    this.props.onChange(current)
     this.setState({
       ...tem,
-      ...calculateRange(tem),
-    });
+      ...calculateRange(tem)
+    })
   }
 
-  render() {
-    const array = [];
+  render () {
+    const array = []
     for (let i = this.state.start; i <= this.state.end; i += 1) {
-      array.push(i);
+      array.push(i)
     }
 
     return (
       <div style={this.props.styleRoot}>
         <FirstPageLink
-          onClick = { () => this.setCurrent(1) }
-          styleFirstPageLink = { this.props.styleFirstPageLink }
+          onClick={() => this.setCurrent(1)}
+          styleFirstPageLink={this.props.styleFirstPageLink}
         />
         {
             array.map((page, k) => (
               <Page
-                key = { k }
-                value = { page }
-                isActive = { this.state.current === page }
-                onClick = { () => this.setCurrent(page) }
-                styleButton = { this.props.styleButton }
-                stylePrimary = { this.props.stylePrimary }
+                key={k}
+                value={page}
+                isActive={this.state.current === page}
+                onClick={() => this.setCurrent(page)}
+                styleButton={this.props.styleButton}
+                stylePrimary={this.props.stylePrimary}
               />
             ))
           }
         <LastPageLink
-          onClick = { () => this.setCurrent(this.state.total) }
-          styleLastPageLink = { this.props.styleLastPageLink }
+          onClick={() => this.setCurrent(this.state.total)}
+          styleLastPageLink={this.props.styleLastPageLink}
         />
       </div>
-    );
+    )
   }
 }
 
@@ -178,16 +184,16 @@ Pagination.propTypes = {
   styleFirstPageLink: PropTypes.object,
   styleLastPageLink: PropTypes.object,
   styleButton: PropTypes.object,
-  stylePrimary: PropTypes.object,
-};
+  stylePrimary: PropTypes.object
+}
 
 Pagination.defaultProps = {
   styleRoot: null,
   styleFirstPageLink: null,
   styleLastPageLink: null,
   styleButton: null,
-  stylePrimary: null,
-};
+  stylePrimary: null
+}
 
-Pagination.displayName = 'Pagination';
-export default Pagination;
+Pagination.displayName = 'Pagination'
+export default Pagination
