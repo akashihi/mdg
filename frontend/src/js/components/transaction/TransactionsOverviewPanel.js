@@ -2,8 +2,8 @@ import React, { Component, Fragment } from 'react'
 import { withStyles } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
-import GridList from '@mui/material/GridList'
-import GridListTile from '@mui/material/GridListTile'
+import ImageList from '@mui/material/ImageList'
+import ImageListItem from '@mui/material/ImageListItem'
 import Transaction from './TransactionShortWidget'
 
 const styles = {
@@ -21,16 +21,16 @@ class TransactionsOverviewPanel extends Component {
     const props = this.props
 
     const transactions = props.transactions.map((item, id) => {
-      return <GridListTile key={id}><Transaction transaction={item} accounts={props.accounts} /></GridListTile>
+      return <ImageListItem key={id}><Transaction transaction={item} accounts={props.accounts} /></ImageListItem>
     }).valueSeq()
 
     return (
       <>
         <CardHeader title='Last transactions' />
         <CardContent className={this.props.classes.content}>
-          <GridList cellHeight={70} cols={1} className={this.props.classes.panel}>
+          <ImageList cellHeight={70} cols={1} className={this.props.classes.panel}>
             {transactions}
-          </GridList>
+          </ImageList>
         </CardContent>
       </>
     )

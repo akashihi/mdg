@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
-import ExpansionPanel from '@mui/material/ExpansionPanel'
-import ExpansionPanelSummary from '@mui/material/ExpansionPanelSummary'
-import ExpansionPanelDetails from '@mui/material/ExpansionPanelDetails'
+import Accordion from '@mui/material/Accordion'
+import AccordionSummary from '@mui/material/AccordionSummary'
+import AccordionDetails from '@mui/material/AccordionDetails'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import IncomeReportEventsAccount from './IncomeReportEventsAccount'
@@ -12,22 +12,22 @@ export default class IncomeReportCollection extends Component {
     const props = this.props
     return (
       <>
-        <ExpansionPanel defaultExpanded>
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             Income operations by account
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
+          </AccordionSummary>
+          <AccordionDetails>
             <IncomeReportEventsAccount actions={props.actions} data={props.incomeByAccount} />
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
-        <ExpansionPanel>
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             Income accounts weight
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
+          </AccordionSummary>
+          <AccordionDetails>
             <IncomeByAccountWeight actions={props.actions} data={props.incomeByAccountWeight} />
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
+          </AccordionDetails>
+        </Accordion>
       </>
     )
   }

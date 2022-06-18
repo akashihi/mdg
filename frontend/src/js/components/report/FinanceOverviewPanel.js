@@ -2,8 +2,8 @@ import React, { Component, Fragment } from 'react'
 import { withStyles } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
-import GridList from '@mui/material/GridList'
-import GridListTile from '@mui/material/GridListTile'
+import ImageList from '@mui/material/ImageList'
+import ImageListItem from '@mui/material/ImageListItem'
 import { Grid, Row, Col } from 'react-flexbox-grid'
 
 const styles = {
@@ -61,7 +61,7 @@ class FinanceOverviewPanel extends Component {
     }
 
     return (
-      <GridListTile key={this.entryId++}>
+      <ImageListItem key={this.entryId++}>
         <Grid fluid>
           <Row style={{ fontSize: '0.9em' }}>
             <Col xs={2} sm={2} md={2} lg={2}>
@@ -75,7 +75,7 @@ class FinanceOverviewPanel extends Component {
             </Col>
           </Row>
         </Grid>
-      </GridListTile>
+      </ImageListItem>
     )
   }
 
@@ -102,9 +102,9 @@ class FinanceOverviewPanel extends Component {
       <>
         <CardHeader title='Financial status' style={this.cardHeaderStyle} />
         <CardContent className={this.props.classes.content}>
-          <GridList cellHeight={36} cols={1} className={this.props.classes.panel}>
+          <ImageList cellHeight={36} cols={1} className={this.props.classes.panel}>
             {result}
-          </GridList>
+          </ImageList>
         </CardContent>
       </>
     )
