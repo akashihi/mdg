@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "webpack-dashboard -- webpack serve --mode development --hot",
-        "build": "cross-env NODE_ENV=production webpack-dashboard -- webpack --mode production --config webpack.config.js",
+        "build": "cross-env NODE_ENV=production webpack --mode production --config webpack.config.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Denis V Chaplygin",
