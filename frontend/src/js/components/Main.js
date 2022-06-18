@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { Grid, Row, Col } from 'react-flexbox-grid';
+import Grid from '@mui/material/Grid';
 import {Switch, Route} from 'react-router-dom';
 
 import TopBar from '../containers/TopBar';
@@ -21,9 +21,8 @@ export default class Main extends Component {
     return (
       <div>
         <TopBar />
-        <Grid fluid>
-          <Row>
-            <Col xs={12} sm={12} md={11} lg={11}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={12} md={11} lg={11}>
               <Switch>
                 <Route exact path='/'>
                     {/*<Overview />*/}
@@ -50,11 +49,10 @@ export default class Main extends Component {
                       SettingsViewer
                   </Route>
               </Switch>
-            </Col>
-            <Col xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
-              <Row><RateViewer /></Row>
-            </Col>
-          </Row>
+            </Grid>
+            <Grid item xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
+              <RateViewer />
+            </Grid>
         </Grid>
           {/*<TransactionCreate />
         <TransactionEditor unmountOnExit />*/}

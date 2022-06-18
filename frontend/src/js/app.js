@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { createStore, applyMiddleware, compose } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
@@ -21,4 +21,5 @@ const App = () => (
     </Router>
 )
 
-render(<App />, document.getElementById('main'))
+createRoot(document.getElementById('main')).render(<App/>)
+

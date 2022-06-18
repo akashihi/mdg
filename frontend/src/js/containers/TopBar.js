@@ -8,10 +8,8 @@ import * as TagActions from '../actions/TagActions';
 import * as BudgetActions from '../actions/BudgetActions';
 import * as RateActions from '../actions/RateActions';
 
-const mapStateToProps = (state) => {
-  return {
-    path: state.router.location.pathname
-  };
+const mapStateToProps = () => {
+  return {};
 };
 
 function mapDispatchToProps (dispatch) {
