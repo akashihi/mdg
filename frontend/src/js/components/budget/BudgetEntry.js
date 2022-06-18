@@ -1,7 +1,7 @@
 import React, {Component, Fragment} from 'react';
 import TextField from '@mui/material/TextField';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import SegmentedProgressbar from '../../widgets/SegmentedProgressbar'
+import CircularProgressWithLabel  from '@mui/material/CircularProgress';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ClipLoader from 'react-spinners/ClipLoader';
@@ -49,11 +49,11 @@ export default class BudgetEntry extends Component {
             color_progress = 1/color_progress;
         }
         if (color_progress >= 95) {
-            entry_color = 'red'
+            entry_color = 'error'
         } else if (color_progress >= 80) {
-            entry_color = 'orange'
+            entry_color = 'secondary'
         } else {
-            entry_color = 'lime'
+            entry_color = 'success'
         }
 
         let change = <div/>;
@@ -85,7 +85,7 @@ export default class BudgetEntry extends Component {
                     </Col>
                     <Col xs={2} sm={2} md={2} lg={1}>
                         <div style={{width: '60px', height: '60px'}}>
-                            <SegmentedProgressbar percentage={progress} color={entry_color}/>
+                            <CircularProgressWithLabel variant='determinate' value={progress} color={entry_color}/>
                         </div>
                     </Col>
                     <Col xs={2} sm={2} md={2} lg={2}>

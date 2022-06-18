@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import { Grid, Row, Col } from 'react-flexbox-grid'
-import SegmentedProgressbar from '../../widgets/SegmentedProgressbar'
+import CircularProgressWithLabel  from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider'
 import { Progress } from 'react-sweet-progress'
 import 'react-sweet-progress/lib/style.css'
@@ -94,12 +94,12 @@ export default class BudgetOverviewPanel extends Component {
             <Row>
               <Col xs={1}>
                 <div style={{ width: '80px', height: '80px' }}>
-                  <SegmentedProgressbar percentage={incomePercentage} />
+                  <CircularProgressWithLabel variant='determinate' value={incomePercentage} />
                 </div>
               </Col>
               <Col xsOffset={9} xs={1} lgOffset={expensePercentageOffset}>
                 <div style={{ width: '80px', height: '80px', textAlign: 'right' }}>
-                  <SegmentedProgressbar percentage={expensePercentage} />
+                  <CircularProgressWithLabel variant='determinate' value={expensePercentage} />
                 </div>
               </Col>
             </Row>
