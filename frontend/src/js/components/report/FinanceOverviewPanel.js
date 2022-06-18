@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import GridList from '@material-ui/core/GridList'
-import GridListTile from '@material-ui/core/GridListTile'
+import { withStyles } from '@mui/material/styles'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import GridList from '@mui/material/GridList'
+import GridListTile from '@mui/material/GridListTile'
 import { Grid, Row, Col } from 'react-flexbox-grid'
 
 const styles = {

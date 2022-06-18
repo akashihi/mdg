@@ -1,16 +1,16 @@
 import React, {Component, Fragment} from 'react';
-import {withStyles} from '@material-ui/core/styles';
+import {withStyles} from '@mui/material/styles';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import ClipLoader from 'react-spinners/ClipLoader';
-import Checkbox from '@material-ui/core/Checkbox';
-import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
+import Checkbox from '@mui/material/Checkbox';
+import Button from '@mui/material/Button';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
 
 import CategoryViewer from '../containers/CategoryViewer.js';
 

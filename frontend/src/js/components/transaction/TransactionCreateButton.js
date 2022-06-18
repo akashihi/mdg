@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import AddCirce from '@material-ui/icons/AddCircleOutline';
-import Fab from '@material-ui/core/Fab';
+import { withStyles } from '@mui/material/styles';
+import AddCirce from '@mui/icons-material/AddCircleOutline';
+import Fab from '@mui/material/Fab';
 
 const styles = {
   button: {

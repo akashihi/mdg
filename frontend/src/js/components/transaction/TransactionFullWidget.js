@@ -1,16 +1,16 @@
 import React, {Fragment} from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@mui/material/styles';
 import classnames from 'classnames';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import {Grid, Row, Col} from 'react-flexbox-grid';
-import Checkbox from '@material-ui/core/Checkbox';
-import Button from '@material-ui/core/Button';
-import Delete from '@material-ui/icons/Delete';
-import Edit from '@material-ui/icons/Edit';
-import Collapse from '@material-ui/core/Collapse';
-import IconButton from '@material-ui/core/IconButton';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Checkbox from '@mui/material/Checkbox';
+import Button from '@mui/material/Button';
+import Delete from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Edit';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 import Operation from './Operation'

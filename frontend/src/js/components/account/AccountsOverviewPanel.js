@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
 
 import AccountList from './AccountList'
 

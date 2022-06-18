@@ -1,11 +1,11 @@
 import React, {Component, Fragment} from 'react';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Button from '@mui/material/Button';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import ClipLoader from 'react-spinners/ClipLoader';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 import AccountEditor from '../../containers/AccountEditor'
 import CategorizedAccountList from './CategorizedAccountList.js'

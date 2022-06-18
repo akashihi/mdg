@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
 import { Grid, Row, Col } from 'react-flexbox-grid'
 import SegmentedProgressbar from '../../widgets/SegmentedProgressbar'
-import Divider from '@material-ui/core/Divider'
+import Divider from '@mui/material/Divider'
 import { Progress } from 'react-sweet-progress'
 import 'react-sweet-progress/lib/style.css'
 

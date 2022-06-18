@@ -1,9 +1,9 @@
 import React, {Component, Fragment} from 'react';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 import SegmentedProgressbar from '../../widgets/SegmentedProgressbar'
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class BudgetEntry extends Component {

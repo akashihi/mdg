@@ -1,11 +1,11 @@
 import React, {Component, Fragment} from 'react';
 import moment from 'moment';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import DatePicker from 'react-date-picker'
 import {Formik, Form, Field, ErrorMessage} from 'formik';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import ClipLoader from 'react-spinners/ClipLoader';
 import {Grid, Row, Col} from 'react-flexbox-grid';
 

@@ -1,7 +1,7 @@
 import React, {Component, Fragment} from 'react';
 import MuiTreeView from 'material-ui-treeview';
 import ClipLoader from 'react-spinners/ClipLoader';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import CategoryEditor from '../../containers/CategoryEditor.js';
 
 export default class CategoryViewerWidget extends Component {
@@ -15,7 +15,7 @@ export default class CategoryViewerWidget extends Component {
   }
 
   categoryToTree(category, id) {
-    
+
     if (category.has('children')) {
       return {
         id: id,

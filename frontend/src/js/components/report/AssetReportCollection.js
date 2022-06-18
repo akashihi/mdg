@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react'
-import ExpansionPanel from '@material-ui/core/ExpansionPanel'
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import ExpansionPanel from '@mui/material/ExpansionPanel'
+import ExpansionPanelSummary from '@mui/material/ExpansionPanelSummary'
+import ExpansionPanelDetails from '@mui/material/ExpansionPanelDetails'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import AssetReportSimple from './AssetReportSimple'
 import AssetReportCurrency from './AssetReportCurrency'
