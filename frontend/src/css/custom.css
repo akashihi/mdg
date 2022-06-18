@@ -19,3 +19,12 @@
 .common-field-width {
   width: 320px
 }
+
+.nav-link {
+    color: red;
+}
+
+.nav-link-selected {
+    color: blue!important;
+    text-decoration: underline;
+}
