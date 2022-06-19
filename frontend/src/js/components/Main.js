@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 
 import Grid from '@mui/material/Grid'
-import { Switch, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 
 import TopBar from '../containers/TopBar'
 import TransactionCreate from '../containers/TransactionCreate'
@@ -23,28 +23,16 @@ export default class Main extends Component {
                 <TopBar/>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={12} md={11} lg={11}>
-                        <Switch>
-                            <Route exact path="/">
-                                <Overview/>
-                            </Route>
-                            <Route path="/budget">
-                                <BudgetViewer/>
-                            </Route>
-                            <Route path="/transactions">
-                                <TransactionsViewer/>
-                            </Route>
-                            <Route path="/reports">
-                                <ReportsViewer/>
-                            </Route>
-                            <Route path="/accounts">
-                                <AccountsViewer/>
-                            </Route>
-                            <Route path="/settings">
-                                <SettingsViewer/>
-                            </Route>
-                        </Switch>
+                        <Routes>
+                            <Route path='/' element={<Overview/>}/>
+                            <Route path='/budget' element={<BudgetViewer/>}/>
+                            <Route path='/transactions' element={<TransactionsViewer/>}/>
+                            <Route path='/reports' element={<ReportsViewer/>}/>
+                            <Route path='/accounts' element={<AccountsViewer/>}/>
+                            <Route path='/settings' element={<SettingsViewer/>}/>
+                        </Routes>
                     </Grid>
-                    <Grid item xs={0} sm={0} md={1} lg={1} className="hide-on-medium">
+                    <Grid item xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
                         <RateViewer/>
                     </Grid>
                 </Grid>

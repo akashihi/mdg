@@ -9,15 +9,16 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { NavLink } from 'react-router-dom';
-import { withRouter } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
-function smallTopBar(props) {
+function SmallTopBar(props) {
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
 
+    const location = useLocation();
     let currentPage;
-    switch (props.location.pathname) {
+    switch (location.pathname) {
         case '/':
             currentPage='Overview';
             break;
@@ -54,8 +55,6 @@ function smallTopBar(props) {
         </Menu>
     </AppBar>)
 }
-
-const SmallTopBarLocation = withRouter(smallTopBar)
 
 function PrimaryTopBar(){
     const leftButtons = (
@@ -98,7 +97,7 @@ export default class TopBar extends Component {
         return (
             <Fragment>
                 <PrimaryTopBar/>
-                <SmallTopBarLocation/>
+                <SmallTopBar/>
             </Fragment>
         )
     }
