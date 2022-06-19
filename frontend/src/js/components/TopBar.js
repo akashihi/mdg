@@ -60,17 +60,17 @@ const SmallTopBarLocation = withRouter(smallTopBar)
 function PrimaryTopBar(){
     const leftButtons = (
         <Fragment>
-            <NavLink to='/' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}>Overview</NavLink>
-            <NavLink to='/budget' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}>Budget</NavLink>
-            <NavLink to='/transactions' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}>Transactions</NavLink>
-            <NavLink to='/reports' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}>Reports</NavLink>
-            <NavLink to='/accounts' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}>Accounts</NavLink>
+            <NavLink to='/' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className={isActive =>'menu-button' + (isActive ? ' selected-menu-btn' : '')}> Overview</Button></NavLink>
+            <NavLink to='/budget' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button'>Budget</Button></NavLink>
+            <NavLink to='/transactions' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button'>Transactions</Button></NavLink>
+            <NavLink to='/reports' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button' >Reports</Button></NavLink>
+            <NavLink to='/accounts' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button'>Accounts</Button></NavLink>
         </Fragment>
     );
 
     const rightButtons = (
         <Fragment>
-            <NavLink to='/settings'>Settings</NavLink>
+            <NavLink to='/settings' className={isActive =>'nav-link' + (isActive ? ' nav-link-selected' : '')}>Settings</NavLink>
         </Fragment>
     );
     return (
