@@ -1,9 +1,9 @@
-import React, { Component} from 'react';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import Transaction from './TransactionShortWidget';
+import React, { Component } from 'react'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import ImageList from '@mui/material/ImageList'
+import ImageListItem from '@mui/material/ImageListItem'
+import Transaction from './TransactionShortWidget'
 
 export default class TransactionsOverviewPanel extends Component {
   render () {
@@ -17,12 +17,15 @@ export default class TransactionsOverviewPanel extends Component {
       <>
         <CardHeader title='Last transactions' />
         <CardContent sx={{
-            overflowX: 'hidden',
-            overflowY: 'auto'
-        }}>
-          <ImageList cellHeight={70} cols={1} sx={{
+          overflowX: 'hidden',
+          overflowY: 'auto'
+        }}
+        >
+          <ImageList
+            cellHeight={70} cols={1} sx={{
               height: 300
-          }}>
+            }}
+          >
             {transactions}
           </ImageList>
         </CardContent>
@@ -30,4 +33,3 @@ export default class TransactionsOverviewPanel extends Component {
     )
   }
 }
-

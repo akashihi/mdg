@@ -1,28 +1,28 @@
-import React, { Component } from 'react';
-import Button from '@mui/material/Button';
-import Favorite from '@mui/icons-material/Favorite';
-import FavoriteBorder from '@mui/icons-material/FavoriteBorder';
-import Star from '@mui/icons-material/Star';
-import StarBorder from '@mui/icons-material/StarBorder';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import Edit from '@mui/icons-material/Edit';
-import Grid from '@mui/material/Grid';
-import ClipLoader from 'react-spinners/ClipLoader';
+import React, { Component } from 'react'
+import Button from '@mui/material/Button'
+import Favorite from '@mui/icons-material/Favorite'
+import FavoriteBorder from '@mui/icons-material/FavoriteBorder'
+import Star from '@mui/icons-material/Star'
+import StarBorder from '@mui/icons-material/StarBorder'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import Edit from '@mui/icons-material/Edit'
+import Grid from '@mui/material/Grid'
+import ClipLoader from 'react-spinners/ClipLoader'
 
 export default class Account extends Component {
   getCurrency = function (account, currencies) {
     if (currencies.has(account.get('currency_id'))) {
-      return currencies.get(account.get('currency_id')).get('name');
+      return currencies.get(account.get('currency_id')).get('name')
     } else {
-      return '';
+      return ''
     }
   }
 
   render () {
-    const account = this.props.account;
-    let favIcon;
-    let opIcon;
+    const account = this.props.account
+    let favIcon
+    let opIcon
 
     if (account.get('loading')) {
       // Fast processing
@@ -32,14 +32,14 @@ export default class Account extends Component {
     let balanceStyle = {
       color: 'black',
       fontWeight: 'normal'
-    };
+    }
 
     if (account.get('account_type') === 'asset') {
       if (account.get('balance') < 0) {
         balanceStyle = {
           color: 'red',
           fontWeight: 'bold'
-        };
+        }
       }
       if (account.get('favorite')) {
         favIcon = <Button aria-label='Favorite' onClick={() => this.props.switchFunc('favorite')}><Favorite /></Button>
@@ -61,18 +61,18 @@ export default class Account extends Component {
 
     return (
       <Grid container spacing={2}>
-          <Grid item xs={6} sm={6} md={4} lg={4}>
-            {account.get('name')}
-          </Grid>
-          <Grid item xs={6} sm={6} md={4} lg={4}>
-            <div style={balanceStyle}>{account.get('balance')} {currency}</div>
-          </Grid>
-          <Grid item xs={12} sm={12} md={4} lg={4} className='hide-on-small'>
-            {favIcon}
-            {opIcon}
-            {!this.props.preview && visibilityIcon}
-            {!this.props.preview && <Button aria-label='Edit' onClick={this.props.editAccountFunc}><Edit /></Button>}
-          </Grid>
+        <Grid item xs={6} sm={6} md={4} lg={4}>
+          {account.get('name')}
+        </Grid>
+        <Grid item xs={6} sm={6} md={4} lg={4}>
+          <div style={balanceStyle}>{account.get('balance')} {currency}</div>
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4} className='hide-on-small'>
+          {favIcon}
+          {opIcon}
+          {!this.props.preview && visibilityIcon}
+          {!this.props.preview && <Button aria-label='Edit' onClick={this.props.editAccountFunc}><Edit /></Button>}
+        </Grid>
       </Grid>
     )
   }

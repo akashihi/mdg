@@ -4,7 +4,7 @@ import CardContent from '@mui/material/CardContent'
 import Divider from '@mui/material/Divider'
 import ImageList from '@mui/material/ImageList'
 import ImageListItem from '@mui/material/ImageListItem'
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid'
 import ClipLoader from 'react-spinners/ClipLoader'
 import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
@@ -71,13 +71,13 @@ export default class TransactionsPage extends Component {
             <Card>
               <CardContent>
                 <Grid container spacing={2}>
-                    <Grid item xs={1} />
-                    <Grid item xs={1}>Date</Grid>
-                    <Grid item xs={3}>Comment</Grid>
-                    <Grid item xs={2}>Amount</Grid>
-                    <Grid item xs={2}>Accounts</Grid>
-                    <Grid item xs={2}>Tags</Grid>
-                    <Grid item xs={1} />
+                  <Grid item xs={1} />
+                  <Grid item xs={1}>Date</Grid>
+                  <Grid item xs={3}>Comment</Grid>
+                  <Grid item xs={2}>Amount</Grid>
+                  <Grid item xs={2}>Accounts</Grid>
+                  <Grid item xs={2}>Tags</Grid>
+                  <Grid item xs={1} />
                 </Grid>
               </CardContent>
             </Card>

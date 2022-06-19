@@ -1,12 +1,11 @@
-import React, { Component, Fragment } from 'react';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import Grid from '@mui/material/Grid';
+import React, { Component, Fragment } from 'react'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import ImageList from '@mui/material/ImageList'
+import ImageListItem from '@mui/material/ImageListItem'
+import Grid from '@mui/material/Grid'
 
 export default class FinanceOverviewPanel extends Component {
-
   constructor (props) {
     super(props)
     this.entryId = 0
@@ -16,25 +15,25 @@ export default class FinanceOverviewPanel extends Component {
     const getCurrency = function (id) {
       const currency = props.currencies.get(parseInt(id))
       if (currency) {
-        return currency.get('code');
+        return currency.get('code')
       }
-      return '';
-    };
+      return ''
+    }
 
     const getCategory = function (id) {
       const category = props.categoryList.get(id)
       if (category) {
-        return category.get('name');
+        return category.get('name')
       }
-      return 'Unknown asset';
-    };
+      return 'Unknown asset'
+    }
 
-    const primaryCurrencyCode = getCurrency(props.primaryCurrency);
+    const primaryCurrencyCode = getCurrency(props.primaryCurrency)
 
     let details
     if (!(item.totals.length === 1 && item.totals[0].id === props.primaryCurrency)) {
       const detailed = item.totals.map((subitem) => {
-        const currencyCode = getCurrency(subitem.id);
+        const currencyCode = getCurrency(subitem.id)
         return subitem.value.toFixed(2) + ' ' + currencyCode
       })
       details = <>({detailed.join(', ')})</>
@@ -85,17 +84,22 @@ export default class FinanceOverviewPanel extends Component {
 
     return (
       <>
-        <CardHeader title='Financial status' sx={{
+        <CardHeader
+          title='Financial status' sx={{
             paddingTop: '0px',
             textAlign: 'center'
-        }} />
+          }}
+        />
         <CardContent sx={{
-            overflowX: 'hidden',
-            overflowY: 'auto'
-        }}>
-          <ImageList cellHeight={36} cols={1} sx={{
+          overflowX: 'hidden',
+          overflowY: 'auto'
+        }}
+        >
+          <ImageList
+            cellHeight={36} cols={1} sx={{
               height: 300
-          }}>
+            }}
+          >
             {result}
           </ImageList>
         </CardContent>

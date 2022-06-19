@@ -11,34 +11,34 @@ import AccountsViewer from '../containers/AccountsViewer'
 import TransactionsViewer from '../containers/TransactionsViewer'
 import SettingsViewer from '../containers/SettingsViewer'
 import RateViewer from '../containers/RateViewer'
-import TransactionEditor from '../containers/TransactionEditor';
+import TransactionEditor from '../containers/TransactionEditor'
 import ReportsViewer from '../containers/ReportsViewer'
 
 window.notifications = React.createRef()
 
 export default class Main extends Component {
-    render () {
-        return (
-            <div>
-                <TopBar/>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={12} md={11} lg={11}>
-                        <Routes>
-                            <Route path='/' element={<Overview/>}/>
-                            <Route path='/budget' element={<BudgetViewer/>}/>
-                            <Route path='/transactions' element={<TransactionsViewer/>}/>
-                            <Route path='/reports' element={<ReportsViewer/>}/>
-                            <Route path='/accounts' element={<AccountsViewer/>}/>
-                            <Route path='/settings' element={<SettingsViewer/>}/>
-                        </Routes>
-                    </Grid>
-                    <Grid item xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
-                        <RateViewer/>
-                    </Grid>
-                </Grid>
-                <TransactionCreate/>
-                <TransactionEditor unmountOnExit/>
-            </div>
-        )
-    }
+  render () {
+    return (
+      <div>
+        <TopBar />
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={12} md={11} lg={11}>
+            <Routes>
+              <Route path='/' element={<Overview />} />
+              <Route path='/budget' element={<BudgetViewer />} />
+              <Route path='/transactions' element={<TransactionsViewer />} />
+              <Route path='/reports' element={<ReportsViewer />} />
+              <Route path='/accounts' element={<AccountsViewer />} />
+              <Route path='/settings' element={<SettingsViewer />} />
+            </Routes>
+          </Grid>
+          <Grid item xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
+            <RateViewer />
+          </Grid>
+        </Grid>
+        <TransactionCreate />
+        <TransactionEditor unmountOnExit />
+      </div>
+    )
+  }
 }
