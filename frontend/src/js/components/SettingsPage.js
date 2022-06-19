@@ -1,6 +1,5 @@
 import React, {Component, Fragment} from 'react';
-import {withStyles} from '@mui/material/styles';
-import {Grid, Row, Col} from 'react-flexbox-grid';
+import Grid from '@mui/material/Grid';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import ClipLoader from 'react-spinners/ClipLoader';
@@ -14,16 +13,7 @@ import Divider from '@mui/material/Divider';
 
 import CategoryViewer from '../containers/CategoryViewer.js';
 
-const styles = {
-    root: {
-        position: 'relative',
-        overflow: 'auto',
-        maxHeight: 160,
-        margin: '1em'
-    }
-};
-
-class CurrencyEditorWidget extends Component {
+class CurrencyEditor extends Component {
     onCurrencyChange(k, item) {
         const modified = item.set('active', !item.get('active'));
         this.props.currencyActions.updateCurrency(k, modified)
@@ -32,7 +22,6 @@ class CurrencyEditorWidget extends Component {
     render() {
         const cls = this;
         const props = this.props;
-        const {classes} = props;
 
         if (props.currency.get('loading')) {
             return <ClipLoader sizeUnit={'px'} size={180} loading={true}/>
@@ -52,13 +41,16 @@ class CurrencyEditorWidget extends Component {
             )
         }).valueSeq().toJS();
 
-        return (<List className={classes.root}>
+        return (<List sx={{
+            position: 'relative',
+            overflow: 'auto',
+            maxHeight: 160,
+            margin: '1em'
+        }}>
             {allCurrencies}
         </List>)
     }
 }
-
-const CurrencyEditor = withStyles(styles)(CurrencyEditorWidget);
 
 class SettingEditor extends Component {
     onPrimaryCurrencyChange(value) {
@@ -94,41 +86,34 @@ class SettingEditor extends Component {
         }).valueSeq().toJS();
 
         return (<Fragment>
-            <Row>
-                <Col xs={12} sm={6} md={6} lg={4}>
+                <Grid item xs={12} sm={6} md={6} lg={4}>
                     <p>Primary currency:</p>
-                </Col>
-                <Col xs={12} sm={6} md={6} lg={4}>
+                </Grid>
+                <Grid item xs={12} sm={6} md={6} lg={4}>
                     <Select
                         value={props.primaryCurrency}
                         onChange={(ev) => ::this.onPrimaryCurrencyChange(ev.target.value)}
                     >
                         {currencies}
                     </Select>
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6} sm={6} md={6} lg={4}>
+                </Grid>
+                <Grid item xs={6} sm={6} md={6} lg={4}>
                     <p>By default close transaction dialog:</p>
-                </Col>
-                <Col xs={6} sm={6} md={6} lg={4}>
+                </Grid>
+                <Grid item xs={6} sm={6} md={6} lg={4}>
                     <Checkbox checked={this.props.closeTransactionDialog}
                               onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6} sm={6} md={6} lg={4}>
+                </Grid>
+                <Grid item xs={6} sm={6} md={6} lg={4}>
                     <p>Reindex transactions search data:</p>
-                </Col>
-                <Col xs={6} sm={6} md={6} lg={4}>
+                </Grid>
+                <Grid item xs={6} sm={6} md={6} lg={4}>
                     <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={12} sm={6} md={6} lg={4}>
+                </Grid>
+                <Grid item xs={12} sm={6} md={6} lg={4}>
                     <p>Language:</p>
-                </Col>
-                <Col xs={12} sm={6} md={6} lg={4}>
+                </Grid>
+                <Grid item xs={12} sm={6} md={6} lg={4}>
                     <Select
                         value={props.language}
                         onChange={(ev) => ::this.onLanguageChange(ev.target.value)}
@@ -139,41 +124,34 @@ class SettingEditor extends Component {
                         <MenuItem value='lt' key='lt'>lt</MenuItem>
                         <MenuItem value='ru' key='ru'>ru</MenuItem>
                     </Select>
-                </Col>
-            </Row>
+                </Grid>
         </Fragment>)
     }
 }
 
-class SettingsPage extends Component {
+export default class SettingsPage extends Component {
     render() {
         const props = this.props;
 
         return (
-            <Grid fluid>
+            <Grid  container spacing={2}>
                 <SettingEditor ui={props.setting.get('ui')} currency={props.currency}
                                primaryCurrency={props.primaryCurrency}
                                closeTransactionDialog={props.closeTransactionDialog}
                                language={props.language}
                                actions={props.actions}/>
                 <Divider/>
-                <Row>
-                    <Col xs={12} sm={6} md={6} lg={4}>
+                    <Grid item xs={12} sm={6} md={6} lg={4}>
                         <p>Active currencies:</p>
-                    </Col>
-                    <Col xs={12} sm={6} md={6} lg={4}>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={6} lg={4}>
                         <CurrencyEditor currency={props.currency} currencyActions={this.props.currencyActions}/>
-                    </Col>
-                </Row>
+                    </Grid>
                 <Divider/>
-                <Row>
-                    <Col xs={12} sm={12} md={12} lg={12}>
+                    <Grid item xs={12} sm={12} md={12} lg={12}>
                         <CategoryViewer/>
-                    </Col>
-                </Row>
+                    </Grid>
             </Grid>
         )
     }
 }
-
-export default withStyles(styles)(SettingsPage)

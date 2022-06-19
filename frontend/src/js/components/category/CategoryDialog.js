@@ -6,7 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import {Formik, Form, Field, ErrorMessage} from 'formik';
-import {TextField} from 'formik-material-ui';
+import {TextField} from 'formik-mui';
 import * as Yup from 'yup';
 
 export default class CategoryDialog extends React.Component {

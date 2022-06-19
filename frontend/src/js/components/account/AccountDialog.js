@@ -5,7 +5,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import {TextField, Switch} from 'formik-material-ui';
+import {TextField, Switch} from 'formik-mui';
 import MenuItem from '@mui/material/MenuItem';
 import {Formik, Form, Field, ErrorMessage} from 'formik';
 import * as Yup from 'yup';
