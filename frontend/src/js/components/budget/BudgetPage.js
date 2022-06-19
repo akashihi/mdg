@@ -1,5 +1,4 @@
 import React, {Component, Fragment} from 'react';
-import {withStyles} from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -12,23 +11,16 @@ import BudgetEntry from './BudgetEntry'
 import BudgetSelector from '../../containers/BudgetSelector'
 import BudgetOverviewPanel from './BudgetOverviewPanel'
 
-const styles = {
-    hiddenButtonStyle: {
-        'float': 'right'
-    }
-};
 const cardStyle = {
     padding: '0px',
     paddingBottom: '16px'
 };
 
-class HiddenEntriesButtonStyle extends Component {
+class HiddenEntriesButton extends Component {
     render() {
         return (<Button onClick={this.props.handlerFunc}>{this.props.text}</Button>)
     }
 }
-
-const HiddenEntriesButton = withStyles(styles)(HiddenEntriesButtonStyle);
 
 export default class BudgetPage extends Component {
     onHiddenEntriesClick() {

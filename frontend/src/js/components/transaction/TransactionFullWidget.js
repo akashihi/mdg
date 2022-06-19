@@ -1,9 +1,8 @@
 import React, {Fragment} from 'react';
-import { withStyles } from '@mui/material/styles';
 import classnames from 'classnames';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import {Grid, Row, Col} from 'react-flexbox-grid';
+import Grid from '@mui/material/Grid';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Delete from '@mui/icons-material/Delete';
@@ -13,25 +12,9 @@ import IconButton from '@mui/material/IconButton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClipLoader from 'react-spinners/ClipLoader';
 
-import Operation from './Operation'
+import Operation from './Operation';
 
-const styles = theme => ({
-  expand: {
-    transform: 'rotate(0deg)',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
-    marginLeft: 'auto',
-    [theme.breakpoints.up('sm')]: {
-      marginRight: -8,
-    },
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
-  },
-});
-
-class TransactionFullWidget extends React.Component {
+export default class TransactionFullWidget extends React.Component {
     state = { expanded: false };
 
     handleExpandClick = () => {
@@ -64,24 +47,22 @@ class TransactionFullWidget extends React.Component {
 
         return <Card>
             <CardContent>
-                <Grid>
-                    <Row>
-                        <Col xs={1} className='hide-on-small'><Checkbox color='default' onChange={(ev, value) => ::this.markTransaction(value)}/></Col>
-                        <Col xs={3} sm={2} md={1} lg={1}>{transaction.get('dt')}</Col>
-                        <Col xs={6} sm={3} md={3} lg={3}>{transaction.get('comment')}</Col>
-                        <Col xs={3} sm={1} md={1} lg={1}>
+                <Grid container spacing={2}>
+                        <Grid item xs={1} className='hide-on-small'><Checkbox color='default' onChange={(ev, value) => ::this.markTransaction(value)}/></Grid>
+                        <Grid item xs={3} sm={2} md={1} lg={1}>{transaction.get('dt')}</Grid>
+                        <Grid item xs={6} sm={3} md={3} lg={3}>{transaction.get('comment')}</Grid>
+                        <Grid item xs={3} sm={1} md={1} lg={1}>
                             <div style={{color: transaction.get('totals').get('color')}}>{transaction.get('totals').get('total')}</div>
-                        </Col>
-                        <Col xs={7} sm={3} md={2} lg={2}>{transaction.get('accountNames')}</Col>
-                        <Col xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{transaction.get('tags').join(', ')}</Col>
-                        <Col xs={5} sm={3} md={2} lg={2}>
+                        </Grid>
+                        <Grid item xs={7} sm={3} md={2} lg={2}>{transaction.get('accountNames')}</Grid>
+                        <Grid item xs={1} sm={3} md={2} lg={2} className='hide-on-small'>{transaction.get('tags').join(', ')}</Grid>
+                        <Grid item xs={5} sm={3} md={2} lg={2}>
                           <Button aria-label='Edit' onClick={() => props.editAction(props.id, props.transaction)}><Edit/></Button>
                           <Button aria-label='Delete' onClick={() => props.deleteAction(props.id)}><Delete/></Button>
-                          <IconButton className={classnames(classes.expand, {[classes.expandOpen]: this.state.expanded,})} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
+                          <IconButton onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
                             <ExpandMoreIcon />
                           </IconButton>
-                        </Col>
-                    </Row>
+                        </Grid>
                 </Grid>
             </CardContent>
             <CardContent>
@@ -94,5 +75,3 @@ class TransactionFullWidget extends React.Component {
         </Card>;
     }
 }
-
-export default withStyles(styles)(TransactionFullWidget);

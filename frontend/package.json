@@ -44,6 +44,7 @@
         "@emotion/styled": "^11.9.3",
         "@mui/icons-material": "^5.8.4",
         "@mui/material": "^5.8.4",
+        "formik": "^2.2.9",
         "formik-mui": "^4.0.0-alpha.3",
         "formik-mui-lab": "^1.0.0-alpha.3",
         "highcharts": "^10.1.0",

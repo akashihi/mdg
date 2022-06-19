@@ -1,12 +1,11 @@
 import React, { Component } from 'react'
-import { withStyles } from '@mui/material/styles'
 import classnames from 'classnames'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Divider from '@mui/material/Divider'
 import ImageList from '@mui/material/ImageList'
 import ImageListItem from '@mui/material/ImageListItem'
-import { Grid, Row, Col } from 'react-flexbox-grid'
+import Grid from '@mui/material/Grid';
 import ClipLoader from 'react-spinners/ClipLoader'
 import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
@@ -17,23 +16,7 @@ import TransactionPager from '../../containers/TransactionsPager'
 import TransactionFilter from '../../containers/TransactionsFilter'
 import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog'
 
-const styles = theme => ({
-  expand: {
-    transform: 'rotate(0deg)',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest
-    }),
-    marginLeft: 'auto',
-    [theme.breakpoints.up('sm')]: {
-      marginRight: -8
-    }
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)'
-  }
-})
-
-class TransactionsPage extends Component {
+export default class TransactionsPage extends Component {
   state = { expanded: false }
 
   componentDidMount () {
@@ -73,7 +56,7 @@ class TransactionsPage extends Component {
         <Card>
           <CardContent>
             {title}
-            <IconButton className={classnames(classes.expand, { [classes.expandOpen]: this.state.expanded })} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
+            <IconButton onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
               <ExpandMoreIcon />
             </IconButton>
           </CardContent>
@@ -89,16 +72,14 @@ class TransactionsPage extends Component {
           <ImageListItem>
             <Card>
               <CardContent>
-                <Grid>
-                  <Row>
-                    <Col xs={1} />
-                    <Col xs={1}>Date</Col>
-                    <Col xs={3}>Comment</Col>
-                    <Col xs={2}>Amount</Col>
-                    <Col xs={2}>Accounts</Col>
-                    <Col xs={2}>Tags</Col>
-                    <Col xs={1} />
-                  </Row>
+                <Grid container spacing={2}>
+                    <Grid item xs={1} />
+                    <Grid item xs={1}>Date</Grid>
+                    <Grid item xs={3}>Comment</Grid>
+                    <Grid item xs={2}>Amount</Grid>
+                    <Grid item xs={2}>Accounts</Grid>
+                    <Grid item xs={2}>Tags</Grid>
+                    <Grid item xs={1} />
                 </Grid>
               </CardContent>
             </Card>
@@ -112,5 +93,3 @@ class TransactionsPage extends Component {
     )
   }
 }
-
-export default withStyles(styles)(TransactionsPage)

@@ -5,10 +5,10 @@ import {Switch, Route} from 'react-router-dom';
 
 import TopBar from '../containers/TopBar';
 //import TransactionCreate from '../containers/TransactionCreate';
-//import Overview from './Overview';
-//import BudgetViewer from '../containers/BudgetViewer';
+import Overview from './Overview';
+import BudgetViewer from '../containers/BudgetViewer';
 //import AccountsViewer from '../containers/AccountsViewer';
-//import TransactionsViewer from '../containers/TransactionsViewer';
+import TransactionsViewer from '../containers/TransactionsViewer';
 //import SettingsViewer from '../containers/SettingsViewer';
 import RateViewer from '../containers/RateViewer';
 //import TransactionEditor from '../containers/TransactionEditor';
@@ -25,16 +25,13 @@ export default class Main extends Component {
             <Grid item xs={12} sm={12} md={11} lg={11}>
               <Switch>
                 <Route exact path='/'>
-                    {/*<Overview />*/}
-                    Overview
+                    <Overview />
                 </Route>
                 <Route path='/budget' >
-                    {/*<BudgetViewer />*/}
-                    BudgetViewer
+                    <BudgetViewer />
                 </Route>
                 <Route path='/transactions'>
-                    {/*<TransactionsViewer />*/}
-                    TransactionsViewer
+                    <TransactionsViewer />
                 </Route>
                 <Route path='/reports'>
                     {/*<ReportsViewer />*/}

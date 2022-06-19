@@ -1,26 +1,11 @@
-import React, { Component, Fragment } from 'react'
-import { withStyles } from '@mui/material/styles'
-import CardContent from '@mui/material/CardContent'
-import CardHeader from '@mui/material/CardHeader'
-import ImageList from '@mui/material/ImageList'
-import ImageListItem from '@mui/material/ImageListItem'
-import { Grid, Row, Col } from 'react-flexbox-grid'
+import React, { Component, Fragment } from 'react';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import Grid from '@mui/material/Grid';
 
-const styles = {
-  content: {
-    overflowX: 'hidden',
-    overflowY: 'auto'
-  },
-  panel: {
-    height: 300
-  }
-}
-
-class FinanceOverviewPanel extends Component {
-  cardHeaderStyle = {
-    paddingTop: '0px',
-    textAlign: 'center'
-  }
+export default class FinanceOverviewPanel extends Component {
 
   constructor (props) {
     super(props)
@@ -31,25 +16,25 @@ class FinanceOverviewPanel extends Component {
     const getCurrency = function (id) {
       const currency = props.currencies.get(parseInt(id))
       if (currency) {
-        return currency.get('code')
+        return currency.get('code');
       }
-      return ''
-    }
+      return '';
+    };
 
     const getCategory = function (id) {
       const category = props.categoryList.get(id)
       if (category) {
-        return category.get('name')
+        return category.get('name');
       }
-      return 'Unknown asset'
-    }
+      return 'Unknown asset';
+    };
 
-    const primaryCurrencyCode = getCurrency(props.primaryCurrency)
+    const primaryCurrencyCode = getCurrency(props.primaryCurrency);
 
     let details
     if (!(item.totals.length === 1 && item.totals[0].id === props.primaryCurrency)) {
       const detailed = item.totals.map((subitem) => {
-        const currencyCode = getCurrency(subitem.id)
+        const currencyCode = getCurrency(subitem.id);
         return subitem.value.toFixed(2) + ' ' + currencyCode
       })
       details = <>({detailed.join(', ')})</>
@@ -62,18 +47,18 @@ class FinanceOverviewPanel extends Component {
 
     return (
       <ImageListItem key={this.entryId++}>
-        <Grid fluid>
-          <Row style={{ fontSize: '0.9em' }}>
-            <Col xs={2} sm={2} md={2} lg={2}>
+        <Grid container spacing={2}>
+          <div style={{ fontSize: '0.9em' }}>
+            <Grid item xs={2} sm={2} md={2} lg={2}>
               <div style={{ textTransform: 'capitalize' }}>{getCategory(item.category_id)}:</div>
-            </Col>
-            <Col xs={3} sm={3} md={3} lg={3}>
+            </Grid>
+            <Grid item xs={3} sm={3} md={3} lg={3}>
               <span style={{ color }}>{item.primary_balance.toFixed(2)}</span> {primaryCurrencyCode}
-            </Col>
-            <Col xs={7} sm={7} md={7} lg={7}>
+            </Grid>
+            <Grid item xs={7} sm={7} md={7} lg={7}>
               {details}
-            </Col>
-          </Row>
+            </Grid>
+          </div>
         </Grid>
       </ImageListItem>
     )
@@ -100,9 +85,17 @@ class FinanceOverviewPanel extends Component {
 
     return (
       <>
-        <CardHeader title='Financial status' style={this.cardHeaderStyle} />
-        <CardContent className={this.props.classes.content}>
-          <ImageList cellHeight={36} cols={1} className={this.props.classes.panel}>
+        <CardHeader title='Financial status' sx={{
+            paddingTop: '0px',
+            textAlign: 'center'
+        }} />
+        <CardContent sx={{
+            overflowX: 'hidden',
+            overflowY: 'auto'
+        }}>
+          <ImageList cellHeight={36} cols={1} sx={{
+              height: 300
+          }}>
             {result}
           </ImageList>
         </CardContent>
@@ -110,5 +103,3 @@ class FinanceOverviewPanel extends Component {
     )
   }
 }
-
-export default withStyles(styles)(FinanceOverviewPanel)
