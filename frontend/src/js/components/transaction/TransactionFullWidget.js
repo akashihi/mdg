@@ -1,5 +1,4 @@
 import React, {Fragment} from 'react';
-import classnames from 'classnames';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
@@ -35,7 +34,6 @@ export default class TransactionFullWidget extends React.Component {
     }
 
     render() {
-        const { classes } = this.props;
         const props = this.props;
         const transaction = props.transaction;
 

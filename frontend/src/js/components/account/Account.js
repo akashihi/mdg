@@ -27,7 +27,7 @@ export default class Account extends Component {
     if (account.get('loading')) {
       // Fast processing
       return <ClipLoader sizeUnit='px' size={15} loading />
-    };
+    }
 
     let balanceStyle = {
       color: 'black',

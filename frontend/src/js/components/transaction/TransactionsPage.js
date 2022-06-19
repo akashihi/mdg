@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import classnames from 'classnames'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Divider from '@mui/material/Divider'
@@ -28,7 +27,6 @@ export default class TransactionsPage extends Component {
   }
 
   render () {
-    const { classes } = this.props
     const props = this.props
 
     const title = 'Showing transactions from ' + props.periodBeginning + ' till ' + props.periodEnd

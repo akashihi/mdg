@@ -11,7 +11,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 
-function SmallTopBar(props) {
+function SmallTopBar() {
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);

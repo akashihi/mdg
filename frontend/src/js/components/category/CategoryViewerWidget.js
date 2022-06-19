@@ -39,7 +39,7 @@ export default class CategoryViewerWidget extends Component {
       return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
     }
 
-    const tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS();
+    //const tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS();
 
     return (
       <Fragment>
