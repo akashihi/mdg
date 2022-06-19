@@ -19,3 +19,24 @@
 .common-field-width {
   width: 320px
 }
+
+.nav-link {
+    color: red;
+    text-decoration: none;
+}
+
+.nav-link-selected {
+    color: blue!important;
+    text-decoration: underline;
+}
+
+.menu-button{
+    border:none;
+    margin-right: 1.2rem!important;
+}
+
+.selected-menu-btn{
+    border:none;
+    margin-right: 1.2rem!important;
+    border: 1px solid #ffffff!important;
+}

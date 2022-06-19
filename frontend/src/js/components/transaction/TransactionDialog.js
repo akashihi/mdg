@@ -1,23 +1,23 @@
 import React,{Fragment} from 'react';
 import {evaluate} from 'mathjs';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import {Grid, Row, Col} from 'react-flexbox-grid';
-import TextField from '@material-ui/core/TextField';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import PlaylistAdd from '@material-ui/icons/PlaylistAdd';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import moment from 'moment';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import DatePicker from 'react-date-picker'
 import TimePicker from 'react-time-picker';
-import Checkbox from '@material-ui/core/Checkbox';
+import Checkbox from '@mui/material/Checkbox';
 import RSelect from 'react-select';
 
 import {AccountMapper} from '../../util/AccountUtils'
@@ -51,9 +51,8 @@ class SimpleOperationsEditor extends React.Component {
         }
 
         return (
-            <Grid fluid>
-                <Row>
-                    <Col xs={5} sm={5} md={5} lg={4}>
+            <Grid  container spacing={2}>
+                    <Grid item xs={5} sm={5} md={5} lg={4}>
                         <FormControl error={textLeftError} fullWidth={true}>
                             <InputLabel htmlFor={'source-simple'}>{textLeftLabel}</InputLabel>
                             <Select value={operations[0].account_id}
@@ -62,12 +61,12 @@ class SimpleOperationsEditor extends React.Component {
                                 {props.accounts.getAccounts()}
                             </Select>
                         </FormControl>
-                    </Col>
-                    <Col xs={2} sm={2} md={2} lg={2}>
+                    </Grid>
+                    <Grid item xs={2} sm={2} md={2} lg={2}>
                         <TextField label={textLabel} error={textError} value={operations[1].amount}
                                    onChange={props.onAmountFunc}/>
-                    </Col>
-                    <Col xsOffset={1} xs={5} sm={5} md={5} lg={4}>
+                    </Grid>
+                    <Grid item xsOffset={1} xs={5} sm={5} md={5} lg={4}>
                         <FormControl error={textRightError} fullWidth={true}>
                             <InputLabel htmlFor={'destination-simple'}>{textRightLabel}</InputLabel>
                             <Select value={operations[1].account_id}
@@ -76,8 +75,7 @@ class SimpleOperationsEditor extends React.Component {
                                 {props.accounts.getLimitedAccounts(operations[0])}
                             </Select>
                         </FormControl>
-                    </Col>
-                </Row>
+                    </Grid>
             </Grid>
         );
     }
@@ -159,18 +157,17 @@ class FullOperationsEditor extends React.Component {
             }
 
             return (
-                <Grid fluid key={'op'+index}>
-                    <Row>
-                        <Col xs={4} sm={4} md={4} lg={4}>
+                <Grid  container spacing={2}  key={'op'+index}>
+                        <Grid item xs={4} sm={4} md={4} lg={4}>
                             <TextField label={textLabel} error={textError} value={item.amount}
                                        onChange={(ev) => props.onAmountFunc(index, ev.target.value)}/>
-                        </Col>
-                        <Col xs={4} sm={4} md={4} lg={4}>
+                        </Grid>
+                        <Grid item xs={4} sm={4} md={4} lg={4}>
                             <TextField label={textRateLabel} error={textRateError} value={item.rate}
                                        onChange={(ev) => props.onRateFunc(index, ev.target.value)}
                                        disabled={parent.checkRateDisabled(item)}/>
-                        </Col>
-                        <Col xs={4} sm={4} md={4} lg={4}>
+                        </Grid>
+                        <Grid item xs={4} sm={4} md={4} lg={4}>
                             <FormControl error={textAccountError} fullWidth={true}>
                                 <InputLabel htmlFor={'destination-simple'}>{textAccountLabel}</InputLabel>
                                 <Select value={item.account_id}
@@ -179,21 +176,18 @@ class FullOperationsEditor extends React.Component {
                                     {props.accounts.getAccounts()}
                                 </Select>
                             </FormControl>
-                        </Col>
-                    </Row>
+                        </Grid>
                 </Grid>)
         });
 
         return (
             <Fragment>
                 {ops}
-                    <Grid fluid>
-                        <Row>
-                            <Col xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
+                    <Grid  container spacing={2}>
+                            <Grid item xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
                                  lgOffset={5}>
                                 <IconButton onClick={props.operationAddFunc}><PlaylistAdd/></IconButton>
-                            </Col>
-                        </Row>
+                            </Grid>
                     </Grid>
             </Fragment>
         );
@@ -355,26 +349,20 @@ export default class TransactionDialog extends React.Component {
 
         return (<Dialog title='Transaction editing' open={props.open} scroll={'paper'} maxWidth={'md'} fullWidth={true}>
             <DialogContent>
-                <Grid fluid>
-                    <Row>
-                        <Col xs={12} sm={12} md={6} lg={6}>
+                <Grid  container spacing={2}>
+                        <Grid item xs={12} sm={12} md={6} lg={6}>
                             <DatePicker value={ts.toDate()} onChange={::this.onDateChange}/>
-                        </Col>
-                        <Col xs={12} sm={12} md={6} lg={6}>
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={6} lg={6}>
                             <TimePicker value={ts.toDate()} onChange={::this.onTimeChange}/>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col xs={12} sm={12} md={12} lg={12}>
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={12} lg={12}>
                             <RSelect options={tags} isMulti={true} onChange={::this.onTagEdit} value={selectedTags}/>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col xs={12} sm={12} md={12} lg={12}>
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={12} lg={12}>
                             <TextField label='Comment on transaction' fullWidth={true} multiline={true} rows={4}
                                        value={transaction.get('comment')} onChange={(event) => ::this.onChange('comment', event.target.value)}/>
-                        </Col>
-                    </Row>
+                        </Grid>
                 </Grid>
                 <Divider/>
                 <Tabs value={activeTab} onChange={::this.switchTab}>
@@ -395,12 +383,10 @@ export default class TransactionDialog extends React.Component {
                                                                           operationAddFunc={::this.onOperationAdd}
                                                                           primaryCurrency={props.primaryCurrency}
                                                                           accounts={accounts}/>}
-                <Grid fluid>
-                    <Row>
-                        <Col xs={12} sm={12} md={12} lg={12}>
+                <Grid  container spacing={2}>
+                        <Grid item xs={12} sm={12} md={12} lg={12}>
                             <div style={validationErrorStyle}>{errors.get('transaction')}</div>
-                        </Col>
-                    </Row>
+                        </Grid>
                 </Grid>
             </DialogContent>
             <DialogActions>

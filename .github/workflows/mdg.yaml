@@ -147,7 +147,7 @@ jobs:
       - uses: actions/setup-node@v2
       - name: Install dependencies
         working-directory: ./frontend
-        run: npm ci --legacy-peer-deps
+        run: npm ci
       - name: Lint
         working-directory: ./frontend
         run: npm run lint
@@ -162,7 +162,7 @@ jobs:
       - uses: actions/setup-node@v2
       - name: Install dependencies
         working-directory: ./frontend
-        run: npm ci --legacy-peer-deps
+        run: npm ci
       - name: Build package
         working-directory: ./frontend
         run: npm run build

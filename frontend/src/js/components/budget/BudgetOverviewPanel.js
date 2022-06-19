@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import { Grid, Row, Col } from 'react-flexbox-grid'
-import SegmentedProgressbar from '../../widgets/SegmentedProgressbar'
-import Divider from '@material-ui/core/Divider'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Grid from '@mui/material/Grid'
+import CircularProgressWithLabel from '@mui/material/CircularProgress'
+import Divider from '@mui/material/Divider'
 import { Progress } from 'react-sweet-progress'
 import 'react-sweet-progress/lib/style.css'
 
@@ -63,65 +63,55 @@ export default class BudgetOverviewPanel extends Component {
       <div>
         <CardHeader title={title} style={this.cardHeaderStyle} />
         <CardContent style={this.cardStyle}>
-          <Grid fluid>
-            <Row>
-              <Col xs={4} sm={4} md={4} lg={4}>
-                <div>Assets first day: {budget.get('incoming_amount').toFixed(2)}</div>
-              </Col>
-              <Col xs={4} sm={4} md={4} lg={4}>
-                <div style={{ textAlign: 'center' }}>Actual assets last
-                  day: {budget.get('outgoing_amount').actual.toFixed(2)} ({actualProfit})
-                </div>
-              </Col>
-              <Col xs={4} sm={4} md={4} lg={4}>
-                <div style={{ textAlign: 'right' }}>Expected assets last
-                  day: {budget.get('outgoing_amount').expected.toFixed(2)} ({expectedProfit})
-                </div>
-              </Col>
-            </Row>
+          <Grid container spacing={2}>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+              <div>Assets first day: {budget.get('incoming_amount').toFixed(2)}</div>
+            </Grid>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+              <div style={{ textAlign: 'center' }}>Actual assets last
+                day: {budget.get('outgoing_amount').actual.toFixed(2)} ({actualProfit})
+              </div>
+            </Grid>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+              <div style={{ textAlign: 'right' }}>Expected assets last
+                day: {budget.get('outgoing_amount').expected.toFixed(2)} ({expectedProfit})
+              </div>
+            </Grid>
             <Divider variant='middle' />
-            <Row>
-              <Col xs={4} sm={4} md={4} lg={4}>
-                <div>Income</div>
-              </Col>
-              <Col xs={4} sm={4} md={4} lg={4}>
-                <div style={{ textAlign: 'center' }}>Budget execution</div>
-              </Col>
-              <Col xs={4} sm={4} md={4} lg={4}>
-                <div style={{ textAlign: 'right' }}>Expenses</div>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs={1}>
-                <div style={{ width: '80px', height: '80px' }}>
-                  <SegmentedProgressbar percentage={incomePercentage} />
-                </div>
-              </Col>
-              <Col xsOffset={9} xs={1} lgOffset={expensePercentageOffset}>
-                <div style={{ width: '80px', height: '80px', textAlign: 'right' }}>
-                  <SegmentedProgressbar percentage={expensePercentage} />
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs={6} sm={6} md={6} lg={6}>
-                <div>{budget.get('state').income.actual} of {budget.get('state').income.expected}</div>
-              </Col>
-              <Col xs={6} sm={6} md={6} lg={6}>
-                <div style={{ textAlign: 'right' }}>{budget.get('state').expense.actual} of {budget.get('state').expense.expected}</div>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs={3} sm={2} md={2} lg={2}>
-                Spent today: {budget.get('state').change.actual}
-              </Col>
-              <Col xs={6} sm={8} md={8} lg={8}>
-                <Progress percent={percentActualChange} />
-              </Col>
-              <Col xs={3} sm={2} md={2} lg={2}>
-                <div style={{ textAlign: 'right' }}>Left today: {budget.get('state').change.expected}</div>
-              </Col>
-            </Row>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+              <div>Income</div>
+            </Grid>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+              <div style={{ textAlign: 'center' }}>Budget execution</div>
+            </Grid>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+              <div style={{ textAlign: 'right' }}>Expenses</div>
+            </Grid>
+            <Grid item xs={1}>
+              <div style={{ width: '80px', height: '80px' }}>
+                <CircularProgressWithLabel variant='determinate' value={incomePercentage} />
+              </div>
+            </Grid>
+            <Grid item xsOffset={9} xs={1} lgOffset={expensePercentageOffset}>
+              <div style={{ width: '80px', height: '80px', textAlign: 'right' }}>
+                <CircularProgressWithLabel variant='determinate' value={expensePercentage} />
+              </div>
+            </Grid>
+            <Grid item xs={6} sm={6} md={6} lg={6}>
+              <div>{budget.get('state').income.actual} of {budget.get('state').income.expected}</div>
+            </Grid>
+            <Grid item xs={6} sm={6} md={6} lg={6}>
+              <div style={{ textAlign: 'right' }}>{budget.get('state').expense.actual} of {budget.get('state').expense.expected}</div>
+            </Grid>
+            <Grid item xs={3} sm={2} md={2} lg={2}>
+              Spent today: {budget.get('state').change.actual}
+            </Grid>
+            <Grid item xs={6} sm={8} md={8} lg={8}>
+              <Progress percent={percentActualChange} />
+            </Grid>
+            <Grid item xs={3} sm={2} md={2} lg={2}>
+              <div style={{ textAlign: 'right' }}>Left today: {budget.get('state').change.expected}</div>
+            </Grid>
           </Grid>
         </CardContent>
       </div>

@@ -1,39 +1,21 @@
 import React, { Component } from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import classnames from 'classnames'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import Divider from '@material-ui/core/Divider'
-import GridList from '@material-ui/core/GridList'
-import GridListTile from '@material-ui/core/GridListTile'
-import { Grid, Row, Col } from 'react-flexbox-grid'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Divider from '@mui/material/Divider'
+import ImageList from '@mui/material/ImageList'
+import ImageListItem from '@mui/material/ImageListItem'
+import Grid from '@mui/material/Grid'
 import ClipLoader from 'react-spinners/ClipLoader'
-import Collapse from '@material-ui/core/Collapse'
-import IconButton from '@material-ui/core/IconButton'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import Collapse from '@mui/material/Collapse'
+import IconButton from '@mui/material/IconButton'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import Transaction from './TransactionFullWidget'
 import TransactionPager from '../../containers/TransactionsPager'
 import TransactionFilter from '../../containers/TransactionsFilter'
 import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog'
 
-const styles = theme => ({
-  expand: {
-    transform: 'rotate(0deg)',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest
-    }),
-    marginLeft: 'auto',
-    [theme.breakpoints.up('sm')]: {
-      marginRight: -8
-    }
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)'
-  }
-})
-
-class TransactionsPage extends Component {
+export default class TransactionsPage extends Component {
   state = { expanded: false }
 
   componentDidMount () {
@@ -45,7 +27,6 @@ class TransactionsPage extends Component {
   }
 
   render () {
-    const { classes } = this.props
     const props = this.props
 
     const title = 'Showing transactions from ' + props.periodBeginning + ' till ' + props.periodEnd
@@ -53,17 +34,17 @@ class TransactionsPage extends Component {
     let summary = ''
     if (props.selectedTotals.get('count') > 0) {
       summary = (
-        <GridListTile>
+        <ImageListItem>
           <Card>
             <CardContent style={{ textAlign: 'center' }}>Selected {props.selectedTotals.get('count')} transaction(s) with total change of {props.selectedTotals.get('change')}</CardContent>
           </Card>
-        </GridListTile>
+        </ImageListItem>
       )
     }
 
     const transactions = props.transactions.map(function (item, id) {
       return (
-        <GridListTile key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest} selectTxAction={props.actions.markTransaction} /></GridListTile>
+        <ImageListItem key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest} selectTxAction={props.actions.markTransaction} /></ImageListItem>
       )
     }).valueSeq()
 
@@ -73,7 +54,7 @@ class TransactionsPage extends Component {
         <Card>
           <CardContent>
             {title}
-            <IconButton className={classnames(classes.expand, { [classes.expandOpen]: this.state.expanded })} onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
+            <IconButton onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
               <ExpandMoreIcon />
             </IconButton>
           </CardContent>
@@ -84,33 +65,29 @@ class TransactionsPage extends Component {
           </CardContent>
         </Card>
         <Divider />
-        <GridList cols={1} cellHeight='auto'>
+        <ImageList cols={1} cellHeight='auto'>
           {summary}
-          <GridListTile>
+          <ImageListItem>
             <Card>
               <CardContent>
-                <Grid>
-                  <Row>
-                    <Col xs={1} />
-                    <Col xs={1}>Date</Col>
-                    <Col xs={3}>Comment</Col>
-                    <Col xs={2}>Amount</Col>
-                    <Col xs={2}>Accounts</Col>
-                    <Col xs={2}>Tags</Col>
-                    <Col xs={1} />
-                  </Row>
+                <Grid container spacing={2}>
+                  <Grid item xs={1} />
+                  <Grid item xs={1}>Date</Grid>
+                  <Grid item xs={3}>Comment</Grid>
+                  <Grid item xs={2}>Amount</Grid>
+                  <Grid item xs={2}>Accounts</Grid>
+                  <Grid item xs={2}>Tags</Grid>
+                  <Grid item xs={1} />
                 </Grid>
               </CardContent>
             </Card>
-          </GridListTile>
+          </ImageListItem>
           {props.waiting && <ClipLoader sizeUnit='px' size={150} loading />}
           {props.error && <h1>Unable to load transactions list</h1>}
           {transactions}
-        </GridList>
+        </ImageList>
         <TransactionPager />
       </div>
     )
   }
 }
-
-export default withStyles(styles)(TransactionsPage)

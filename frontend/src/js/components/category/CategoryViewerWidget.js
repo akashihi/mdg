@@ -1,7 +1,8 @@
 import React, {Component, Fragment} from 'react';
-import MuiTreeView from 'material-ui-treeview';
+//TODO https://mui.com/material-ui/react-tree-view/
+//import MuiTreeView from 'material-ui-treeview';
 import ClipLoader from 'react-spinners/ClipLoader';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import CategoryEditor from '../../containers/CategoryEditor.js';
 
 export default class CategoryViewerWidget extends Component {
@@ -15,7 +16,7 @@ export default class CategoryViewerWidget extends Component {
   }
 
   categoryToTree(category, id) {
-    
+
     if (category.has('children')) {
       return {
         id: id,
@@ -38,12 +39,12 @@ export default class CategoryViewerWidget extends Component {
       return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
     }
 
-    const tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS();
+    //const tree = props.categoryList.map(::this.categoryToTree).valueSeq().toJS();
 
     return (
       <Fragment>
         Categories:
-        <MuiTreeView tree={tree} onLeafClick={node => props.actions.editCategory(node.id)}/>
+          {/*<MuiTreeView tree={tree} onLeafClick={node => props.actions.editCategory(node.id)}/>*/}
         <Button color='primary' onClick={::this.onAddClick}>Add new category</Button>
         <CategoryEditor/>
       </Fragment>

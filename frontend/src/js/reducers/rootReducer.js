@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux'
-import { connectRouter } from 'connected-react-router'
 import BudgetSelectorReducer from './BudgetReducer'
 import CategoryReducer from './CategoryReducer'
 import CurrencyReducer from './CurrencyReducer'
@@ -12,8 +11,7 @@ import SettingReducer from './SettingReducer'
 import RateReducer from './RateReducer'
 import ReportReducer from './ReportReducer'
 
-export default (history) => combineReducers({
-  router: connectRouter(history),
+export default () => combineReducers({
   budget: BudgetSelectorReducer,
   category: CategoryReducer,
   currency: CurrencyReducer,

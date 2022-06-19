@@ -1,40 +1,35 @@
-import React, { Component, Fragment } from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import GridList from '@material-ui/core/GridList'
-import GridListTile from '@material-ui/core/GridListTile'
+import React, { Component } from 'react'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import ImageList from '@mui/material/ImageList'
+import ImageListItem from '@mui/material/ImageListItem'
 import Transaction from './TransactionShortWidget'
 
-const styles = {
-  content: {
-    overflowX: 'hidden',
-    overflowY: 'auto'
-  },
-  panel: {
-    height: 300
-  }
-}
-
-class TransactionsOverviewPanel extends Component {
+export default class TransactionsOverviewPanel extends Component {
   render () {
     const props = this.props
 
     const transactions = props.transactions.map((item, id) => {
-      return <GridListTile key={id}><Transaction transaction={item} accounts={props.accounts} /></GridListTile>
+      return <ImageListItem key={id}><Transaction transaction={item} accounts={props.accounts} /></ImageListItem>
     }).valueSeq()
 
     return (
       <>
         <CardHeader title='Last transactions' />
-        <CardContent className={this.props.classes.content}>
-          <GridList cellHeight={70} cols={1} className={this.props.classes.panel}>
+        <CardContent sx={{
+          overflowX: 'hidden',
+          overflowY: 'auto'
+        }}
+        >
+          <ImageList
+            cellHeight={70} cols={1} sx={{
+              height: 300
+            }}
+          >
             {transactions}
-          </GridList>
+          </ImageList>
         </CardContent>
       </>
     )
   }
 }
-
-export default withStyles(styles)(TransactionsOverviewPanel)

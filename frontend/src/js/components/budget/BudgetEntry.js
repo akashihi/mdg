@@ -1,9 +1,9 @@
 import React, {Component, Fragment} from 'react';
-import TextField from '@material-ui/core/TextField';
-import {Grid, Row, Col} from 'react-flexbox-grid';
-import SegmentedProgressbar from '../../widgets/SegmentedProgressbar'
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+import CircularProgressWithLabel  from '@mui/material/CircularProgress';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 export default class BudgetEntry extends Component {
@@ -49,11 +49,11 @@ export default class BudgetEntry extends Component {
             color_progress = 1/color_progress;
         }
         if (color_progress >= 95) {
-            entry_color = 'red'
+            entry_color = 'error'
         } else if (color_progress >= 80) {
-            entry_color = 'orange'
+            entry_color = 'secondary'
         } else {
-            entry_color = 'lime'
+            entry_color = 'success'
         }
 
         let change = <div/>;
@@ -61,12 +61,12 @@ export default class BudgetEntry extends Component {
         if (entry.get('account_type') === 'expense') {
             editors = (
                 <Fragment>
-                    <Col xsOffset={5} xs={3} smOffset={5} sm={3} mdOffset={6} md={3} lgOffset={1} lg={1}>
+                    <Grid item xsOffset={5} xs={3} smOffset={5} sm={3} mdOffset={6} md={3} lgOffset={1} lg={1}>
                         <FormControlLabel control={<Checkbox color='primary' checked={entry.get('even_distribution')} onChange={(ev, value) => ::this.onEdit('even_distribution', value, true)}/>} label={'Evenly distributed'}/>
-                    </Col>
-                    <Col xs={3} sm={3} md={3} lg={1}>
+                    </Grid>
+                    <Grid item xs={3} sm={3} md={3} lg={1}>
                         <FormControlLabel control={<Checkbox color='primary' checked={entry.get('proration')} onChange={(ev, value) => ::this.onEdit('proration', value, true)} disabled={!entry.get('even_distribution')}/>} label={'Prorate spendings'}/>
-                    </Col>
+                    </Grid>
                 </Fragment>
             );
             if (entry.get('change_amount')) {
@@ -75,28 +75,28 @@ export default class BudgetEntry extends Component {
         }
 
         return (
-            <Grid fluid>
-                <Row style={{paddingBottom:'8px'}}>
-                    <Col xs={3} sm={3} md={4} lg={3}>
+            <Grid container spacing={2}>
+                <div style={{paddingBottom:'8px'}}>
+                    <Grid item xs={3} sm={3} md={4} lg={3}>
                         <div>{entry.get('account_name')}&nbsp;({props.currency.get('name')})</div>
-                    </Col>
-                    <Col xs={3} sm={3} md={2} lg={1}>
+                    </Grid>
+                    <Grid item xs={3} sm={3} md={2} lg={1}>
                         {change}
-                    </Col>
-                    <Col xs={2} sm={2} md={2} lg={1}>
+                    </Grid>
+                    <Grid item xs={2} sm={2} md={2} lg={1}>
                         <div style={{width: '60px', height: '60px'}}>
-                            <SegmentedProgressbar percentage={progress} color={entry_color}/>
+                            <CircularProgressWithLabel variant='determinate' value={progress} color={entry_color}/>
                         </div>
-                    </Col>
-                    <Col xs={2} sm={2} md={2} lg={2}>
+                    </Grid>
+                    <Grid item xs={2} sm={2} md={2} lg={2}>
                         <TextField id={'budgetentry' + props.id} defaultValue={entry.get('expected_amount')} type='number'
                                    onBlur={::this.onSave} onChange={(ev) => ::this.onEdit('expected_amount', ev.target.value, false)}/>
-                    </Col>
-                    <Col xs={2} sm={2} md={2} lg={1}>
+                    </Grid>
+                    <Grid item xs={2} sm={2} md={2} lg={1}>
                         <div>{entry.get('actual_amount')}</div>
-                    </Col>
+                    </Grid>
                     {editors}
-                </Row>
+                </div>
             </Grid>
         )
     }
