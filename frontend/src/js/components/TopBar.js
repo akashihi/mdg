@@ -58,47 +58,21 @@ function SmallTopBar () {
 
 function PrimaryTopBar () {
   const location = useLocation();
+  const pathname = location.pathname
 
-  let buttonClassOverview = 'menu-button';
-  let buttonClassBudget = 'menu-button';
-  let buttonClassTransactions = 'menu-button';
-  let buttonClassReports = 'menu-button';
-  let buttonClassAccounts = 'menu-button';
-  let buttonClassSettings = 'menu-button';
-
-  switch (location.pathname) {
-    case '/':
-      buttonClassOverview = 'selected-menu-btn';
-      break;
-    case '/budget':
-      buttonClassBudget = 'selected-menu-btn';
-      break;
-    case '/transactions':
-      buttonClassTransactions = 'selected-menu-btn';
-      break;
-    case '/reports':
-      buttonClassReports = 'selected-menu-btn';
-      break;
-    case '/accounts':
-      buttonClassAccounts = 'selected-menu-btn';
-      break;
-    case '/settings':
-      buttonClassSettings = 'selected-menu-btn';
-      break;
-  }
   const leftButtons = (
     <>
-      <NavLink to='/' className='nav-link'><Button variant='contained' className={buttonClassOverview}> Overview</Button></NavLink>
-      <NavLink to='/budget' className='nav-link'><Button variant='contained' className={buttonClassBudget}>Budget</Button></NavLink>
-      <NavLink to='/transactions' className='nav-link'><Button variant='contained' className={buttonClassTransactions}>Transactions</Button></NavLink>
-      <NavLink to='/reports' className='nav-link'><Button variant='contained' className={buttonClassReports}>Reports</Button></NavLink>
-      <NavLink to='/accounts' className='nav-link'><Button variant='contained' className={buttonClassAccounts}>Accounts</Button></NavLink>
+      <NavLink to='/' className='nav-link'><Button variant='contained' className={pathname === '/' ? 'selected-menu-btn' : 'menu-button'}> Overview</Button></NavLink>
+      <NavLink to='/budget' className='nav-link'><Button variant='contained' className={pathname === '/budget' ? 'selected-menu-btn' : 'menu-button'}>Budget</Button></NavLink>
+      <NavLink to='/transactions' className='nav-link'><Button variant='contained' className={pathname === '/transactions' ? 'selected-menu-btn' : 'menu-button'}>Transactions</Button></NavLink>
+      <NavLink to='/reports' className='nav-link'><Button variant='contained' className={pathname === '/reports' ? 'selected-menu-btn' : 'menu-button'}>Reports</Button></NavLink>
+      <NavLink to='/accounts' className='nav-link'><Button variant='contained' className={pathname === '/accounts' ? 'selected-menu-btn' : 'menu-button'}>Accounts</Button></NavLink>
     </>
   )
 
   const rightButtons = (
     <>
-      <NavLink to='/settings' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className={buttonClassSettings}>Settings</Button></NavLink>
+      <NavLink to='/settings' className='nav-link'><Button variant='contained' className={pathname === '/settings' ? 'selected-menu-btn' : 'menu-button'}>Settings</Button></NavLink>
     </>
   )
   return (
