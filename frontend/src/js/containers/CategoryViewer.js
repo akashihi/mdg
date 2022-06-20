@@ -6,9 +6,9 @@ import * as CategoryActions from '../actions/CategoryActions'
 
 const mapStateToProps = (state) => {
   return {
-    categoryList: state.category.get('categoryList'),
-    loading: state.category.get('ui').get('categoryListLoading'),
-    error: state.category.get('ui').get('categoryListError')
+    categoryList: state.get('category').get('categoryList'),
+    loading: state.get('category').get('ui').get('categoryListLoading'),
+    error: state.get('category').get('ui').get('categoryListError')
   }
 }
 

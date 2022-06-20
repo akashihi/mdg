@@ -10,8 +10,8 @@ import * as TagActions from '../actions/TagActions'
 
 const mapStateToProps = (state) => {
   return {
-    waiting: state.transaction.get('ui').get('transactionListLoading'),
-    error: state.transaction.get('ui').get('transactionListError'),
+    waiting: state.get('transaction').get('ui').get('transactionListLoading'),
+    error: state.get('transaction').get('ui').get('transactionListError'),
     selectedTotals: selectMarkedTransactionsTotals(state),
     transactions: selectTransactions(state),
     periodBeginning: selectBeginningDate(state),

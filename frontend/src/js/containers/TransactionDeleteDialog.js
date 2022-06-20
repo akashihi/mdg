@@ -11,7 +11,7 @@ const mapStateToProps = (state) => {
   return {
     id: getTransactionToDeleteId(state),
     name: selectTransactionToDeleteName(state),
-    visible: state.transaction.get('delete').get('approvementDialogVisible')
+    visible: state.get('transaction').get('delete').get('approvementDialogVisible')
   }
 }
 
