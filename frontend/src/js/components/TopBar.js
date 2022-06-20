@@ -1,40 +1,40 @@
-import React, { Component, Fragment, useState } from 'react'
+import React, { Component, Fragment, useState } from 'react';
 
-import AppBar from '@mui/material/AppBar'
-import Toolbar from '@mui/material/Toolbar'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import MenuIcon from '@mui/icons-material/Menu'
-import IconButton from '@mui/material/IconButton'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import { NavLink, useLocation } from 'react-router-dom'
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import MenuIcon from '@mui/icons-material/Menu';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { NavLink, useLocation } from 'react-router-dom';
 
 function SmallTopBar () {
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const location = useLocation()
-  let currentPage
+  const location = useLocation();
+  let currentPage;
   switch (location.pathname) {
     case '/':
-      currentPage = 'Overview'
-      break
+      currentPage = 'Overview';
+      break;
     case '/budget':
-      currentPage = 'Budget'
-      break
+      currentPage = 'Budget';
+      break;
     case '/transactions':
-      currentPage = 'Transactions'
-      break
+      currentPage = 'Transactions';
+      break;
     case '/reports':
-      currentPage = 'Reports'
-      break
+      currentPage = 'Reports';
+      break;
     case '/accounts':
-      currentPage = 'Accounts'
-      break
+      currentPage = 'Accounts';
+      break;
     case '/settings':
-      currentPage = 'Settings'
-      break
+      currentPage = 'Settings';
+      break;
   }
   return (
     <AppBar position='static' className='hide-on-big'>
@@ -57,19 +57,48 @@ function SmallTopBar () {
 }
 
 function PrimaryTopBar () {
+  const location = useLocation();
+
+  let buttonClassOverview = 'menu-button';
+  let buttonClassBudget = 'menu-button';
+  let buttonClassTransactions = 'menu-button';
+  let buttonClassReports = 'menu-button';
+  let buttonClassAccounts = 'menu-button';
+  let buttonClassSettings = 'menu-button';
+
+  switch (location.pathname) {
+    case '/':
+      buttonClassOverview = 'selected-menu-btn';
+      break;
+    case '/budget':
+      buttonClassBudget = 'selected-menu-btn';
+      break;
+    case '/transactions':
+      buttonClassTransactions = 'selected-menu-btn';
+      break;
+    case '/reports':
+      buttonClassReports = 'selected-menu-btn';
+      break;
+    case '/accounts':
+      buttonClassAccounts = 'selected-menu-btn';
+      break;
+    case '/settings':
+      buttonClassSettings = 'selected-menu-btn';
+      break;
+  }
   const leftButtons = (
     <>
-      <NavLink to='/' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className={isActive => 'menu-button' + (isActive ? ' selected-menu-btn' : '')}> Overview</Button></NavLink>
-      <NavLink to='/budget' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button'>Budget</Button></NavLink>
-      <NavLink to='/transactions' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button'>Transactions</Button></NavLink>
-      <NavLink to='/reports' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button'>Reports</Button></NavLink>
-      <NavLink to='/accounts' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className='menu-button'>Accounts</Button></NavLink>
+      <NavLink to='/' className='nav-link'><Button variant='contained' className={buttonClassOverview}> Overview</Button></NavLink>
+      <NavLink to='/budget' className='nav-link'><Button variant='contained' className={buttonClassBudget}>Budget</Button></NavLink>
+      <NavLink to='/transactions' className='nav-link'><Button variant='contained' className={buttonClassTransactions}>Transactions</Button></NavLink>
+      <NavLink to='/reports' className='nav-link'><Button variant='contained' className={buttonClassReports}>Reports</Button></NavLink>
+      <NavLink to='/accounts' className='nav-link'><Button variant='contained' className={buttonClassAccounts}>Accounts</Button></NavLink>
     </>
   )
 
   const rightButtons = (
     <>
-      <NavLink to='/settings' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}>Settings</NavLink>
+      <NavLink to='/settings' className={isActive => 'nav-link' + (isActive ? ' nav-link-selected' : '')}><Button variant='contained' className={buttonClassSettings}>Settings</Button></NavLink>
     </>
   )
   return (

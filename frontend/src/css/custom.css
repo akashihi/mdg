@@ -21,13 +21,7 @@
 }
 
 .nav-link {
-    color: red;
     text-decoration: none;
-}
-
-.nav-link-selected {
-    color: blue!important;
-    text-decoration: underline;
 }
 
 .menu-button{
