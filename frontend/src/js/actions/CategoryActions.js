@@ -104,7 +104,7 @@ function findCategoryInListById (categoryId, categoryList) {
 export function editCategory (categoryId) {
   return (dispatch, getState) => {
     const state = getState()
-    const categoryList = state.category.get('categoryList')
+    const categoryList = state.get('category').get('categoryList')
     const category = findCategoryInListById(categoryId, categoryList)
     dispatch({
       type: CATEGORY_DIALOG_OPEN,
@@ -132,8 +132,8 @@ export function editCategorySave (newCategory) {
     })
 
     const state = getState()
-    const id = state.category.getIn(['dialog', 'id'])
-    const category = state.category.getIn(['dialog', 'category']).merge(newCategory)
+    const id = state.get('category').getIn(['dialog', 'id'])
+    const category = state.get('category').getIn(['dialog', 'category']).merge(newCategory)
     dispatch(updateCategory(id, category))
   }
 }
@@ -146,7 +146,7 @@ export function editCategoryDelete () {
     })
 
     const state = getState()
-    const id = state.category.getIn(['dialog', 'id'])
+    const id = state.get('category').getIn(['dialog', 'id'])
 
     dispatch({
       type: GET_CATEGORYLIST_REQUEST,

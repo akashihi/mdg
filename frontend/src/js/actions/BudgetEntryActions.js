@@ -79,7 +79,7 @@ export function updateBudgetEntry (id, entry) {
 
     const state = getState()
 
-    const budgetId = state.budgetentry.get('currentBudget').get('id')
+    const budgetId = state.get('budgetentry').get('currentBudget').get('id')
 
     const url = '/api/budget/' + budgetId + '/entry/' + id
 

@@ -71,17 +71,17 @@ export function loadTransactionList () {
     const state = getState()
 
     const paginationParams = {
-      pageSize: state.transactionview.get('pageSize'),
-      pageNumber: state.transactionview.get('pageNumber')
+      pageSize: state.get('transactionview').get('pageSize'),
+      pageNumber: state.get('transactionview').get('pageNumber')
     }
     const periodParams = {
-      notLater: state.transactionview.get('periodEnd').format('YYYY-MM-DDT23:59:59'),
-      notEarlier: state.transactionview.get('periodBeginning').format('YYYY-MM-DDT00:00:00')
+      notLater: state.get('transactionview').get('periodEnd').format('YYYY-MM-DDT23:59:59'),
+      notEarlier: state.get('transactionview').get('periodBeginning').format('YYYY-MM-DDT00:00:00')
     }
     const filter = {
-      comment: state.transactionview.get('commentFilter'),
-      tag: state.transactionview.get('tagFilter'),
-      account_id: state.transactionview.get('accountFilter')
+      comment: state.get('transactionview').get('commentFilter'),
+      tag: state.get('transactionview').get('tagFilter'),
+      account_id: state.get('transactionview').get('accountFilter')
     }
     const filterParams = { filter: JSON.stringify(filter) }
 
@@ -242,15 +242,15 @@ export function editTransactionChange (tx) {
 export function editTransactionSave () {
   return (dispatch, getState) => {
     const state = getState()
-    if (state.transaction.getIn(['dialog', 'closeOnSave'])) {
+    if (state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
       dispatch({
         type: TRANSACTION_DIALOG_CLOSE,
         payload: true
       })
     }
-    const transaction = state.transaction.getIn(['dialog', 'transaction'])
+    const transaction = state.get('transaction').getIn(['dialog', 'transaction'])
     dispatch(updateTransaction(transaction))
-    if (!state.transaction.getIn(['dialog', 'closeOnSave'])) {
+    if (!state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
       dispatch(createTransaction())
     }
   }
