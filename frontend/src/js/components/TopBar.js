@@ -57,8 +57,7 @@ function SmallTopBar () {
 }
 
 function PrimaryTopBar () {
-  const location = useLocation();
-  const pathname = location.pathname
+  const pathname = useLocation().pathname;
 
   const leftButtons = (
     <>
