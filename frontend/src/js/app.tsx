@@ -11,8 +11,7 @@ import 'whatwg-fetch';
 import rootReducer from './reducers/rootReducer';
 import Main from './components/Main';
 
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-const store = createStore(rootReducer(), Map(), composeEnhancers(applyMiddleware(thunk)));
+const store = createStore(rootReducer(), Map(), compose(applyMiddleware(thunk)));
 
 const App = () => (
   <Router>
