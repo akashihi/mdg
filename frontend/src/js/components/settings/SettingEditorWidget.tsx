@@ -14,17 +14,7 @@ import {SettingState} from "../../reducers/SettingReducer";
 import {SettingsEditorProps} from "../../containers/SettingsEditor";
 
 export function SettingEditorWidget(props:SettingsEditorProps) {
-    /*onPrimaryCurrencyChange(value) {
-        this.props.actions.setPrimaryCurrency(value);
-    }
-
-    onCloseTransactionDialogChange(value) {
-        this.props.actions.setCloseTransactionDialog(value);
-    }
-
-    onLanguageChange(value) {
-        this.props.actions.setLanguage(value);
-    }
+    /*
 
     onReindexClick() {
         this.props.actions.reindexTransactions();
@@ -39,44 +29,11 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
         */
     /*return (
         <Fragment>
-        <Grid item xs={12} sm={6} md={6} lg={4}>
-            <p>Primary currency:</p>
-        </Grid>
-        <Grid item xs={12} sm={6} md={6} lg={4}>
-            <Select
-                value={props.primaryCurrency}
-                onChange={(ev) => ::this.onPrimaryCurrencyChange(ev.target.value)}
-            >
-                {currencies}
-            </Select>
-        </Grid>
-        <Grid item xs={6} sm={6} md={6} lg={4}>
-            <p>By default close transaction dialog:</p>
-        </Grid>
-        <Grid item xs={6} sm={6} md={6} lg={4}>
-            <Checkbox checked={this.props.closeTransactionDialog}
-                      onChange={(ev, value) => ::this.onCloseTransactionDialogChange(value)}/>
-        </Grid>
         <Grid item xs={6} sm={6} md={6} lg={4}>
             <p>Reindex transactions search data:</p>
         </Grid>
         <Grid item xs={6} sm={6} md={6} lg={4}>
             <Button color='primary' onClick={::this.onReindexClick}>Start reindex</Button>
-        </Grid>
-        <Grid item xs={12} sm={6} md={6} lg={4}>
-            <p>Language:</p>
-        </Grid>
-        <Grid item xs={12} sm={6} md={6} lg={4}>
-            <Select
-                value={props.language}
-                onChange={(ev) => ::this.onLanguageChange(ev.target.value)}
-            >
-                <MenuItem value='cz' key='cz'>cz</MenuItem>
-                <MenuItem value='de' key='de'>de</MenuItem>
-                <MenuItem value='en-US' key='en-US'>en-US</MenuItem>
-                <MenuItem value='lt' key='lt'>lt</MenuItem>
-                <MenuItem value='ru' key='ru'>ru</MenuItem>
-            </Select>
         </Grid>
     </Fragment>
     )*/
@@ -92,7 +49,7 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
             <p>Primary currency:</p>
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={4}>
-            <Select value={props.setting.primaryCurrency} onChange={(event) => props.setPrimaryCurrency(event.target.value as number)}>
+            <Select value={props.setting.primaryCurrency} onChange={event => props.setPrimaryCurrency(event.target.value as number)}>
                 {currencies}
             </Select>
         </Grid>
@@ -100,7 +57,7 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
             <p>Automatically close transaction dialog:</p>
         </Grid>
         <Grid item xs={6} sm={6} md={6} lg={4}>
-            <Checkbox checked={props.setting.closeTransactionDialog}/>
+            <Checkbox checked={props.setting.closeTransactionDialog} onChange={(event, value) => props.setCloseTransactionDialog(value)}/>
         </Grid>
         <Grid item xs={6} sm={6} md={6} lg={4}>
             <p>Reindex transactions search data:</p>
@@ -112,7 +69,7 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
             <p>Language:</p>
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={4}>
-            <Select value={props.setting.language}>
+            <Select value={props.setting.language} onChange={event => props.setLanguage(event.target.value)}>
                 <MenuItem value='cz' key='cz'>Čeština</MenuItem>
                 <MenuItem value='de' key='de'>Deutsch</MenuItem>
                 <MenuItem value='en-US' key='en-US'>English</MenuItem>

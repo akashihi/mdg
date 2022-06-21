@@ -66,23 +66,23 @@ export function setPrimaryCurrency (currencyId: number) {
   }
 }
 
-export function setCloseTransactionDialog (value) {
+export function setCloseTransactionDialog(value: boolean) {
   return (dispatch) => {
     dispatch({
       type: SettingActionType.SettingsLoad,
       payload: {}
     })
 
-    const url = '/api/setting/ui.transaction.closedialog'
+    const url = '/api/settings/ui.transaction.closedialog'
     const method = 'PUT'
-    const setting = { type: 'setting', id: 'ui.transaction.closedialog', attributes: { value: value.toString() } }
+    const setting = { id: 'ui.transaction.closedialog', value: value.toString() }
 
     fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/vnd.mdg+json'
+          'Content-Type': 'application/vnd.mdg+json;version=1'
       },
-      body: JSON.stringify({ data: setting })
+      body: JSON.stringify(setting)
     })
       .then(parseJSON)
       .then(checkApiError)
@@ -96,23 +96,23 @@ export function setCloseTransactionDialog (value) {
   }
 }
 
-export function setLanguage (value) {
+export function setLanguage (value:string) {
   return (dispatch) => {
     dispatch({
       type: SettingActionType.SettingsLoad,
       payload: true
     })
 
-    const url = '/api/setting/ui.language'
+    const url = '/api/settings/ui.language'
     const method = 'PUT'
-    const setting = { type: 'setting', id: 'ui.language', attributes: { value } }
+    const setting = { id: 'ui.language',value:value }
 
     fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/vnd.mdg+json'
+          'Content-Type': 'application/vnd.mdg+json;version=1'
       },
-      body: JSON.stringify({ data: setting })
+      body: JSON.stringify(setting)
     })
       .then(parseJSON)
       .then(checkApiError)
