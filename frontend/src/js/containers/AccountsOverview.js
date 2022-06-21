@@ -6,8 +6,8 @@ import * as AccountActions from '../actions/AccountActions'
 
 const mapStateToProps = (state) => {
   return {
-    currencies: state.currency.get('currencies'),
-    assetAccounts: state.account.get('assetAccountList')
+    currencies: state.get('currency').get('currencies'),
+    assetAccounts: state.get('account').get('assetAccountList')
   }
 }
 

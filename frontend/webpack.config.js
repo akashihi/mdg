@@ -9,7 +9,7 @@ const webpackDashboard = require('webpack-dashboard/plugin');
 const build = {
     context: path.resolve(__dirname, 'src'), // `__dirname` is root of project and `src` is source
     entry: {
-        app: ['./js/app.js']
+        app: ['./js/app.tsx']
     },
     plugins: [
         new HtmlWebpackPlugin({
@@ -30,6 +30,13 @@ const build = {
     module: {
         rules: [
             {
+                test: /\.ts(x*)$/, // Check for all js files
+                exclude: /node_modules/,
+                use: [{
+                    loader: 'ts-loader'
+                }]
+            },
+            {
                 test: /\.js$/, // Check for all js files
                 exclude: /node_modules/,
                 use: [{
@@ -45,12 +52,15 @@ const build = {
                 ]
             }
         ]
-    }
+    },
+    resolve: {
+        extensions: ['.tsx', '.ts', '.js'],
+    },
 };
 
 const development = {
     mode: 'development',
-    devtool: 'eval-source-map',
+    devtool: 'inline-source-map',
     devServer: {
         static: path.resolve(__dirname, 'src'), // `__dirname` is root of the project
         historyApiFallback: true,

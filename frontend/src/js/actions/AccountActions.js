@@ -68,7 +68,7 @@ export function updateAccount (id, account) {
     }
 
     const state = getState()
-    const selectedBudgetId = state.budgetentry.get('currentBudget').get('id')
+    const selectedBudgetId = state.get('budgetentry').get('currentBudget').get('id')
 
     let url = '/api/account'
     let method = 'POST'
@@ -115,7 +115,7 @@ export function createAccount () {
       payload: {
         full: true,
         id: -1,
-        account: Map({ name: '', account_type: 'asset', balance: 0, currency_id: state.setting.get('primaryCurrency') })
+        account: Map({ name: '', account_type: 'asset', balance: 0, currency_id: state.get('setting').get('primaryCurrency') })
       }
     })
   }
@@ -150,7 +150,7 @@ export function editAccountSave (account) {
       payload: true
     })
     const state = getState()
-    const id = state.account.getIn(['dialog', 'id'])
+    const id = state.get('account').getIn(['dialog', 'id'])
     dispatch(updateAccount(id, account))
   }
 }

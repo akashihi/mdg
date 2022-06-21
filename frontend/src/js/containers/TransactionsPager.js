@@ -6,9 +6,9 @@ import * as TransactionActions from '../actions/TransactionActions'
 
 const mapStateToProps = (state) => {
   return {
-    pageSize: state.transactionview.get('pageSize'),
-    pageNumber: state.transactionview.get('pageNumber'),
-    count: state.transactionview.get('count')
+    pageSize: state.get('transactionview').get('pageSize'),
+    pageNumber: state.get('transactionview').get('pageNumber'),
+    count: state.get('transactionview').get('count')
   }
 }
 

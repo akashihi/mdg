@@ -7,13 +7,13 @@ import * as BudgetEntryActions from '../actions/BudgetEntryActions'
 
 const mapStateToProps = (state) => {
   return {
-    budget: state.budgetentry.get('currentBudget'),
-    entries: state.budgetentry.get('entryList'),
-    loading: state.budgetentry.get('ui').get('entryListLoading'),
-    error: state.budgetentry.get('ui').get('entryListError'),
-    emptyVisible: state.budgetentry.get('ui').get('hiddenEntriesVisible'),
-    accounts: state.account.get('accountList'),
-    currencies: state.currency.get('currencies')
+    budget: state.get('budgetentry').get('currentBudget'),
+    entries: state.get('budgetentry').get('entryList'),
+    loading: state.get('budgetentry').get('ui').get('entryListLoading'),
+    error: state.get('budgetentry').get('ui').get('entryListError'),
+    emptyVisible: state.get('budgetentry').get('ui').get('hiddenEntriesVisible'),
+    accounts: state.get('account').get('accountList'),
+    currencies: state.get('currency').get('currencies')
   }
 }
 

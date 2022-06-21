@@ -4,10 +4,10 @@ import FinanceOverviewPanel from '../components/report/FinanceOverviewPanel'
 
 const mapStateToProps = (state) => {
   return {
-    currencies: state.currency.get('currencies'),
-    totals: state.report.get('totalsReport'),
-    categoryList: state.category.get('categoryList'),
-    primaryCurrency: state.setting.get('primaryCurrency')
+    currencies: state.get('currency').get('currencies'),
+    totals: state.get('report').get('totalsReport'),
+    categoryList: state.get('category').get('categoryList'),
+    primaryCurrency: state.get('setting').get('primaryCurrency')
   }
 }
 

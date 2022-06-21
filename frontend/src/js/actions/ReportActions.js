@@ -67,9 +67,9 @@ function reportDatesToParams (getState) {
   const state = getState()
 
   const params = {
-    start: state.report.get('startDate').format('YYYY-MM-DD'),
-    end: state.report.get('endDate').format('YYYY-MM-DD'),
-    granularity: state.report.get('granularity')
+    start: state.get('report').get('startDate').format('YYYY-MM-DD'),
+    end: state.get('report').get('endDate').format('YYYY-MM-DD'),
+    granularity: state.get('report').get('granularity')
   }
   return '?' + jQuery.param(params)
 }
@@ -189,8 +189,8 @@ export function loadTypeAssetReport () {
       .then(checkApiError)
       .then(function (json) {
         const categoryMapper = item => {
-          if (state.category.get('categoryList').has(parseInt(item.get('id')))) {
-            return item.set('id', state.category.get('categoryList').get(parseInt(item.get('id'))).get('name'))
+          if (state.get('category').get('categoryList').has(parseInt(item.get('id')))) {
+            return item.set('id', state.get('category').get('categoryList').get(parseInt(item.get('id'))).get('name'))
           }
           return item
         }
@@ -227,8 +227,8 @@ export function loadCurrencyAssetReport () {
       .then(checkApiError)
       .then(function (json) {
         const currencyMapper = item => {
-          if (state.currency.get('currencies').has(parseInt(item.get('id')))) {
-            return item.set('id', state.currency.get('currencies').get(parseInt(item.get('id'))).get('name'))
+          if (state.get('currency').get('currencies').has(parseInt(item.get('id')))) {
+            return item.set('id', state.get('currency').get('currencies').get(parseInt(item.get('id'))).get('name'))
           }
           return item
         }
@@ -251,8 +251,8 @@ export function loadCurrencyAssetReport () {
 
 function getAccountMapper (state) {
   return item => {
-    if (state.account.get('accountList').has(parseInt(item.get('id')))) {
-      return item.set('id', state.account.get('accountList').get(parseInt(item.get('id'))).get('name'))
+    if (state.get('account').get('accountList').has(parseInt(item.get('id')))) {
+      return item.set('id', state.get('account').get('accountList').get(parseInt(item.get('id'))).get('name'))
     }
     return item
   }

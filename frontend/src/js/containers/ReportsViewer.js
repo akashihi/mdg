@@ -6,19 +6,19 @@ import * as ReportActions from '../actions/ReportActions'
 
 const mapStateToProps = (state) => {
   return {
-    simpleAssetReport: state.report.get('simpleAssetReport'),
-    assetReportCurrency: state.report.get('currencyAssetReport'),
-    assetReportType: state.report.get('typeAssetReport'),
-    budgetExecution: state.report.get('budgetExecutionReport'),
-    incomeByAccount: state.report.get('incomeByAccount'),
-    expenseByAccount: state.report.get('expenseByAccount'),
-    incomeByAccountWeight: state.report.get('incomeByAccountWeight'),
-    expenseByAccountWeight: state.report.get('expenseByAccountWeight'),
-    startDate: state.report.get('startDate'),
-    endDate: state.report.get('endDate'),
-    granularity: state.report.get('granularity'),
-    primaryCurrency: state.setting.get('primaryCurrency'),
-    currencies: state.currency.get('currencies')
+    simpleAssetReport: state.get('report').get('simpleAssetReport'),
+    assetReportCurrency: state.get('report').get('currencyAssetReport'),
+    assetReportType: state.get('report').get('typeAssetReport'),
+    budgetExecution: state.get('report').get('budgetExecutionReport'),
+    incomeByAccount: state.get('report').get('incomeByAccount'),
+    expenseByAccount: state.get('report').get('expenseByAccount'),
+    incomeByAccountWeight: state.get('report').get('incomeByAccountWeight'),
+    expenseByAccountWeight: state.get('report').get('expenseByAccountWeight'),
+    startDate: state.get('report').get('startDate'),
+    endDate: state.get('report').get('endDate'),
+    granularity: state.get('report').get('granularity'),
+    primaryCurrency: state.get('setting').get('primaryCurrency'),
+    currencies: state.get('currency').get('currencies')
   }
 }
 
