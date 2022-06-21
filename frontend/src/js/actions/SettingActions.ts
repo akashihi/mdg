@@ -1,30 +1,43 @@
+import {Action} from 'redux';
+
 import { checkApiError, dataToMap, parseJSON } from '../util/ApiUtils'
 
-import { GET_SETTING_REQUEST, GET_SETTING_SUCCESS, GET_SETTING_FAILURE } from '../constants/Setting'
+import {SettingActionType} from '../constants/Setting'
 import { loadAccountList } from './AccountActions'
 import { loadTotalsReport } from './ReportActions'
+
+export interface SettingApiObject {
+    "currency.primary": string;
+    "ui.transaction.closedialog": string;
+    "ui.language": string;
+}
+
+export interface SettingAction extends Action {
+    payload: Partial<SettingApiObject>;
+}
 
 export function loadSettingList () {
   return (dispatch) => {
     dispatch({
-      type: GET_SETTING_REQUEST,
-      payload: true
+      type: SettingActionType.SettingsLoad,
+      payload: {}
     })
 
     fetch('/api/setting')
       .then(parseJSON)
       .then(checkApiError)
-      .then(dataToMap)
+      //.then(dataToMap)
       .then(function (map) {
-        dispatch({
-          type: GET_SETTING_SUCCESS,
+        /*dispatch({
+          type: SettingActionType.StoreSettings,
           payload: map
-        })
+        })*/
+          console.log(map)
       })
       .catch(function (response) {
         dispatch({
-          type: GET_SETTING_FAILURE,
-          payload: response
+          type: SettingActionType.SettingsLoadFail,
+          payload: {}
         })
       })
   }
@@ -33,8 +46,8 @@ export function loadSettingList () {
 export function setPrimaryCurrency (currencyId) {
   return (dispatch) => {
     dispatch({
-      type: GET_SETTING_REQUEST,
-      payload: true
+      type: SettingActionType.SettingsLoad,
+      payload: {}
     })
 
     const url = '/api/setting/currency.primary'
@@ -55,8 +68,8 @@ export function setPrimaryCurrency (currencyId) {
       .then(() => dispatch(loadTotalsReport()))
       .catch(function (response) {
         dispatch({
-          type: GET_SETTING_FAILURE,
-          payload: response.json
+          type: SettingActionType.SettingsLoadFail,
+          payload: {}
         })
         dispatch(loadAccountList())
       })
@@ -66,8 +79,8 @@ export function setPrimaryCurrency (currencyId) {
 export function setCloseTransactionDialog (value) {
   return (dispatch) => {
     dispatch({
-      type: GET_SETTING_REQUEST,
-      payload: true
+      type: SettingActionType.SettingsLoad,
+      payload: {}
     })
 
     const url = '/api/setting/ui.transaction.closedialog'
@@ -86,8 +99,8 @@ export function setCloseTransactionDialog (value) {
       .then(() => dispatch(loadSettingList()))
       .catch(function (response) {
         dispatch({
-          type: GET_SETTING_FAILURE,
-          payload: response.json
+          type: SettingActionType.SettingsLoadFail,
+          payload: {}
         })
       })
   }
@@ -96,7 +109,7 @@ export function setCloseTransactionDialog (value) {
 export function setLanguage (value) {
   return (dispatch) => {
     dispatch({
-      type: GET_SETTING_REQUEST,
+      type: SettingActionType.SettingsLoad,
       payload: true
     })
 
@@ -116,7 +129,7 @@ export function setLanguage (value) {
       .then(() => dispatch(loadSettingList()))
       .catch(function (response) {
         dispatch({
-          type: GET_SETTING_FAILURE,
+          type: SettingActionType.SettingsLoadFail,
           payload: response.json
         })
       })
@@ -126,7 +139,7 @@ export function setLanguage (value) {
 export function reindexTransactions () {
   return (dispatch) => {
     dispatch({
-      type: GET_SETTING_REQUEST,
+      type: SettingActionType.SettingsLoad,
       payload: true
     })
 
@@ -144,7 +157,7 @@ export function reindexTransactions () {
       .then(() => dispatch(loadSettingList()))
       .catch(function (response) {
         dispatch({
-          type: GET_SETTING_FAILURE,
+          type: SettingActionType.SettingsLoadFail,
           payload: response.json
         })
       })

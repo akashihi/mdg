@@ -50,6 +50,7 @@
         "formik-mui-lab": "^1.0.0-alpha.3",
         "highcharts": "^10.1.0",
         "highcharts-react-official": "^3.1.0",
+        "immer": "^9.0.15",
         "immutable": "^4.0.0-rc.12",
         "jquery": "^3.2.1",
         "mathjs": "^10.6.1",

@@ -72,10 +72,10 @@ class SettingEditor extends Component {
     render() {
         const props = this.props;
 
-        if (props.ui.get('settingListLoading')) {
+        if (props.ui.settingListLoading) {
             return <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
         }
-        if (props.ui.get('settingListError')) {
+        if (props.ui.settingListError) {
             return <h1>Unable to load settings</h1>
         }
 
@@ -135,7 +135,7 @@ export default class SettingsPage extends Component {
 
         return (
             <Grid  container spacing={2}>
-                <SettingEditor ui={props.setting.get('ui')} currency={props.currency}
+                <SettingEditor ui={props.setting.ui} currency={props.currency}
                                primaryCurrency={props.primaryCurrency}
                                closeTransactionDialog={props.closeTransactionDialog}
                                language={props.language}

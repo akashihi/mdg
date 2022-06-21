@@ -7,9 +7,9 @@ import * as SettingActions from '../actions/SettingActions'
 
 const mapStateToProps = (state) => {
   return {
-    primaryCurrency: state.get('setting').get('primaryCurrency'),
-    closeTransactionDialog: state.get('setting').get('closeTransactionDialog'),
-    language: state.get('setting').get('language'),
+    primaryCurrency: state.get('setting').primaryCurrency,
+    closeTransactionDialog: state.get('setting').closeTransactionDialog,
+    language: state.get('setting').language,
     setting: state.get('setting'),
     currency: state.get('currency')
   }
