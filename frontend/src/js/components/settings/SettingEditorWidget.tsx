@@ -36,11 +36,11 @@ export function SettingEditorWidget(props) {
         }
 
         */
-    const currencies = props.currency.get('currencies').filter((v) => v.get('active')).map((v, k) => {
+    const currencies = props.currency.currencies.filter((v) => v.active).map((v) => {
         return (
-            <MenuItem value={k} key={k}>{v.get('name')}</MenuItem>
+            <MenuItem value={v.id} key={v.id}>{v.name}</MenuItem>
         )
-    }).valueSeq().toJS();
+    });
     /*return (
         <Fragment>
         <Grid item xs={12} sm={6} md={6} lg={4}>
