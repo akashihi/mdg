@@ -36,7 +36,7 @@ export function SettingEditorWidget(props) {
         }
 
         */
-    const currencies = props.currency.currencies.filter((v) => v.active).map((v) => {
+    const currencies = props.activeCurrencies.map((v) => {
         return (
             <MenuItem value={v.id} key={v.id}>{v.name}</MenuItem>
         )

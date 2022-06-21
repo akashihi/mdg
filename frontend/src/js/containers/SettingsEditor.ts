@@ -1,12 +1,13 @@
 import { connect } from 'react-redux';
 
+import { selectActiveCurrencies } from '../selectors/CurrencySelector'
 import SettingsEditorWidget from '../components/settings/SettingEditorWidget';
 import { setPrimaryCurrency,  setCloseTransactionDialog, setLanguage, reindexTransactions } from '../actions/SettingActions';
 
 const mapStateToProps = (state) => {
   return {
     setting: state.get('setting'),
-    currency: state.get('currency')
+    activeCurrencies: selectActiveCurrencies(state)
   };
 };
 
