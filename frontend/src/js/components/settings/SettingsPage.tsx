@@ -11,9 +11,10 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 
-import CategoryViewer from '../containers/CategoryViewer.js';
+import SettingsEditor from '../../containers/SettingsEditor';
+import CategoryViewer from '../../containers/CategoryViewer.js';
 
-class CurrencyEditor extends Component {
+/*class CurrencyEditor extends Component {
     onCurrencyChange(k, item) {
         const modified = item.set('active', !item.get('active'));
         this.props.currencyActions.updateCurrency(k, modified)
@@ -127,20 +128,19 @@ class SettingEditor extends Component {
                 </Grid>
         </Fragment>)
     }
-}
+}*/
 
-export default class SettingsPage extends Component {
-    render() {
-        const props = this.props;
 
+export function SettingsPage() {
         return (
             <Grid  container spacing={2}>
-                <SettingEditor ui={props.setting.ui} currency={props.currency}
+                <SettingsEditor/>
+                {/*<SettingEditor ui={props.setting.ui} currency={props.currency}
                                primaryCurrency={props.primaryCurrency}
                                closeTransactionDialog={props.closeTransactionDialog}
                                language={props.language}
-                               actions={props.actions}/>
-                <Divider/>
+                               actions={props.actions}/>*/}
+                {/*<Divider/>
                     <Grid item xs={12} sm={6} md={6} lg={4}>
                         <p>Active currencies:</p>
                     </Grid>
@@ -150,8 +150,9 @@ export default class SettingsPage extends Component {
                 <Divider/>
                     <Grid item xs={12} sm={12} md={12} lg={12}>
                         <CategoryViewer/>
-                    </Grid>
+                    </Grid>*/}
             </Grid>
         )
-    }
 }
+
+export default SettingsPage;

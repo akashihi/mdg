@@ -1,18 +1,18 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 
-import Grid from '@mui/material/Grid'
-import { Routes, Route } from 'react-router-dom'
+import Grid from '@mui/material/Grid';
+import { Routes, Route } from 'react-router-dom';
 
-import TopBar from '../containers/TopBar'
-import TransactionCreate from '../containers/TransactionCreate'
-import Overview from './Overview'
-import BudgetViewer from '../containers/BudgetViewer'
-import AccountsViewer from '../containers/AccountsViewer'
-import TransactionsViewer from '../containers/TransactionsViewer'
-import SettingsViewer from '../containers/SettingsViewer'
-import RateViewer from '../containers/RateViewer'
-import TransactionEditor from '../containers/TransactionEditor'
-import ReportsViewer from '../containers/ReportsViewer'
+import TopBar from '../containers/TopBar';
+import TransactionCreate from '../containers/TransactionCreate';
+import Overview from './Overview';
+import BudgetViewer from '../containers/BudgetViewer';
+import AccountsViewer from '../containers/AccountsViewer';
+import TransactionsViewer from '../containers/TransactionsViewer';
+import SettingsPage from './settings/SettingsPage';
+import RateViewer from '../containers/RateViewer';
+import TransactionEditor from '../containers/TransactionEditor';
+import ReportsViewer from '../containers/ReportsViewer';
 
 window.notifications = React.createRef()
 
@@ -29,7 +29,7 @@ export default class Main extends Component {
               <Route path='/transactions' element={<TransactionsViewer />} />
               <Route path='/reports' element={<ReportsViewer />} />
               <Route path='/accounts' element={<AccountsViewer />} />
-              <Route path='/settings' element={<SettingsViewer />} />
+              <Route path='/settings' element={<SettingsPage />} />
             </Routes>
           </Grid>
           <Grid item xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
