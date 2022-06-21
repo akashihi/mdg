@@ -77,27 +77,24 @@ export function setLanguage (locale:string) {
 
 export function reindexTransactions () {
   return (dispatch) => {
-    dispatch({
-      type: SettingActionType.SettingsLoad,
-      payload: true
-    })
+    dispatch({type: SettingActionType.InitiateReindex, payload: {}})
 
-    const url = '/api/setting/mnt.transaction.reindex'
+    const url = '/api/settings/mnt.transaction.reindex'
     const method = 'PUT'
 
     fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/vnd.mdg+json'
+          'Content-Type': 'application/vnd.mdg+json;version=1'
       }
     })
       .then(parseJSON)
       .then(checkApiError)
       .then(() => dispatch(loadSettingList()))
-      .catch(function (response) {
+      .catch(function () {
         dispatch({
-          type: SettingActionType.SettingsLoadFail,
-          payload: response.json
+          type: SettingActionType.ReindexFail,
+          payload: {}
         })
       })
   }

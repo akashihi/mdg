@@ -12,6 +12,10 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import {SettingState} from "../../reducers/SettingReducer";
 import {SettingsEditorProps} from "../../containers/SettingsEditor";
+import Backdrop from '@mui/material/Backdrop';
+import {ReindexUiState, SettingUiState} from "../../constants/Setting";
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 
 export function SettingEditorWidget(props:SettingsEditorProps) {
     /*
@@ -19,9 +23,7 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
     onReindexClick() {
         this.props.actions.reindexTransactions();
     }*/
-    /*    if (props.ui.settingListLoading) {
-            return <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
-        }
+    /*
         if (props.ui.settingListError) {
             return <h1>Unable to load settings</h1>
         }
@@ -45,6 +47,13 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
     });
 
     return (<Fragment>
+        <Backdrop open={props.setting.ui !== SettingUiState.Available}>
+            <CircularProgress color="inherit" />
+        </Backdrop>
+        <Backdrop open={props.setting.indexingUi === ReindexUiState.InProgress}>
+            <CircularProgress color="inherit" />
+            <Typography color='info' paragraph={true} variant='inherit'>Indexing transactions content may take a while</Typography>
+        </Backdrop>
         <Grid item xs={12} sm={6} md={6} lg={4}>
             <p>Primary currency:</p>
         </Grid>
@@ -63,7 +72,8 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
             <p>Reindex transactions search data:</p>
         </Grid>
         <Grid item xs={6} sm={6} md={6} lg={4}>
-            <Button color='primary'>Start reindex</Button>
+            <Button color='primary' onClick={props.reindexTransactions}>Start reindex</Button>
+            {props.setting.indexingUi === ReindexUiState.Failed && <Typography color='error' paragraph={true} variant='inherit'>Reaindexing failed. Check logs and try one more time</Typography> }
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={4}>
             <p>Language:</p>
