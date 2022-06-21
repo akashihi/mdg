@@ -33,97 +33,46 @@ export function loadSettingList () {
   }
 }
 
-export function setPrimaryCurrency (currencyId: number) {
-  return (dispatch) => {
-    dispatch({
-      type: SettingActionType.SettingsLoad,
-      payload: {}
-    })
+function applySetting(id: string, value: string) {
+    return (dispatch) => {
+        dispatch({type: SettingActionType.SettingsLoad, payload: {}})
 
-    const url = '/api/settings/currency.primary'
-    const method = 'PUT'
-    const setting = { id: 'currency.primary', value: currencyId.toString() }
+        const url = `/api/settings/${id}`
+        const method = 'PUT'
+        const setting = { id: id, value: value }
 
-    fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/vnd.mdg+json;version=1'
-      },
-      body: JSON.stringify(setting)
-    })
-      .then(parseJSON)
-      .then(checkApiError)
-      .then(() => dispatch(loadSettingList()))
-      .then(() => dispatch(loadAccountList()))
-      .then(() => dispatch(loadTotalsReport()))
-      .catch(function (response) {
-        dispatch({
-          type: SettingActionType.SettingsLoadFail,
-          payload: {}
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json;version=1'
+            },
+            body: JSON.stringify(setting)
         })
-        dispatch(loadAccountList())
-      })
-  }
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(() => dispatch(loadSettingList()))
+            .then(() => dispatch(loadAccountList()))
+            .then(() => dispatch(loadTotalsReport()))
+            .catch(function (response) {
+                dispatch({
+                    type: SettingActionType.SettingsLoadFail,
+                    payload: {}
+                })
+                dispatch(loadAccountList())
+            })
+    }
+}
+
+export function setPrimaryCurrency (currencyId: number) {
+    return applySetting('currency.primary', currencyId.toString());
 }
 
 export function setCloseTransactionDialog(value: boolean) {
-  return (dispatch) => {
-    dispatch({
-      type: SettingActionType.SettingsLoad,
-      payload: {}
-    })
-
-    const url = '/api/settings/ui.transaction.closedialog'
-    const method = 'PUT'
-    const setting = { id: 'ui.transaction.closedialog', value: value.toString() }
-
-    fetch(url, {
-      method,
-      headers: {
-          'Content-Type': 'application/vnd.mdg+json;version=1'
-      },
-      body: JSON.stringify(setting)
-    })
-      .then(parseJSON)
-      .then(checkApiError)
-      .then(() => dispatch(loadSettingList()))
-      .catch(function (response) {
-        dispatch({
-          type: SettingActionType.SettingsLoadFail,
-          payload: {}
-        })
-      })
-  }
+    return applySetting('ui.transaction.closedialog', value.toString());
 }
 
-export function setLanguage (value:string) {
-  return (dispatch) => {
-    dispatch({
-      type: SettingActionType.SettingsLoad,
-      payload: true
-    })
-
-    const url = '/api/settings/ui.language'
-    const method = 'PUT'
-    const setting = { id: 'ui.language',value:value }
-
-    fetch(url, {
-      method,
-      headers: {
-          'Content-Type': 'application/vnd.mdg+json;version=1'
-      },
-      body: JSON.stringify(setting)
-    })
-      .then(parseJSON)
-      .then(checkApiError)
-      .then(() => dispatch(loadSettingList()))
-      .catch(function (response) {
-        dispatch({
-          type: SettingActionType.SettingsLoadFail,
-          payload: response.json
-        })
-      })
-  }
+export function setLanguage (locale:string) {
+    return applySetting('ui.language', locale);
 }
 
 export function reindexTransactions () {
