@@ -1,7 +1,7 @@
 import { Map } from 'immutable'
 import { createSelector } from 'reselect'
 
-import { getTransactions, getAccounts } from '../selectors/StateGetters'
+import { getTransactions, getAccounts } from './StateGetters'
 import { timestampToFormattedDate } from '../util/DateUtil'
 
 export const selectTransactions = createSelector(

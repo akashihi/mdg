@@ -33,23 +33,23 @@ export function loadSettingList () {
   }
 }
 
-export function setPrimaryCurrency (currencyId) {
+export function setPrimaryCurrency (currencyId: number) {
   return (dispatch) => {
     dispatch({
       type: SettingActionType.SettingsLoad,
       payload: {}
     })
 
-    const url = '/api/setting/currency.primary'
+    const url = '/api/settings/currency.primary'
     const method = 'PUT'
-    const setting = { type: 'setting', id: 'currency.primary', attributes: { value: currencyId.toString() } }
+    const setting = { id: 'currency.primary', value: currencyId.toString() }
 
     fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/vnd.mdg+json'
+        'Content-Type': 'application/vnd.mdg+json;version=1'
       },
-      body: JSON.stringify({ data: setting })
+      body: JSON.stringify(setting)
     })
       .then(parseJSON)
       .then(checkApiError)

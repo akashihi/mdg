@@ -11,8 +11,9 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import {SettingState} from "../../reducers/SettingReducer";
+import {SettingsEditorProps} from "../../containers/SettingsEditor";
 
-export function SettingEditorWidget(props) {
+export function SettingEditorWidget(props:SettingsEditorProps) {
     /*onPrimaryCurrencyChange(value) {
         this.props.actions.setPrimaryCurrency(value);
     }
@@ -36,11 +37,6 @@ export function SettingEditorWidget(props) {
         }
 
         */
-    const currencies = props.activeCurrencies.map((v) => {
-        return (
-            <MenuItem value={v.id} key={v.id}>{v.name}</MenuItem>
-        )
-    });
     /*return (
         <Fragment>
         <Grid item xs={12} sm={6} md={6} lg={4}>
@@ -84,13 +80,19 @@ export function SettingEditorWidget(props) {
         </Grid>
     </Fragment>
     )*/
-    console.log(props)
+
+    const currencies = props.activeCurrencies.map((v) => {
+        return (
+            <MenuItem value={v.id} key={v.id}>{v.name}</MenuItem>
+        )
+    });
+
     return (<Fragment>
         <Grid item xs={12} sm={6} md={6} lg={4}>
             <p>Primary currency:</p>
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={4}>
-            <Select value={props.setting.primaryCurrency}>
+            <Select value={props.setting.primaryCurrency} onChange={(event) => props.setPrimaryCurrency(event.target.value as number)}>
                 {currencies}
             </Select>
         </Grid>
