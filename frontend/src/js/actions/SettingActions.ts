@@ -1,15 +1,15 @@
 import {Action} from 'redux';
 
-import { checkApiError, dataToMap, parseJSON } from '../util/ApiUtils'
+import { checkApiError, parseJSON } from '../util/ApiUtils'
 
 import {SettingActionType} from '../constants/Setting'
 import { loadAccountList } from './AccountActions'
 import { loadTotalsReport } from './ReportActions'
 
 export interface SettingApiObject {
-    "currency.primary": string;
-    "ui.transaction.closedialog": string;
-    "ui.language": string;
+    'currency.primary': string;
+    'ui.transaction.closedialog': string;
+    'ui.language': string;
 }
 
 export interface SettingAction extends Action {
@@ -18,27 +18,17 @@ export interface SettingAction extends Action {
 
 export function loadSettingList () {
   return (dispatch) => {
-    dispatch({
-      type: SettingActionType.SettingsLoad,
-      payload: {}
-    })
+    dispatch({type: SettingActionType.SettingsLoad,payload: {}})
 
-    fetch('/api/setting')
+    fetch('/api/settings')
       .then(parseJSON)
       .then(checkApiError)
-      //.then(dataToMap)
-      .then(function (map) {
-        /*dispatch({
-          type: SettingActionType.StoreSettings,
-          payload: map
-        })*/
-          console.log(map)
+      .then(function (data:any) {
+          const map = Object.fromEntries(data.settings.map(item => [item.id, item.value]));
+        dispatch({type: SettingActionType.StoreSettings, payload: map});
       })
-      .catch(function (response) {
-        dispatch({
-          type: SettingActionType.SettingsLoadFail,
-          payload: {}
-        })
+      .catch(function () {
+        dispatch({type: SettingActionType.SettingsLoadFail, payload: {}})
       })
   }
 }
