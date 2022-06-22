@@ -8,7 +8,7 @@ import Currency from "../models/Currency";
 
 export interface SettingsEditorState {
     setting: SettingState;
-    activeCurrencies: Array<Currency>
+    activeCurrencies: Currency[]
 }
 
 const mapStateToProps = (state):SettingsEditorState => {

@@ -13,6 +13,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 
 import SettingsEditor from '../../containers/SettingsEditor';
+import CurrencyEditor from "../../containers/CurrencyEditor";
 import CategoryViewer from '../../containers/CategoryViewer.js';
 
 /*class CurrencyEditor extends Component {
@@ -58,9 +59,14 @@ import CategoryViewer from '../../containers/CategoryViewer.js';
 
 export function SettingsPage() {
         return (
+            <Fragment>
                 <Paper variant='outlined'>
                     <SettingsEditor/>
                 </Paper>
+                <Paper variant='outlined'>
+                    <CurrencyEditor/>
+                </Paper>
+            </Fragment>
         )
     /*<SettingEditor ui={props.setting.ui} currency={props.currency}
                                primaryCurrency={props.primaryCurrency}

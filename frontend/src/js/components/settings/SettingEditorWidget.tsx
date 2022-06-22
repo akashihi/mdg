@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, {Fragment} from 'react';
 import Grid from '@mui/material/Grid';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -47,7 +47,7 @@ export function SettingEditorWidget(props:SettingsEditorProps) {
             <p>Reindex transactions search data:</p>
         </Grid>
         <Grid item xs={6} sm={6} md={6} lg={4}>
-            <Button color='primary' onClick={props.reindexTransactions}>Start reindex</Button>
+            <Button variant='contained' color='primary' onClick={props.reindexTransactions}>Start reindex</Button>
             {props.setting.indexingUi === ReindexUiState.Failed && <Typography color='error' paragraph={true} variant='inherit'>Reaindexing failed. Check logs and try one more time</Typography> }
         </Grid>
         <Box width='100%'/>
