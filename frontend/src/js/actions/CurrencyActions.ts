@@ -8,7 +8,7 @@ import {loadTotalsReport} from './ReportActions'
 import Currency from "../models/Currency";
 
 export interface CurrencyAction extends Action {
-    payload: Array<Partial<Currency>>;
+    payload: Currency[];
 }
 
 export function loadCurrencyList() {
@@ -30,24 +30,17 @@ export function loadCurrencyList() {
             .then(() => dispatch(loadCategoryList()))
             .then(() => dispatch(loadTotalsReport()))
             .catch(function (response) {
-                dispatch({
-                    type: CurrencyActionType.CurrenciesLoadFail,
-                    payload: {}
-                })
+                dispatch({type: CurrencyActionType.CurrenciesLoadFail, payload: {}})
             })
     }
 }
 
 export function updateCurrency(currency: Currency, isActive: boolean) {
     return (dispatch) => {
-        console.log(currency)
         if (currency === undefined) {
             return;
         }
-        dispatch({
-            type: CurrencyActionType.CurrenciesLoad,
-            payload: {}
-        })
+        dispatch({type: CurrencyActionType.CurrenciesLoad,payload: {}})
 
         const updatedCurrency:Currency = produce(draft => {draft.active = isActive})(currency);
 
@@ -63,6 +56,6 @@ export function updateCurrency(currency: Currency, isActive: boolean) {
         })
             .then(parseJSON)
             .then(checkApiError)
-            .then(() => dispatch(loadCurrencyList()))
+            .then(() => dispatch({type: CurrencyActionType.CurrencyStatusUpdate, payload: [updatedCurrency]}))
     }
 }
