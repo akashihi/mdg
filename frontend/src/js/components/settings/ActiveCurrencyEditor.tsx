@@ -7,6 +7,8 @@ import ListItemButton from '@mui/material/ListItemButton';
 import Currency from "../../models/Currency";
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 
 export function ActiveCurrencyEditor(props: CurrencyEditorProps) {
     const [selectedActive, setSelectedActive] = useState(null);
@@ -24,8 +26,12 @@ export function ActiveCurrencyEditor(props: CurrencyEditorProps) {
 
     return (
         <Fragment>
+            <Backdrop open={!props.available}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={4} md={4} lg={4}>
+                    Available currencies:
                     <List sx={{
                         position: 'relative',
                         overflow: 'auto',
@@ -42,6 +48,7 @@ export function ActiveCurrencyEditor(props: CurrencyEditorProps) {
                     <Button color='primary' onClick={() => props.updateCurrency(props.inactiveCurrencies[selectedInactive], true)}>&gt;&gt;</Button>
                 </Grid>
                 <Grid item xs={12} sm={4} md={4} lg={4}>
+                    Active currencies:
                     <List sx={{
                         position: 'relative',
                         overflow: 'auto',

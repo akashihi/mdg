@@ -13,49 +13,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 
 import SettingsEditor from '../../containers/SettingsEditor';
-import CurrencyEditor from "../../containers/CurrencyEditor";
+import CurrencyEditor from '../../containers/CurrencyEditor';
 import CategoryViewer from '../../containers/CategoryViewer.js';
-
-/*class CurrencyEditor extends Component {
-    onCurrencyChange(k, item) {
-        const modified = item.set('active', !item.get('active'));
-        this.props.currencyActions.updateCurrency(k, modified)
-    }
-
-    render() {
-        const cls = this;
-        const props = this.props;
-
-        if (props.currency.get('loading')) {
-            return <ClipLoader sizeUnit={'px'} size={180} loading={true}/>
-        }
-
-        if (props.currency.get('error')) {
-            return <h1>Error loading currency list</h1>
-        }
-
-        const allCurrencies = props.currency.get('currencies').map((v, k) => {
-            return (
-                <ListItem key={k} dense button>
-                    <ListItemText primary={v.get('name')}/>
-                    <ListItemSecondaryAction><Checkbox checked={v.get('active')}
-                                                       onChange={() => cls.onCurrencyChange(k, v)}/></ListItemSecondaryAction>
-                </ListItem>
-            )
-        }).valueSeq().toJS();
-
-        return (<List sx={{
-            position: 'relative',
-            overflow: 'auto',
-            maxHeight: 160,
-            margin: '1em'
-        }}>
-            {allCurrencies}
-        </List>)
-    }
-}
-*/
-
 
 export function SettingsPage() {
         return (
@@ -68,18 +27,7 @@ export function SettingsPage() {
                 </Paper>
             </Fragment>
         )
-    /*<SettingEditor ui={props.setting.ui} currency={props.currency}
-                               primaryCurrency={props.primaryCurrency}
-                               closeTransactionDialog={props.closeTransactionDialog}
-                               language={props.language}
-                               actions={props.actions}/>*/
-    /*<Divider/>
-    <Grid item xs={12} sm={6} md={6} lg={4}>
-        <p>Active currencies:</p>
-    </Grid>
-    <Grid item xs={12} sm={6} md={6} lg={4}>
-        <CurrencyEditor currency={props.currency} currencyActions={this.props.currencyActions}/>
-    </Grid>
+    /*
 <Divider/>
     <Grid item xs={12} sm={12} md={12} lg={12}>
         <CategoryViewer/>

@@ -18,11 +18,12 @@ export default function currencyReducer (state:CurrencyState = initialState, act
     case CurrencyActionType.CurrenciesLoad:
         return produce(state, draft => {draft.available = false});
     case CurrencyActionType.StoreCurrencies:
-        return produce(state, draft => {draft.available = false; draft.currencies = action.payload});
+        return produce(state, draft => {draft.available = true; draft.currencies = action.payload});
     case CurrencyActionType.CurrenciesLoadFail:
         return produce(state, draft => {draft.available = false});
       case CurrencyActionType.CurrencyStatusUpdate:
           return produce(state, draft => {
+              draft.available = true;
               const pos = draft.currencies.findIndex(c => c.id == action.payload[0].id);
               if (pos !== undefined) {
                   draft.currencies[pos].active = action.payload[0].active;

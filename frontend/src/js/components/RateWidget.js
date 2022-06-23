@@ -8,7 +8,7 @@ import ClipLoader from 'react-spinners/ClipLoader'
 
 export default class RateWidget extends Component {
   render () {
-    const props = this.props
+    /*const props = this.props
     if (!props.currency.available) {
       return <ClipLoader sizeUnit='px' size={80} loading />
     }
@@ -26,13 +26,13 @@ export default class RateWidget extends Component {
           )
         }
         return ''
-      })
+      })*/
 
     return (
       <List>
         <ListSubheader>Currency rates</ListSubheader>
         <Divider />
-        {rates}
+        {/*rates*/}
       </List>
     )
   }
