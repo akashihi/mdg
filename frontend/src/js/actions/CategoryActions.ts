@@ -5,6 +5,8 @@ import { CategoryActionType } from '../constants/Category'
 
 import {Action} from 'redux';
 import Category from "../models/Category";
+import { produce } from 'immer';
+import {CategoryState} from "../reducers/CategoryReducer";
 
 export interface CategoryAction extends Action {
     payload: Category[];
@@ -46,12 +48,14 @@ export function updateCategory(category: Category) {
             method = 'PUT';
         }
 
+        const updatedCategory:CategoryState= produce(draft => {if (category.parent_id === -1) { draft.parent_id = null }})(category);
+
         fetch(url, {
             method,
             headers: {
                 'Content-Type': 'application/vnd.mdg+json;version=1'
             },
-            body: JSON.stringify(category)
+            body: JSON.stringify(updatedCategory)
         })
             .then(parseJSON)
             .then(checkApiError)
@@ -62,7 +66,7 @@ export function updateCategory(category: Category) {
 
 export function deleteCategory(id: number) {
     return (dispatch) => {
-        dispatch({type: CategoryActionType.CategoriesLoad, payload: true });
+        dispatch({type: CategoryActionType.CategoriesLoad, payload: {} });
 
         const url = `/api/categories/${id}`;
         const method = 'DELETE';

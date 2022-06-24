@@ -4,7 +4,8 @@ import TreeItem from '@mui/lab/TreeItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import EditIcon from '@mui/icons-material/Edit';
-import ClipLoader from 'react-spinners/ClipLoader';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Category from "../../models/Category";
 import {CategoryViewerProps} from "../../containers/CategoryViewer";
@@ -57,18 +58,11 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
         })
     }
 
-    /*
-       if (props.error) {
-        return (<h1>Error loading category list</h1>)
-      }
-
-      if (props.loading) {
-        return (<ClipLoader sizeUnit={'px'} size={150} loading={true}/>)
-      }
-*/
-
     return (
         <Fragment>
+            <Backdrop open={!props.available}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             Categories:
             <TreeView
                 defaultCollapseIcon={<ExpandMoreIcon/>}
