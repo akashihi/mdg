@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Optional;
 
 @Service
@@ -46,6 +48,21 @@ public class CategoryService {
     public Collection<Category> list() {
         var roots = categoryRepository.findTopCategories();
         roots.forEach(this::enrichWithChildren);
+        roots.sort((l, r) -> {
+                    if (l.getAccountType().equals(r.getAccountType())) {
+                        return 0;
+                    }
+                    if (l.getAccountType().equals(AccountType.ASSET)) {
+                        return -1;
+                    } else if (r.getAccountType().equals(AccountType.ASSET)) {
+                        return 1;
+                    } else if (l.getAccountType().equals(AccountType.INCOME)) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+        );
         return roots;
     }
 
