@@ -15,10 +15,6 @@ const initialState: CategoryState = {
 
 export default function categoryReducer(state: CategoryState = initialState, action: CategoryAction) {
     switch (action.type) {
-        case CategoryActionType.OpenEditor:
-            return state;
-        case CategoryActionType.CloseEditor:
-            return state;
         case CategoryActionType.CategoriesLoad:
             return produce(state, draft => {draft.available = false});
         case CategoryActionType.CategoriesStore:

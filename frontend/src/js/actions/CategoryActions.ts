@@ -1,11 +1,10 @@
 import {Map} from 'immutable'
 
-import {checkApiError, parseJSON, dataToMap, mapToData} from '../util/ApiUtils'
+import {checkApiError, parseJSON, mapToData} from '../util/ApiUtils'
 import {loadAccountList} from './AccountActions'
 
 import {
     GET_CATEGORYLIST_REQUEST,
-    CATEGORY_DIALOG_OPEN,
     CATEGORY_DIALOG_CLOSE, CategoryActionType
 } from '../constants/Category'
 
@@ -67,16 +66,26 @@ export function updateCategory(id, category) {
     }
 }
 
-export function createCategory() {
+export function deleteCategory(id: number) {
     return (dispatch) => {
         dispatch({
-            type: CATEGORY_DIALOG_OPEN,
-            payload: {
-                full: true,
-                category: Map({account_type: 'income', priority: 1, name: '', parent_id: -1}),
-                id: -1
+            type: CategoryActionType.CategoriesLoad,
+            payload: true
+        })
+
+        const url = `/api/categories/${id}`
+        const method = 'DELETE'
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json;version=1'
             }
         })
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(() => dispatch(loadCategoryList()))
+            .catch(() => dispatch(loadCategoryList()))
     }
 }
 
@@ -99,29 +108,6 @@ function findCategoryInListById(categoryId, categoryList) {
     return result
 }
 
-export function editCategory(categoryId) {
-    return (dispatch, getState) => {
-        const state = getState()
-        const categoryList = state.get('category').get('categoryList')
-        const category = findCategoryInListById(categoryId, categoryList)
-        dispatch({
-            type: CATEGORY_DIALOG_OPEN,
-            payload: {
-                full: false,
-                category,
-                id: categoryId
-            }
-        })
-    }
-}
-
-export function editCategoryCancel() {
-    return {
-        type: CATEGORY_DIALOG_CLOSE,
-        payload: true
-    }
-}
-
 export function editCategorySave(newCategory) {
     return (dispatch, getState) => {
         dispatch({
@@ -133,37 +119,5 @@ export function editCategorySave(newCategory) {
         const id = state.get('category').getIn(['dialog', 'id'])
         const category = state.get('category').getIn(['dialog', 'category']).merge(newCategory)
         dispatch(updateCategory(id, category))
-    }
-}
-
-export function editCategoryDelete() {
-    return (dispatch, getState) => {
-        dispatch({
-            type: CATEGORY_DIALOG_CLOSE,
-            payload: true
-        })
-
-        const state = getState()
-        const id = state.get('category').getIn(['dialog', 'id'])
-
-        dispatch({
-            type: GET_CATEGORYLIST_REQUEST,
-            payload: true
-        })
-
-        let url = '/api/category'
-        const method = 'DELETE'
-        url = url + '/' + id
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json'
-            }
-        })
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(() => dispatch(loadCategoryList()))
-            .catch(() => dispatch(loadCategoryList()))
     }
 }

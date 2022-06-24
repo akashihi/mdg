@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import CategoryViewerWidget from '../components/category/CategoryViewerWidget';
-import { updateCategory, createCategory } from '../actions/CategoryActions';
+import { updateCategory, deleteCategory } from '../actions/CategoryActions';
 import Category from '../models/Category';
 
 export interface CategoryViewerState {
@@ -15,7 +15,7 @@ const mapStateToProps = (state):CategoryViewerState => {
         available: state.get('category').available
     }
 }
-const mapDispatchToProps = { updateCategory, createCategory };
+const mapDispatchToProps = { updateCategory, deleteCategory };
 
 export type CategoryViewerProps = CategoryViewerState & typeof mapDispatchToProps
 

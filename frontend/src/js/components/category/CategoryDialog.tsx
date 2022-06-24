@@ -16,6 +16,7 @@ export interface CategoryDialogProps {
     category: Partial<Category>;
     categoryList: Category[];
     close: () => void;
+    delete: () => void;
 }
 
 export function CategoryDialog(props: CategoryDialogProps) {
@@ -83,9 +84,9 @@ export function CategoryDialog(props: CategoryDialogProps) {
                                 margin='normal'
                                 component={TextField}
                                 className='common-field-width'>
-                                <MenuItem key='asset' value='asset'>Asset account</MenuItem>
-                                <MenuItem key='income' value='income'>Income account</MenuItem>
-                                <MenuItem key='expense' value='expense'>Expense account</MenuItem>
+                                {!props.full && <MenuItem key='asset' value='ASSET'>Asset account</MenuItem>}
+                                <MenuItem key='income' value='INCOME'>Income account</MenuItem>
+                                <MenuItem key='expense' value='EXPENSE'>Expense account</MenuItem>
                             </Field>
                             <br/>
                             <Field
@@ -96,7 +97,7 @@ export function CategoryDialog(props: CategoryDialogProps) {
                                 helperText='Please select parent'
                                 margin='normal'
                                 component={TextField}
-                                disabled={values.account_type === 'asset'}
+                                disabled={values.account_type === 'ASSET'}
                                 className='common-field-width'>
                                 {mapCategoryListToMenu(values.account_type)}
                             </Field>
@@ -105,7 +106,7 @@ export function CategoryDialog(props: CategoryDialogProps) {
                             <ErrorMessage name='priority' component='div'/>
                         </DialogContent>
                         <DialogActions>
-                            <Button color='primary' disabled={props.full || values.account_type === 'asset'} variant='contained'>Delete</Button>
+                            <Button color='primary' disabled={props.full || values.account_type === 'ASSET'} variant='contained' onClick={props.delete}>Delete</Button>
                             <Button color='primary' disabled={isSubmitting} onClick={submitForm}>Save</Button>
                             <Button color='secondary' onClick={props.close}>Cancel</Button>
                         </DialogActions>

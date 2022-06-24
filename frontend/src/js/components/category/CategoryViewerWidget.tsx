@@ -16,10 +16,29 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
     const [fullEditor, setFullEditor] = useState(false)
     const [editedCategory, setEditedCategory] = useState<Partial<Category>>({})
 
+    const createCategory = () => {
+        setDialogVisible(true);
+        setFullEditor(true);
+        setEditedCategory({account_type: 'INCOME', priority: 1, name: '', parent_id: -1});
+    }
+
+    const editCategory = (c:Category) => {
+        setDialogVisible(true);
+        setFullEditor(false);
+        setEditedCategory(c);
+    }
+
+    const deleteCategory = () => {
+        setDialogVisible(false);
+        if (editedCategory.id !== undefined) {
+            props.deleteCategory(editedCategory.id);
+        }
+    }
+
     const renderCategoryLabel = (c: Category) => {
         const title = `${c.name} (${c.account_type.charAt(0).toUpperCase()}${c.account_type.slice(1).toLowerCase()})`
         return (
-            <p>{title}&nbsp;<Button variant='text' size='small'><EditIcon/></Button></p>
+            <p>{title}&nbsp;<Button variant='text' size='small' onClick={()=>editCategory(c)}><EditIcon/></Button></p>
         )
     }
 
@@ -33,11 +52,6 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
         })
     }
 
-    const createCategory = () => {
-        setDialogVisible(true);
-        setFullEditor(true);
-        setEditedCategory({account_type: 'income', priority: 1, name: '', parent_id: -1});
-    }
     /*
        if (props.error) {
         return (<h1>Error loading category list</h1>)
@@ -60,7 +74,7 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
                 {renderTree(props.categoryList)}
             </TreeView>
             <Button color='primary' variant='outlined' onClick={createCategory}>Add new category</Button>
-            <CategoryDialog open={dialogVisible} category={editedCategory} full={fullEditor} categoryList={props.categoryList} close={()=> setDialogVisible(false)}/>
+            <CategoryDialog open={dialogVisible} category={editedCategory} full={fullEditor} categoryList={props.categoryList} close={()=> setDialogVisible(false)} delete={deleteCategory}/>
         </Fragment>
     )
 }
