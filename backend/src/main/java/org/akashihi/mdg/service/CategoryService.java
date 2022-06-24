@@ -46,6 +46,21 @@ public class CategoryService {
     public Collection<Category> list() {
         var roots = categoryRepository.findTopCategories();
         roots.forEach(this::enrichWithChildren);
+        roots.sort((l, r) -> {
+                    if (l.getAccountType().equals(r.getAccountType())) {
+                        return 0;
+                    }
+                    if (l.getAccountType().equals(AccountType.ASSET)) {
+                        return -1;
+                    } else if (r.getAccountType().equals(AccountType.ASSET)) {
+                        return 1;
+                    } else if (l.getAccountType().equals(AccountType.INCOME)) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+        );
         return roots;
     }
 
@@ -64,6 +79,7 @@ public class CategoryService {
 
     protected Category enrichWithChildren(Category category) {
         var children = categoryRepository.findDirectChildren(category.getId()).stream().map(this::enrichWithChildren).toList();
+        children.forEach(c -> c.setParentId(category.getId()));
         category.setChildren(children);
         return category;
     }
@@ -105,7 +121,13 @@ public class CategoryService {
 
     @Transactional
     public void delete(Long id) {
-        accountRepository.dropCategory(id);
-        categoryRepository.deleteById(id);
+        var categoryValue = categoryRepository.findById(id);
+        if (categoryValue.isPresent()) {
+            var category = categoryValue.get();
+            if (!category.getAccountType().equals(AccountType.ASSET)) { // Silently ignore deletion request for ASSET categories
+                accountRepository.dropCategory(id);
+                categoryRepository.deleteById(id);
+            }
+        }
     }
 }

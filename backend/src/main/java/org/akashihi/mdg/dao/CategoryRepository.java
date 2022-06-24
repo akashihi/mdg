@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
@@ -28,7 +29,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Collection<Category> findDirectChildren(Long id);
 
     @Query("FROM Category WHERE id NOT IN (SELECT DISTINCT descendant FROM CategoryTree where depth >0) ORDER BY priority ASC")
-    Collection<Category> findTopCategories();
+    List<Category> findTopCategories();
 
     @Query("FROM CategoryTree WHERE descendant = ?2 and ancestor = ?1")
     Collection<CategoryTree> findInvertedParent(Long category, Long parent);

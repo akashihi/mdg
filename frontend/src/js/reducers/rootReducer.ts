@@ -1,3 +1,7 @@
+import { createStore, applyMiddleware, compose } from 'redux';
+import {useDispatch} from 'react-redux';
+import thunk from 'redux-thunk';
+import { Map } from 'immutable';
 import { combineReducers } from 'redux-immutable';
 import BudgetSelectorReducer from './BudgetReducer';
 import CategoryReducer from './CategoryReducer';
@@ -11,7 +15,7 @@ import SettingReducer from './SettingReducer';
 import RateReducer from './RateReducer';
 import ReportReducer from './ReportReducer';
 
-export default () => combineReducers({
+const rootReducer =  () => combineReducers({
   budget: BudgetSelectorReducer,
   category: CategoryReducer,
   currency: CurrencyReducer,
@@ -24,3 +28,12 @@ export default () => combineReducers({
   rate: RateReducer,
   report: ReportReducer
 });
+
+const store = createStore(rootReducer(), Map(), compose(applyMiddleware(thunk)));
+
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+export const useAppDispatch: () => AppDispatch = useDispatch
+export default store;
