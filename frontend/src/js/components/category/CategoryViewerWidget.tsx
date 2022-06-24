@@ -60,7 +60,7 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
                 {renderTree(props.categoryList)}
             </TreeView>
             <Button color='primary' variant='outlined' onClick={createCategory}>Add new category</Button>
-            <CategoryDialog open={dialogVisible} category={editedCategory} full={fullEditor} categoryList={props.categoryList}/>
+            <CategoryDialog open={dialogVisible} category={editedCategory} full={fullEditor} categoryList={props.categoryList} close={()=> setDialogVisible(false)}/>
         </Fragment>
     )
 }

@@ -15,16 +15,13 @@ export interface CategoryDialogProps {
     full: boolean;
     category: Partial<Category>;
     categoryList: Category[];
+    close: () => void;
 }
 
 export function CategoryDialog(props: CategoryDialogProps) {
 
     /*onSubmit(values) {
         this.props.actions.editCategorySave(Map(values));
-    }
-
-    onCancelClick() {
-        this.props.actions.editCategoryCancel();
     }
 
     onDeleteClick() {
@@ -36,7 +33,7 @@ export function CategoryDialog(props: CategoryDialogProps) {
     const mapCategoryListToMenu = (account_type:string) => {
         let entries = [];
 
-        let entry = <MenuItem key='top' value={props.category.id}>&lt;TOP&gt;</MenuItem>;
+        let entry = <MenuItem key='top' value={-1}>&lt;TOP&gt;</MenuItem>;
         entries.push(entry);
 
         const mapEntry = function (category: Category, prefix: number) {
@@ -67,9 +64,9 @@ export function CategoryDialog(props: CategoryDialogProps) {
     })
 
     return (
-        <Dialog open={props.open}>
+        <Dialog open={props.open} onClose={props.close}>
             <DialogTitle>Edit category</DialogTitle>
-            <Formik initialValues={props.category} validationSchema={validationSchema} onSubmit={() => console.log(props)}>
+            <Formik initialValues={props.category} validationSchema={validationSchema} onSubmit={(values) => console.log(values)}>
                 {({submitForm, isSubmitting, values}) => (
                     <Form>
                         <DialogContent>
@@ -110,7 +107,7 @@ export function CategoryDialog(props: CategoryDialogProps) {
                         <DialogActions>
                             <Button color='primary' disabled={props.full || values.account_type === 'asset'} variant='contained'>Delete</Button>
                             <Button color='primary' disabled={isSubmitting} onClick={submitForm}>Save</Button>
-                            <Button color='secondary'>Cancel</Button>
+                            <Button color='secondary' onClick={props.close}>Cancel</Button>
                         </DialogActions>
                     </Form>
                     )}
