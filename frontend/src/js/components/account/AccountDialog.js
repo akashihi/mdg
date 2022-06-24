@@ -22,11 +22,11 @@ function AccountDialog(props) {
     };
 
     const mapCategoryListToMenu = (categoryList) => {
-        var entries = [];
+        let entries = [];
 
-        var mapEntry = function (category, prefix) {
-            var prepend = '-'.repeat(prefix);
-            var entry = <MenuItem key={category.get('id')}
+        const mapEntry = (category, prefix) => {
+            const prepend = '-'.repeat(prefix);
+            const entry = <MenuItem key={category.get('id')}
                                   value={category.get('id')}>{prepend}{category.get('name')}</MenuItem>;
             entries.push(entry);
             if (category.has('children')) {
