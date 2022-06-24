@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
+//import ListItem from '@mui/material/ListItem'
+//import ListItemText from '@mui/material/ListItemText'
 import ListSubheader from '@mui/material/ListSubheader'
 import Divider from '@mui/material/Divider'
-import ClipLoader from 'react-spinners/ClipLoader'
+//import ClipLoader from 'react-spinners/ClipLoader'
 
 export default class RateWidget extends Component {
   render () {
