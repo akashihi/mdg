@@ -11,8 +11,8 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
 export function ActiveCurrencyEditor(props: CurrencyEditorProps) {
-    const [selectedActive, setSelectedActive] = useState(null);
-    const [selectedInactive, setSelectedInactive] = useState(null);
+    const [selectedActive, setSelectedActive] = useState<number | undefined>(null);
+    const [selectedInactive, setSelectedInactive] = useState<number | undefined>(null);
 
     const currencyToListItems = (c: Currency[], selected: number, setter: typeof setSelectedActive) => c.map((item, index) => {
         return (
