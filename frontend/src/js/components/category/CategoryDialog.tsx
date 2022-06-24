@@ -17,6 +17,7 @@ export interface CategoryDialogProps {
     categoryList: Category[];
     close: () => void;
     delete: () => void;
+    save: (c: Category) => void;
 }
 
 export function CategoryDialog(props: CategoryDialogProps) {
@@ -67,7 +68,7 @@ export function CategoryDialog(props: CategoryDialogProps) {
     return (
         <Dialog open={props.open} onClose={props.close}>
             <DialogTitle>Edit category</DialogTitle>
-            <Formik initialValues={props.category} validationSchema={validationSchema} onSubmit={(values) => console.log(values)}>
+            <Formik initialValues={props.category} validationSchema={validationSchema} onSubmit={(values) => props.save(values as Category)}>
                 {({submitForm, isSubmitting, values}) => (
                     <Form>
                         <DialogContent>

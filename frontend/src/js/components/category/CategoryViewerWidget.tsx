@@ -28,6 +28,11 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
         setEditedCategory(c);
     }
 
+    const saveCategory = (c: Category) => {
+        setDialogVisible(false);
+        props.updateCategory(c);
+    }
+
     const deleteCategory = () => {
         setDialogVisible(false);
         if (editedCategory.id !== undefined) {
@@ -74,7 +79,7 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
                 {renderTree(props.categoryList)}
             </TreeView>
             <Button color='primary' variant='outlined' onClick={createCategory}>Add new category</Button>
-            <CategoryDialog open={dialogVisible} category={editedCategory} full={fullEditor} categoryList={props.categoryList} close={()=> setDialogVisible(false)} delete={deleteCategory}/>
+            <CategoryDialog open={dialogVisible} category={editedCategory} full={fullEditor} categoryList={props.categoryList} close={()=> setDialogVisible(false)} delete={deleteCategory} save={saveCategory}/>
         </Fragment>
     )
 }
