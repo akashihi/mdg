@@ -106,7 +106,13 @@ public class CategoryService {
 
     @Transactional
     public void delete(Long id) {
-        accountRepository.dropCategory(id);
-        categoryRepository.deleteById(id);
+        var categoryValue = categoryRepository.findById(id);
+        if (categoryValue.isPresent()) {
+            var category = categoryValue.get();
+            if (!category.getAccountType().equals(AccountType.ASSET)) { // Silently ignore deletion request for ASSET categories
+                accountRepository.dropCategory(id);
+                categoryRepository.deleteById(id);
+            }
+        }
     }
 }
