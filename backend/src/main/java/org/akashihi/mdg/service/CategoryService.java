@@ -64,6 +64,7 @@ public class CategoryService {
 
     protected Category enrichWithChildren(Category category) {
         var children = categoryRepository.findDirectChildren(category.getId()).stream().map(this::enrichWithChildren).toList();
+        children.forEach(c -> c.setParentId(category.getId()));
         category.setChildren(children);
         return category;
     }
