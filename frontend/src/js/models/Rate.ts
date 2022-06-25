@@ -4,5 +4,6 @@ export default interface Rate {
     readonly to: number;
     readonly rate: number;
     readonly beginning: Date;
-    readonly end: Date;s
+    readonly end: Date;
+    readonly currencyCode?: string;
 }

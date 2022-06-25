@@ -1,21 +1,17 @@
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 
 import RateWidget from '../components/RateWidget'
-import * as RateActions from '../actions/RateActions'
+import {selectActiveRatesWithNames} from '../selectors/RateSelector';
+import Rate from "../models/Rate";
 
-const mapStateToProps = (state) => {
+export interface RateViewerState {
+    rates: Rate[]
+}
+
+const mapStateToProps = (state):RateViewerState => {
   return {
-    primaryCurrency: state.get('setting').primaryCurrency,
-    currency: state.get('currency'),
-    rates: state.get('rate').rateList
+    rates: selectActiveRatesWithNames(state)
   }
 }
 
-function mapDispatchToProps (dispatch) {
-  return {
-    actions: bindActionCreators(RateActions, dispatch)
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(RateWidget)
+export default connect(mapStateToProps)(RateWidget)

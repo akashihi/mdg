@@ -1,5 +1,7 @@
-import Currency from "../models/Currency";
-import {RootState} from "../reducers/rootReducer";
+import Currency from '../models/Currency';
+import {RootState} from '../reducers/rootReducer';
+import Rate from '../models/Rate';
+import {SettingState} from '../reducers/SettingReducer';
 
 // Transaction view
 export const getPeriodBeginning = state => state.get('transactionview').get('periodBeginning');
@@ -20,3 +22,9 @@ export const getCurrentBudgetId = state => state.get('budgetentry').get('current
 
 // Currency
 export const getCurrencies = (state):Currency[] => state.get('currency').currencies;
+
+// Rate
+export const getRates = (state):Rate[] => state.get('rate').rateList;
+
+// Settings
+export const getSettings = (state):SettingState => state.get('setting')
