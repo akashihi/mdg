@@ -5,7 +5,6 @@ import ListItemText from '@mui/material/ListItemText'
 import ListSubheader from '@mui/material/ListSubheader'
 import Divider from '@mui/material/Divider'
 import { RateViewerState } from '../containers/RateViewer'
-import {SettingUiState} from '../constants/Setting';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
