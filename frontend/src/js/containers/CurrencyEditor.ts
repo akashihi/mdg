@@ -4,6 +4,7 @@ import { selectActiveCurrencies,selectInactiveCurrencies } from '../selectors/Cu
 import ActiveCurrencyEditor from '../components/settings/ActiveCurrencyEditor';
 import { updateCurrency } from '../actions/CurrencyActions';
 import Currency from "../models/Currency";
+import {RootState} from "../reducers/rootReducer";
 
 export interface CurrencyEditorState {
     activeCurrencies: Currency[]
@@ -11,11 +12,11 @@ export interface CurrencyEditorState {
     available: boolean
 }
 
-const mapStateToProps = (state):CurrencyEditorState => {
+const mapStateToProps = (state: RootState):CurrencyEditorState => {
     return {
         activeCurrencies: selectActiveCurrencies(state),
         inactiveCurrencies: selectInactiveCurrencies(state),
-        available: state.get('currency').available
+        available: state.currency.available
     };
 };
 

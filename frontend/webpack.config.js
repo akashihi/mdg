@@ -73,6 +73,10 @@ const development = {
                 target: 'http://127.0.0.1:8080/',
                 pathRewrite: {'^/api' : ''}
             },
+            '/api/rates': {
+                target: 'http://127.0.0.1:8080/',
+                pathRewrite: {'^/api' : ''}
+            },
             '/api/settings': {
                 target: 'http://127.0.0.1:8080/',
                 pathRewrite: {'^/api' : ''}

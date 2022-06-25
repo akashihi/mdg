@@ -5,15 +5,17 @@ import SettingsEditorWidget from '../components/settings/SettingEditorWidget';
 import { setPrimaryCurrency,  setCloseTransactionDialog, setLanguage, reindexTransactions } from '../actions/SettingActions';
 import {SettingState} from "../reducers/SettingReducer";
 import Currency from "../models/Currency";
+import {getSettings} from "../selectors/StateGetters";
+import {RootState} from "../reducers/rootReducer";
 
 export interface SettingsEditorState {
     setting: SettingState;
     activeCurrencies: Currency[]
 }
 
-const mapStateToProps = (state):SettingsEditorState => {
+const mapStateToProps = (state: RootState):SettingsEditorState => {
   return {
-    setting: state.get('setting'),
+    setting: getSettings(state),
     activeCurrencies: selectActiveCurrencies(state)
   };
 };
