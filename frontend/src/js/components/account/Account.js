@@ -16,11 +16,12 @@ function Account(props) {
     let opIcon;
 
     const getCurrency = (account, currencies) => {
-        if (currencies.has(account.get('currency_id'))) {
+        /*if (currencies.has(account.get('currency_id'))) {
             return currencies.get(account.get('currency_id')).get('name');
         } else {
             return '';
-        }
+        }*/
+        return '';
     };
 
     if (account.get('loading')) {

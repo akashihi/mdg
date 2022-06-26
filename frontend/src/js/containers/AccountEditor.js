@@ -6,13 +6,13 @@ import * as AccountActions from '../actions/AccountActions'
 
 const mapStateToProps = (state) => {
   return {
-    categoryList: state.get('category').get('categoryList'),
-    currencies: state.get('currency').get('currencies'),
-    open: state.get('account').getIn(['dialog', 'open']),
-    full: state.get('account').getIn(['dialog', 'full']),
-    account: state.get('account').getIn(['dialog', 'account']),
-    valid: state.get('account').getIn(['dialog', 'valid']),
-    errors: state.get('account').getIn(['dialog', 'errors'])
+    categoryList: state.category.categoryList,
+    currencies: state.currency.currencies,
+    open: state.account.getIn(['dialog', 'open']),
+    full: state.account.getIn(['dialog', 'full']),
+    account: state.account.getIn(['dialog', 'account']),
+    valid: state.account.getIn(['dialog', 'valid']),
+    errors: state.account.getIn(['dialog', 'errors'])
   }
 }
 

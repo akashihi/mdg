@@ -68,9 +68,9 @@ function AccountsPage(props) {
     }
 
     let primaryCurrencyName = '';
-    if (props.currencies.has(props.primaryCurrency)) {
+    /*if (props.currencies.has(props.primaryCurrency)) {
         primaryCurrencyName = props.currencies.get(props.primaryCurrency).get('name')
-    }
+    }*/
 
     return (
         <div>

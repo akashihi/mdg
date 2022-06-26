@@ -7,16 +7,16 @@ import * as AccountActions from '../actions/AccountActions'
 
 const mapStateToProps = (state) => {
   return {
-    currencies: state.get('currency').get('currencies'),
-    categoryList: state.get('category').get('categoryList'),
-    waiting: state.get('account').getIn(['ui', 'accountListLoading']),
-    error: state.get('account').getIn(['ui', 'accountListError']),
-    totals: state.get('account').get('totals'),
-    hiddenVisible: state.get('account').getIn(['ui', 'hiddenAccountsVisible']),
-    assetAccounts: state.get('account').get('assetAccountList'),
-    incomeAccounts: state.get('account').get('incomeAccountList'),
-    expenseAccounts: state.get('account').get('expenseAccountList'),
-    primaryCurrency: state.get('setting').get('primaryCurrency')
+    currencies: state.currency.currencies,
+    categoryList: state.category.categoryList,
+    waiting: state.account.getIn(['ui', 'accountListLoading']),
+    error: state.account.getIn(['ui', 'accountListError']),
+    totals: state.account.get('totals'),
+    hiddenVisible: state.account.getIn(['ui', 'hiddenAccountsVisible']),
+    assetAccounts: state.account.get('assetAccountList'),
+    incomeAccounts: state.account.get('incomeAccountList'),
+    expenseAccounts: state.account.get('expenseAccountList'),
+    primaryCurrency: state.setting.primaryCurrency
   }
 }
 

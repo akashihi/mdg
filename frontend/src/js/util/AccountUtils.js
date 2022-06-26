@@ -7,7 +7,7 @@ import React from 'react';
 
 export function filterNonListedCategories(categories_ids, categoryList) {
     const filterCategory = function(category) {
-        var kids = OrderedMap();
+        /*var kids = OrderedMap();
 
         if (category.has('children')) {
             category.get('children').forEach((item, k) => {
@@ -22,7 +22,7 @@ export function filterNonListedCategories(categories_ids, categoryList) {
 
         if (categories_ids.includes(category.get('id')) || !kids.isEmpty()) {
             return category
-        }
+        }*/
 
 
         return null

@@ -39,9 +39,10 @@ function AccountDialog(props) {
         return entries;
     };
 
-    const currencies = props.currencies.filter((v) => v.get('active'))
+/*    const currencies = props.currencies.filter((v) => v.get('active'))
         .map((v, k) => (<MenuItem value={k} key={k}>{v.get('name')}</MenuItem>))
-        .valueSeq();
+        .valueSeq();*/
+    const currencies = [];
 
     const initialValues = {
         account_type: props.account.get('account_type'),
