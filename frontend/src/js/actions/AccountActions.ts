@@ -1,48 +1,50 @@
-import { Map } from 'immutable'
-import { checkApiError, parseJSON, dataToMap, mapToData, singleToMap } from '../util/ApiUtils'
-import { loadBudgetEntryList } from './BudgetEntryActions'
-import { loadTotalsReport } from './ReportActions'
+import { Map } from 'immutable';
+import {Action} from 'redux';
+import { checkApiError, parseJSON, dataToMap, mapToData, singleToMap } from '../util/ApiUtils';
+import { loadBudgetEntryList } from './BudgetEntryActions';
+import { loadTotalsReport } from './ReportActions';
 
 import {
-  GET_ACCOUNTLIST_REQUEST,
-  GET_ACCOUNTLIST_SUCCESS,
-  GET_ACCOUNTLIST_FAILURE,
-  TOGGLE_HIDDEN_ACCOUNTS,
-  ACCOUNT_DIALOG_OPEN,
-  ACCOUNT_DIALOG_CLOSE,
-  ACCOUNT_PARTIAL_UPDATE,
-  ACCOUNT_PARTIAL_SUCCESS
+    GET_ACCOUNTLIST_REQUEST,
+    GET_ACCOUNTLIST_SUCCESS,
+    GET_ACCOUNTLIST_FAILURE,
+    TOGGLE_HIDDEN_ACCOUNTS,
+    ACCOUNT_DIALOG_OPEN,
+    ACCOUNT_DIALOG_CLOSE,
+    ACCOUNT_PARTIAL_UPDATE,
+    ACCOUNT_PARTIAL_SUCCESS, AccountActionType
 } from '../constants/Account'
+import {Account} from "../models/Account";
+
+export interface AccountAction extends Action {
+    payload: Account[];
+}
 
 export function loadAccountList () {
   return (dispatch) => {
-    dispatch({
-      type: GET_ACCOUNTLIST_REQUEST,
-      payload: true
-    })
+    dispatch({type: AccountActionType.AccountsLoad, payload: [] })
 
-    const url = '/api/account'
+    const url = '/api/accounts'
 
     fetch(url)
       .then(parseJSON)
       .then(checkApiError)
-      .then(dataToMap)
-      .then(function (data) {
+      .then(function (data: any) {
         dispatch({
-          type: GET_ACCOUNTLIST_SUCCESS,
-          payload: data
+          type: AccountActionType.AccountsStore,
+          payload: data.accounts
         })
       })
       .catch(function (response) {
         dispatch({
-          type: GET_ACCOUNTLIST_FAILURE,
-          payload: response.json
+          type: AccountActionType.AccountsFailure,
+          payload: []
         })
       })
   }
 }
 
-export function toggleHiddenAccounts (visible) {
+/*export function toggleHiddenAccounts (visible) {
   return (dispatch) => {
     dispatch({
       type: TOGGLE_HIDDEN_ACCOUNTS,
@@ -153,4 +155,4 @@ export function editAccountSave (account) {
     const id = state.get('account').getIn(['dialog', 'id'])
     dispatch(updateAccount(id, account))
   }
-}
+}*/

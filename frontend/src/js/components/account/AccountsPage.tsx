@@ -9,11 +9,12 @@ import Tab from '@mui/material/Tab';
 
 import AccountEditor from '../../containers/AccountEditor';
 import CategorizedAccountList from './CategorizedAccountList.js';
+import {AccountsPageProps} from "../../containers/AccountsViewer";
 
-function AccountsPage(props) {
+function AccountsPage(props: AccountsPageProps) {
     const [tabValue, setTabValue] = useState('asset');
 
-    const onHiddenAccountsClick = () => {
+    /*const onHiddenAccountsClick = () => {
         props.actions.toggleHiddenAccounts(!props.hiddenVisible);
     };
 
@@ -23,11 +24,6 @@ function AccountsPage(props) {
 
     const switchTab = (ev, value) => {
         setTabValue(value);
-    };
-
-    const cardStyle = {
-        'marginTop': 15,
-        'height': 120
     };
 
     let accounts;
@@ -65,39 +61,38 @@ function AccountsPage(props) {
     } else {
         hiddenButton =
             <Button color='primary' onClick={onHiddenAccountsClick}>Show hidden accounts</Button>
-    }
-
-    let primaryCurrencyName = '';
-    /*if (props.currencies.has(props.primaryCurrency)) {
-        primaryCurrencyName = props.currencies.get(props.primaryCurrency).get('name')
     }*/
 
+    const cardStyle = {
+        'marginTop': 15,
+        'height': 120
+    };
     return (
         <div>
-            <AccountEditor/>
-            <Card style={cardStyle}>
+            {/*<AccountEditor/>*/}
+            <Card sx={cardStyle}>
                 <CardContent>
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={12} md={6} lg={4}>
-                            <p>Total: {props.totals.get('total')} {primaryCurrencyName}</p>
+                            <p>Total: {props.totals.total} {props.primaryCurrencyName}</p>
                         </Grid>
                         <Grid item xs={6} sm={6} md={6} lg={4} className='hide-on-small'>
-                            <p>Favorite: {props.totals.get('favorite')} {primaryCurrencyName}</p>
+                            <p>Favorite: {props.totals.favorite} {props.primaryCurrencyName}</p>
                         </Grid>
                         <Grid item xs={6} sm={6} md={4} lg={4} className='hide-on-small hide-on-medium'>
-                            <p>Operational: {props.totals.get('operational')} {primaryCurrencyName}</p>
+                            <p>Operational: {props.totals.operational} {props.primaryCurrencyName}</p>
                         </Grid>
-                        <Grid item xs={12} sm={12} md={6} lg={3}>
+                        {/*<Grid item xs={12} sm={12} md={6} lg={3}>
                             <Button aria-label='Add account' color='secondary' onClick={onCreateAccountClick}>Add
                                 account</Button>
-                        </Grid>
-                        <Grid item xs={12} sm={12} md={6} lgOffset={6} lg={3} className='hide-on-small'>
+                        </Grid>*/}
+                        {/*<Grid item xs={12} sm={12} md={6} lgOffset={6} lg={3} className='hide-on-small'>
                             {hiddenButton}
-                        </Grid>
+                        </Grid>*/}
                     </Grid>
                 </CardContent>
             </Card>
-            {accounts}
+            {/*accounts*/}
         </div>
     )
 }

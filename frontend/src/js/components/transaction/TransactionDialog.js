@@ -290,11 +290,11 @@ export default class TransactionDialog extends React.Component {
         }
 
         const accounts = props.accounts;
-        if (accounts.has(ops[0].account_id) && accounts.has(ops[1].account_id)) {
+        /*if (accounts.has(ops[0].account_id) && accounts.has(ops[1].account_id)) {
             const leftCurrency = accounts.get(ops[0].account_id).get('currency_id');
             const rightCurrency = accounts.get(ops[1].account_id).get('currency_id');
             return leftCurrency === rightCurrency
-        }
+        }*/
         return true
     }
 
