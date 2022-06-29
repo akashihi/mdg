@@ -37,7 +37,7 @@ export function loadAccountList () {
       .then(function (data: any) {
         dispatch({
           type: AccountActionType.AccountsStore,
-          payload: data.accounts
+          payload: {accounts: data.accounts}
         })
       })
         .then(() => dispatch(loadAccountTree()))
@@ -62,7 +62,7 @@ export function loadAccountTree () {
             .then(function (data: any) {
                 dispatch({
                     type: AccountActionType.AccountTreeStore,
-                    payload: [data.asset, data.income, data.expense]
+                    payload: {assetTree: data.asset, incomeTree: data.income, expenseTree: data.expense}
                 })
             })
             .catch(function (response) {
