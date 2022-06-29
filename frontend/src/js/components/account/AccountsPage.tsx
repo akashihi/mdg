@@ -63,14 +63,13 @@ function AccountsPage(props: AccountsPageProps) {
             <Button color='primary' onClick={onHiddenAccountsClick}>Show hidden accounts</Button>
     }*/
 
-    const cardStyle = {
-        'marginTop': 15,
-        'height': 120
-    };
     return (
-        <div>
+        <Fragment>
             {/*<AccountEditor/>*/}
-            <Card sx={cardStyle}>
+            <Card sx={{
+                marginTop: '15px',
+                height: 120
+            }}>
                 <CardContent>
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={12} md={6} lg={4}>
@@ -93,7 +92,7 @@ function AccountsPage(props: AccountsPageProps) {
                 </CardContent>
             </Card>
             {/*accounts*/}
-        </div>
+        </Fragment>
     )
 }
 

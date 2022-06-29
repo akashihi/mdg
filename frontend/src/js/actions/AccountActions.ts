@@ -14,10 +14,15 @@ import {
     ACCOUNT_PARTIAL_UPDATE,
     ACCOUNT_PARTIAL_SUCCESS, AccountActionType
 } from '../constants/Account'
-import {Account} from "../models/Account";
+import {Account, AccountTreeNode} from "../models/Account";
 
 export interface AccountAction extends Action {
-    payload: Account[];
+    payload: {
+        accounts?: Account[];
+        assetTree?: AccountTreeNode;
+        incomeTree?: AccountTreeNode;
+        expenseTree?: AccountTreeNode;
+    };
 }
 
 export function loadAccountList () {
@@ -35,13 +40,38 @@ export function loadAccountList () {
           payload: data.accounts
         })
       })
-      .catch(function (response) {
+        .then(() => dispatch(loadAccountTree()))
+      .catch(function () {
         dispatch({
           type: AccountActionType.AccountsFailure,
           payload: []
         })
       })
   }
+}
+
+export function loadAccountTree () {
+    return (dispatch) => {
+        dispatch({type: AccountActionType.AccountsLoad, payload: [] })
+
+        const url = '/api/accounts/tree?embed=currency,category'
+
+        fetch(url)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(function (data: any) {
+                dispatch({
+                    type: AccountActionType.AccountTreeStore,
+                    payload: [data.asset, data.income, data.expense]
+                })
+            })
+            .catch(function (response) {
+                dispatch({
+                    type: AccountActionType.AccountsFailure,
+                    payload: []
+                })
+            })
+    }
 }
 
 /*export function toggleHiddenAccounts (visible) {

@@ -15,3 +15,10 @@ export interface Account {
     operational: boolean;
     favorite: boolean;
 }
+
+export interface AccountTreeNode {
+    id?: number;
+    name?: string;
+    accounts: Account[];
+    categories: AccountTreeNode[];
+}

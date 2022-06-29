@@ -14,6 +14,7 @@ export enum AccountActionType {
     AccountsLoad = "AccountsLoad",
     AccountsStore = "AccountsStore",
     AccountsFailure = "AccountsFailure",
+    AccountTreeStore = "AccountTreeStore",
     AccountPartialUpdate = "AccountPartialUpdate",
     AccountPartialSiccess = "AccountPartialSuccess"
 }

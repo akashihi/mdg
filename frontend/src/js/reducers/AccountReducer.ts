@@ -4,16 +4,22 @@ import {
     GET_ACCOUNTLIST_REQUEST,
     GET_ACCOUNTLIST_SUCCESS,
 } from '../constants/Account'
-import {Account} from '../models/Account';
+import {Account, AccountTreeNode} from '../models/Account';
 import {AccountAction} from '../actions/AccountActions';
 
 export interface AccountState {
     accountList: Account[];
-    available: boolean
+    assetTree: AccountTreeNode;
+    incomeTree: AccountTreeNode;
+    expenseTree: AccountTreeNode;
+    available: boolean;
 }
 
 const initialState: AccountState = {
     accountList: [],
+    assetTree: {accounts:[], categories:[]},
+    incomeTree: {accounts:[], categories:[]},
+    expenseTree: {accounts:[], categories:[]},
     available: false
 }
 
@@ -34,7 +40,9 @@ export default function accountViewReducer (state: AccountState = initialState, 
     case AccountActionType.AccountsLoad:
         return produce(state, draft => {draft.available = false});
     case AccountActionType.AccountsStore:
-        return produce(state, draft => {draft.available = true; draft.accountList = action.payload})
+        return produce(state, draft => {draft.available = true; draft.accountList = action.payload.accounts})
+      case AccountActionType.AccountTreeStore:
+          return produce(state, draft => {draft.available = true; draft.assetTree = action.payload.assetTree; draft.incomeTree = action.payload.incomeTree; draft.expenseTree = action.payload.expenseTree;})
       case AccountActionType.AccountsFailure:
           return produce(state, draft => {draft.available = false; draft.accountList = []})
 /*    case TOGGLE_HIDDEN_ACCOUNTS:
