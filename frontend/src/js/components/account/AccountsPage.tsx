@@ -7,13 +7,15 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
 
 import AccountEditor from '../../containers/AccountEditor';
 import CategorizedAccountList from './CategorizedAccountList';
 import {AccountsPageProps} from "../../containers/AccountsViewer";
-import {SettingUiState} from "../../constants/Setting";
+
 
 function AccountsPage(props: AccountsPageProps) {
+    const [showHidden, setShowHidden] = useState(false);
     const [tabValue, setTabValue] = useState('asset');
 
     /*const onHiddenAccountsClick = () => {
@@ -30,36 +32,15 @@ function AccountsPage(props: AccountsPageProps) {
     } else if (props.error) {
         accounts = <h1>Unable to load account list</h1>;
     } else {
-        accounts =
-            <Fragment>
-                <Tabs value={tabValue} onChange={switchTab} centered scrollButtons='auto'>
-                    <Tab label='Asset accounts' value='asset'/>
-                    <Tab label='Income accounts' value='income'/>
-                    <Tab label='Expense accounts' value='expense'/>
-                </Tabs>
-                {tabValue == 'asset' &&
-                <CategorizedAccountList categoryList={props.categoryList} actions={props.actions}
-                                        currencies={props.currencies} accounts={props.assetAccounts}
-                                        hiddenVisible={props.hiddenVisible}/>}
-                {tabValue == 'income' &&
-                <CategorizedAccountList categoryList={props.categoryList} actions={props.actions}
-                                        currencies={props.currencies} accounts={props.incomeAccounts}
-                                        hiddenVisible={props.hiddenVisible}/>}
-                {tabValue == 'expense' &&
-                <CategorizedAccountList categoryList={props.categoryList} actions={props.actions}
-                                        currencies={props.currencies} accounts={props.expenseAccounts}
-                                        hiddenVisible={props.hiddenVisible}/>}
-            </Fragment>
-    }
+
+    */
 
     let hiddenButton;
-    if (props.hiddenVisible) {
-        hiddenButton =
-            <Button color='primary' onClick={onHiddenAccountsClick}>Hide hidden accounts</Button>
+    if (showHidden) {
+        hiddenButton = <Button color='primary' onClick={() => setShowHidden(false)}>Hide hidden accounts</Button>
     } else {
-        hiddenButton =
-            <Button color='primary' onClick={onHiddenAccountsClick}>Show hidden accounts</Button>
-    }*/
+        hiddenButton = <Button color='primary' onClick={() => setShowHidden(true)}>Show hidden accounts</Button>
+    }
 
     return (
         <Fragment>
@@ -82,12 +63,13 @@ function AccountsPage(props: AccountsPageProps) {
                         <Grid item xs={6} sm={6} md={4} lg={4} className='hide-on-small hide-on-medium'>
                             <p>Operational: {props.totals.operational} {props.primaryCurrencyName}</p>
                         </Grid>
+                        <Grid item lg={6} className='hide-on-small hide-on-medium'/>
+                        <Grid item xs={12} sm={12} md={6} lg={3} className='hide-on-small'>
+                            {hiddenButton}
+                        </Grid>
                         {/*<Grid item xs={12} sm={12} md={6} lg={3}>
                             <Button aria-label='Add account' color='secondary' onClick={onCreateAccountClick}>Add
                                 account</Button>
-                        </Grid>*/}
-                        {/*<Grid item xs={12} sm={12} md={6} lgOffset={6} lg={3} className='hide-on-small'>
-                            {hiddenButton}
                         </Grid>*/}
                     </Grid>
                 </CardContent>
@@ -97,9 +79,9 @@ function AccountsPage(props: AccountsPageProps) {
                 <Tab label='Income accounts' value='income'/>
                 <Tab label='Expense accounts' value='expense'/>
             </Tabs>
-            {tabValue == 'asset' && <CategorizedAccountList tree={props.assetAccountsTree} indent={0}/>}
-            {tabValue == 'income' && <CategorizedAccountList tree={props.incomeAccountsTree} indent={0}/>}
-            {tabValue == 'expense' && <CategorizedAccountList tree={props.expenseAccountsTree} indent={0}/>}
+            {tabValue == 'asset' && <CategorizedAccountList tree={props.assetAccountsTree} indent={0} hidden={showHidden}/>}
+            {tabValue == 'income' && <CategorizedAccountList tree={props.incomeAccountsTree} indent={0} hidden={showHidden}/>}
+            {tabValue == 'expense' && <CategorizedAccountList tree={props.expenseAccountsTree} indent={0} hidden={showHidden}/>}
         </Fragment>
     )
 }

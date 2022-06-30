@@ -8,7 +8,6 @@ import {
     GET_ACCOUNTLIST_REQUEST,
     GET_ACCOUNTLIST_SUCCESS,
     GET_ACCOUNTLIST_FAILURE,
-    TOGGLE_HIDDEN_ACCOUNTS,
     ACCOUNT_DIALOG_OPEN,
     ACCOUNT_DIALOG_CLOSE,
     ACCOUNT_PARTIAL_UPDATE,
@@ -74,14 +73,7 @@ export function loadAccountTree () {
     }
 }
 
-/*export function toggleHiddenAccounts (visible) {
-  return (dispatch) => {
-    dispatch({
-      type: TOGGLE_HIDDEN_ACCOUNTS,
-      payload: visible
-    })
-  }
-}
+/*
 
 export function updateAccount (id, account) {
   return (dispatch, getState) => {

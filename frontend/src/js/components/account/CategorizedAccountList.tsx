@@ -6,11 +6,18 @@ import {AccountTreeNode} from "../../models/Account";
 export interface CategorizedAccountListProps {
     tree: AccountTreeNode;
     indent: number;
+    hidden: boolean;
 }
 
 function CategorizedAccountList(props: CategorizedAccountListProps) {
-    const subCategories = props.tree.categories.map(c => <CategorizedAccountList key={c.id} tree={c} indent={props.indent+1}/>);
-    const accounts = props.tree.accounts.map(a => <Account key={a.id} account={a}/>);
+    const subCategories = props.tree.categories.map(c => <CategorizedAccountList key={c.id} tree={c} indent={props.indent+1} hidden={props.hidden}/>);
+    let filteredAccounts;
+    if (props.hidden) {
+        filteredAccounts = props.tree.accounts;
+    } else {
+        filteredAccounts = props.tree.accounts.filter(a => !a.hidden);
+    }
+    const accounts = filteredAccounts.map(a => <Account key={a.id} account={a}/>);
     return (
         <Fragment>
             <h3 style={{marginLeft: props.indent*15}}>{props.tree.name}</h3>
