@@ -3,13 +3,15 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import ClipLoader from 'react-spinners/ClipLoader';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
 import AccountEditor from '../../containers/AccountEditor';
-import CategorizedAccountList from './CategorizedAccountList.js';
+import CategorizedAccountList from './CategorizedAccountList';
 import {AccountsPageProps} from "../../containers/AccountsViewer";
+import {SettingUiState} from "../../constants/Setting";
 
 function AccountsPage(props: AccountsPageProps) {
     const [tabValue, setTabValue] = useState('asset');
@@ -20,10 +22,6 @@ function AccountsPage(props: AccountsPageProps) {
 
     const onCreateAccountClick = () => {
         props.actions.createAccount();
-    };
-
-    const switchTab = (ev, value) => {
-        setTabValue(value);
     };
 
     let accounts;
@@ -65,6 +63,9 @@ function AccountsPage(props: AccountsPageProps) {
 
     return (
         <Fragment>
+            <Backdrop open={!props.available}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             {/*<AccountEditor/>*/}
             <Card sx={{
                 marginTop: '15px',
@@ -91,7 +92,14 @@ function AccountsPage(props: AccountsPageProps) {
                     </Grid>
                 </CardContent>
             </Card>
-            {/*accounts*/}
+            <Tabs value={tabValue} onChange={(_, value) => setTabValue(value)} centered scrollButtons='auto'>
+                <Tab label='Asset accounts' value='asset'/>
+                <Tab label='Income accounts' value='income'/>
+                <Tab label='Expense accounts' value='expense'/>
+            </Tabs>
+            {tabValue == 'asset' && <CategorizedAccountList tree={props.assetAccountsTree} indent={0}/>}
+            {tabValue == 'income' && <CategorizedAccountList tree={props.incomeAccountsTree} indent={0}/>}
+            {tabValue == 'expense' && <CategorizedAccountList tree={props.expenseAccountsTree} indent={0}/>}
         </Fragment>
     )
 }

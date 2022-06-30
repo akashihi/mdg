@@ -4,7 +4,7 @@ import AccountsPage from '../components/account/AccountsPage'
 import {loadAccountList} from '../actions/AccountActions'
 import Currency from "../models/Currency";
 import Category from "../models/Category";
-import {Account} from "../models/Account";
+import {Account, AccountTreeNode} from "../models/Account";
 import {RootState} from "../reducers/rootReducer";
 import {selectActiveCurrencies, selectPrimaryCurrencyName} from "../selectors/CurrencySelector";
 import {
@@ -19,8 +19,9 @@ export interface AccountsPageState {
     categories: Category[];
     totals: AccountTotals;
     assetAccounts: Account[];
-    incomeAccounts: Account[];
-    expenseAccounts: Account[];
+    assetAccountsTree: AccountTreeNode;
+    incomeAccountsTree: AccountTreeNode;
+    expenseAccountsTree: AccountTreeNode;
     available: boolean
     primaryCurrencyName: string;
 }
@@ -31,8 +32,9 @@ const mapStateToProps = (state: RootState): AccountsPageState => {
         categories: state.category.categoryList,
         totals: selectAccountTotals(state),
         assetAccounts: selectAssetAccount(state),
-        incomeAccounts: selectIncomeAccount(state),
-        expenseAccounts: selectExpenseAccount(state),
+        assetAccountsTree: state.account.assetTree,
+        incomeAccountsTree: state.account.incomeTree,
+        expenseAccountsTree: state.account.expenseTree,
         available: state.account.available,
         primaryCurrencyName: selectPrimaryCurrencyName(state)
     }
