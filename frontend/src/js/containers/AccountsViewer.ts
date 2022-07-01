@@ -11,6 +11,7 @@ import {
     selectAccountTotals,
     selectAssetAccount
 } from "../selectors/AccountSelector";
+import {selectPrimaryCurrencyId} from "../selectors/SettingsSelector";
 
 export interface AccountsPageProps {
     activeCurrencies: Currency[];
@@ -22,6 +23,7 @@ export interface AccountsPageProps {
     expenseAccountsTree: AccountTreeNode;
     available: boolean
     primaryCurrencyName: string;
+    primaryCurrencyId: number,
 }
 
 const mapStateToProps = (state: RootState): AccountsPageProps => {
@@ -34,7 +36,8 @@ const mapStateToProps = (state: RootState): AccountsPageProps => {
         incomeAccountsTree: state.account.incomeTree,
         expenseAccountsTree: state.account.expenseTree,
         available: state.account.available,
-        primaryCurrencyName: selectPrimaryCurrencyName(state)
+        primaryCurrencyName: selectPrimaryCurrencyName(state),
+        primaryCurrencyId: selectPrimaryCurrencyId(state),
     }
 }
 
