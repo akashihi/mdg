@@ -10,12 +10,9 @@ import Edit from '@mui/icons-material/Edit';
 import Grid from '@mui/material/Grid';
 import ClipLoader from 'react-spinners/ClipLoader';
 import {Account} from "../../models/Account";
+import {AccountWidgetProps} from "../../containers/AccountItem";
 
-export interface AccountProps {
-    account: Account
-}
-
-function Account(props: AccountProps) {
+function Account(props: AccountWidgetProps) {
     let balanceStyle = {
         color: 'black',
         fontWeight: 'normal'
@@ -34,20 +31,20 @@ function Account(props: AccountProps) {
 
         if (props.account.favorite) {
             favIcon =
-                <Button aria-label='Favorite'><Favorite/></Button>;
+                <Button aria-label='Favorite'onClick={()=>props.setFavorite(props.account, false)}><Favorite/></Button>;
         } else {
-            favIcon = <Button aria-label='Not favorite'><FavoriteBorder/></Button>;
+            favIcon = <Button aria-label='Not favorite' onClick={()=>props.setFavorite(props.account, true)}><FavoriteBorder/></Button>;
         }
         if (props.account.operational) {
-            opIcon = <Button aria-label='Operational'><Star/></Button>;
+            opIcon = <Button aria-label='Operational' onClick={()=>props.setOperational(props.account, false)}><Star/></Button>;
         } else {
-            opIcon = <Button aria-label='Not operational'><StarBorder/></Button>;
+            opIcon = <Button aria-label='Not operational' onClick={()=>props.setOperational(props.account, true)}><StarBorder/></Button>;
         }
     }
 
-    let visibilityIcon = <Button aria-label='Visible'><Visibility/></Button>;
+    let visibilityIcon = <Button aria-label='Visible' onClick={() => props.hideAccount(props.account)}><Visibility/></Button>;
     if (props.account.hidden) {
-        visibilityIcon = <Button aria-label='Hidden'><VisibilityOff/></Button>;
+        visibilityIcon = <Button aria-label='Hidden' onClick={() => props.revealAccount(props.account)}><VisibilityOff/></Button>;
     }
     return (
         <Grid container spacing={2}>

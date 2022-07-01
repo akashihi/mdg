@@ -7,7 +7,6 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
 
 import AccountEditor from '../../containers/AccountEditor';
 import CategorizedAccountList from './CategorizedAccountList';
@@ -18,9 +17,7 @@ function AccountsPage(props: AccountsPageProps) {
     const [showHidden, setShowHidden] = useState(false);
     const [tabValue, setTabValue] = useState('asset');
 
-    /*const onHiddenAccountsClick = () => {
-        props.actions.toggleHiddenAccounts(!props.hiddenVisible);
-    };
+    /*
 
     const onCreateAccountClick = () => {
         props.actions.createAccount();

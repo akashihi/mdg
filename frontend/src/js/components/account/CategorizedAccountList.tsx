@@ -1,6 +1,6 @@
 import React, {Fragment} from 'react';
 
-import Account from './Account';
+import AccountItem from '../../containers/AccountItem';
 import {AccountTreeNode} from "../../models/Account";
 
 export interface CategorizedAccountListProps {
@@ -17,7 +17,7 @@ function CategorizedAccountList(props: CategorizedAccountListProps) {
     } else {
         filteredAccounts = props.tree.accounts.filter(a => !a.hidden);
     }
-    const accounts = filteredAccounts.map(a => <Account key={a.id} account={a}/>);
+    const accounts = filteredAccounts.map(a => <AccountItem key={a.id} account={a}/>);
     return (
         <Fragment>
             <h3 style={{marginLeft: props.indent*15}}>{props.tree.name}</h3>

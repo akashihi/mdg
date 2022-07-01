@@ -1,19 +1,13 @@
-import { Map } from 'immutable';
+import {produce} from 'immer';
 import {Action} from 'redux';
-import { checkApiError, parseJSON, dataToMap, mapToData, singleToMap } from '../util/ApiUtils';
+import { checkApiError, parseJSON} from '../util/ApiUtils';
 import { loadBudgetEntryList } from './BudgetEntryActions';
 import { loadTotalsReport } from './ReportActions';
 
-import {
-    GET_ACCOUNTLIST_REQUEST,
-    GET_ACCOUNTLIST_SUCCESS,
-    GET_ACCOUNTLIST_FAILURE,
-    ACCOUNT_DIALOG_OPEN,
-    ACCOUNT_DIALOG_CLOSE,
-    ACCOUNT_PARTIAL_UPDATE,
-    ACCOUNT_PARTIAL_SUCCESS, AccountActionType
-} from '../constants/Account'
+import { AccountActionType } from '../constants/Account'
 import {Account, AccountTreeNode} from "../models/Account";
+import {RootState} from "../reducers/rootReducer";
+import {loadCategoryList} from "./CategoryActions";
 
 export interface AccountAction extends Action {
     payload: {
@@ -73,64 +67,86 @@ export function loadAccountTree () {
     }
 }
 
-/*
-
-export function updateAccount (id, account) {
-  return (dispatch, getState) => {
-    dispatch({
-      type: ACCOUNT_PARTIAL_UPDATE,
-      payload: {
-        id,
-        account: account.set('loading', true)
-      }
-    })
-
-    if (account.get('category_id') === -1) {
-      // We use -1 as a fake default value to make MUI happy
-      // mdg have no idea on that
-      account = account.delete('category_id')
+export function setFavorite(account: Account, favorite: boolean) {
+    return (dispatch) => {
+        const updatedAccount: Account = produce(draft => {draft.favorite = favorite})(account);
+        dispatch(updateAccount(updatedAccount))
     }
-
-    const state = getState()
-    const selectedBudgetId = state.get('budgetentry').get('currentBudget').get('id')
-
-    let url = '/api/account'
-    let method = 'POST'
-    if (id !== -1) {
-      url = url + '/' + id
-      method = 'PUT'
-    }
-
-    fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/vnd.mdg+json'
-      },
-      body: JSON.stringify(mapToData(id, account))
-    })
-      .then(parseJSON)
-      .then(singleToMap)
-      .then(checkApiError)
-      .then(map => {
-        if (id === -1) {
-          dispatch(loadAccountList())
-        } else {
-          dispatch({
-            type: ACCOUNT_PARTIAL_SUCCESS,
-            payload: {
-              id,
-              account: map.first()
-            }
-          })
-        }
-      })
-      .then(() => dispatch(loadTotalsReport()))
-      .then(() => { if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId)) } })
-      .catch(() => dispatch(loadAccountList()))
-  }
 }
 
-export function createAccount () {
+export function setOperational(account: Account, operational: boolean) {
+    return (dispatch) => {
+        const updatedAccount: Account = produce(draft => {draft.operational = operational})(account);
+        dispatch(updateAccount(updatedAccount))
+    }
+}
+
+export function revealAccount(account: Account) {
+    return (dispatch) => {
+        const updatedAccount: Account = produce(draft => {draft.hidden = false})(account);
+        dispatch(updateAccount(updatedAccount))
+    }
+}
+
+export function hideAccount(account:Account) {
+    return (dispatch) => {
+        dispatch({type: AccountActionType.AccountsLoad, payload: [] })
+
+        const url = `/api/accounts/${account.id}`;
+        const method = 'DELETE';
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json;version=1'
+            }
+        })
+            .then(parseJSON)
+            .then(checkApiError)
+            .then(() => dispatch(loadAccountList()))
+            .catch(() => dispatch(loadAccountList()));
+    }
+}
+
+
+export function updateAccount (account) {
+  return (dispatch, getState:()=>RootState) => {
+      dispatch({type: AccountActionType.AccountsLoad, payload: [] })
+
+      const state = getState()
+      const selectedBudgetId = (state.budgetentry as any).get('currentBudget').get('id');
+
+      let url = '/api/accounts';
+      let method = 'POST';
+      if (account.id !== undefined) {
+          url = `/api/accounts/${account.id}`;
+          method = 'PUT';
+      }
+
+      fetch(url, {
+          method,
+          headers: {
+              'Content-Type': 'application/vnd.mdg+json;version=1'
+          },
+          body: JSON.stringify(account)
+      })
+          .then(parseJSON)
+          .then(checkApiError)
+          .then(() => dispatch(loadAccountList()))
+          .then(() => dispatch(loadTotalsReport()))
+          .then(() => { if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId)) } })
+          .catch(() => dispatch(loadAccountList()))
+  }
+      /*
+
+      if (account.get('category_id') === -1) {
+        // We use -1 as a fake default value to make MUI happy
+        // mdg have no idea on that
+        account = account.delete('category_id')
+      }*/
+}
+
+/*export function createAccount () {
   return (dispatch, getState) => {
     const state = getState()
 
