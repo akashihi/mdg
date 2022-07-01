@@ -23,17 +23,17 @@ export default class Overview extends Component {
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={6}>
           <Card style={cardStyle}>
-            <FinanceOverview />
+              {/*<FinanceOverview />*/}
           </Card>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={6}>
           <Card style={cardStyle}>
-            <BudgetOverview short />
+              {/*<BudgetOverview short />*/}
           </Card>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={6}>
           <Card style={cardStyle}>
-            <TransactionsOverview />
+              {/*<TransactionsOverview />*/}
           </Card>
         </Grid>
       </Grid>

@@ -20,6 +20,10 @@ export const selectExpenseAccount = createSelector(
     [getAccounts], (accounts: Account[]) => accounts.filter(a => a.account_type === 'EXPENSE')
 )
 
+export const selectFavoriteAccounts = createSelector(
+    [selectAssetAccount], (accounts: Account[]) => accounts.filter(a => a.favorite && !a.hidden)
+)
+
 const primarySum = (accounts: Account[]) => accounts.reduce((prev, item) => prev + item.primary_balance * 100, 0)/100;
 
 export const selectAccountTotals = createSelector(

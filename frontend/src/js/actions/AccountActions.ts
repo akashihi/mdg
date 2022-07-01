@@ -21,7 +21,7 @@ export function loadAccountList () {
   return (dispatch) => {
     dispatch({type: AccountActionType.AccountsLoad, payload: [] })
 
-    const url = '/api/accounts'
+    const url = '/api/accounts?embed=currency'
 
     fetch(url)
       .then(parseJSON)

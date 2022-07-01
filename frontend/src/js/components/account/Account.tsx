@@ -52,12 +52,12 @@ function Account(props: AccountWidgetProps) {
             <Grid item xs={6} sm={6} md={4} lg={4}>
                 <div style={balanceStyle}>{props.account.balance} {props.account.currency.name}</div>
             </Grid>
-            <Grid item xs={12} sm={12} md={4} lg={4} className='hide-on-small'>
+            {!props.previewMode && <Grid item xs={12} sm={12} md={4} lg={4} className='hide-on-small'>
                 {favIcon}
                 {opIcon}
                 {visibilityIcon}
                 <Button aria-label='Edit' onClick={()=>props.edit(props.account)}><Edit/></Button>
-            </Grid>
+            </Grid>}
         </Grid>
     )
 }
