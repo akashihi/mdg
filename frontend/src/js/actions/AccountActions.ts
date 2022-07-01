@@ -7,7 +7,6 @@ import { loadTotalsReport } from './ReportActions';
 import { AccountActionType } from '../constants/Account'
 import {Account, AccountTreeNode} from "../models/Account";
 import {RootState} from "../reducers/rootReducer";
-import {loadCategoryList} from "./CategoryActions";
 
 export interface AccountAction extends Action {
     payload: {

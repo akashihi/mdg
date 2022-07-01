@@ -8,8 +8,6 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Edit from '@mui/icons-material/Edit';
 import Grid from '@mui/material/Grid';
-import ClipLoader from 'react-spinners/ClipLoader';
-import {Account} from "../../models/Account";
 import {AccountWidgetProps} from "../../containers/AccountItem";
 
 function Account(props: AccountWidgetProps) {
@@ -31,7 +29,7 @@ function Account(props: AccountWidgetProps) {
 
         if (props.account.favorite) {
             favIcon =
-                <Button aria-label='Favorite'onClick={()=>props.setFavorite(props.account, false)}><Favorite/></Button>;
+                <Button aria-label='Favorite' onClick={()=>props.setFavorite(props.account, false)}><Favorite/></Button>;
         } else {
             favIcon = <Button aria-label='Not favorite' onClick={()=>props.setFavorite(props.account, true)}><FavoriteBorder/></Button>;
         }

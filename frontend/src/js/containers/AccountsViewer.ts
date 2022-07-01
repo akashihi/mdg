@@ -1,7 +1,6 @@
 import {connect} from 'react-redux'
 
 import AccountsPage from '../components/account/AccountsPage'
-import {loadAccountList} from '../actions/AccountActions'
 import Currency from "../models/Currency";
 import Category from "../models/Category";
 import {Account, AccountTreeNode} from "../models/Account";
@@ -10,11 +9,10 @@ import {selectActiveCurrencies, selectPrimaryCurrencyName} from "../selectors/Cu
 import {
     AccountTotals,
     selectAccountTotals,
-    selectAssetAccount, selectExpenseAccount,
-    selectIncomeAccount
+    selectAssetAccount
 } from "../selectors/AccountSelector";
 
-export interface AccountsPageState {
+export interface AccountsPageProps {
     activeCurrencies: Currency[];
     categories: Category[];
     totals: AccountTotals;
@@ -26,7 +24,7 @@ export interface AccountsPageState {
     primaryCurrencyName: string;
 }
 
-const mapStateToProps = (state: RootState): AccountsPageState => {
+const mapStateToProps = (state: RootState): AccountsPageProps => {
     return {
         activeCurrencies: selectActiveCurrencies(state),
         categories: state.category.categoryList,
@@ -40,8 +38,4 @@ const mapStateToProps = (state: RootState): AccountsPageState => {
     }
 }
 
-const mapDispatchToProps = {loadAccountList}
-
-export type AccountsPageProps = AccountsPageState & typeof mapDispatchToProps
-
-export default connect(mapStateToProps, mapDispatchToProps)(AccountsPage)
+export default connect(mapStateToProps)(AccountsPage)

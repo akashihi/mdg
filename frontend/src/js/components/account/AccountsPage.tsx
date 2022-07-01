@@ -23,13 +23,6 @@ function AccountsPage(props: AccountsPageProps) {
         props.actions.createAccount();
     };
 
-    let accounts;
-    if (props.waiting) {
-        accounts = <ClipLoader sizeUnit={'px'} size={150} loading={true}/>;
-    } else if (props.error) {
-        accounts = <h1>Unable to load account list</h1>;
-    } else {
-
     */
 
     let hiddenButton;
