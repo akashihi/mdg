@@ -29,6 +29,12 @@ function AccountsPage(props: AccountsPageProps) {
         setEditedAccount(emptyAccount)
     }
 
+    const onEditAccountClick = (account: Account) => {
+        setShowEditor(true);
+        setFullEditor(false);
+        setEditedAccount(account)
+    }
+
     let hiddenButton;
     if (showHidden) {
         hiddenButton = <Button color='primary' onClick={() => setShowHidden(false)}>Hide hidden accounts</Button>
@@ -72,9 +78,9 @@ function AccountsPage(props: AccountsPageProps) {
                 <Tab label='Income accounts' value='income'/>
                 <Tab label='Expense accounts' value='expense'/>
             </Tabs>
-            {tabValue == 'asset' && <CategorizedAccountList tree={props.assetAccountsTree} indent={0} hidden={showHidden}/>}
-            {tabValue == 'income' && <CategorizedAccountList tree={props.incomeAccountsTree} indent={0} hidden={showHidden}/>}
-            {tabValue == 'expense' && <CategorizedAccountList tree={props.expenseAccountsTree} indent={0} hidden={showHidden}/>}
+            {tabValue == 'asset' && <CategorizedAccountList tree={props.assetAccountsTree} indent={0} hidden={showHidden} accountEdit={onEditAccountClick}/>}
+            {tabValue == 'income' && <CategorizedAccountList tree={props.incomeAccountsTree} indent={0} hidden={showHidden} accountEdit={onEditAccountClick}/>}
+            {tabValue == 'expense' && <CategorizedAccountList tree={props.expenseAccountsTree} indent={0} hidden={showHidden} accountEdit={onEditAccountClick}/>}
         </Fragment>
     )
 }

@@ -7,15 +7,18 @@ import {RootState} from "../reducers/rootReducer";
 
 export interface AccountItemProps {
     account: Account;
+    edit: (Account)=>void;
 }
 
 export interface AccountItemState {
     account: Account;
+    edit: (Account)=>void;
 }
 
 const mapStateToProps = (state: RootState, ownProps: AccountItemProps): AccountItemState => {
     return {
         account: ownProps.account,
+        edit: ownProps.edit
     }
 };
 

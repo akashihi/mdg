@@ -56,7 +56,7 @@ function Account(props: AccountWidgetProps) {
                 {favIcon}
                 {opIcon}
                 {visibilityIcon}
-                <Button aria-label='Edit'><Edit/></Button>
+                <Button aria-label='Edit' onClick={()=>props.edit(props.account)}><Edit/></Button>
             </Grid>
         </Grid>
     )
