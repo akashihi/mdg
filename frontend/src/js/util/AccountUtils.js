@@ -43,8 +43,8 @@ export class AccountMapper {
         return entries
     }
 
-    categorizeAccounts(type, accounts) {
-        var result = [];
+    categorizeAccounts(/*type, accounts*/) {
+        /*var result = [];
 
         const filtered_accounts = accounts.filter((item) => !item.get('hidden'));
 
@@ -55,7 +55,7 @@ export class AccountMapper {
         result.push(<Divider key={'noncategorized-divider-'+type}/>);
         result = result.concat(typed_accounts.filter((item) => !item.get('category_id')).map(::this.mapAccountEntry).valueSeq().toJS());
 
-        return result
+        return result*/
     }
 
     renderAccounts(accounts) {
