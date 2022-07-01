@@ -1,42 +1,8 @@
-import {OrderedMap} from 'immutable';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 import React from 'react';
-
-export function filterNonListedCategories(categories_ids, categoryList) {
-    const filterCategory = function(category) {
-        var kids = OrderedMap();
-
-        if (category.has('children')) {
-            category.get('children').forEach((item, k) => {
-                const filtered = filterCategory(item);
-                if (filtered != null) {
-                    kids = kids.set(k, filtered)
-                }
-            })
-        }
-
-        category = category.set('children', kids);
-
-        if (categories_ids.includes(category.get('id')) || !kids.isEmpty()) {
-            return category
-        }
-
-
-        return null
-    };
-
-    const entries = [];
-    categoryList.forEach(item => {
-        const c = filterCategory(item);
-        if (c != null) {
-            entries.push(c)
-        }
-    });
-    return entries
-}
 
 export class AccountMapper {
     constructor(currencies, categories, accounts) {
@@ -77,8 +43,8 @@ export class AccountMapper {
         return entries
     }
 
-    categorizeAccounts(type, accounts) {
-        var result = [];
+    categorizeAccounts(/*type, accounts*/) {
+        /*var result = [];
 
         const filtered_accounts = accounts.filter((item) => !item.get('hidden'));
 
@@ -89,7 +55,7 @@ export class AccountMapper {
         result.push(<Divider key={'noncategorized-divider-'+type}/>);
         result = result.concat(typed_accounts.filter((item) => !item.get('category_id')).map(::this.mapAccountEntry).valueSeq().toJS());
 
-        return result
+        return result*/
     }
 
     renderAccounts(accounts) {

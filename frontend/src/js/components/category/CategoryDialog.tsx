@@ -9,6 +9,7 @@ import {Formik, Form, Field, ErrorMessage} from 'formik';
 import {TextField} from 'formik-mui';
 import * as Yup from 'yup';
 import Category from "../../models/Category";
+import {mapCategoryListToMenu} from "../../util/CategoryUtils";
 
 export interface CategoryDialogProps {
     open: boolean;
@@ -21,45 +22,6 @@ export interface CategoryDialogProps {
 }
 
 export function CategoryDialog(props: CategoryDialogProps) {
-
-    /*onSubmit(values) {
-        this.props.actions.editCategorySave(Map(values));
-    }
-
-    onDeleteClick() {
-        this.props.actions.editCategoryDelete();
-    }
-
-    */
-
-    const mapCategoryListToMenu = (account_type:string) => {
-        let entries = [];
-
-        let entry = <MenuItem key='top' value={-1}>&lt;TOP&gt;</MenuItem>;
-        entries.push(entry);
-
-        const mapEntry = function (category: Category, prefix: number) {
-            // We do not want edited category and it's children in a parents list
-            if (category.id === props.category.id) {
-                return
-            }
-
-            const prepend = '-'.repeat(prefix);
-            const entry = <MenuItem key={category.id} value={category.id}>{prepend}{category.name}</MenuItem>;
-            entries.push(entry);
-            if (Array.isArray(category.children)) {
-                category.children.forEach((c) => {
-                    mapEntry(c, prefix + 1)
-                })
-            }
-        };
-
-        props.categoryList.filter(v => v.account_type.toLowerCase() === account_type.toLowerCase()).forEach((c) => {
-            mapEntry(c, 0)
-        });
-        return entries
-    }
-
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Required!'),
         priority: Yup.number().required('Required!').positive().integer(),
@@ -100,7 +62,7 @@ export function CategoryDialog(props: CategoryDialogProps) {
                                 component={TextField}
                                 disabled={values.account_type === 'ASSET'}
                                 className='common-field-width'>
-                                {mapCategoryListToMenu(values.account_type)}
+                                {mapCategoryListToMenu(props.categoryList, values.account_type, props.category.id)}
                             </Field>
                             <br/>
                             <Field type='number' name='priority' label='Ordering value' component={TextField} className='common-field-width'/>

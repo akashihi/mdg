@@ -2,6 +2,7 @@ import Currency from '../models/Currency';
 import {RootState} from '../reducers/rootReducer';
 import Rate from '../models/Rate';
 import {SettingState} from '../reducers/SettingReducer';
+import {Account} from "../models/Account";
 
 // Transaction view
 export const getPeriodBeginning = state => state.transactionview.get('periodBeginning');
@@ -15,7 +16,7 @@ export const getTransactions = state => state.transaction.get('transactionList')
 export const getTransactionToDeleteId = state => state.transaction.get('delete').get('id');
 
 // Accounts
-export const getAccounts = state => state.account.get('accountList');
+export const getAccounts = (state:RootState): Account[] => state.account.accountList;
 
 // Budget
 export const getCurrentBudgetId = state => state.budgetentry.get('currentBudget').get('id');
