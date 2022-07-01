@@ -1,5 +1,5 @@
 import React from 'react';
-import {Map} from 'immutable';
+import {produce} from 'immer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -11,16 +11,26 @@ import {Formik, Form, Field, ErrorMessage} from 'formik';
 import * as Yup from 'yup';
 import {AccountDialogProps} from "../../containers/AccountEditor";
 import {mapCategoryListToMenu} from "../../util/CategoryUtils";
+import {Account} from "../../models/Account";
 
 
 function AccountDialog(props:AccountDialogProps) {
-    const onSubmit = (values) => {
-        console.log(values);
+    const onSubmit = (values: Account) => {
+        props.close();
+
+        if (values.category_id === -1) {
+            // We use -1 as a fake default value to make MUI happy
+            // mdg have no idea on that
+            values = produce(draft => draft.category_id=undefined)(values);
+        }
+
+        props.updateAccount(values)
     };
 
     const currencies = props.currencies.map((c) => (<MenuItem value={c.id} key={c.id}>{c.name}</MenuItem>));
 
-    const initialValues = {
+    const initialValues: Partial<Account> = {
+        id: props.account.id,
         account_type: props.account.account_type,
         name: props.account.name,
         currency_id: props.account.currency_id,
@@ -67,6 +77,7 @@ function AccountDialog(props:AccountDialogProps) {
                                 value={values.currency_id}
                                 select
                                 helperText='Please select currency for account'
+                                disabled={!props.full && values.account_type === 'ASSET'}
                                 margin='normal'
                                 component={TextField}
                                 className='common-field-width'>

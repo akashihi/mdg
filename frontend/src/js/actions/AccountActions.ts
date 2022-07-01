@@ -108,7 +108,7 @@ export function hideAccount(account:Account) {
 }
 
 
-export function updateAccount (account) {
+export function updateAccount (account: Partial<Account>) {
   return (dispatch, getState:()=>RootState) => {
       dispatch({type: AccountActionType.AccountsLoad, payload: [] })
 
@@ -117,7 +117,7 @@ export function updateAccount (account) {
 
       let url = '/api/accounts';
       let method = 'POST';
-      if (account.id !== undefined) {
+      if (account.id !== -1) {
           url = `/api/accounts/${account.id}`;
           method = 'PUT';
       }
@@ -136,60 +136,4 @@ export function updateAccount (account) {
           .then(() => { if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId)) } })
           .catch(() => dispatch(loadAccountList()))
   }
-      /*
-
-      if (account.get('category_id') === -1) {
-        // We use -1 as a fake default value to make MUI happy
-        // mdg have no idea on that
-        account = account.delete('category_id')
-      }*/
 }
-
-/*export function createAccount () {
-  return (dispatch, getState) => {
-    const state = getState()
-
-    dispatch({
-      type: ACCOUNT_DIALOG_OPEN,
-      payload: {
-        full: true,
-        id: -1,
-        account: Map({ name: '', account_type: 'asset', balance: 0, currency_id: state.get('setting').get('primaryCurrency') })
-      }
-    })
-  }
-}
-
-export function editAccount (id, account) {
-  return {
-    type: ACCOUNT_DIALOG_OPEN,
-    payload: {
-      full: false,
-      id,
-      account
-    }
-  }
-}
-
-export function editAccountCancel () {
-  return {
-    type: ACCOUNT_DIALOG_CLOSE,
-    payload: true
-  }
-}
-
-export function editAccountSave (account) {
-  return (dispatch, getState) => {
-    dispatch({
-      type: ACCOUNT_DIALOG_CLOSE,
-      payload: true
-    })
-    dispatch({
-      type: GET_ACCOUNTLIST_REQUEST,
-      payload: true
-    })
-    const state = getState()
-    const id = state.get('account').getIn(['dialog', 'id'])
-    dispatch(updateAccount(id, account))
-  }
-}*/
