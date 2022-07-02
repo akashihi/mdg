@@ -5,12 +5,6 @@ import {
     GET_BUDGETREPORT_REQUEST,
     GET_BUDGETREPORT_SUCCESS,
     GET_BUDGETREPORT_FAILURE,
-    GET_SIMPLEASSETREPORT_REQUEST,
-    GET_SIMPLEASSETREPORT_SUCCESS,
-    GET_SIMPLEASSETREPORT_FAILURE,
-    SET_REPORT_STARTDATE,
-    SET_REPORT_ENDDATE,
-    SET_REPORT_GRANULARITY,
     GET_CURRENCYASSETREPORT_REQUEST,
     GET_CURRENCYASSETREPORT_SUCCESS,
     GET_CURRENCYASSETREPORT_FAILURE,
@@ -30,7 +24,7 @@ import {
     GET_EXPENSEWEIGHTACCOUNTREPORT_SUCCESS,
     GET_EXPENSEWEIGHTACCOUNTREPORT_FAILURE, ReportActionType
 } from '../constants/Report'
-import {TotalsReport} from "../models/report";
+import {TotalsReport} from "../models/Report";
 import {ReportAction} from "../actions/ReportActions";
 
 export interface ReportState {
@@ -44,7 +38,6 @@ const initialState: ReportState = {
 }
 
 /*const initialState = Map({
-  simpleAssetReport: [],
   currencyAssetReport: Map({ dates: List(), series: OrderedMap() }),
   typeAssetReport: Map({ dates: List(), series: OrderedMap() }),
   budgetExecutionReport: Map({ dates: List(), aIncome: List(), eIncome: List(), aExpense: List(), eExpense: List(), profit: List() }),
@@ -52,9 +45,7 @@ const initialState: ReportState = {
   expenseByAccount: Map({ dates: List(), series: OrderedMap() }),
   incomeByAccountWeight: Map({ date: '', series: List() }),
   expenseByAccountWeight: Map({ date: '', series: List() }),
-  startDate: moment().subtract(1, 'month'),
-  endDate: moment(),
-  granularity: 7
+
 })*/
 
 export default function reportReducer (state: ReportState = initialState, action: ReportAction) {
@@ -63,11 +54,7 @@ export default function reportReducer (state: ReportState = initialState, action
         return produce(state, draft => {draft.totalsAvailable = false});
     case ReportActionType.TotalsReportStore:
         return produce(state, draft => {draft.totalsAvailable = true; draft.totals = action.payload.totals});
-    /*case GET_SIMPLEASSETREPORT_REQUEST:
-    case GET_SIMPLEASSETREPORT_FAILURE:
-      return state.set('simpleAssetReport', [])
-    case GET_SIMPLEASSETREPORT_SUCCESS:
-      return state.set('simpleAssetReport', action.payload)
+    /*
     case GET_CURRENCYASSETREPORT_REQUEST:
     case GET_CURRENCYASSETREPORT_FAILURE:
       return state.set('currencyAssetReport', Map({ dates: List(), series: OrderedMap() }))

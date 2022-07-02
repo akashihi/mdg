@@ -1,5 +1,4 @@
 import { Action } from 'redux';
-import jQuery from 'jquery'
 import moment from 'moment'
 import Immutable, { List, Map, OrderedMap } from 'immutable'
 
@@ -9,12 +8,6 @@ import {
     GET_BUDGETREPORT_REQUEST,
     GET_BUDGETREPORT_SUCCESS,
     GET_BUDGETREPORT_FAILURE,
-    GET_SIMPLEASSETREPORT_REQUEST,
-    GET_SIMPLEASSETREPORT_SUCCESS,
-    GET_SIMPLEASSETREPORT_FAILURE,
-    SET_REPORT_STARTDATE,
-    SET_REPORT_ENDDATE,
-    SET_REPORT_GRANULARITY,
     GET_CURRENCYASSETREPORT_REQUEST,
     GET_CURRENCYASSETREPORT_SUCCESS,
     GET_CURRENCYASSETREPORT_FAILURE,
@@ -34,7 +27,7 @@ import {
     GET_EXPENSEWEIGHTACCOUNTREPORT_SUCCESS,
     GET_EXPENSEWEIGHTACCOUNTREPORT_FAILURE, ReportActionType
 } from '../constants/Report'
-import {TotalsReport} from "../models/report";
+import {TotalsReport} from "../models/Report";
 
 export interface ReportAction extends Action {
     payload: {
@@ -54,17 +47,6 @@ export function loadTotalsReport () {
         dispatch({type: ReportActionType.TotalsReportStore, payload: {totals: map.report}})
       })
   }
-}
-
-function reportDatesToParams (getState) {
-  /*const state = getState()
-
-  const params = {
-    start: state.get('report').get('startDate').format('YYYY-MM-DD'),
-    end: state.get('report').get('endDate').format('YYYY-MM-DD'),
-    granularity: state.get('report').get('granularity')
-  }
-  return '?' + jQuery.param(params)*/
 }
 
 export function loadBudgetExecutionReport () {
@@ -109,25 +91,6 @@ export function loadSimpleAssetReport () {
 
     const url = '/api/report/asset/simple' + reportDatesToParams(getState)
 
-    fetch(url)
-      .then(parseJSON)
-      .then(checkApiError)
-      .then(function (json) {
-        const series = json.data.attributes.value.map((item) => {
-          const dt = moment(item.date, 'YYYY-MM-DD')
-          return [dt.valueOf(), item.value]
-        })
-        dispatch({
-          type: GET_SIMPLEASSETREPORT_SUCCESS,
-          payload: series
-        })
-      })
-      .catch(function (response) {
-        dispatch({
-          type: GET_SIMPLEASSETREPORT_FAILURE,
-          payload: response.json
-        })
-      })
   }*/
 }
 
@@ -383,56 +346,5 @@ export function loadExpenseWeightAccountReport () {
           payload: response.json
         })
       })
-  }*/
-}
-
-export function setReportGranularity (granularity) {
-  /*return (dispatch) => {
-    dispatch({
-      type: SET_REPORT_GRANULARITY,
-      payload: granularity
-    })
-    dispatch(loadBudgetExecutionReport())
-    dispatch(loadTypeAssetReport())
-    dispatch(loadCurrencyAssetReport())
-    dispatch(loadSimpleAssetReport())
-    dispatch(loadIncomeEventAccountReport())
-    dispatch(loadExpenseEventAccountReport())
-    dispatch(loadIncomeWeightAccountReport())
-    dispatch(loadExpenseWeightAccountReport())
-  }*/
-}
-
-export function setReportStartDate (startDate) {
-  /*return (dispatch) => {
-    dispatch({
-      type: SET_REPORT_STARTDATE,
-      payload: moment(startDate)
-    })
-    dispatch(loadBudgetExecutionReport())
-    dispatch(loadTypeAssetReport())
-    dispatch(loadCurrencyAssetReport())
-    dispatch(loadSimpleAssetReport())
-    dispatch(loadIncomeEventAccountReport())
-    dispatch(loadExpenseEventAccountReport())
-    dispatch(loadIncomeWeightAccountReport())
-    dispatch(loadExpenseWeightAccountReport())
-  }*/
-}
-
-export function setReportEndDate (endDate) {
-  /*return (dispatch) => {
-    dispatch({
-      type: SET_REPORT_ENDDATE,
-      payload: moment(endDate)
-    })
-    dispatch(loadBudgetExecutionReport())
-    dispatch(loadTypeAssetReport())
-    dispatch(loadCurrencyAssetReport())
-    dispatch(loadSimpleAssetReport())
-    dispatch(loadIncomeEventAccountReport())
-    dispatch(loadExpenseEventAccountReport())
-    dispatch(loadIncomeWeightAccountReport())
-    dispatch(loadExpenseWeightAccountReport())
   }*/
 }

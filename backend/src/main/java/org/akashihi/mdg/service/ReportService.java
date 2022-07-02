@@ -15,6 +15,7 @@ import org.akashihi.mdg.entity.report.TotalsReportEntry;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ public class ReportService {
         var currentPrimary = settingService.getCurrentCurrencyPrimary().map(Currency::getName).orElse("");
         var dates = expandPeriod(from, to, granularity);
         var amounts = dates.stream().map(d -> {
-                    var amount = accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO);
+                    var amount = accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO).setScale(2, RoundingMode.DOWN);
                     return new Amount(amount, currentPrimary, d);
                 })
                 .toList();
