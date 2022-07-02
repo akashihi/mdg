@@ -54,8 +54,10 @@ public class ReportService {
         var accounts = accountService.listByType(AccountType.ASSET)
                 .stream().collect(Collectors.groupingBy(Account::getCategory));
         var totals = new ArrayList<TotalsReportEntry>();
-        for (Map.Entry<Category, List<Account>> totalsCategory : accounts.entrySet()) {
-            var currencyGroups = totalsCategory.getValue().stream().collect(Collectors.groupingBy(Account::getCurrency));
+
+        var orderedCategories = accounts.keySet().stream().sorted(Comparator.comparing(Category::getPriority)).toList();
+        for (Category totalsCategory : orderedCategories) {
+            var currencyGroups = accounts.get(totalsCategory).stream().collect(Collectors.groupingBy(Account::getCurrency));
             var currencyTotals = new ArrayList<Amount>();
             //Only fill detailed totals if there is more than just primary currency
             for (Map.Entry<Currency, List<Account>> currencyGroup : currencyGroups.entrySet()) {
@@ -69,10 +71,9 @@ public class ReportService {
                 currencyTotals.clear(); // Drop totals if only primary currency is filled
             }
 
-            var primaryTotal = totalsCategory.getValue().stream().map(Account::getPrimaryBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
-            totals.add(new TotalsReportEntry(totalsCategory.getKey().getName(), primaryTotal, currencyTotals));
+            var primaryTotal = accounts.get(totalsCategory).stream().map(Account::getPrimaryBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+            totals.add(new TotalsReportEntry(totalsCategory.getName(), primaryTotal, currencyTotals));
         }
-        totals.sort(Comparator.comparing(TotalsReportEntry::categoryName));
         return new TotalsReport(totals);
     }
 
