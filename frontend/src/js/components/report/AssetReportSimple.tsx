@@ -4,7 +4,6 @@ import HighchartsReact from 'highcharts-react-official';
 import {ReportProps} from './ReportsPage';
 import {reportDatesToParams} from '../../util/ReportUtils';
 import { checkApiError, parseJSON} from '../../util/ApiUtils';
-import moment from 'moment';
 
 export function AssetReportSimple(props:ReportProps) {
     const [chartData, setChartData] = useState([]);
@@ -24,9 +23,8 @@ export function AssetReportSimple(props:ReportProps) {
             .then(function (json: any) {
 
                 const series = json.report.map((item) => {
-                    return [moment(item.date, 'YYYY-MM-DD').valueOf(), item.amount];
+                    return {x: new Date(item.date), y:item.amount, name: item.date};
                 });
-                console.log(series);
                 setChartData(series);
             })
             .catch(function () {
@@ -47,11 +45,6 @@ export function AssetReportSimple(props:ReportProps) {
         yAxis: {
             title: {
                 text: props.primaryCurrencyName
-            },
-            labels: {
-                formatter: function () {
-                    return this.value
-                }
             }
         },
         tooltip: {
