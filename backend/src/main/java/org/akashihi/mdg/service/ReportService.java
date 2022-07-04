@@ -9,6 +9,8 @@ import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.entity.Currency;
 import org.akashihi.mdg.entity.report.Amount;
 import org.akashihi.mdg.entity.report.BudgetReportEntry;
+import org.akashihi.mdg.entity.report.OldSimpleReport;
+import org.akashihi.mdg.entity.report.ReportSeries;
 import org.akashihi.mdg.entity.report.SimpleReport;
 import org.akashihi.mdg.entity.report.TotalsReport;
 import org.akashihi.mdg.entity.report.TotalsReportEntry;
@@ -78,7 +80,7 @@ public class ReportService {
         return new TotalsReport(totals);
     }
 
-    public SimpleReport<Amount> simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
+    public OldSimpleReport<Amount> simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
         var currentPrimary = settingService.getCurrentCurrencyPrimary().map(Currency::getName).orElse("");
         var dates = expandPeriod(from, to, granularity);
         var amounts = dates.stream().map(d -> {
@@ -86,43 +88,48 @@ public class ReportService {
                     return new Amount(amount, currentPrimary, d);
                 })
                 .toList();
-        return new SimpleReport<>(amounts);
+        return new OldSimpleReport<>(amounts);
     }
 
-    protected SimpleReport<Amount> typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {
+    protected SimpleReport typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {
         var dates = expandPeriod(from, to, granularity);
-        var amounts = dates.stream().flatMap(d -> query.apply(d).stream().map(t -> new Amount(t.getAmount(), t.getName(), d)))
-                .toList();
-        return new SimpleReport<>(amounts);
+        var amounts = dates.stream()
+                .flatMap(d -> query.apply(d).stream())
+                .collect(Collectors.groupingBy(AmountAndName::getName));
+        var series = amounts.entrySet().stream().map(group -> {
+                var data = group.getValue().stream().map(AmountAndName::getAmount).toList();
+                return new ReportSeries(group.getKey(), data, "area"); // Area is the default type
+        }).toList();
+        return new SimpleReport(dates, series);
     }
 
-    public SimpleReport<Amount> assetByCurrencyReport(LocalDate from, LocalDate to, Integer granularity) {
+    public SimpleReport assetByCurrencyReport(LocalDate from, LocalDate to, Integer granularity) {
         return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency);
     }
 
-    public SimpleReport<Amount> assetByTypeReport(LocalDate from, LocalDate to, Integer granularity) {
+    public SimpleReport assetByTypeReport(LocalDate from, LocalDate to, Integer granularity) {
         return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType);
     }
 
-    public SimpleReport<Amount> eventsByAccountReport(LocalDate from, LocalDate to, Integer granularity, AccountType type) {
+    public OldSimpleReport<Amount> eventsByAccountReport(LocalDate from, LocalDate to, Integer granularity, AccountType type) {
         var dates = expandPeriod(from, to, granularity);
         var amounts = IntStream.range(0, dates.size() - 2 + 1)
                 .mapToObj(start -> dates.subList(start, start + 2))
                 .flatMap(d -> {
                     return accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), d.get(0), d.get(1)).stream().map(t -> new Amount(t.getAmount(), t.getName(), d.get(0)));
                 }).toList();
-        return new SimpleReport<>(amounts);
+        return new OldSimpleReport<>(amounts);
     }
 
-    public SimpleReport<Amount> structureReport(LocalDate from, LocalDate to, AccountType type) {
+    public OldSimpleReport<Amount> structureReport(LocalDate from, LocalDate to, AccountType type) {
         var totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to)
                 .stream().map(a -> new Amount(a.getAmount(), a.getName(), from)).toList();
-        return new SimpleReport<>(totals);
+        return new OldSimpleReport<>(totals);
     }
 
-    public SimpleReport<BudgetReportEntry> budgetExecutionReport(LocalDate from, LocalDate to) {
+    public OldSimpleReport<BudgetReportEntry> budgetExecutionReport(LocalDate from, LocalDate to) {
         var budgets = budgetService.listInRange(from, to).stream().map(b -> new BudgetReportEntry(from, b.getState().income(), b.getState().expense(), b.getOutgoingAmount().actual().subtract(b.getIncomingAmount())))
                 .toList();
-        return new SimpleReport<>(budgets);
+        return new OldSimpleReport<>(budgets);
     }
 }
