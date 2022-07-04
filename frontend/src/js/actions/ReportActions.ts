@@ -8,9 +8,6 @@ import {
     GET_BUDGETREPORT_REQUEST,
     GET_BUDGETREPORT_SUCCESS,
     GET_BUDGETREPORT_FAILURE,
-    GET_CURRENCYASSETREPORT_REQUEST,
-    GET_CURRENCYASSETREPORT_SUCCESS,
-    GET_CURRENCYASSETREPORT_FAILURE,
     GET_TYPEASSETREPORT_REQUEST,
     GET_TYPEASSETREPORT_SUCCESS,
     GET_TYPEASSETREPORT_FAILURE,
@@ -79,18 +76,6 @@ export function loadBudgetExecutionReport () {
           payload: response.json
         })
       })
-  }*/
-}
-
-export function loadSimpleAssetReport () {
-  /*return (dispatch, getState) => {
-    dispatch({
-      type: GET_SIMPLEASSETREPORT_REQUEST,
-      payload: true
-    })
-
-    const url = '/api/report/asset/simple' + reportDatesToParams(getState)
-
   }*/
 }
 

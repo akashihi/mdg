@@ -18,7 +18,6 @@ export function AssetReportCollection(props:ReportProps): ReactElement {
           </AccordionSummary>
           <AccordionDetails>
               <AssetReportSimple startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
-              {/*<AssetReportSimple actions={props.actions} data={props.simpleAssetReport} currency={props.currencyName} />*/}
           </AccordionDetails>
         </Accordion>
         <Accordion>
@@ -26,7 +25,7 @@ export function AssetReportCollection(props:ReportProps): ReactElement {
             Detailed assets by time
           </AccordionSummary>
           <AccordionDetails>
-              {/*<AssetReportCurrency actions={props.actions} data={props.currencyAssetReport} currency={props.currencyName} />*/}
+              <AssetReportCurrency startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
           </AccordionDetails>
         </Accordion>
         <Accordion>
