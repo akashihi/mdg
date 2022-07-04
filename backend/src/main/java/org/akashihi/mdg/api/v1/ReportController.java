@@ -26,7 +26,7 @@ public class ReportController {
     }
 
     @GetMapping(value = "/reports/assets/simple", produces = "application/vnd.mdg+json;version=1")
-    public OldSimpleReport<Amount> simpleAssetsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
+    public SimpleReport simpleAssetsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
         return reportService.simpleAssetReport(startDate, endDate, granularity);
     }
 

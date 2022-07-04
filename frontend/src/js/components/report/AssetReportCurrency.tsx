@@ -7,7 +7,7 @@ import {checkApiError, parseJSON} from '../../util/ApiUtils';
 import {Report} from "../../models/Report";
 
 export function AssetReportCurrency(props: ReportProps) {
-    const [chartData, setChartData] = useState<Report>();
+    const [chartData, setChartData] = useState<Report>({dates: [], series: []});
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {

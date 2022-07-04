@@ -4,9 +4,10 @@ import HighchartsReact from 'highcharts-react-official';
 import {ReportProps} from './ReportsPage';
 import {reportDatesToParams} from '../../util/ReportUtils';
 import { checkApiError, parseJSON} from '../../util/ApiUtils';
+import {Report} from "../../models/Report";
 
 export function AssetReportSimple(props:ReportProps) {
-    const [chartData, setChartData] = useState([]);
+    const [chartData, setChartData] = useState<Report>({dates: [], series: []});
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {
@@ -21,11 +22,11 @@ export function AssetReportSimple(props:ReportProps) {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json: any) {
+                const dates = json.dates.map(item => new Date(item).toDateString());
 
-                const series = json.report.map((item) => {
-                    return {x: new Date(item.date), y:item.amount, name: item.date};
-                });
-                setChartData(series);
+                setChartData({
+                    dates: dates, series: json.series
+                })
             })
             .catch(function () {
             })
@@ -40,6 +41,7 @@ export function AssetReportSimple(props:ReportProps) {
             text: 'Asset Totals'
         },
         xAxis: {
+            categories: chartData.dates,
             type: 'datetime'
         },
         yAxis: {
@@ -64,11 +66,7 @@ export function AssetReportSimple(props:ReportProps) {
                 }
             }
         },
-        series: [{
-            name: 'Total assets',
-            data: chartData,
-            type: 'area'
-        }]
+        series: chartData.series
     }
 
     return (

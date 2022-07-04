@@ -21,6 +21,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -80,15 +81,12 @@ public class ReportService {
         return new TotalsReport(totals);
     }
 
-    public OldSimpleReport<Amount> simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
+    public SimpleReport simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
         var currentPrimary = settingService.getCurrentCurrencyPrimary().map(Currency::getName).orElse("");
         var dates = expandPeriod(from, to, granularity);
-        var amounts = dates.stream().map(d -> {
-                    var amount = accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO).setScale(2, RoundingMode.DOWN);
-                    return new Amount(amount, currentPrimary, d);
-                })
-                .toList();
-        return new OldSimpleReport<>(amounts);
+        var amounts = dates.stream().map(d -> accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO).setScale(2, RoundingMode.DOWN)).toList();
+        var series = new ReportSeries("Total assets", amounts, "area");
+        return new SimpleReport(dates, Collections.singletonList(series));
     }
 
     protected SimpleReport typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {

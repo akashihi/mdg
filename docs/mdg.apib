@@ -612,7 +612,8 @@ Provides assets overview information.
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
 
 
 ## AssetCurrencyReport [/report/asset/currency?startDate={startDate}&endDate={endDate}&granularity={granularity}]
