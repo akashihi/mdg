@@ -8,18 +8,9 @@ import {
     GET_BUDGETREPORT_REQUEST,
     GET_BUDGETREPORT_SUCCESS,
     GET_BUDGETREPORT_FAILURE,
-    GET_TYPEASSETREPORT_REQUEST,
-    GET_TYPEASSETREPORT_SUCCESS,
-    GET_TYPEASSETREPORT_FAILURE,
-    GET_INCOMEEVENTACCOUNTREPORT_REQUEST,
-    GET_INCOMEEVENTACCOUNTREPORT_SUCCESS,
-    GET_INCOMEEVENTACCOUNTREPORT_FAILURE,
     GET_EXPENSEEVENTACCOUNTREPORT_REQUEST,
     GET_EXPENSEEVENTACCOUNTREPORT_SUCCESS,
     GET_EXPENSEEVENTACCOUNTREPORT_FAILURE,
-    GET_INCOMEWEIGHTACCOUNTREPORT_REQUEST,
-    GET_INCOMEWEIGHTACCOUNTREPORT_SUCCESS,
-    GET_INCOMEWEIGHTACCOUNTREPORT_FAILURE,
     GET_EXPENSEWEIGHTACCOUNTREPORT_REQUEST,
     GET_EXPENSEWEIGHTACCOUNTREPORT_SUCCESS,
     GET_EXPENSEWEIGHTACCOUNTREPORT_FAILURE, ReportActionType
@@ -112,82 +103,6 @@ function processIdentifiedInTimeReport (json, idMapping) {
     dates,
     series
   })*/
-}
-
-export function loadTypeAssetReport () {
-  /*return (dispatch, getState) => {
-    dispatch({
-      type: GET_TYPEASSETREPORT_REQUEST,
-      payload: true
-    })
-
-    const state = getState()
-
-    const url = '/api/report/asset/type' + reportDatesToParams(getState)
-
-    fetch(url)
-      .then(parseJSON)
-      .then(checkApiError)
-      .then(function (json) {
-        const categoryMapper = item => {
-          if (state.get('category').get('categoryList').has(parseInt(item.get('id')))) {
-            return item.set('id', state.get('category').get('categoryList').get(parseInt(item.get('id'))).get('name'))
-          }
-          return item
-        }
-
-        const result = processIdentifiedInTimeReport(json.data.attributes.value, categoryMapper)
-
-        dispatch({
-          type: GET_TYPEASSETREPORT_SUCCESS,
-          payload: result
-        })
-      })
-      .catch(function (response) {
-        dispatch({
-          type: GET_TYPEASSETREPORT_FAILURE,
-          payload: response.json
-        })
-      })
-  }*/
-}
-
-export function loadCurrencyAssetReport () {
-  /*return (dispatch, getState) => {
-    dispatch({
-      type: GET_CURRENCYASSETREPORT_REQUEST,
-      payload: true
-    })
-
-    const state = getState()
-
-    const url = '/api/report/asset/currency' + reportDatesToParams(getState)
-
-    fetch(url)
-      .then(parseJSON)
-      .then(checkApiError)
-      .then(function (json) {
-        const currencyMapper = item => {
-          if (state.get('currency').get('currencies').has(parseInt(item.get('id')))) {
-            return item.set('id', state.get('currency').get('currencies').get(parseInt(item.get('id'))).get('name'))
-          }
-          return item
-        }
-
-        const result = processIdentifiedInTimeReport(json.data.attributes.value, currencyMapper)
-
-        dispatch({
-          type: GET_CURRENCYASSETREPORT_SUCCESS,
-          payload: result
-        })
-      })
-      .catch(function (response) {
-        dispatch({
-          type: GET_CURRENCYASSETREPORT_FAILURE,
-          payload: response.json
-        })
-      })
-  }*/
 }
 
 function getAccountMapper (state) {

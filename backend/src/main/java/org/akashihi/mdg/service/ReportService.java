@@ -21,6 +21,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -89,16 +91,19 @@ public class ReportService {
         return new SimpleReport(dates, Collections.singletonList(series));
     }
 
+
+    protected Collection<ReportSeries> amountToSeries(final Stream<AmountAndName> amounts, final String type) {
+        return amounts.collect(Collectors.groupingBy(AmountAndName::getName)).entrySet().stream().map(group -> {
+            var data = group.getValue().stream().map(AmountAndName::getAmount).toList();
+            return new ReportSeries(group.getKey(), data, type); // Area is the default type
+        }).toList();
+    }
+
     protected SimpleReport typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {
         var dates = expandPeriod(from, to, granularity);
         var amounts = dates.stream()
-                .flatMap(d -> query.apply(d).stream())
-                .collect(Collectors.groupingBy(AmountAndName::getName));
-        var series = amounts.entrySet().stream().map(group -> {
-                var data = group.getValue().stream().map(AmountAndName::getAmount).toList();
-                return new ReportSeries(group.getKey(), data, "area"); // Area is the default type
-        }).toList();
-        return new SimpleReport(dates, series);
+                .flatMap(d -> query.apply(d).stream());
+        return new SimpleReport(dates, amountToSeries(amounts, "area"));
     }
 
     public SimpleReport assetByCurrencyReport(LocalDate from, LocalDate to, Integer granularity) {
@@ -109,20 +114,17 @@ public class ReportService {
         return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType);
     }
 
-    public OldSimpleReport<Amount> eventsByAccountReport(LocalDate from, LocalDate to, Integer granularity, AccountType type) {
+    public SimpleReport eventsByAccountReport(LocalDate from, LocalDate to, Integer granularity, AccountType type) {
         var dates = expandPeriod(from, to, granularity);
         var amounts = IntStream.range(0, dates.size() - 2 + 1)
                 .mapToObj(start -> dates.subList(start, start + 2))
-                .flatMap(d -> {
-                    return accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), d.get(0), d.get(1)).stream().map(t -> new Amount(t.getAmount(), t.getName(), d.get(0)));
-                }).toList();
-        return new OldSimpleReport<>(amounts);
+                .flatMap(d -> accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), d.get(0), d.get(1)).stream());
+        return new SimpleReport(dates, amountToSeries(amounts, "column"));
     }
 
-    public OldSimpleReport<Amount> structureReport(LocalDate from, LocalDate to, AccountType type) {
-        var totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to)
-                .stream().map(a -> new Amount(a.getAmount(), a.getName(), from)).toList();
-        return new OldSimpleReport<>(totals);
+    public SimpleReport structureReport(LocalDate from, LocalDate to, AccountType type) {
+        var totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to).stream();
+        return new SimpleReport(Collections.singletonList(from), amountToSeries(totals, "pie"));
     }
 
     public OldSimpleReport<BudgetReportEntry> budgetExecutionReport(LocalDate from, LocalDate to) {

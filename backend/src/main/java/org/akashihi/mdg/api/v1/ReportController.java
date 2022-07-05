@@ -41,22 +41,22 @@ public class ReportController {
     }
 
     @GetMapping(value = "/reports/income/events", produces = "application/vnd.mdg+json;version=1")
-    public OldSimpleReport<Amount> incomeEventsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
+    public SimpleReport incomeEventsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
         return reportService.eventsByAccountReport(startDate, endDate, granularity, AccountType.INCOME);
     }
 
     @GetMapping(value = "/reports/expense/events", produces = "application/vnd.mdg+json;version=1")
-    public OldSimpleReport<Amount> expenseEventsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
+    public SimpleReport expenseEventsReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @RequestParam("granularity") Integer granularity) {
         return reportService.eventsByAccountReport(startDate, endDate, granularity, AccountType.EXPENSE);
     }
 
     @GetMapping(value = "/reports/income/accounts", produces = "application/vnd.mdg+json;version=1")
-    public OldSimpleReport<Amount> incomeStructureReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    public SimpleReport incomeStructureReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return reportService.structureReport(startDate, endDate, AccountType.INCOME);
     }
 
     @GetMapping(value = "/reports/expense/accounts", produces = "application/vnd.mdg+json;version=1")
-    public OldSimpleReport<Amount> expenseStructureReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    public SimpleReport expenseStructureReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return reportService.structureReport(startDate, endDate, AccountType.EXPENSE);
     }
 
