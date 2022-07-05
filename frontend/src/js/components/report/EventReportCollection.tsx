@@ -4,11 +4,15 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-import IncomeReportEventsAccount from './IncomeReportEventsAccount';
-import IncomeByAccountWeight from './IncomeByAccountWeight';
+import EventsReportByAccount from './EventsReportByAccount';
+import EventsReportByWeight from './EventsReportByWeight';
 import {ReportProps} from "./ReportsPage";
 
-export function IncomeReportCollection(props: ReportProps) {
+export interface EventReportProps extends ReportProps {
+    type: string
+}
+
+export function EventReportCollection(props: EventReportProps) {
     return (
       <Fragment>
         <Accordion defaultExpanded>
@@ -16,7 +20,7 @@ export function IncomeReportCollection(props: ReportProps) {
             Income operations by account
           </AccordionSummary>
           <AccordionDetails>
-            <IncomeReportEventsAccount startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
+            <EventsReportByAccount startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName} type={props.type}/>
           </AccordionDetails>
         </Accordion>
         <Accordion>
@@ -24,11 +28,11 @@ export function IncomeReportCollection(props: ReportProps) {
             Income accounts weight
           </AccordionSummary>
           <AccordionDetails>
-              <IncomeByAccountWeight startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
+              <EventsReportByWeight startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName} type={props.type}/>
           </AccordionDetails>
         </Accordion>
       </Fragment>
     )
 }
 
-export default IncomeReportCollection;
+export default EventReportCollection;

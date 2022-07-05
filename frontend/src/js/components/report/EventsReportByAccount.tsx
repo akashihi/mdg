@@ -1,10 +1,10 @@
 import React from 'react'
 import {reportDatesToParams} from "../../util/ReportUtils";
 import AssetReportWidet from "./AssetReportWidet";
-import {ReportProps} from "./ReportsPage";
+import {EventReportProps} from "./EventReportCollection";
 
-export function IncomeReportEventsAccount(props: ReportProps) {
-    const url = `/api/reports/income/events/${reportDatesToParams(props)}`;
+export function EventsReportByAccount(props: EventReportProps) {
+    const url = `/api/reports/${props.type}/events/${reportDatesToParams(props)}`;
 
     const options = {
         chart: {
@@ -25,4 +25,4 @@ export function IncomeReportEventsAccount(props: ReportProps) {
     return <AssetReportWidet url={url} options={options}/>;
 }
 
-export default IncomeReportEventsAccount;
+export default EventsReportByAccount;

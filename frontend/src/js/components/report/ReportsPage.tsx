@@ -11,8 +11,7 @@ import Grid from '@mui/material/Grid';
 
 import AssetReportCollection from './AssetReportCollection'
 import BudgetExecutionReport from './BudgetExecutionReport'
-import IncomeReportCollection from './IncomeReportCollection'
-import ExpenseReportCollection from './ExpenseReportCollection'
+import EventReportCollection from './EventReportCollection'
 import {ReportsViewerProps} from "../../containers/ReportsViewer";
 
 export interface ReportProps {
@@ -59,8 +58,8 @@ export function ReportsPage(props: ReportsViewerProps) {
             </Tabs>
             {tabValue == 'asset' && <AssetReportCollection startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName}/>}
             {/*this.state.tabValue == 'budget' && <BudgetExecutionReport currencyName={primaryCurrencyName} actions={props.actions} budgetExecution={props.budgetExecution}/>*/}
-            {tabValue == 'income' && <IncomeReportCollection startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName}/>}
-            {/*this.state.tabValue == 'expenses' && <ExpenseReportCollection currencyName={primaryCurrencyName} actions={props.actions} expenseByAccount={props.expenseByAccount} expenseByAccountWeight={props.expenseByAccountWeight}/>*/}
+            {tabValue == 'income' && <EventReportCollection startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName} type='income'/>}
+            {tabValue == 'expenses' && <EventReportCollection startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName} type='expense'/>}
         </Fragment>
     )
 }
