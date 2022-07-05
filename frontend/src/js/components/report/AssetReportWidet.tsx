@@ -64,6 +64,21 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
                         }
                     }
                 }
+            },
+            column: {
+                stacking: 'normal',
+                lineColor: '#666666',
+                lineWidth: 1,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    radius: 2,
+                    states: {
+                        hover: {
+                            enabled: true
+                        }
+                    }
+                }
             }
         },
         series: chartData.series

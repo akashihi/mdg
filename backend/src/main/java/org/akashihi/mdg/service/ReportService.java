@@ -91,6 +91,23 @@ public class ReportService {
         return new SimpleReport(dates, Collections.singletonList(series));
     }
 
+    protected AmountAndName amountInvertForIncome(AmountAndName amount, AccountType type) {
+        if (type == AccountType.INCOME) {
+            return new AmountAndName() {
+                @Override
+                public BigDecimal getAmount() {
+                    return amount.getAmount().negate();
+                }
+
+                @Override
+                public String getName() {
+                    return amount.getName();
+                }
+            };
+        } else {
+            return amount;
+        }
+    }
 
     protected Collection<ReportSeries> amountToSeries(final Stream<AmountAndName> amounts, final String type) {
         return amounts.collect(Collectors.groupingBy(AmountAndName::getName)).entrySet().stream().map(group -> {
@@ -114,16 +131,17 @@ public class ReportService {
         return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType);
     }
 
-    public SimpleReport eventsByAccountReport(LocalDate from, LocalDate to, Integer granularity, AccountType type) {
+    public SimpleReport eventsByAccountReport(final LocalDate from, final LocalDate to, final Integer granularity, final AccountType type) {
         var dates = expandPeriod(from, to, granularity);
         var amounts = IntStream.range(0, dates.size() - 2 + 1)
                 .mapToObj(start -> dates.subList(start, start + 2))
-                .flatMap(d -> accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), d.get(0), d.get(1)).stream());
+                .flatMap(d -> accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), d.get(0), d.get(1)).stream())
+                .map(a -> amountInvertForIncome(a, type));
         return new SimpleReport(dates, amountToSeries(amounts, "column"));
     }
 
-    public SimpleReport structureReport(LocalDate from, LocalDate to, AccountType type) {
-        var totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to).stream();
+    public SimpleReport structureReport(final LocalDate from, final LocalDate to, final AccountType type) {
+        var totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to).stream().map(a -> amountInvertForIncome(a, type));
         return new SimpleReport(Collections.singletonList(from), amountToSeries(totals, "pie"));
     }
 
