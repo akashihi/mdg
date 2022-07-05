@@ -24,7 +24,7 @@ export function IncomeReportCollection(props: ReportProps) {
             Income accounts weight
           </AccordionSummary>
           <AccordionDetails>
-              {/*<IncomeByAccountWeight  startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>*/}
+              <IncomeByAccountWeight startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
           </AccordionDetails>
         </Accordion>
       </Fragment>
