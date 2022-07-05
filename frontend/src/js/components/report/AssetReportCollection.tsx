@@ -33,7 +33,7 @@ export function AssetReportCollection(props:ReportProps): ReactElement {
             Asset structure
           </AccordionSummary>
           <AccordionDetails>
-              {/*<AssetReportType actions={props.actions} data={props.assetReportType} currency={props.currencyName} />*/}
+              <AssetReportType startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
           </AccordionDetails>
         </Accordion>
       </Fragment>

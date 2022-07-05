@@ -1,10 +1,11 @@
-import React, {useEffect, useState, useRef, Fragment} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import {ReportProps} from "./ReportsPage";
 import {reportDatesToParams} from "../../util/ReportUtils";
 import {checkApiError, parseJSON} from '../../util/ApiUtils';
 import {Report} from "../../models/Report";
+import moment from 'moment';
 
 export function AssetReportCurrency(props: ReportProps) {
     const [chartData, setChartData] = useState<Report>({dates: [], series: []});
@@ -22,7 +23,7 @@ export function AssetReportCurrency(props: ReportProps) {
             .then(parseJSON)
             .then(checkApiError)
             .then(function (json: any) {
-                const dates = json.dates.map(item => new Date(item).toDateString());
+                const dates = json.dates.map(item => moment(item).format('DD. MMM\' YY'));
 
                 setChartData({
                     dates: dates, series: json.series
@@ -46,7 +47,6 @@ export function AssetReportCurrency(props: ReportProps) {
         },
         xAxis: {
             categories: chartData.dates,
-            type: 'datetime'
         },
         tooltip: {
             split: true
