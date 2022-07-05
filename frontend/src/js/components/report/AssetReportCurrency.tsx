@@ -1,78 +1,18 @@
-import React, {useEffect, useState, useRef} from 'react';
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
+import React from 'react';
 import {ReportProps} from "./ReportsPage";
 import {reportDatesToParams} from "../../util/ReportUtils";
-import {checkApiError, parseJSON} from '../../util/ApiUtils';
-import {Report} from "../../models/Report";
-import moment from 'moment';
+
+import AssetReportWidet from "./AssetReportWidet";
 
 export function AssetReportCurrency(props: ReportProps) {
-    const [chartData, setChartData] = useState<Report>({dates: [], series: []});
-    const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
-
-    useEffect(() => {
-        const container = chartComponentRef.current.container.current;
-        container.style.height = '100%';
-        container.style.width = '100%';
-        chartComponentRef.current.chart.reflow();
-
-        const url = `/api/reports/assets/currency/${reportDatesToParams(props)}`
-
-        fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
-                const dates = json.dates.map(item => moment(item).format('DD. MMM\' YY'));
-
-                setChartData({
-                    dates: dates, series: json.series
-                })
-
-            })
-            .catch(function () {
-            })
-
-    }, [props])
+    const url = `/api/reports/assets/currency/${reportDatesToParams(props)}`;
 
     const options = {
-        chart: {
-            type: 'area'
-        },
-        title: {
-            text: 'Asset Totals '
-        },
         subtitle: {
             text: 'by currency'
         },
-        xAxis: {
-            categories: chartData.dates,
-        },
-        tooltip: {
-            split: true
-        },
-        plotOptions: {
-            area: {
-                stacking: 'normal',
-                lineColor: '#666666',
-                lineWidth: 1,
-                marker: {
-                    enabled: false,
-                    symbol: 'circle',
-                    radius: 2,
-                    states: {
-                        hover: {
-                            enabled: true
-                        }
-                    }
-                }
-            }
-        },
-        series: chartData.series
-    }
-    return (
-        <HighchartsReact highcharts={Highcharts} options={options} ref={chartComponentRef}/>
-    )
+    };
+    return <AssetReportWidet url={url} options={options}/>
 }
 
 export default AssetReportCurrency;
