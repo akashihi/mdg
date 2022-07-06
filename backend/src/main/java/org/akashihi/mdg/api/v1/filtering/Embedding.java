@@ -29,7 +29,16 @@ public final class Embedding {
         var currencies = embed.map(e -> e.contains("currency")).orElse(false);
 
         return (account) -> {
-            account.setCurrencyId(account.getCurrency().getId());
+            // In case a list of accounts is processed, blindly setting a currency id may cause an issue,
+            // when same account is on the list for more than one time. As instance of the same account
+            // is referenced multiple times, first visit to that reference will set categoryId and
+            // remove category if requested. Next visit will assume, that category is still there
+            // and it will cause NPE. To avoid such situations a simple check was added:
+            // if currency id is set, we know, that accounts was already visited and there is no need
+            // to reprocess.
+            if (account.getCurrencyId() == null) {
+                account.setCurrencyId(account.getCurrency().getId());
+            }
             if (!currencies) {
                 account.setCurrency(null);
             }
