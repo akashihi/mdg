@@ -3,9 +3,26 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 import React from 'react';
+import {AccountTreeNode} from "../models/Account";
+
+function accountList(tree: AccountTreeNode, indent: number) {
+    const subCategories = tree.categories.map( c => accountList(c, indent+1));
+    const accounts = tree.accounts.filter(a => !a.hidden).map(a => <MenuItem key={a.id} value={a.id} style={{marginLeft: indent*15+10}}>{`${a.name} (${a.currency.name})`}</MenuItem>)
+    if (tree.id !== undefined) {
+        return [<ListItemText key={'category-'+tree.id} primary={tree.name} style={{fontStyle: 'italic', marginLeft: indent*15}}/>].concat(accounts).concat(subCategories)
+    }
+        return accounts.concat(subCategories)
+}
+
+export function accountMenu(asset: AccountTreeNode, income: AccountTreeNode, expense: AccountTreeNode) {
+
+    return [<ListSubheader key='asset-header'>Asset accounts</ListSubheader>, <Divider key='asset-divider'/>].concat(accountList(asset, 0))
+        .concat([<ListSubheader key='expense-header'>Expense accounts</ListSubheader>, <Divider key='expense-divider'/>]).concat(accountList(expense, 0))
+        .concat([<ListSubheader key='income-header'>Income accounts</ListSubheader>, <Divider key='income-divider'/>]).concat(accountList(income, 0))
+}
 
 export class AccountMapper {
-    constructor(currencies, categories, accounts) {
+    /*constructor(currencies, categories, accounts) {
         this.currencies = currencies;
         this.categories = categories;
         this.accounts = accounts;
@@ -43,8 +60,8 @@ export class AccountMapper {
         return entries
     }
 
-    categorizeAccounts(/*type, accounts*/) {
-        /*var result = [];
+    categorizeAccounts(type, accounts) {
+        var result = [];
 
         const filtered_accounts = accounts.filter((item) => !item.get('hidden'));
 
@@ -55,7 +72,7 @@ export class AccountMapper {
         result.push(<Divider key={'noncategorized-divider-'+type}/>);
         result = result.concat(typed_accounts.filter((item) => !item.get('category_id')).map(::this.mapAccountEntry).valueSeq().toJS());
 
-        return result*/
+        return result
     }
 
     renderAccounts(accounts) {
@@ -93,13 +110,13 @@ export class AccountMapper {
         result = result.concat(this.categorizeAccounts('income', filtered_accounts));
 
         return result;
-    }
+    }*/
 
     getAccounts() {
-        return this.renderAccounts(this.accounts)
+        //return this.renderAccounts(this.accounts)
     }
 
-    getLimitedAccounts(operation) {
+    /*getLimitedAccounts(operation) {
         if (operation.account_id) {
             if (this.accounts.has(operation.account_id)) {
                 const leftAccount = this.accounts.get(operation.account_id);
@@ -109,5 +126,5 @@ export class AccountMapper {
             }
         }
         return this.renderAccounts(this.accounts)
-    }
+    }*/
 }
