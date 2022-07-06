@@ -612,23 +612,11 @@ Provides assets overview information.
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
 
 
-## AssetCurrencyReport [/report/asset/currency?startDate={startDate}&endDate={endDate}&granularity={granularity}]
-
-+ Parameters
-  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
-  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
-  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
-
-### View a report [GET]
-
-+ Response 200 (application/vnd.mdg+json;version=1)
-    + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
-
-## AssetTypeReport [/report/asset/type?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+## AssetCurrencyReport [/reports/assets/currency?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
 + Parameters
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
@@ -639,9 +627,10 @@ Provides assets overview information.
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
 
-## IncomeEventsReport [/report/income/events?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+## AssetTypeReport [/reports/assets/type?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
 + Parameters
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
@@ -652,7 +641,22 @@ Provides assets overview information.
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
+
+## IncomeEventsReport [/reports/income/events?startDate={startDate}&endDate={endDate}&granularity={granularity}]
+
++ Parameters
+  + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
+  + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
+  + granularity (number, required) - Distance in days between report entries inside of startDate-endDate range. startDate and endDate are always included (if they do not match).
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
 
 ## ExpenseEventsReport [/report/expense/events?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -665,7 +669,8 @@ Provides assets overview information.
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all asset accounts for a specified date. 
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
 
 ## IncomeStructureReport [/report/income/accounts?startDate={startDate}&endDate={endDate}]
 
@@ -677,7 +682,8 @@ Provides assets overview information.
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all income accounts for a specified range. 
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
 
 ## ExpenseStructureReport [/report/expense/accounts?startDate={startDate}&endDate={endDate}]
 
@@ -685,14 +691,12 @@ Provides assets overview information.
   + startDate: `YYYY-MM-DD` (string, required) - First day of report in YYYY-MM-DD format.
   + endDate: `YYYY-MM-DD` (string, required) - Last day of report in YYYY-MM-DD format.
 
-+ Attributes
-    + value (array[Amount], required) - Array of IdentifiedValueInTime, where date is a date of reported value, value is a sum of all expense operations on specified account, id is a id of associated account.
-
 ### View a report [GET]
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + report (array[Amount], required) - Array of Amounts, where amouns is a sum of all expense accounts for a specified range. 
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + series (array[ReportSeries], required) - Array of datapoints series.
 
 ## BudgetExecutionReport [/report/budget/execution?startDate={startDate}&endDate={endDate}]
 
@@ -704,7 +708,12 @@ Provides assets overview information.
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + value (array[BudgetReportEntry], required) - Array of BudgetReportEntry, where value is a budget execution data for a specified date.
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + actual_income (array[number], required) - Array of actual income values for each date
+        + actual_expense (array[number], required) - Array of actual expense values for each date
+        + expected_income (array[number], required) - Array of expected income values for each date
+        + expected_expense (array[number], required) - Array of expected expense values for each date
+        + profit (array[number], required) - Array of profit values for each date
 
 # Data Structures
 
@@ -730,6 +739,15 @@ Budget specific thing. As budget manages a predicted future and harsh reality at
     + actual: 1000 (number, required) - Amount that actually was reached during budget execution
     + expected: 2000 (number, required) - Amount that planned to be reached during budget execution
 
+## ReportSeries
+
+Report series represent a single data-series for reporting, consists of a series name, datapoints array and recommended chart type
+
++ Attributes
+    + name: 'CZK' (string, required) - Series name
+    + data: [1,2,3] (array[number], required) - Series datapoints. Array should have exactly same amount of datapoints as reports `dates` array has.
+    + type: 'area' (string, required) - Recommended type of chart. Consult https://api.highcharts.com/highcharts/series for list of valid char types.
+
 ## Amount
 
 Amount holds a pair of a some balance amoutn and related currency code. Only code is used there, as reports are provided only for rendering, not editing.
@@ -747,13 +765,3 @@ Data structure for a single totals report entry, linked to a specific asset type
     + category_name: Cash (string, required) - Asset category name.
     + primary_balance: 100500 (number, required) - Sum of all the asset account of specified asset type, converted to a primary currency
     + amounts (array[Amount, required) - Detailed report of totals of the specified asset type, grouped by currency. Entry value is a sum of all asset account of parent's asset type and same currency.
-
-## BudgetReportEntry
-
-Data structure for a single totals report entry, linked to a specific asset type.
-
-+ Attributes
-    + date: `YYYY-MM-DD` (string, required) - Date for which entry is valid (beginning of a reported budget)
-    + income (BudgetPair, required) - Value of expected/actual income for that budget
-    + expense (BudgetPair, required) - Value of expected/actual expense for that budget
-    + profit (number, required) - Increase of the asset balance between first and last dates of the budget.

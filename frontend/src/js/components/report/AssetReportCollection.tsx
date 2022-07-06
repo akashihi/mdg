@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import React, {Fragment, ReactElement} from 'react'
 import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
@@ -7,18 +7,17 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import AssetReportSimple from './AssetReportSimple'
 import AssetReportCurrency from './AssetReportCurrency'
 import AssetReportType from './AssetReportType'
+import { ReportProps } from './ReportsPage'
 
-export default class AssetReportCollection extends Component {
-  render () {
-    const props = this.props
+export function AssetReportCollection(props:ReportProps): ReactElement {
     return (
-      <>
+      <Fragment>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             Assets by time
           </AccordionSummary>
           <AccordionDetails>
-            <AssetReportSimple actions={props.actions} data={props.simpleAssetReport} currency={props.currencyName} />
+              <AssetReportSimple startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
           </AccordionDetails>
         </Accordion>
         <Accordion>
@@ -26,7 +25,7 @@ export default class AssetReportCollection extends Component {
             Detailed assets by time
           </AccordionSummary>
           <AccordionDetails>
-            <AssetReportCurrency actions={props.actions} data={props.currencyAssetReport} currency={props.currencyName} />
+              <AssetReportCurrency startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
           </AccordionDetails>
         </Accordion>
         <Accordion>
@@ -34,10 +33,11 @@ export default class AssetReportCollection extends Component {
             Asset structure
           </AccordionSummary>
           <AccordionDetails>
-            <AssetReportType actions={props.actions} data={props.assetReportType} currency={props.currencyName} />
+              <AssetReportType startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName}/>
           </AccordionDetails>
         </Accordion>
-      </>
+      </Fragment>
     )
-  }
 }
+
+export default AssetReportCollection;

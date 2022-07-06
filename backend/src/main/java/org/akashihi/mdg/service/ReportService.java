@@ -5,19 +5,24 @@ import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.projections.AmountAndName;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
+import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.entity.Currency;
 import org.akashihi.mdg.entity.report.Amount;
-import org.akashihi.mdg.entity.report.BudgetReportEntry;
+import org.akashihi.mdg.entity.report.BudgetExecutionReport;
+import org.akashihi.mdg.entity.report.ReportSeries;
 import org.akashihi.mdg.entity.report.SimpleReport;
 import org.akashihi.mdg.entity.report.TotalsReport;
 import org.akashihi.mdg.entity.report.TotalsReportEntry;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -43,73 +49,109 @@ public class ReportService {
 
     public TotalsReport totalsReport() {
         var primaryCurrency = settingService.getCurrentCurrencyPrimary();
-        Comparator<Amount> primaryCurrencyComparator =(l, r) -> { if (l.name().equals(primaryCurrency.map(Currency::getCode).orElse(""))) { return -1;} else { return l.name().compareTo(r.name());}};
+        Comparator<Amount> primaryCurrencyComparator = (l, r) -> {
+            if (l.name().equals(primaryCurrency.map(Currency::getCode).orElse(""))) {
+                return -1;
+            } else {
+                return l.name().compareTo(r.name());
+            }
+        };
 
         var accounts = accountService.listByType(AccountType.ASSET)
                 .stream().collect(Collectors.groupingBy(Account::getCategory));
         var totals = new ArrayList<TotalsReportEntry>();
-        for (Map.Entry<Category, List<Account>> totalsCategory: accounts.entrySet()) {
-            var currencyGroups = totalsCategory.getValue().stream().collect(Collectors.groupingBy(Account::getCurrency));
+
+        var orderedCategories = accounts.keySet().stream().sorted(Comparator.comparing(Category::getPriority)).toList();
+        for (Category totalsCategory : orderedCategories) {
+            var currencyGroups = accounts.get(totalsCategory).stream().collect(Collectors.groupingBy(Account::getCurrency));
             var currencyTotals = new ArrayList<Amount>();
-            if (!(currencyGroups.size() == 1 && primaryCurrency.map(currencyGroups::containsKey).orElse(false))) {
-                //Only fill detailed totals if there is more than just primary currency
-                for (Map.Entry<Currency,List<Account>> currencyGroup: currencyGroups.entrySet()) {
-                    var totalAmount = currencyGroup.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+            //Only fill detailed totals if there is more than just primary currency
+            for (Map.Entry<Currency, List<Account>> currencyGroup : currencyGroups.entrySet()) {
+                var totalAmount = currencyGroup.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+                if (totalAmount.compareTo(BigDecimal.ZERO) != 0) { //Only add non-zero currencies
                     currencyTotals.add(new Amount(totalAmount, currencyGroup.getKey().getCode(), null));
                 }
-                currencyTotals.sort(primaryCurrencyComparator);
+            }
+            currencyTotals.sort(primaryCurrencyComparator);
+            if (currencyTotals.size() == 1 && primaryCurrency.map(p -> p.getCode().equals(currencyTotals.get(0).name())).orElse(false)) {
+                currencyTotals.clear(); // Drop totals if only primary currency is filled
             }
 
-            var primaryTotal = totalsCategory.getValue().stream().map(Account::getPrimaryBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
-            totals.add(new TotalsReportEntry(totalsCategory.getKey().getName(), primaryTotal, currencyTotals));
+            var primaryTotal = accounts.get(totalsCategory).stream().map(Account::getPrimaryBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+            totals.add(new TotalsReportEntry(totalsCategory.getName(), primaryTotal, currencyTotals));
         }
-        totals.sort(Comparator.comparing(TotalsReportEntry::categoryName));
         return new TotalsReport(totals);
     }
 
-    public SimpleReport<Amount> simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
-        var currentPrimary = settingService.getCurrentCurrencyPrimary().map(Currency::getName).orElse("");
+    public SimpleReport simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
         var dates = expandPeriod(from, to, granularity);
-        var amounts = dates.stream().map( d -> {
-            var amount = accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO);
-            return new Amount(amount, currentPrimary, d);
-        })
-                .toList();
-        return new SimpleReport<>(amounts);
+        var amounts = dates.stream().map(d -> accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO).setScale(2, RoundingMode.DOWN)).toList();
+        var series = new ReportSeries("Total assets", amounts, "area");
+        return new SimpleReport(dates, Collections.singletonList(series));
     }
 
-    protected SimpleReport<Amount> typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {
-        var dates = expandPeriod(from, to, granularity);
-        var amounts = dates.stream().flatMap( d -> query.apply(d).stream().map(t -> new Amount(t.getAmount(), t.getName(), d)))
-                .toList();
-        return new SimpleReport<>(amounts);
+    protected AmountAndName amountInvertForIncome(AmountAndName amount, AccountType type) {
+        if (type == AccountType.INCOME) {
+            return new AmountAndName() {
+                @Override
+                public BigDecimal getAmount() {
+                    return amount.getAmount().negate();
+                }
+
+                @Override
+                public String getName() {
+                    return amount.getName();
+                }
+            };
+        } else {
+            return amount;
+        }
     }
-    public SimpleReport<Amount> assetByCurrencyReport(LocalDate from, LocalDate to, Integer granularity) {
+
+    protected Collection<ReportSeries> amountToSeries(final Stream<AmountAndName> amounts, final String type) {
+        return amounts.collect(Collectors.groupingBy(AmountAndName::getName)).entrySet().stream().map(group -> {
+            var data = group.getValue().stream().map(AmountAndName::getAmount).toList();
+            return new ReportSeries(group.getKey(), data, type); // Area is the default type
+        }).toList();
+    }
+
+    protected SimpleReport typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {
+        var dates = expandPeriod(from, to, granularity);
+        var amounts = dates.stream()
+                .flatMap(d -> query.apply(d).stream());
+        return new SimpleReport(dates, amountToSeries(amounts, "area"));
+    }
+
+    public SimpleReport assetByCurrencyReport(LocalDate from, LocalDate to, Integer granularity) {
         return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency);
     }
-    public SimpleReport<Amount> assetByTypeReport(LocalDate from, LocalDate to, Integer granularity) {
+
+    public SimpleReport assetByTypeReport(LocalDate from, LocalDate to, Integer granularity) {
         return this.typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType);
     }
 
-    public SimpleReport<Amount> eventsByAccountReport(LocalDate from, LocalDate to, Integer granularity, AccountType type) {
+    public SimpleReport eventsByAccountReport(final LocalDate from, final LocalDate to, final Integer granularity, final AccountType type) {
         var dates = expandPeriod(from, to, granularity);
-        var amounts = IntStream.range(0, dates.size()-2+1)
-                .mapToObj(start -> dates.subList(start, start+2))
-                .flatMap(d -> {
-                    return accountRepository.getTotalByAccountTypeForRange(type.toDbValue(),d.get(0), d.get(1)).stream().map(t -> new Amount(t.getAmount(), t.getName(), d.get(0)));
-                }).toList();
-        return new SimpleReport<>(amounts);
+        var amounts = IntStream.range(0, dates.size() - 2 + 1)
+                .mapToObj(start -> dates.subList(start, start + 2))
+                .flatMap(d -> accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), d.get(0), d.get(1)).stream())
+                .map(a -> amountInvertForIncome(a, type));
+        return new SimpleReport(dates, amountToSeries(amounts, "column"));
     }
 
-    public SimpleReport<Amount> structureReport(LocalDate from, LocalDate to, AccountType type) {
-        var totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to)
-                .stream().map(a -> new Amount(a.getAmount(), a.getName(), from)).toList();
-        return new SimpleReport<>(totals);
+    public SimpleReport structureReport(final LocalDate from, final LocalDate to, final AccountType type) {
+        var totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to).stream().map(a -> amountInvertForIncome(a, type));
+        return new SimpleReport(Collections.singletonList(from), amountToSeries(totals, "pie"));
     }
 
-    public SimpleReport<BudgetReportEntry> budgetExecutionReport(LocalDate from, LocalDate to) {
-        var budgets = budgetService.listInRange(from, to).stream().map(b -> new BudgetReportEntry(from, b.getState().income(), b.getState().expense(), b.getOutgoingAmount().actual().subtract(b.getIncomingAmount())))
-                .toList();
-        return new SimpleReport<>(budgets);
+    public BudgetExecutionReport budgetExecutionReport(LocalDate from, LocalDate to) {
+        var budgets = budgetService.listInRange(from, to);
+        var dates = budgets.stream().map(Budget::getBeginning).toList();
+        var actualIncomes = budgets.stream().map(b -> b.getState().income().actual()).toList();
+        var actualExpenses = budgets.stream().map(b -> b.getState().expense().actual().negate()).toList();
+        var expectedIncomes = budgets.stream().map(b -> b.getState().income().expected()).toList();
+        var expectedExpenses = budgets.stream().map(b -> b.getState().expense().expected().negate()).toList();
+        var profits = budgets.stream().map(b -> b.getOutgoingAmount().actual().subtract(b.getIncomingAmount()).setScale(2, RoundingMode.DOWN)).toList();
+        return new BudgetExecutionReport(dates, actualIncomes, actualExpenses, expectedIncomes, expectedExpenses, profits);
     }
 }

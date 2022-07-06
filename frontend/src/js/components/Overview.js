@@ -4,7 +4,7 @@ import Card from '@mui/material/Card'
 
 import AccountsOverview from '../containers/AccountsOverview'
 //import BudgetOverview from '../containers/BudgetOverview'
-//import FinanceOverview from '../containers/FinanceOverview'
+import FinanceOverview from '../containers/FinanceOverview'
 //import TransactionsOverview from '../containers/TransactionsOverview'
 
 export default class Overview extends Component {
@@ -23,7 +23,7 @@ export default class Overview extends Component {
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={6}>
           <Card style={cardStyle}>
-              {/*<FinanceOverview />*/}
+              <FinanceOverview />
           </Card>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={6}>
