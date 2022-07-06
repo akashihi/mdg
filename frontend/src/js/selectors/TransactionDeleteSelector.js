@@ -1,10 +1,10 @@
 import { Map } from 'immutable'
 import { createSelector } from 'reselect'
 
-import { getTransactions, getTransactionToDeleteId } from './StateGetters'
+import { getLastTransactions, getTransactionToDeleteId } from './StateGetters'
 
 export const selectTransactionToDeleteById = createSelector(
-  [getTransactions, getTransactionToDeleteId], (transactions, id) => transactions.get(id, Map())
+  [getLastTransactions, getTransactionToDeleteId], (transactions, id) => transactions.get(id, Map())
 )
 
 export const selectTransactionToDeleteName = createSelector(

@@ -1,68 +1,74 @@
-import jQuery from 'jquery'
-import moment from 'moment'
-import { Map } from 'immutable'
+import {Action} from 'redux';
+import jQuery from 'jquery';
+import moment from 'moment';
+import { Map } from 'immutable';
 
-import { checkApiError, parseJSON, dataToMap, mapToData, singleToMap } from '../util/ApiUtils'
+import { checkApiError, parseJSON, dataToMap, mapToData, singleToMap } from '../util/ApiUtils';
 
-import { getCurrentBudgetId } from '../selectors/StateGetters'
-import { selectTransactionToDeleteById } from '../selectors/TransactionDeleteSelector'
+import { getCurrentBudgetId } from '../selectors/StateGetters';
+import { selectTransactionToDeleteById } from '../selectors/TransactionDeleteSelector';
 
-import { loadAccountList } from './AccountActions'
-import { loadBudgetInfoById } from './BudgetEntryActions'
-import { loadTotalsReport } from './ReportActions'
+import { loadAccountList } from './AccountActions';
+import { loadBudgetInfoById } from './BudgetEntryActions';
+import { loadTotalsReport } from './ReportActions';
 
 import {
-  GET_TRANSACTIONLIST_REQUEST,
-  GET_TRANSACTIONLIST_COUNT,
-  GET_TRANSACTIONLIST_SUCCESS,
-  GET_TRANSACTIONLIST_FAILURE,
-  CLEAR_TRANSACTION_FILTER,
-  APPLY_TRANSACTION_FILTER,
-  DELETE_TRANSACTION_REQUEST,
-  DELETE_TRANSACTION_CANCEL,
-  DELETE_TRANSACTION_APPROVE,
-  DELETE_TRANSACTION_SUCCESS,
-  TRANSACTION_DIALOG_OPEN,
-  TRANSACTION_DIALOG_CLOSE,
-  TRANSACTION_DIALOG_CHANGE,
-  TRANSACTION_DIALOG_CLOSESAVE_SET,
-  GET_LASTTRANSACTION_SUCCESS,
-  SET_TRANSACTION_FILTER,
-  TRANSACTION_LIST_SELECT,
-  TRANSACTION_LIST_UNSELECT,
-  TRANSACTION_PARTIAL_SUCCESS,
-  TRANSACTION_PARTIAL_UPDATE
+    GET_TRANSACTIONLIST_REQUEST,
+    GET_TRANSACTIONLIST_COUNT,
+    GET_TRANSACTIONLIST_SUCCESS,
+    GET_TRANSACTIONLIST_FAILURE,
+    CLEAR_TRANSACTION_FILTER,
+    APPLY_TRANSACTION_FILTER,
+    DELETE_TRANSACTION_REQUEST,
+    DELETE_TRANSACTION_CANCEL,
+    DELETE_TRANSACTION_APPROVE,
+    DELETE_TRANSACTION_SUCCESS,
+    TRANSACTION_DIALOG_OPEN,
+    TRANSACTION_DIALOG_CLOSE,
+    TRANSACTION_DIALOG_CHANGE,
+    TRANSACTION_DIALOG_CLOSESAVE_SET,
+    GET_LASTTRANSACTION_SUCCESS,
+    SET_TRANSACTION_FILTER,
+    TRANSACTION_LIST_SELECT,
+    TRANSACTION_LIST_UNSELECT,
+    TRANSACTION_PARTIAL_SUCCESS,
+    TRANSACTION_PARTIAL_UPDATE, TransactionActionType
 } from '../constants/Transaction'
+import {Transaction} from "../models/Transaction";
+
+export interface TransactionAction extends Action {
+    payload: Transaction[];
+}
 
 export function loadLastTransactions () {
   return (dispatch) => {
+      dispatch({type: TransactionActionType.TransactionsShortListLoad, payload: [] })
     const paginationParams = {
-      pageSize: 5,
-      pageNumber: 1
+      limit: 5
     }
     const periodParams = {
       notLater: moment().format('YYYY-MM-DDT23:59:59')
     }
 
-    const params = Object.assign({}, paginationParams, periodParams)
+    const embeddings = {
+          embed: 'account'
+    }
 
-    const url = '/api/transaction' + '?' + jQuery.param(params)
+    const params = Object.assign({}, paginationParams, periodParams, embeddings)
+
+    const url = '/api/transactions' + '?' + jQuery.param(params)
 
     fetch(url)
       .then(parseJSON)
       .then(checkApiError)
-      .then(dataToMap)
-      .then(function (map) {
-        dispatch({
-          type: GET_LASTTRANSACTION_SUCCESS,
-          payload: map
-        })
+      .then(function (json:any) {
+          dispatch({type: TransactionActionType.TransactionsShortListStore, payload: json.transactions })
       })
   }
 }
 
 export function loadTransactionList () {
-  return (dispatch, getState) => {
+  /*return (dispatch, getState) => {
     dispatch({
       type: GET_TRANSACTIONLIST_REQUEST,
       payload: true
@@ -113,11 +119,11 @@ export function loadTransactionList () {
           payload: response.json
         })
       })
-  }
+  }*/
 }
 
 export function setTransactionFilter (key, value, reload) {
-  return (dispatch) => {
+  /*return (dispatch) => {
     dispatch({
       type: SET_TRANSACTION_FILTER,
       key,
@@ -126,45 +132,45 @@ export function setTransactionFilter (key, value, reload) {
     if (reload) {
       dispatch(loadTransactionList())
     }
-  }
+  }*/
 }
 
 export function transactionFilterClear () {
-  return (dispatch) => {
+  /*return (dispatch) => {
     dispatch({
       type: CLEAR_TRANSACTION_FILTER,
       payload: true
     })
     dispatch(loadTransactionList())
-  }
+  }*/
 }
 
 export function transactionFilterApply () {
-  return (dispatch) => {
+  /*return (dispatch) => {
     dispatch({
       type: APPLY_TRANSACTION_FILTER,
       payload: true
     })
     dispatch(loadTransactionList())
-  }
+  }*/
 }
 
 export function deleteTransactionRequest (id) {
-  return {
+  /*return {
     type: DELETE_TRANSACTION_REQUEST,
     payload: id
-  }
+  }*/
 }
 
 export function deleteTransactionCancel () {
-  return {
+  /*return {
     type: DELETE_TRANSACTION_CANCEL,
     payload: false
-  }
+  }*/
 }
 
 export function deleteTransaction (id) {
-  return (dispatch, getState) => {
+  /*return (dispatch, getState) => {
     const tx = selectTransactionToDeleteById(getState())
     dispatch({
       type: DELETE_TRANSACTION_APPROVE,
@@ -190,18 +196,18 @@ export function deleteTransaction (id) {
       .then(() => dispatch(loadAccountList()))
       .then(() => dispatch(loadTotalsReport()))
       .catch(() => dispatch(loadTransactionList()))
-  }
+  }*/
 }
 
 export function setCloseOnSave (value) {
-  return {
+  /*return {
     type: TRANSACTION_DIALOG_CLOSESAVE_SET,
     payload: value
-  }
+  }*/
 }
 
 export function createTransaction () {
-  return {
+  /*return {
     type: TRANSACTION_DIALOG_OPEN,
     payload: {
       id: -1,
@@ -212,35 +218,35 @@ export function createTransaction () {
         operations: [{ amount: 0, account_id: -1 }, { amount: 0, account_id: -1 }]
       })
     }
-  }
+  }*/
 }
 
 export function editTransaction (id, tx) {
-  return {
+  /*return {
     type: TRANSACTION_DIALOG_OPEN,
     payload: {
       id,
       tx
     }
-  }
+  }*/
 }
 
 export function editTransactionCancel () {
-  return {
+  /*return {
     type: TRANSACTION_DIALOG_CLOSE,
     payload: true
-  }
+  }*/
 }
 
 export function editTransactionChange (tx) {
-  return {
+  /*return {
     type: TRANSACTION_DIALOG_CHANGE,
     payload: tx
-  }
+  }*/
 }
 
 export function editTransactionSave () {
-  return (dispatch, getState) => {
+  /*return (dispatch, getState) => {
     const state = getState()
     if (state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
       dispatch({
@@ -253,11 +259,11 @@ export function editTransactionSave () {
     if (!state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
       dispatch(createTransaction())
     }
-  }
+  }*/
 }
 
 export function updateTransaction (tx) {
-  return (dispatch, getState) => {
+  /*return (dispatch, getState) => {
     dispatch({
       type: TRANSACTION_PARTIAL_UPDATE,
       payload: {
@@ -303,12 +309,12 @@ export function updateTransaction (tx) {
       .then(() => dispatch(loadTotalsReport()))
       .then(() => { if (selectedBudgetId) { dispatch(loadBudgetInfoById(selectedBudgetId)) } })
       .catch(() => dispatch(loadTransactionList()))
-  }
+  }*/
 }
 
 export function markTransaction (id, value) {
-  return {
+  /*return {
     type: value ? TRANSACTION_LIST_SELECT : TRANSACTION_LIST_UNSELECT,
     payload: id
-  }
+  }*/
 }

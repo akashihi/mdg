@@ -25,3 +25,8 @@ export const TRANSACTION_DIALOG_CLOSESAVE_SET = 'TRANSACTION_DIALOG_CLOSESAVE_SE
 
 export const TRANSACTION_LIST_SELECT = 'TRANSACTION_LIST_SELECT'
 export const TRANSACTION_LIST_UNSELECT = 'TRANSACTION_LIST_UNSELECT'
+
+export enum TransactionActionType {
+    TransactionsShortListLoad = "TransactionsShortListLoad",
+    TransactionsShortListStore = "TransactionsShortListLoad"
+}
