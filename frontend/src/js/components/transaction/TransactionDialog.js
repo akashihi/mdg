@@ -340,7 +340,7 @@ export default class TransactionDialog extends React.Component {
              activeTab = 'multi';
         }
 
-        const tags = props.tags.map((item) => {return {label: item.get('txtag'), value: item.get('txtag')}}).valueSeq().toJS();
+        const tags = props.tags.map((item) => {return {label: item, value: item}});
         const selectedTags = transaction.get('tags').map((item) => {return {label: item, value: item}});
 
         const ts = moment(transaction.get('timestamp'));

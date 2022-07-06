@@ -1,4 +1,4 @@
-import produce from "immer"
+import produce from "immer";
 import {ReindexUiState, SettingActionType, SettingUiState} from "../constants/Setting";
 import {SettingAction} from "../actions/SettingActions";
 

@@ -9,7 +9,7 @@ const mapStateToProps = (state) => {
     primaryCurrency: state.setting.primaryCurrency,
     currencies: state.currency.currencies,
     categories: state.category.categoryList,
-    tags: state.tag.get('tagList'),
+    tags: state.tag.tags,
     accounts: state.account.accountList,
     open: state.transaction.get('dialog').get('open'),
     closeOnSave: state.transaction.get('dialog').get('closeOnSave'),
