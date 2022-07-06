@@ -57,7 +57,7 @@ export function ReportsPage(props: ReportsViewerProps) {
                 <Tab label='Expenses report' value='expenses'/>
             </Tabs>
             {tabValue == 'asset' && <AssetReportCollection startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName}/>}
-            {/*this.state.tabValue == 'budget' && <BudgetExecutionReport currencyName={primaryCurrencyName} actions={props.actions} budgetExecution={props.budgetExecution}/>*/}
+            {tabValue == 'budget' && <BudgetExecutionReport startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName}/>}
             {tabValue == 'income' && <EventReportCollection startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName} type='income'/>}
             {tabValue == 'expenses' && <EventReportCollection startDate={startDate} endDate={endDate} granularity={granularity} primaryCurrencyName={props.primaryCurrencyName} type='expense'/>}
         </Fragment>

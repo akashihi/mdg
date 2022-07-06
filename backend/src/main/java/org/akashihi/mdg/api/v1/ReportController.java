@@ -2,9 +2,7 @@ package org.akashihi.mdg.api.v1;
 
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.entity.AccountType;
-import org.akashihi.mdg.entity.report.Amount;
-import org.akashihi.mdg.entity.report.BudgetReportEntry;
-import org.akashihi.mdg.entity.report.OldSimpleReport;
+import org.akashihi.mdg.entity.report.BudgetExecutionReport;
 import org.akashihi.mdg.entity.report.SimpleReport;
 import org.akashihi.mdg.entity.report.TotalsReport;
 import org.akashihi.mdg.service.ReportService;
@@ -61,7 +59,7 @@ public class ReportController {
     }
 
     @GetMapping(value = "/reports/budget/execution", produces = "application/vnd.mdg+json;version=1")
-    public OldSimpleReport<BudgetReportEntry> budgetExecutionReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    public BudgetExecutionReport budgetExecutionReport(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return reportService.budgetExecutionReport(startDate, endDate);
     }
 }

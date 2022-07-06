@@ -5,11 +5,11 @@ import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.projections.AmountAndName;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
+import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.entity.Currency;
 import org.akashihi.mdg.entity.report.Amount;
-import org.akashihi.mdg.entity.report.BudgetReportEntry;
-import org.akashihi.mdg.entity.report.OldSimpleReport;
+import org.akashihi.mdg.entity.report.BudgetExecutionReport;
 import org.akashihi.mdg.entity.report.ReportSeries;
 import org.akashihi.mdg.entity.report.SimpleReport;
 import org.akashihi.mdg.entity.report.TotalsReport;
@@ -145,9 +145,14 @@ public class ReportService {
         return new SimpleReport(Collections.singletonList(from), amountToSeries(totals, "pie"));
     }
 
-    public OldSimpleReport<BudgetReportEntry> budgetExecutionReport(LocalDate from, LocalDate to) {
-        var budgets = budgetService.listInRange(from, to).stream().map(b -> new BudgetReportEntry(from, b.getState().income(), b.getState().expense(), b.getOutgoingAmount().actual().subtract(b.getIncomingAmount())))
-                .toList();
-        return new OldSimpleReport<>(budgets);
+    public BudgetExecutionReport budgetExecutionReport(LocalDate from, LocalDate to) {
+        var budgets = budgetService.listInRange(from, to);
+        var dates = budgets.stream().map(Budget::getBeginning).toList();
+        var actualIncomes = budgets.stream().map(b -> b.getState().income().actual()).toList();
+        var actualExpenses = budgets.stream().map(b -> b.getState().expense().actual().negate()).toList();
+        var expectedIncomes = budgets.stream().map(b -> b.getState().income().expected()).toList();
+        var expectedExpenses = budgets.stream().map(b -> b.getState().expense().expected().negate()).toList();
+        var profits = budgets.stream().map(b -> b.getOutgoingAmount().actual().subtract(b.getIncomingAmount()).setScale(2, RoundingMode.DOWN)).toList();
+        return new BudgetExecutionReport(dates, actualIncomes, actualExpenses, expectedIncomes, expectedExpenses, profits);
     }
 }

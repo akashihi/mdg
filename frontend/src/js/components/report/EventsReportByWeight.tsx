@@ -1,5 +1,4 @@
 import React, {useEffect, useState, useRef} from 'react'
-import {ReportProps} from "./ReportsPage";
 import {reportDatesToParams} from "../../util/ReportUtils";
 import Highcharts, {PointOptionsObject} from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
