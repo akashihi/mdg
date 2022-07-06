@@ -84,7 +84,6 @@ public class ReportService {
     }
 
     public SimpleReport simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
-        var currentPrimary = settingService.getCurrentCurrencyPrimary().map(Currency::getName).orElse("");
         var dates = expandPeriod(from, to, granularity);
         var amounts = dates.stream().map(d -> accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO).setScale(2, RoundingMode.DOWN)).toList();
         var series = new ReportSeries("Total assets", amounts, "area");
