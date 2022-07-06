@@ -65,32 +65,8 @@ const development = {
         static: path.resolve(__dirname, 'src'), // `__dirname` is root of the project
         historyApiFallback: true,
         proxy: {
-            '/api/reports': {
-                target: 'http://127.0.0.1:8080/',
-                pathRewrite: {'^/api' : ''}
-            },
-            '/api/accounts': {
-                target: 'http://127.0.0.1:8080/',
-                pathRewrite: {'^/api' : ''}
-            },
-            '/api/categories': {
-                target: 'http://127.0.0.1:8080/',
-                pathRewrite: {'^/api' : ''}
-            },
-            '/api/currencies': {
-                target: 'http://127.0.0.1:8080/',
-                pathRewrite: {'^/api' : ''}
-            },
-            '/api/rates': {
-                target: 'http://127.0.0.1:8080/',
-                pathRewrite: {'^/api' : ''}
-            },
-            '/api/settings': {
-                target: 'http://127.0.0.1:8080/',
-                pathRewrite: {'^/api' : ''}
-            },
             '/api/**': {
-                target: 'http://127.0.0.1/api',
+                target: 'http://127.0.0.1:8080/',
                 pathRewrite: {'^/api' : ''}
             }
         }
