@@ -35,3 +35,8 @@ export const selectAccountTotals = createSelector(
         }
     }
 )
+
+
+export const selectAccountNames = createSelector(
+    [getAccounts], (accounts: Account[]):Record<number, string> => Object.fromEntries(accounts.map(a => [a.id, a.name]))
+)

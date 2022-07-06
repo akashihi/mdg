@@ -10,12 +10,12 @@ import * as TagActions from '../actions/TagActions'
 
 const mapStateToProps = (state) => {
   return {
-    waiting: state.get('transaction').get('ui').get('transactionListLoading'),
+    /*waiting: state.get('transaction').get('ui').get('transactionListLoading'),
     error: state.get('transaction').get('ui').get('transactionListError'),
     selectedTotals: selectMarkedTransactionsTotals(state),
     transactions: selectTransactions(state),
     periodBeginning: selectBeginningDate(state),
-    periodEnd: selectEndDate(state)
+    periodEnd: selectEndDate(state)*/
   }
 }
 

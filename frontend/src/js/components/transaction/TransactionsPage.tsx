@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Fragment, useState } from 'react'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Divider from '@mui/material/Divider'
@@ -9,21 +9,19 @@ import ClipLoader from 'react-spinners/ClipLoader'
 import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 
 import Transaction from './TransactionFullWidget'
 import TransactionPager from '../../containers/TransactionsPager'
 import TransactionFilter from '../../containers/TransactionsFilter'
 import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog'
 
-export default class TransactionsPage extends Component {
-  state = { expanded: false }
+export function TransactionsPage(props) {
+    const [expanded, setExpanded] = useState(false);
+/*  state = { expanded: false }
 
   componentDidMount () {
     this.props.actions.loadTransactionList()
-  }
-
-  handleExpandClick = () => {
-    this.setState(state => ({ expanded: !state.expanded }))
   }
 
   render () {
@@ -46,22 +44,14 @@ export default class TransactionsPage extends Component {
       return (
         <ImageListItem key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest} selectTxAction={props.actions.markTransaction} /></ImageListItem>
       )
-    }).valueSeq()
+    }).valueSeq()*/
 
-    return (
+    /*return (
       <div>
         <TransactionDeleteDialog />
         <Card>
           <CardContent>
             {title}
-            <IconButton onClick={this.handleExpandClick} aria-expanded={this.state.expanded} aria-label='Show operations'>
-              <ExpandMoreIcon />
-            </IconButton>
-          </CardContent>
-          <CardContent>
-            <Collapse in={this.state.expanded} timeout='auto' unmountOnExit>
-              <TransactionFilter />
-            </Collapse>
           </CardContent>
         </Card>
         <Divider />
@@ -88,6 +78,21 @@ export default class TransactionsPage extends Component {
         </ImageList>
         <TransactionPager />
       </div>
-    )
-  }
+    )*/
+  //}
+    return <Fragment>
+        <Card>
+            <CardContent>
+                title
+                <IconButton onClick={() => setExpanded(!expanded)} aria-expanded={expanded} aria-label='Show operations'>{!expanded && <ExpandMoreIcon/>}{expanded && <ExpandLessIcon/>}</IconButton>
+            </CardContent>
+            <CardContent>
+                <Collapse in={expanded} timeout='auto' unmountOnExit>
+                    <TransactionFilter/>
+                </Collapse>
+            </CardContent>
+        </Card>
+    </Fragment>
 }
+
+export default TransactionsPage;

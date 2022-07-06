@@ -17,8 +17,6 @@ import {
     GET_TRANSACTIONLIST_COUNT,
     GET_TRANSACTIONLIST_SUCCESS,
     GET_TRANSACTIONLIST_FAILURE,
-    CLEAR_TRANSACTION_FILTER,
-    APPLY_TRANSACTION_FILTER,
     DELETE_TRANSACTION_REQUEST,
     DELETE_TRANSACTION_CANCEL,
     DELETE_TRANSACTION_APPROVE,
@@ -132,26 +130,6 @@ export function setTransactionFilter (key, value, reload) {
     if (reload) {
       dispatch(loadTransactionList())
     }
-  }*/
-}
-
-export function transactionFilterClear () {
-  /*return (dispatch) => {
-    dispatch({
-      type: CLEAR_TRANSACTION_FILTER,
-      payload: true
-    })
-    dispatch(loadTransactionList())
-  }*/
-}
-
-export function transactionFilterApply () {
-  /*return (dispatch) => {
-    dispatch({
-      type: APPLY_TRANSACTION_FILTER,
-      payload: true
-    })
-    dispatch(loadTransactionList())
   }*/
 }
 
