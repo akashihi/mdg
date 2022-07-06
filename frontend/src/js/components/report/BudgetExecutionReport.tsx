@@ -65,7 +65,10 @@ export function BudgetExecutionReport(props: ReportProps) {
             },
         },
         tooltip: {
-            pointFormat: 'You earned <b>{point.y:,.0f}</b>'
+            formatter: function() {
+                console.log(this)
+                return this.x
+            }
         },
         plotOptions: {
             column: {
