@@ -126,7 +126,11 @@ public class TransactionService {
         } else {
             var pageLimit = PageRequest.of(0, limit, sorting);
             var page =  transactionRepository.findAll(spec, pageLimit);
-            return new ListResult(page.getContent(), page.getTotalElements()-limit);
+            var left = page.getTotalElements()-limit;
+            if (left < 0) {
+                left = 0; //Clamp value in case last page is shorter than limit
+            }
+            return new ListResult(page.getContent(), left);
         }
     }
 

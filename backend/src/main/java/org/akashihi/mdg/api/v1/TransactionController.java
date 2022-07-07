@@ -76,11 +76,15 @@ public class TransactionController {
         String self = cursorToString(txCursor).orElse("");
         String first = "";
         String next = "";
-        if (limit.isPresent()) {
+        if (limit.isPresent() || cursor.isPresent()) { //In both cases we are in paging mode, either for the first page or for the subsequent pages
             var firstCursor = new TransactionCursor(txCursor.filter(), txCursor.sort(), txCursor.embed(), txCursor.limit(), 0L);
             first = cursorToString(firstCursor).orElse("");
-            var nextCursor = new TransactionCursor(txCursor.filter(), txCursor.sort(), txCursor.embed(), txCursor.limit(), transactions.get(transactions.size()-1).getId());
-            next = cursorToString(nextCursor).orElse("");
+            if (transactions.isEmpty() || left == 0 ) {
+                next = ""; //We may have no transactions at all or no transactions left, so no need to find next cursor
+            } else {
+                var nextCursor = new TransactionCursor(txCursor.filter(), txCursor.sort(), txCursor.embed(), txCursor.limit(), transactions.get(transactions.size()-1).getId());
+                next = cursorToString(nextCursor).orElse("");
+            }
         }
         return new Transactions(transactions, self, first, next, left);
     }
