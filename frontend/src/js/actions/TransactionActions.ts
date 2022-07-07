@@ -3,7 +3,7 @@ import jQuery from 'jquery';
 import moment from 'moment';
 import { Map } from 'immutable';
 
-import { checkApiError, parseJSON, dataToMap, mapToData, singleToMap } from '../util/ApiUtils';
+import { checkApiError, parseJSON } from '../util/ApiUtils';
 
 import { getCurrentBudgetId } from '../selectors/StateGetters';
 import { selectTransactionToDeleteById } from '../selectors/TransactionDeleteSelector';
@@ -26,7 +26,6 @@ import {
     TRANSACTION_DIALOG_CHANGE,
     TRANSACTION_DIALOG_CLOSESAVE_SET,
     GET_LASTTRANSACTION_SUCCESS,
-    SET_TRANSACTION_FILTER,
     TRANSACTION_LIST_SELECT,
     TRANSACTION_LIST_UNSELECT,
     TRANSACTION_PARTIAL_SUCCESS,
@@ -120,18 +119,6 @@ export function loadTransactionList () {
   }*/
 }
 
-export function setTransactionFilter (key, value, reload) {
-  /*return (dispatch) => {
-    dispatch({
-      type: SET_TRANSACTION_FILTER,
-      key,
-      payload: value
-    })
-    if (reload) {
-      dispatch(loadTransactionList())
-    }
-  }*/
-}
 
 export function deleteTransactionRequest (id) {
   /*return {

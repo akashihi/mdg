@@ -6,9 +6,10 @@ import {AccountTreeNode} from "../models/Account";
 import {RootState} from "../reducers/rootReducer";
 import {selectActiveCurrencies} from "../selectors/CurrencySelector";
 import {selectAccountNames} from "../selectors/AccountSelector";
+import {TransactionFilterParams} from "../components/transaction/TransactionsPage";
 
 export interface TransactionFilterOwnProps {
-
+    applyFunc: (f: TransactionFilterParams, l: number) => void
 }
 
 export interface TransactionFilterProps {
@@ -17,7 +18,8 @@ export interface TransactionFilterProps {
     assetTree: AccountTreeNode;
     incomeTree: AccountTreeNode;
     expenseTree: AccountTreeNode;
-    accountNames: Record<number, string>
+    accountNames: Record<number, string>,
+    applyFunc: (f: TransactionFilterParams, l: number) => void
 }
 
 const mapStateToProps = (state: RootState, ownProps: TransactionFilterOwnProps): TransactionFilterProps => {
@@ -27,7 +29,8 @@ const mapStateToProps = (state: RootState, ownProps: TransactionFilterOwnProps):
         assetTree: state.account.assetTree,
         incomeTree: state.account.incomeTree,
         expenseTree: state.account.expenseTree,
-        accountNames: selectAccountNames(state)
+        accountNames: selectAccountNames(state),
+        applyFunc: ownProps.applyFunc
     }
 }
 

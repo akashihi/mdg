@@ -15,12 +15,13 @@ import moment from 'moment';
 
 import {accountMenu} from '../../util/AccountUtils'
 import {TransactionFilterProps} from "../../containers/TransactionsFilter";
+import {TransactionFilterParams} from "./TransactionsPage";
 
 export function TransactionsPageFilter(props: TransactionFilterProps) {
     const [periodBeginning, setPeriodBeginning] = useState(moment().subtract(1, 'month'));
     const [periodEnd, setPeriodEnd] = useState(moment());
     const [pageSize, setPageSize] = useState(10);
-    const [comment, setComment] = useState('');
+    const [comment, setComment] = useState<string|undefined>(undefined);
     const [accounts, setAccounts] = useState<number[]>([]);
     const [tags, setTags] = useState<string[]>([]);
 
@@ -31,13 +32,20 @@ export function TransactionsPageFilter(props: TransactionFilterProps) {
 
     const clearFilter = () => {
         setPageSize(10);
-        setComment('');
+        setComment(undefined);
         setAccounts([]);
         setTags([]);
     }
 
     const applyFilter = () => {
-        console.log("Call parent")
+        const filter:TransactionFilterParams = {
+            notEarlier: periodBeginning,
+            notLater: periodEnd,
+            comment: comment,
+            account_id: accounts,
+            tag: tags
+        }
+        props.applyFunc(filter, pageSize);
     }
 
     const buttonStyle = {

@@ -6,7 +6,6 @@ import {
   GET_TRANSACTIONLIST_REQUEST,
   GET_TRANSACTIONLIST_COUNT,
   GET_TRANSACTIONLIST_FAILURE,
-  SET_TRANSACTION_FILTER,
   TRANSACTION_LIST_SELECT,
   TRANSACTION_LIST_UNSELECT
 } from '../constants/Transaction'
@@ -25,8 +24,6 @@ const initialState = Map({
 
 export default function transactionViewReducer (state = initialState, action) {
   switch (action.type) {
-    case SET_TRANSACTION_FILTER:
-      return state.set(action.key, action.payload)
     case GET_TRANSACTIONLIST_REQUEST:
       return state.set('count', 0)
         .update('selection', s => s.clear())
