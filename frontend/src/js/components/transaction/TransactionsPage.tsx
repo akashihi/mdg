@@ -3,23 +3,28 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import Link from '@mui/material/Link';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import Grid from '@mui/material/Grid';
-import ClipLoader from 'react-spinners/ClipLoader';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Checkbox from '@mui/material/Checkbox';
+import Paper from '@mui/material/Paper';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import Edit from '@mui/icons-material/Edit';
+import Delete from '@mui/icons-material/Delete';
 
-import Transaction from './TransactionFullWidget';
 import TransactionFilter from '../../containers/TransactionsFilter';
 import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog';
 import moment, {Moment} from 'moment';
 import jQuery from 'jquery';
-import {TransactionActionType} from '../../constants/Transaction';
 import { checkApiError, parseJSON } from '../../util/ApiUtils';
 import {EnrichedTransaction} from '../../models/Transaction';
+import {enrichTransaction} from "../../selectors/TransactionSelector";
 
 export interface TransactionFilterParams {
     readonly notEarlier: Moment;
@@ -35,6 +40,49 @@ const defaultFilter: TransactionFilterParams = {
     comment: undefined,
     account_id: [],
     tag: []
+}
+
+function TransactionFullWidget(props: EnrichedTransaction) {
+    const [expanded, setExpanded] = useState(false);
+    /*
+
+    markTransaction = value => {
+        const props = this.props;
+        props.selectTxAction(props.transaction.get('id'), value)
+    };
+
+    }*/
+    const ops = props.operations.map((o, number) => <TableRow key={`${props.id}-${number}`}>
+        <TableCell sx={{ color: o.color }} align='left'>{o.account.name}</TableCell>
+        <TableCell sx={{ color: o.color }} align='right'>{o.amount}</TableCell>
+    </TableRow>)
+
+    return <Fragment>
+        <TableRow>
+            <TableCell><Checkbox color='default' /*onChange={(ev, value) => ::this.markTransaction(value)}*//></TableCell>
+            <TableCell>{props.dt}</TableCell>
+            <TableCell>{props.comment}</TableCell>
+            <TableCell sx={{color: props.summary.color}}>{props.summary.total}</TableCell>
+            <TableCell>{props.accountNames}</TableCell>
+            <TableCell>{props.tags.join(',')}</TableCell>
+            <TableCell>
+                <IconButton aria-label='Edit' /*onClick={() => props.editAction(props.id, props.transaction)}*/><Edit/></IconButton>
+                <IconButton aria-label='Delete' /*onClick={() => props.deleteAction(props.id)}*/><Delete/></IconButton>
+                <IconButton onClick={() => setExpanded(!expanded)} aria-expanded={expanded} aria-label='Show operations'>{!expanded && <ExpandMoreIcon/>}{expanded && <ExpandLessIcon/>}</IconButton>
+            </TableCell>
+        </TableRow>
+        <TableRow>
+            <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+                <Collapse in={expanded} timeout="auto" unmountOnExit sx={{width: "100%"}}>
+                    <Table size="small" sx={{width: 60}}>
+                        <TableBody>
+                            {ops}
+                        </TableBody>
+                    </Table>
+                </Collapse>
+            </TableCell>
+        </TableRow>
+    </Fragment>
 }
 
 export function TransactionsPage(props) {
@@ -73,7 +121,7 @@ export function TransactionsPage(props) {
             .then(function (json:any) {
                 setLeft(json.left);
                 setCursorNext(json.next);
-                setTransactions(json.transactions)
+                setTransactions(enrichTransaction(json.transactions))
             })
     }, [filter,limit]);
 
@@ -86,7 +134,7 @@ export function TransactionsPage(props) {
                 .then(function (json:any) {
                     setLeft(json.left);
                     setCursorNext(json.next);
-                    setTransactions(transactions.concat(json.transactions))
+                    setTransactions(transactions.concat(enrichTransaction(json.transactions)))
                 })
         }
     }
@@ -114,27 +162,10 @@ export function TransactionsPage(props) {
     /*return (
       <div>
         <TransactionDeleteDialog />
-        <ImageList cols={1} cellHeight='auto'>
           {summary}
-          <ImageListItem>
-            <Card>
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={1} />
-                  <Grid item xs={1}>Date</Grid>
-                  <Grid item xs={3}>Comment</Grid>
-                  <Grid item xs={2}>Amount</Grid>
-                  <Grid item xs={2}>Accounts</Grid>
-                  <Grid item xs={2}>Tags</Grid>
-                  <Grid item xs={1} />
-                </Grid>
-              </CardContent>
-            </Card>
-          </ImageListItem>
           {props.waiting && <ClipLoader sizeUnit='px' size={150} loading />}
           {props.error && <h1>Unable to load transactions list</h1>}
           {transactions}
-        </ImageList>
       </div>
     )*/
   //}
@@ -153,6 +184,25 @@ export function TransactionsPage(props) {
             </CardContent>
         </Card>
         <Divider />
+        <TableContainer component={Paper}>
+
+        </TableContainer>
+        <Table>
+            <TableHead>
+                <TableRow>
+                    <TableCell/>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Comment</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Accounts</TableCell>
+                    <TableCell>Tags</TableCell>
+                    <TableCell/>
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {transactions.map(t => <TransactionFullWidget key={t.id} {...t}/>)}
+            </TableBody>
+        </Table>
         {left > 0 && <Link sx={{justifyContent: 'center', display: 'flex'}} onClick={loadNextPage}>Load next {limit<left ? limit : left} from remaining {left}</Link>}
     </Fragment>
 }

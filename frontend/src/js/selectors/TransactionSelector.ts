@@ -19,7 +19,7 @@ export const selectLastTransactions = createSelector(
 )
 
 // Data preparation functions
-function enrichTransaction(transactions: Transaction[]): EnrichedTransaction[] {
+export function enrichTransaction(transactions: Transaction[]): EnrichedTransaction[] {
     return transactions.map((item: Transaction): EnrichedTransaction => {
         const dt = timestampToFormattedDate(item.timestamp);
         const summary = calculateTransactionTotals(item);
