@@ -120,6 +120,8 @@ export default function transactionReducer(state: TransactionState = initialStat
             return produce(state, draft => {draft.transactionDialogVisible = true; draft.editedTransaction = DefaultTransaction})
         case TransactionActionType.TransactionEdit:
             return produce(state, draft => {draft.transactionDialogVisible = true; draft.editedTransaction = action.payload[0]})
+        case TransactionActionType.TransactionDialogClose:
+            return produce(state, draft => {draft.transactionDialogVisible = false})
         /*case TRANSACTION_DIALOG_CHANGE:
           var valid = validateTransactionForm(action.payload)
           return state.setIn(['dialog', 'transaction'], action.payload)

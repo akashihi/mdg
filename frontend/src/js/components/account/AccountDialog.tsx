@@ -46,7 +46,7 @@ function AccountDialog(props:AccountDialogProps) {
         account_type: Yup.string().required('Required!'),
     });
     return (
-        <Dialog title='Account editing' open={props.open}>
+        <Dialog title='Account editing' open={props.open} onClose={props.close}>
             <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
                 {({submitForm, isSubmitting, values}) => (
                     <Form>

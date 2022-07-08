@@ -1,4 +1,4 @@
-import React,{Fragment} from 'react';
+import React, {Fragment, useState, useEffect} from 'react';
 import {evaluate} from 'mathjs';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -19,69 +19,89 @@ import DatePicker from 'react-date-picker'
 import TimePicker from 'react-time-picker';
 import Checkbox from '@mui/material/Checkbox';
 import RSelect from 'react-select';
+import {produce} from 'immer';
 
-import {AccountMapper} from '../../util/AccountUtils'
+import {TransactionDialogProps} from "../../containers/TransactionEditor";
+import {Operation, Transaction} from "../../models/Transaction";
+import {validateOperation} from "../../util/TransactionValidation";
+import {accountMenu} from "../../util/AccountUtils";
 
-class SimpleOperationsEditor extends React.Component {
-    render() {
-        const props = this.props;
-
-        const errors = props.errors;
-        const operations = props.operations;
-
-        let textLabel = 'Amount';
-        let textError = false;
-        if (errors.get('operations').get(1).has('amount')) {
-            textLabel = errors.get('operations').get(1).get('amount');
-            textError = true
-        }
-
-        let textLeftLabel = 'Source';
-        let textLeftError = false;
-        if (errors.get('operations').get(0).has('account_id')) {
-            textLeftLabel = errors.get('operations').get(0).get('account_id');
-            textLeftError = true
-        }
-
-        let textRightLabel = 'Destination';
-        let textRightError = false;
-        if (errors.get('operations').get(1).has('account_id')) {
-            textRightLabel = errors.get('operations').get(1).get('account_id');
-            textRightError = true
-        }
-
-        return (
-            <Grid  container spacing={2}>
-                    <Grid item xs={5} sm={5} md={5} lg={4}>
-                        <FormControl error={textLeftError} fullWidth={true}>
-                            <InputLabel htmlFor={'source-simple'}>{textLeftLabel}</InputLabel>
-                            <Select value={operations[0].account_id}
-                                    onChange={(ev) => props.onAccountFunc(0, ev.target.value)}
-                                    inputProps={{id: 'source-simple'}}>
-                                {props.accounts.getAccounts()}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={2} sm={2} md={2} lg={2}>
-                        <TextField label={textLabel} error={textError} value={operations[1].amount}
-                                   onChange={props.onAmountFunc}/>
-                    </Grid>
-                    <Grid item xsOffset={1} xs={5} sm={5} md={5} lg={4}>
-                        <FormControl error={textRightError} fullWidth={true}>
-                            <InputLabel htmlFor={'destination-simple'}>{textRightLabel}</InputLabel>
-                            <Select value={operations[1].account_id}
-                                    onChange={(ev) => props.onAccountFunc(1, ev.target.value)}
-                                    inputProps={{id: 'destination-simple'}}>
-                                {props.accounts.getLimitedAccounts(operations[0])}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-            </Grid>
-        );
-    }
+interface OperationsEditorProps {
+    operations: Operation[],
+    accounts: ReturnType<typeof accountMenu>,
+    limitedAccounts: ReturnType<typeof accountMenu>,
+    setOperationsFunc: (ops: Operation[]) => void;
 }
 
-class FullOperationsEditor extends React.Component {
+function evaluateEquation(value:string):string | number{
+    if (value) {
+        const strAmount = value.toString();
+        if (strAmount.slice(-1) === '=') { //If it ends with =
+            let expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
+            try {
+                value = evaluate(expr).toFixed(2)
+            } catch (e) {
+                value = expr
+            }
+        }
+    }
+    return value;
+}
+
+function SimpleOperationsEditor(props: OperationsEditorProps) {
+    const [amount, setAmount] = useState<string>(props.operations[0].amount.toFixed(2));
+    useEffect(() => { setAmount(props.operations[0].amount.toFixed(2))}, [props]);
+
+    const leftValidity = validateOperation(props.operations[0]);
+    const rightValidity = validateOperation(props.operations[1]);
+
+    const setLeftAccount = (id: number) => {
+        props.setOperationsFunc([{...props.operations[0], account_id: id}, props.operations[1]]);
+    }
+
+    const setRightAccount = (id: number) => {
+        props.setOperationsFunc([props.operations[0], {...props.operations[1], account_id: id}]);
+    }
+
+    const applyAmount = (value: string) => {
+        const evaluated = evaluateEquation(value);
+        setAmount(String(evaluated));
+        if (typeof evaluated === 'number') {
+            props.setOperationsFunc([{...props.operations[0], amount: -1*evaluated}, {...props.operations[1], amount: evaluated}]);
+        }
+    }
+
+    return <Grid container spacing={2} sx={{marginTop: "10px"}}>
+        <Grid item xs={5} sm={5} md={5} lg={4}>
+            <FormControl error={leftValidity.error} fullWidth={true}>
+                <InputLabel htmlFor={'source-simple'}>{leftValidity.error? leftValidity.account_error : 'Source'}</InputLabel>
+                <Select value={props.operations[0].account_id}
+                        onChange={(ev) => setLeftAccount(ev.target.value as number)}
+                        inputProps={{id: 'source-simple'}}>
+                    {props.accounts}
+                </Select>
+            </FormControl>
+        </Grid>
+        <Grid item xs={1}/>
+        <Grid item xs={2} sm={2} md={2} lg={2}>
+            <TextField label={rightValidity.error ? rightValidity.amount_error : 'Amount'} error={rightValidity.error}
+                       value={amount} onChange={(ev)=>applyAmount(ev.target.value as string)}/>
+        </Grid>
+        <Grid item xs={1}/>
+        <Grid item xs={5} sm={5} md={5} lg={4}>
+            <FormControl error={rightValidity.error} fullWidth={true}>
+                <InputLabel htmlFor={'destination-simple'}>{rightValidity.error ? rightValidity.account_error : 'Destination'}</InputLabel>
+                <Select value={props.operations[1].account_id}
+                        onChange={(ev) => setRightAccount(ev.target.value as number)}
+                        inputProps={{id: 'destination-simple'}}>
+                    {props.limitedAccounts}
+                </Select>
+            </FormControl>
+        </Grid>
+    </Grid>
+}
+
+/*class FullOperationsEditor extends React.Component {
     checkRateDisabled(operation) {
         const props = this.props;
         // First check - if we only have ops in same currency, rate should be definitely disabled.
@@ -192,10 +212,68 @@ class FullOperationsEditor extends React.Component {
             </Fragment>
         );
     }
-}
+}*/
 
-export default class TransactionDialog extends React.Component {
-    constructor(props) {
+export function TransactionDialog(props: TransactionDialogProps) {
+    const [autoClose, setAutoClose] = useState(props.closeOnExit);
+    const [tx, setTx] = useState(props.transaction);
+    const [activeTab, setActiveTab] = useState('simple');
+
+    useEffect(() => {
+        setTx(props.transaction);
+        if (validForSimpleEditing(props.transaction)) {
+            setActiveTab('simple');
+        } else {
+            setActiveTab('multi');
+        }
+    }, [props]);
+
+    const switchTab = (_, value: string) => {
+        if (!validForSimpleEditing(tx)) {
+            value = 'multi'
+        }
+        setActiveTab(value);
+    }
+
+    const setDate = (date: Date | null) => {
+        let newDate = moment();
+        if (date !== null) {
+            newDate = moment(date);
+            const dt = moment(props.transaction.timestamp);
+            newDate.set({
+                hour: dt.get('hour'),
+                minute: dt.get('minute'),
+                second: dt.get('second')
+            })
+        }
+        setTx(produce((draft: Transaction) => {
+            draft.timestamp = newDate.format('YYYY-MM-DDTHH:mm:ss')
+        })(tx));
+    }
+    const setTime = (time: Date | null) => {
+        let newTime = moment();
+        const dt = moment(props.transaction.timestamp);
+        if (time !== null) {
+            newTime = moment(time, 'HH:mm');
+            dt.set({
+                hour: newTime.get('hour'),
+                minute: newTime.get('minute'),
+                second: newTime.get('second')
+            })
+        }
+        setTx(produce((draft: Transaction) => {
+            draft.timestamp = dt.format('YYYY-MM-DDTHH:mm:ss')
+        })(tx));
+    }
+    const setTags = (value: { label: string, value: string }[]) => {
+        const tags = value.map(item => item.value);
+        setTx(produce((draft: Transaction) => {
+            draft.tags = tags
+        })(tx));
+    }
+
+    const setOperations = (ops: Operation[]) => setTx(produce((draft: Transaction) => {draft.operations = ops})(tx))
+    /*constructor(props) {
         super(props);
         var tab = 'simple';
         if (!this.validForSimpleEditing(this.props.transaction)) {
@@ -221,47 +299,11 @@ export default class TransactionDialog extends React.Component {
         this.onChange('tags', tags)
     }
 
-    onDateChange(date) {
-        const newDate = moment(date);
-        const dt = moment(this.props.transaction.get('timestamp'));
-        dt.set({
-            year: newDate.get('year'),
-            month: newDate.get('month'),
-            date: newDate.get('date')
-        });
-        this.onChange('timestamp', dt.format('YYYY-MM-DDTHH:mm:ss'));
-    }
-
-    onTimeChange(time) {
-        const newDate = moment(time, 'HH:mm');
-        const dt = moment(this.props.transaction.get('timestamp'));
-        dt.set({
-            hour: newDate.get('hour'),
-            minute: newDate.get('minute')
-        });
-        this.onChange('timestamp', dt.format('YYYY-MM-DDTHH:mm:ss'));
-
-    }
 
     onOperationAdd() {
         const ops = this.props.transaction.get('operations');
         ops.push({amount: 0, account_id: -1});
         this.onChange('operations', ops);
-    }
-
-    static evaluateEquation(value) {
-        if (value) {
-            const strAmount = value.toString();
-            if (strAmount.slice(-1) === '=') { //If it ends with =
-                var expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
-                try {
-                    value = evaluate(expr).toFixed(2)
-                } catch (e) {
-                    value = expr
-                }
-            }
-        }
-        return value
     }
 
     onCombinedAmountChange(ev) {
@@ -277,34 +319,6 @@ export default class TransactionDialog extends React.Component {
         const ops = this.props.transaction.get('operations');
         ops[index].amount = TransactionDialog.evaluateEquation(value);
         this.onChange('operations', ops);
-    }
-
-
-    validForSimpleEditing() {
-        const props = this.props;
-        const transaction = props.transaction;
-        const ops = transaction.get('operations');
-
-        if (ops.length > 2) {
-            return false
-        }
-
-        //const accounts = props.accounts;
-        /*if (accounts.has(ops[0].account_id) && accounts.has(ops[1].account_id)) {
-            const leftCurrency = accounts.get(ops[0].account_id).get('currency_id');
-            const rightCurrency = accounts.get(ops[1].account_id).get('currency_id');
-            return leftCurrency === rightCurrency
-        }*/
-        return true
-    }
-
-    switchTab(ev, value) {
-        if (!this.validForSimpleEditing(this.props.transaction)) {
-            value = 'multi'
-        }
-        this.setState({
-            tabValue: value,
-        });
     }
 
     onAccountChange(index, value) {
@@ -340,41 +354,10 @@ export default class TransactionDialog extends React.Component {
              activeTab = 'multi';
         }
 
-        const tags = props.tags.map((item) => {return {label: item, value: item}});
-        const selectedTags = transaction.get('tags').map((item) => {return {label: item, value: item}});
 
-        const ts = moment(transaction.get('timestamp'));
-
-        const accounts = new AccountMapper(props.currencies, props.categories, props.accounts);
-
-        return (<Dialog title='Transaction editing' open={props.open} scroll={'paper'} maxWidth={'md'} fullWidth={true}>
+        return (
             <DialogContent>
-                <Grid  container spacing={2}>
-                        <Grid item xs={12} sm={12} md={6} lg={6}>
-                            <DatePicker value={ts.toDate()} onChange={::this.onDateChange}/>
-                        </Grid>
-                        <Grid item xs={12} sm={12} md={6} lg={6}>
-                            <TimePicker value={ts.toDate()} onChange={::this.onTimeChange}/>
-                        </Grid>
-                        <Grid item xs={12} sm={12} md={12} lg={12}>
-                            <RSelect options={tags} isMulti={true} onChange={::this.onTagEdit} value={selectedTags}/>
-                        </Grid>
-                        <Grid item xs={12} sm={12} md={12} lg={12}>
-                            <TextField label='Comment on transaction' fullWidth={true} multiline={true} rows={4}
-                                       value={transaction.get('comment')} onChange={(event) => ::this.onChange('comment', event.target.value)}/>
-                        </Grid>
-                </Grid>
-                <Divider/>
-                <Tabs value={activeTab} onChange={::this.switchTab}>
-                    <Tab label='Simple' value='simple' disabled={!enableSimpleEditor}/>
-                    <Tab label='Multiple operations' value='multi'/>
-                </Tabs>
-                {activeTab === 'simple' &&
-                <SimpleOperationsEditor errors={errors}
-                                        operations={transaction.get('operations')}
-                                        onAmountFunc={::this.onCombinedAmountChange}
-                                        onAccountFunc={::this.onAccountChange}
-                                        accounts={accounts}/>}
+
                 {activeTab === 'multi' && <FullOperationsEditor errors={errors}
                                                                           operations={transaction.get('operations')}
                                                                           onAmountFunc={::this.onAmountChange}
@@ -390,11 +373,70 @@ export default class TransactionDialog extends React.Component {
                 </Grid>
             </DialogContent>
             <DialogActions>
-                  <InputLabel htmlFor={'close-dialog'}>Close dialog on save</InputLabel>
-                  <Checkbox checked={props.closeOnSave} inputProps={{id: 'close-dialog'}} onChange={(ev, value) => ::this.onSaveCloseOnSave(value)}/>
                 <Button color='primary' disabled={!props.valid} onClick={::this.props.actions.editTransactionSave}>Save</Button>
-                <Button color='secondary' onClick={::this.props.actions.editTransactionCancel}>Cancel</Button>
+
             </DialogActions>
-        </Dialog>)
+    }*/
+
+    const validForSimpleEditing = (transaction: Transaction): boolean => {
+        if (transaction.operations.length > 2) { //Too many operations
+            return false
+        }
+        if (transaction.operations.length < 2) { //Not all ops are set, should be safe for simple editing
+            return true
+        }
+
+        return props.accountCurrencies[transaction.operations[0].account_id] === props.accountCurrencies[transaction.operations[1].account_id]
     }
+
+    const tags = props.tags.map((item) => {
+        return {label: item, value: item}
+    });
+    let selectedTags = [];
+    if (tx.tags !== undefined) {
+        selectedTags = tx.tags.map((item) => {
+            return {label: item, value: item}
+        });
+    }
+
+    const accounts = accountMenu(props.assetTree, props.incomeTree, props.expenseTree);
+    const limitedAccounts = accountMenu(props.assetTree, props.incomeTree, props.expenseTree, props.accountCurrencies[tx.operations[0].account_id]);
+
+    return <Dialog title='Transaction editing' open={props.visible} scroll={'paper'} maxWidth={'md'} fullWidth={true}
+                   onClose={props.closeTransactionDialog}>
+        <DialogContent>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={12} md={6} lg={6}>
+                    <DatePicker format='d/M/yyyy' value={moment(tx.timestamp).toDate()} onChange={setDate}/>
+                </Grid>
+                <Grid item xs={12} sm={12} md={6} lg={6}>
+                    <TimePicker value={moment(tx.timestamp).toDate()} onChange={setTime}/>
+                </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={12}>
+                    <RSelect options={tags} isMulti={true} onChange={setTags} value={selectedTags}/>
+                </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={12}>
+                    <TextField label='Comment on transaction' fullWidth={true} multiline={true} rows={4}
+                               value={tx.comment} variant='outlined'
+                               onChange={(ev) => setTx(produce((draft: Transaction) => {
+                                   draft.comment = ev.target.value
+                               })(tx))}/>
+                </Grid>
+            </Grid>
+            <Divider/>
+            <Tabs value={activeTab} onChange={switchTab}>
+                <Tab label='Simple' value='simple' disabled={!validForSimpleEditing(tx)}/>
+                <Tab label='Multiple operations' value='multi'/>
+            </Tabs>
+            {activeTab === 'simple' && <SimpleOperationsEditor operations={tx.operations} accounts={accounts} limitedAccounts={limitedAccounts} setOperationsFunc={setOperations}/>}
+        </DialogContent>
+        <DialogActions>
+            <InputLabel htmlFor={'close-dialog'}>Close dialog on save</InputLabel>
+            <Checkbox checked={autoClose} inputProps={{id: 'close-dialog'}}
+                      onChange={(ev, value) => setAutoClose(value)}/>
+            <Button color='secondary' onClick={props.closeTransactionDialog}>Cancel</Button>
+        </DialogActions>
+    </Dialog>
 }
+
+export default TransactionDialog;

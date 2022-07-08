@@ -59,45 +59,14 @@ export function editTransaction(tx: Transaction):TransactionAction {
     }
 }
 
-export function setCloseOnSave(value) {
-    /*return {
-      type: TRANSACTION_DIALOG_CLOSESAVE_SET,
-      payload: value
-    }*/
+export function closeTransactionDialog():TransactionAction {
+    return {
+        type: TransactionActionType.TransactionDialogClose,
+        payload: []
+    }
 }
-
-export function editTransactionCancel() {
-    /*return {
-      type: TRANSACTION_DIALOG_CLOSE,
-      payload: true
-    }*/
-}
-
-export function editTransactionChange(tx) {
-    /*return {
-      type: TRANSACTION_DIALOG_CHANGE,
-      payload: tx
-    }*/
-}
-
-export function editTransactionSave() {
-    /*return (dispatch, getState) => {
-      const state = getState()
-      if (state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
-        dispatch({
-          type: TRANSACTION_DIALOG_CLOSE,
-          payload: true
-        })
-      }
-      const transaction = state.get('transaction').getIn(['dialog', 'transaction'])
-      dispatch(updateTransaction(transaction))
-      if (!state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
-        dispatch(createTransaction())
-      }
-    }*/
-}
-
-export function updateTransaction(tx) {
+export function updateTransaction(tx:Transaction) {
+    console.log(tx);
     /*return (dispatch, getState) => {
       dispatch({
         type: TRANSACTION_PARTIAL_UPDATE,
@@ -147,9 +116,40 @@ export function updateTransaction(tx) {
     }*/
 }
 
-export function markTransaction(id, value) {
+export function setCloseOnSave(value) {
     /*return {
-      type: value ? TRANSACTION_LIST_SELECT : TRANSACTION_LIST_UNSELECT,
-      payload: id
+      type: TRANSACTION_DIALOG_CLOSESAVE_SET,
+      payload: value
+    }*/
+}
+
+export function editTransactionCancel() {
+    /*return {
+      type: TRANSACTION_DIALOG_CLOSE,
+      payload: true
+    }*/
+}
+
+export function editTransactionChange(tx) {
+    /*return {
+      type: TRANSACTION_DIALOG_CHANGE,
+      payload: tx
+    }*/
+}
+
+export function editTransactionSave() {
+    /*return (dispatch, getState) => {
+      const state = getState()
+      if (state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
+        dispatch({
+          type: TRANSACTION_DIALOG_CLOSE,
+          payload: true
+        })
+      }
+      const transaction = state.get('transaction').getIn(['dialog', 'transaction'])
+      dispatch(updateTransaction(transaction))
+      if (!state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
+        dispatch(createTransaction())
+      }
     }*/
 }
