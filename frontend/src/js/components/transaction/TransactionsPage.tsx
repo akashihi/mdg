@@ -48,6 +48,7 @@ const defaultFilter: TransactionFilterParams = {
 interface TransactionFullWidgetProps {
     tx: EnrichedTransaction,
     selectFunc: (selected: boolean, change: number) => void,
+    editFunc: (tx: EnrichedTransaction) => void,
     deleteFunc: (tx: EnrichedTransaction) => void
 }
 
@@ -68,7 +69,7 @@ function TransactionFullWidget(props: TransactionFullWidgetProps) {
             <TableCell>{props.tx.accountNames}</TableCell>
             <TableCell>{props.tx.tags.join(',')}</TableCell>
             <TableCell>
-                <IconButton aria-label='Edit' /*onClick={() => props.editAction(props.id, props.transaction)}*/><Edit/></IconButton>
+                <IconButton aria-label='Edit' onClick={() => props.editFunc(props.tx)}><Edit/></IconButton>
                 <IconButton aria-label='Delete' onClick={() => props.deleteFunc(props.tx)}><Delete/></IconButton>
                 <IconButton onClick={() => setExpanded(!expanded)} aria-expanded={expanded} aria-label='Show operations'>{!expanded && <ExpandMoreIcon/>}{expanded && <ExpandLessIcon/>}</IconButton>
             </TableCell>
@@ -229,7 +230,7 @@ export function TransactionsPage(props: TransactionViewerProps) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {transactions.map(t => <TransactionFullWidget key={t.id} tx={t}  selectFunc={updateSelection} deleteFunc={confirmTransactionDeletion}/>)}
+                    {transactions.map(t => <TransactionFullWidget key={t.id} tx={t}  selectFunc={updateSelection} deleteFunc={confirmTransactionDeletion} editFunc={props.editTransaction}/>)}
                 </TableBody>
             </Table>
         </TableContainer>

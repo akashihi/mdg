@@ -45,10 +45,17 @@ export function loadLastTransactions() {
     }
 }
 
-export function createTransaction() {
+export function createTransaction():TransactionAction {
     return {
       type: TransactionActionType.TransactionCreate,
       payload: []
+    }
+}
+
+export function editTransaction(tx: Transaction):TransactionAction {
+    return {
+      type: TransactionActionType.TransactionEdit,
+      payload: [tx]
     }
 }
 
@@ -56,16 +63,6 @@ export function setCloseOnSave(value) {
     /*return {
       type: TRANSACTION_DIALOG_CLOSESAVE_SET,
       payload: value
-    }*/
-}
-
-export function editTransaction(id, tx) {
-    /*return {
-      type: TRANSACTION_DIALOG_OPEN,
-      payload: {
-        id,
-        tx
-      }
     }*/
 }
 
