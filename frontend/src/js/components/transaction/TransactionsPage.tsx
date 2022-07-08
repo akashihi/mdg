@@ -17,6 +17,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Edit from '@mui/icons-material/Edit';
 import Delete from '@mui/icons-material/Delete';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress'
 
 import TransactionFilter from '../../containers/TransactionsFilter';
 import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog';
@@ -92,6 +94,7 @@ export function TransactionsPage(props) {
     const [transactions, setTransactions] = useState<EnrichedTransaction[]>([]);
     const [totalSelected, setTotalSelected] = useState<number>(0);
     const [noSelected, setNoSelected] = useState<number>(0);
+    const [loading, setLoading] = useState<boolean>(true)
 
     const applyFilter = (f: TransactionFilterParams, l: number) => {
         setFilter(f);
@@ -111,6 +114,7 @@ export function TransactionsPage(props) {
     }
 
     useEffect(() => {
+        setLoading(true);
         let query: object = {
             notEarlier: filter.notEarlier.format('YYYY-MM-DDT00:00:00'),
             notLater: filter.notLater.format('YYYY-MM-DDT23:59:59')
@@ -133,12 +137,14 @@ export function TransactionsPage(props) {
             .then(function (json:any) {
                 setLeft(json.left);
                 setCursorNext(json.next);
-                setTransactions(enrichTransaction(json.transactions))
+                setTransactions(enrichTransaction(json.transactions));
+                setLoading(false);
             })
     }, [filter,limit]);
 
     const loadNextPage = () => {
         if (cursorNext) { // Do not load whole DB accidentally
+            setLoading(true);
             const url = '/api/transactions' + '?' + jQuery.param({cursor: cursorNext})
             fetch(url)
                 .then(parseJSON)
@@ -146,23 +152,17 @@ export function TransactionsPage(props) {
                 .then(function (json:any) {
                     setLeft(json.left);
                     setCursorNext(json.next);
-                    setTransactions(transactions.concat(enrichTransaction(json.transactions)))
+                    setTransactions(transactions.concat(enrichTransaction(json.transactions)));
+                    setLoading(false);
                 })
         }
     }
-    /*return (
-      <div>
-        <TransactionDeleteDialog />
-          {summary}
-          {props.waiting && <ClipLoader sizeUnit='px' size={150} loading />}
-          {props.error && <h1>Unable to load transactions list</h1>}
-          {transactions}
-      </div>
-    )*/
-  //}
 
     const title = `Showing transactions from ${filter.notEarlier.format('DD-MM-YYYY')} till ${filter.notLater.format('DD-MM-YYYY')}`
     return <Fragment>
+        <Backdrop open={loading}>
+            <CircularProgress color="inherit" />
+        </Backdrop>
         <Card>
             <CardContent>
                     {title}
