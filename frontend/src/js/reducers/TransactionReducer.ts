@@ -4,10 +4,6 @@ import {
     GET_TRANSACTIONLIST_REQUEST,
     GET_TRANSACTIONLIST_SUCCESS,
     GET_TRANSACTIONLIST_FAILURE,
-    DELETE_TRANSACTION_REQUEST,
-    DELETE_TRANSACTION_CANCEL,
-    DELETE_TRANSACTION_APPROVE,
-    DELETE_TRANSACTION_SUCCESS,
     TRANSACTION_DIALOG_OPEN,
     TRANSACTION_DIALOG_CLOSE,
     TRANSACTION_DIALOG_CHANGE,
@@ -137,15 +133,6 @@ export default function transactionReducer(state: TransactionState = initialStat
         case GET_SETTING_SUCCESS:
           var closeTransactionDialog = action.payload.get('ui.transaction.closedialog').get('value') === 'true'
           return state.setIn(['dialog', 'closeOnSave'], closeTransactionDialog)
-        case DELETE_TRANSACTION_REQUEST:
-          return state.setIn(['delete', 'approvementDialogVisible'], true)
-            .setIn(['delete', 'id'], action.payload)
-        case DELETE_TRANSACTION_CANCEL:
-          return state.setIn(['delete', 'approvementDialogVisible'], false)
-            .setIn(['delete', 'transaction'], Map({ comment: '' }))
-        case DELETE_TRANSACTION_SUCCESS:
-          return state.update('transactionList', (transactions) => transactions.remove(action.payload))
-            .setIn(['delete', 'id'], '')
         case GET_TRANSACTIONLIST_REQUEST:
           return state.setIn(['ui', 'transactionListLoading'], true)
             .setIn(['ui', 'transactionListError'], false)

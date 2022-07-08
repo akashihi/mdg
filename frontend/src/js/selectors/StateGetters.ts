@@ -5,16 +5,8 @@ import {SettingState} from '../reducers/SettingReducer';
 import {Account} from "../models/Account";
 import {Transaction} from "../models/Transaction";
 
-// Transaction view
-export const getPeriodBeginning = state => state.transactionview.get('periodBeginning');
-export const getPeriodEnd = state => state.transactionview.get('periodEnd');
-export const getSelectedTransactions = state => state.transactionview.get('selection');
-
 // Transaction
 export const getLastTransactions = (state: RootState): Transaction[] => state.transaction.lastTransactionList;
-
-// Transaction deletion dialog
-export const getTransactionToDeleteId = state => state.transaction.get('delete').get('id');
 
 // Accounts
 export const getAccounts = (state: RootState): Account[] => state.account.accountList;

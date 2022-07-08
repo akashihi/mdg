@@ -21,12 +21,13 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress'
 
 import TransactionFilter from '../../containers/TransactionsFilter';
-import TransactionDeleteDialog from '../../containers/TransactionDeleteDialog';
+import TransactionDeleteDialog from './TransactionDeleteConfirmation';
 import moment, {Moment} from 'moment';
 import jQuery from 'jquery';
 import { checkApiError, parseJSON } from '../../util/ApiUtils';
 import {EnrichedTransaction} from '../../models/Transaction';
 import {enrichTransaction} from "../../selectors/TransactionSelector";
+import {TransactionViewerProps} from "../../containers/TransactionsViewer";
 
 
 export interface TransactionFilterParams {
@@ -46,7 +47,8 @@ const defaultFilter: TransactionFilterParams = {
 }
 interface TransactionFullWidgetProps {
     tx: EnrichedTransaction,
-    selectFunc: (selected: boolean, change: number) => void
+    selectFunc: (selected: boolean, change: number) => void,
+    deleteFunc: (tx: EnrichedTransaction) => void
 }
 
 function TransactionFullWidget(props: TransactionFullWidgetProps) {
@@ -67,7 +69,7 @@ function TransactionFullWidget(props: TransactionFullWidgetProps) {
             <TableCell>{props.tx.tags.join(',')}</TableCell>
             <TableCell>
                 <IconButton aria-label='Edit' /*onClick={() => props.editAction(props.id, props.transaction)}*/><Edit/></IconButton>
-                <IconButton aria-label='Delete' /*onClick={() => props.deleteAction(props.id)}*/><Delete/></IconButton>
+                <IconButton aria-label='Delete' onClick={() => props.deleteFunc(props.tx)}><Delete/></IconButton>
                 <IconButton onClick={() => setExpanded(!expanded)} aria-expanded={expanded} aria-label='Show operations'>{!expanded && <ExpandMoreIcon/>}{expanded && <ExpandLessIcon/>}</IconButton>
             </TableCell>
         </TableRow>
@@ -85,7 +87,7 @@ function TransactionFullWidget(props: TransactionFullWidgetProps) {
     </Fragment>
 }
 
-export function TransactionsPage(props) {
+export function TransactionsPage(props: TransactionViewerProps) {
     const [expanded, setExpanded] = useState(false);
     const [filter, setFilter] = useState<TransactionFilterParams>(defaultFilter);
     const [limit, setLimit] = useState(10);
@@ -95,6 +97,8 @@ export function TransactionsPage(props) {
     const [totalSelected, setTotalSelected] = useState<number>(0);
     const [noSelected, setNoSelected] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true)
+    const [deleteVisible, setDeleteVisible] = useState<boolean>(false);
+    const [transactionToDelete, setTransactionToDelete] = useState<EnrichedTransaction | undefined>(undefined);
 
     const applyFilter = (f: TransactionFilterParams, l: number) => {
         setFilter(f);
@@ -111,6 +115,36 @@ export function TransactionsPage(props) {
             const totals = Math.round((totalSelected - change) * 1e2)/1e2;
             setTotalSelected(totals);
         }
+    }
+
+    const confirmTransactionDeletion = (tx: EnrichedTransaction) => {
+        setDeleteVisible(true);
+        setTransactionToDelete(tx);
+    }
+
+    const closeDeleteDialog = () => {
+        setDeleteVisible(false);
+        setTransactionToDelete(undefined);
+    }
+
+    const deleteTransaction = (tx: EnrichedTransaction) => {
+        closeDeleteDialog();
+        setLoading(true);
+        const url = `/api/transactions/${tx.id}`;
+
+        fetch(url, {method: 'DELETE'})
+            .then(function (response) {
+                setLoading(false);
+                if (response.status === 204) {
+                    setTransactions(transactions.filter(t => t.id !== tx.id));
+                }
+                props.loadAccountList();
+                props.loadTotalsReport();
+                if (props.currentBudgetId !== undefined) {
+                    props.loadBudgetInfoById(props.currentBudgetId);
+                }
+            })
+
     }
 
     useEffect(() => {
@@ -163,6 +197,7 @@ export function TransactionsPage(props) {
         <Backdrop open={loading}>
             <CircularProgress color="inherit" />
         </Backdrop>
+        <TransactionDeleteDialog tx={transactionToDelete} visible={deleteVisible} close={closeDeleteDialog} delete={deleteTransaction}/>
         <Card>
             <CardContent>
                     {title}
@@ -194,7 +229,7 @@ export function TransactionsPage(props) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {transactions.map(t => <TransactionFullWidget key={t.id} tx={t}  selectFunc={updateSelection}/>)}
+                    {transactions.map(t => <TransactionFullWidget key={t.id} tx={t}  selectFunc={updateSelection} deleteFunc={confirmTransactionDeletion}/>)}
                 </TableBody>
             </Table>
         </TableContainer>
