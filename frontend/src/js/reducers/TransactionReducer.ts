@@ -1,26 +1,34 @@
 import {produce} from 'immer';
-import {OrderedMap, Map, List} from 'immutable'
-import {
-    GET_TRANSACTIONLIST_REQUEST,
-    GET_TRANSACTIONLIST_SUCCESS,
-    GET_TRANSACTIONLIST_FAILURE,
-    TRANSACTION_DIALOG_OPEN,
-    TRANSACTION_DIALOG_CLOSE,
-    TRANSACTION_DIALOG_CHANGE,
-    TRANSACTION_DIALOG_CLOSESAVE_SET,
-    TRANSACTION_PARTIAL_UPDATE,
-    TRANSACTION_PARTIAL_SUCCESS, TransactionActionType
-} from '../constants/Transaction'
-import {GET_SETTING_SUCCESS} from '../constants/Setting'
+import {TransactionActionType} from '../constants/Transaction'
 import {Transaction} from "../models/Transaction";
 import {TransactionAction} from "../actions/TransactionActions";
+import moment from 'moment';
+
+export const DefaultTransaction: Transaction = {
+    id: -1,
+    timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'),
+    operations: [
+        {
+            amount: 0,
+            account_id: -1
+        },
+        {
+            amount: 0,
+            account_id: -1
+        }
+    ]
+}
 
 export interface TransactionState {
     lastTransactionList: Transaction[];
+    editedTransaction: Transaction;
+    transactionDialogVisible: boolean;
 }
 
 const initialState: TransactionState = {
-    lastTransactionList: []
+    lastTransactionList: [],
+    editedTransaction: DefaultTransaction,
+    transactionDialogVisible: false
 }
 
 /*const initialState = Map({
@@ -108,6 +116,10 @@ export default function transactionReducer(state: TransactionState = initialStat
             return produce(state, draft => {draft.lastTransactionList = action.payload});
         case TransactionActionType.TransactionsShortListLoad:
             return produce(state, draft => {draft.lastTransactionList = []});
+        case TransactionActionType.TransactionCreate:
+            return produce(state, draft => {draft.transactionDialogVisible = true; draft.editedTransaction = DefaultTransaction})
+        case TransactionActionType.TransactionEdit:
+            return produce(state, draft => {draft.transactionDialogVisible = true; draft.editedTransaction = action.payload[0]})
         /*case TRANSACTION_DIALOG_CHANGE:
           var valid = validateTransactionForm(action.payload)
           return state.setIn(['dialog', 'transaction'], action.payload)

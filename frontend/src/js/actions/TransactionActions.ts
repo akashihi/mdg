@@ -11,21 +11,7 @@ import {loadAccountList} from './AccountActions';
 import {loadBudgetInfoById} from './BudgetEntryActions';
 import {loadTotalsReport} from './ReportActions';
 
-import {
-    GET_TRANSACTIONLIST_REQUEST,
-    GET_TRANSACTIONLIST_COUNT,
-    GET_TRANSACTIONLIST_SUCCESS,
-    GET_TRANSACTIONLIST_FAILURE,
-    TRANSACTION_DIALOG_OPEN,
-    TRANSACTION_DIALOG_CLOSE,
-    TRANSACTION_DIALOG_CHANGE,
-    TRANSACTION_DIALOG_CLOSESAVE_SET,
-    GET_LASTTRANSACTION_SUCCESS,
-    TRANSACTION_LIST_SELECT,
-    TRANSACTION_LIST_UNSELECT,
-    TRANSACTION_PARTIAL_SUCCESS,
-    TRANSACTION_PARTIAL_UPDATE, TransactionActionType
-} from '../constants/Transaction'
+import {TransactionActionType } from '../constants/Transaction'
 import {Transaction} from "../models/Transaction";
 
 export interface TransactionAction extends Action {
@@ -59,25 +45,17 @@ export function loadLastTransactions() {
     }
 }
 
+export function createTransaction() {
+    return {
+      type: TransactionActionType.TransactionCreate,
+      payload: []
+    }
+}
+
 export function setCloseOnSave(value) {
     /*return {
       type: TRANSACTION_DIALOG_CLOSESAVE_SET,
       payload: value
-    }*/
-}
-
-export function createTransaction() {
-    /*return {
-      type: TRANSACTION_DIALOG_OPEN,
-      payload: {
-        id: -1,
-        tx: Map({
-          comment: '',
-          timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'),
-          tags: [],
-          operations: [{ amount: 0, account_id: -1 }, { amount: 0, account_id: -1 }]
-        })
-      }
     }*/
 }
 
