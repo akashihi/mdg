@@ -12,14 +12,13 @@ export interface TransactionFilterOwnProps {
     applyFunc: (f: TransactionFilterParams, l: number) => void
 }
 
-export interface TransactionFilterProps {
+export interface TransactionFilterProps extends TransactionFilterOwnProps {
     tags: string[];
     currencies: Currency[];
     assetTree: AccountTreeNode;
     incomeTree: AccountTreeNode;
     expenseTree: AccountTreeNode;
     accountNames: Record<number, string>,
-    applyFunc: (f: TransactionFilterParams, l: number) => void
 }
 
 const mapStateToProps = (state: RootState, ownProps: TransactionFilterOwnProps): TransactionFilterProps => {

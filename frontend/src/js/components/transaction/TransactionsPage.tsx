@@ -26,6 +26,7 @@ import { checkApiError, parseJSON } from '../../util/ApiUtils';
 import {EnrichedTransaction} from '../../models/Transaction';
 import {enrichTransaction} from "../../selectors/TransactionSelector";
 
+
 export interface TransactionFilterParams {
     readonly notEarlier: Moment;
     readonly notLater: Moment;
@@ -41,30 +42,27 @@ const defaultFilter: TransactionFilterParams = {
     account_id: [],
     tag: []
 }
+interface TransactionFullWidgetProps {
+    tx: EnrichedTransaction,
+    selectFunc: (selected: boolean, change: number) => void
+}
 
-function TransactionFullWidget(props: EnrichedTransaction) {
+function TransactionFullWidget(props: TransactionFullWidgetProps) {
     const [expanded, setExpanded] = useState(false);
-    /*
 
-    markTransaction = value => {
-        const props = this.props;
-        props.selectTxAction(props.transaction.get('id'), value)
-    };
-
-    }*/
-    const ops = props.operations.map((o, number) => <TableRow key={`${props.id}-${number}`}>
+    const ops = props.tx.operations.map((o, number) => <TableRow key={`${props.tx.id}-${number}`}>
         <TableCell sx={{ color: o.color }} align='left'>{o.account.name}</TableCell>
         <TableCell sx={{ color: o.color }} align='right'>{o.amount}</TableCell>
     </TableRow>)
 
     return <Fragment>
         <TableRow>
-            <TableCell><Checkbox color='default' /*onChange={(ev, value) => ::this.markTransaction(value)}*//></TableCell>
-            <TableCell>{props.dt}</TableCell>
-            <TableCell>{props.comment}</TableCell>
-            <TableCell sx={{color: props.summary.color}}>{props.summary.total}</TableCell>
-            <TableCell>{props.accountNames}</TableCell>
-            <TableCell>{props.tags.join(',')}</TableCell>
+            <TableCell><Checkbox color='default' onChange={(_, value) => props.selectFunc(value, props.tx.summary.total)}/></TableCell>
+            <TableCell>{props.tx.dt}</TableCell>
+            <TableCell>{props.tx.comment}</TableCell>
+            <TableCell sx={{color: props.tx.summary.color}}>{props.tx.summary.total}</TableCell>
+            <TableCell>{props.tx.accountNames}</TableCell>
+            <TableCell>{props.tx.tags.join(',')}</TableCell>
             <TableCell>
                 <IconButton aria-label='Edit' /*onClick={() => props.editAction(props.id, props.transaction)}*/><Edit/></IconButton>
                 <IconButton aria-label='Delete' /*onClick={() => props.deleteAction(props.id)}*/><Delete/></IconButton>
@@ -92,10 +90,24 @@ export function TransactionsPage(props) {
     const [cursorNext, setCursorNext] = useState<string|undefined>(undefined);
     const [left, setLeft] = useState<number|undefined>(undefined);
     const [transactions, setTransactions] = useState<EnrichedTransaction[]>([]);
+    const [totalSelected, setTotalSelected] = useState<number>(0);
+    const [noSelected, setNoSelected] = useState<number>(0);
 
     const applyFilter = (f: TransactionFilterParams, l: number) => {
         setFilter(f);
         setLimit(l);
+    }
+
+    const updateSelection = (selected: boolean, change: number) => {
+        if (selected) {
+            setNoSelected(noSelected + 1);
+            const totals = Math.round((totalSelected + change) * 1e2)/1e2;
+            setTotalSelected(totals);
+        } else {
+            setNoSelected(noSelected - 1);
+            const totals = Math.round((totalSelected - change) * 1e2)/1e2;
+            setTotalSelected(totals);
+        }
     }
 
     useEffect(() => {
@@ -126,7 +138,7 @@ export function TransactionsPage(props) {
     }, [filter,limit]);
 
     const loadNextPage = () => {
-        if (cursorNext) { // Not to load whole DB accidentally
+        if (cursorNext) { // Do not load whole DB accidentally
             const url = '/api/transactions' + '?' + jQuery.param({cursor: cursorNext})
             fetch(url)
                 .then(parseJSON)
@@ -138,27 +150,6 @@ export function TransactionsPage(props) {
                 })
         }
     }
-/*
-
-  render () {
-
-    let summary = ''
-    if (props.selectedTotals.get('count') > 0) {
-      summary = (
-        <ImageListItem>
-          <Card>
-            <CardContent style={{ textAlign: 'center' }}>Selected {props.selectedTotals.get('count')} transaction(s) with total change of {props.selectedTotals.get('change')}</CardContent>
-          </Card>
-        </ImageListItem>
-      )
-    }
-
-    const transactions = props.transactions.map(function (item, id) {
-      return (
-        <ImageListItem key={id}><Transaction id={id} transaction={item} editAction={props.actions.editTransaction} deleteAction={props.actions.deleteTransactionRequest} selectTxAction={props.actions.markTransaction} /></ImageListItem>
-      )
-    }).valueSeq()*/
-
     /*return (
       <div>
         <TransactionDeleteDialog />
@@ -184,25 +175,29 @@ export function TransactionsPage(props) {
             </CardContent>
         </Card>
         <Divider />
+        {
+          noSelected > 0 && <Card>
+                <CardContent style={{textAlign: 'center'}}>Selected {noSelected} transaction(s) with total change of {totalSelected}</CardContent>
+            </Card>
+        }
         <TableContainer component={Paper}>
-
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell/>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Comment</TableCell>
+                        <TableCell>Amount</TableCell>
+                        <TableCell>Accounts</TableCell>
+                        <TableCell>Tags</TableCell>
+                        <TableCell/>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {transactions.map(t => <TransactionFullWidget key={t.id} tx={t}  selectFunc={updateSelection}/>)}
+                </TableBody>
+            </Table>
         </TableContainer>
-        <Table>
-            <TableHead>
-                <TableRow>
-                    <TableCell/>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Comment</TableCell>
-                    <TableCell>Amount</TableCell>
-                    <TableCell>Accounts</TableCell>
-                    <TableCell>Tags</TableCell>
-                    <TableCell/>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {transactions.map(t => <TransactionFullWidget key={t.id} {...t}/>)}
-            </TableBody>
-        </Table>
         {left > 0 && <Link sx={{justifyContent: 'center', display: 'flex'}} onClick={loadNextPage}>Load next {limit<left ? limit : left} from remaining {left}</Link>}
     </Fragment>
 }
