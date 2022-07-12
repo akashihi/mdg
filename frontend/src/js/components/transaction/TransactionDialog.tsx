@@ -25,8 +25,8 @@ import {TransactionDialogProps} from "../../containers/TransactionEditor";
 import {Operation, Transaction} from "../../models/Transaction";
 import {
     validateAccountSelected,
-    validateOperation,
     validateOperationAmount,
+    validateRate,
     validateTransaction
 } from "../../util/TransactionValidation";
 import {accountMenu} from "../../util/AccountUtils";
@@ -252,8 +252,24 @@ export function TransactionDialog(props: TransactionDialogProps) {
     }, [props]);
 
     useEffect(() => {
-        console.log(tx);
-        setTransactionValidity(validateTransaction(tx));
+        const globalValidity = validateTransaction(tx);
+        if (globalValidity !== null) {
+            setTransactionValidity(globalValidity);
+            return;
+        }
+        if (tx.operations.map(o => validateAccountSelected(o.account_id)).some(e => e !== null)) {
+            setTransactionValidity("");
+            return;
+        }
+        if (tx.operations.map(o => validateOperationAmount(o.amount)).some(e => e !== null)) {
+            setTransactionValidity("");
+            return;
+        }
+        if (tx.operations.map(o => validateRate(o.rate)).some(e => e !== null)) {
+            setTransactionValidity("");
+            return;
+        }
+        setTransactionValidity(null);
     }, [tx]);
 
     const switchTab = (_, value: string) => {
@@ -301,6 +317,13 @@ export function TransactionDialog(props: TransactionDialogProps) {
     }
 
     const setOperations = (ops: Operation[]) => {setTx(produce((draft: Transaction) => {draft.operations = ops})(tx))}
+
+    const save = () => {
+        props.updateTransaction(tx);
+        if (autoClose) {
+            props.closeTransactionDialog();
+        }
+    }
     /*
 
     onChange(field, value) {
@@ -362,8 +385,6 @@ export function TransactionDialog(props: TransactionDialogProps) {
 
 
         return (
-            <DialogContent>
-
                 {activeTab === 'multi' && <FullOperationsEditor errors={errors}
                                                                           operations={transaction.get('operations')}
                                                                           onAmountFunc={::this.onAmountChange}
@@ -372,12 +393,6 @@ export function TransactionDialog(props: TransactionDialogProps) {
                                                                           operationAddFunc={::this.onOperationAdd}
                                                                           primaryCurrency={props.primaryCurrency}
                                                                           accounts={accounts}/>}
-
-            </DialogContent>
-            <DialogActions>
-                <Button color='primary' disabled={!props.valid} onClick={::this.props.actions.editTransactionSave}>Save</Button>
-
-            </DialogActions>
     }*/
 
     const validForSimpleEditing = (transaction: Transaction): boolean => {
@@ -435,11 +450,13 @@ export function TransactionDialog(props: TransactionDialogProps) {
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                     <div style={validationErrorStyle}>{transactionValidity}</div>
                 </Grid>
-            </Grid>        </DialogContent>
+            </Grid>
+        </DialogContent>
         <DialogActions>
             <InputLabel htmlFor={'close-dialog'}>Close dialog on save</InputLabel>
             <Checkbox checked={autoClose} inputProps={{id: 'close-dialog'}}
                       onChange={(ev, value) => setAutoClose(value)}/>
+            <Button color='primary' disabled={transactionValidity !== null} onClick={save}>Save</Button>
             <Button color='secondary' onClick={props.closeTransactionDialog}>Cancel</Button>
         </DialogActions>
     </Dialog>
