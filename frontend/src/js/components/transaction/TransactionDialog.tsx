@@ -252,6 +252,10 @@ export function TransactionDialog(props: TransactionDialogProps) {
     }, [props]);
 
     useEffect(() => {
+        setAutoClose(props.closeOnExit);
+    }, [props.closeOnExit]);
+
+    useEffect(() => {
         const globalValidity = validateTransaction(tx);
         if (globalValidity !== null) {
             setTransactionValidity(globalValidity);
