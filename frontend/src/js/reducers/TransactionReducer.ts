@@ -53,63 +53,6 @@ const initialState: TransactionState = {
   })
 })*/
 
-/*function validateTransactionForm (tx) {
-  let errors = Map()
-  let operationErrors = List()
-
-  let easeForMultiCurrency = false
-
-  let valid = true
-
-  tx.get('operations').forEach((item) => {
-    let operationError = Map()
-
-    if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(item.amount)) {
-      operationError = operationError.set('amount', 'Amount is invalid')
-      valid = false
-    }
-
-    if (item.rate && !/^-?(0|[1-9]\d*)\.?\d{0,4}?$/.test(item.rate)) {
-      operationError = operationError.set('rate', 'Rate is invalid')
-      valid = false
-    }
-
-    if (!item.account_id || item.account_id === -1) {
-      operationError = operationError.set('account_id', 'Account is not selected')
-      valid = false
-    }
-
-    operationErrors = operationErrors.push(operationError)
-  })
-
-  errors = errors.set('operations', operationErrors)
-
-  const ops = tx.get('operations').filter((item) => parseFloat(item.amount) !== 0)
-  if (ops.length === 0) {
-    errors = errors.set('transaction', 'Empty transaction')
-    valid = false
-  }
-  const sum = ops.reduce((acc, item) => {
-    let amount = parseFloat(item.amount)
-    if (item.rate) {
-      easeForMultiCurrency = true
-      amount = amount * parseFloat(item.rate)
-    }
-    return acc + amount
-  }, 0)
-  if (!Number.isNaN(sum)) {
-    const fixedSum = sum.toFixed(2)
-    if (!(parseFloat(fixedSum) > -1 && parseFloat(fixedSum) < 1) || (parseFloat(fixedSum) !== 0 && !easeForMultiCurrency)) {
-      errors = errors.set('transaction', 'Transaction not balanced, disbalance is: ' + fixedSum)
-      valid = false
-    }
-  } else {
-    errors = errors.set('transaction', 'Empty transaction')
-  }
-
-  return Map({ valid, errors })
-}*/
-
 export default function transactionReducer(state: TransactionState = initialState, action: TransactionAction) {
     switch (action.type) {
         case TransactionActionType.TransactionsShortListStore:

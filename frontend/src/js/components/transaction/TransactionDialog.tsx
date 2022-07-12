@@ -23,7 +23,12 @@ import {produce} from 'immer';
 
 import {TransactionDialogProps} from "../../containers/TransactionEditor";
 import {Operation, Transaction} from "../../models/Transaction";
-import {validateAccountSelected, validateOperation, validateOperationAmount} from "../../util/TransactionValidation";
+import {
+    validateAccountSelected,
+    validateOperation,
+    validateOperationAmount,
+    validateTransaction
+} from "../../util/TransactionValidation";
 import {accountMenu} from "../../util/AccountUtils";
 
 interface OperationsEditorProps {
@@ -33,15 +38,15 @@ interface OperationsEditorProps {
     setOperationsFunc: (ops: Operation[]) => void;
 }
 
-function evaluateEquation(value:string):string | number{
+function evaluateEquation(value:string):string {
     if (value) {
         const strAmount = value.toString();
         if (strAmount.slice(-1) === '=') { //If it ends with =
             let expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
             try {
-                value = evaluate(expr).toFixed(2)
+                value = evaluate(expr);
             } catch (e) {
-                value = expr
+                value = expr;
             }
         }
     }
@@ -49,8 +54,8 @@ function evaluateEquation(value:string):string | number{
 }
 
 function SimpleOperationsEditor(props: OperationsEditorProps) {
-    const [amount, setAmount] = useState<string>(props.operations[0].amount.toFixed(2));
-    useEffect(() => { setAmount(props.operations[0].amount.toFixed(2))}, [props]);
+    const [amount, setAmount] = useState<string>(String(props.operations[1].amount));
+    useEffect(() => { setAmount(String(props.operations[1].amount))}, [props]);
 
     let amountValidity = validateOperationAmount(amount);
     let leftValidity = validateAccountSelected(props.operations[0].account_id);
@@ -68,10 +73,13 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
 
     const applyAmount = (value: string) => {
         const evaluated = evaluateEquation(value);
-        amountValidity = validateOperationAmount(amount);
+        amountValidity = validateOperationAmount(value);
         setAmount(String(evaluated));
-        if (typeof evaluated === 'number') {
-            props.setOperationsFunc([{...props.operations[0], amount: -1*evaluated}, {...props.operations[1], amount: evaluated}]);
+        if (amountValidity === null) {
+            if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
+                const amount = parseFloat(evaluated);
+                props.setOperationsFunc([{...props.operations[0], amount: -1*amount}, {...props.operations[1], amount: amount}]);
+            }
         }
     }
 
@@ -222,15 +230,31 @@ export function TransactionDialog(props: TransactionDialogProps) {
     const [autoClose, setAutoClose] = useState(props.closeOnExit);
     const [tx, setTx] = useState(props.transaction);
     const [activeTab, setActiveTab] = useState('simple');
+    const [transactionValidity, setTransactionValidity] = useState<string|null>(null);
+
+    const validationErrorStyle = {
+        'position': 'relative',
+        'bottom': '-2px',
+        'fontSize': '12px',
+        'lineHeight': '12px',
+        'color': 'rgb(244, 67, 54)',
+        'transition': 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms'
+    } as React.CSSProperties;
 
     useEffect(() => {
         setTx(props.transaction);
+
         if (validForSimpleEditing(props.transaction)) {
             setActiveTab('simple');
         } else {
             setActiveTab('multi');
         }
     }, [props]);
+
+    useEffect(() => {
+        console.log(tx);
+        setTransactionValidity(validateTransaction(tx));
+    }, [tx]);
 
     const switchTab = (_, value: string) => {
         if (!validForSimpleEditing(tx)) {
@@ -276,7 +300,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
         })(tx));
     }
 
-    const setOperations = (ops: Operation[]) => setTx(produce((draft: Transaction) => {draft.operations = ops})(tx))
+    const setOperations = (ops: Operation[]) => {setTx(produce((draft: Transaction) => {draft.operations = ops})(tx))}
     /*
 
     onChange(field, value) {
@@ -328,14 +352,6 @@ export function TransactionDialog(props: TransactionDialogProps) {
         const transaction = props.transaction;
         const errors = props.errors;
 
-        const validationErrorStyle = {
-            'position': 'relative',
-            'bottom': '-2px',
-            'fontSize': '12px',
-            'lineHeight': '12px',
-            'color': 'rgb(244, 67, 54)',
-            'transition': 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms'
-        };
 
         const enableSimpleEditor = this.validForSimpleEditing(transaction);
         let activeTab = this.state.tabValue;
@@ -356,11 +372,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
                                                                           operationAddFunc={::this.onOperationAdd}
                                                                           primaryCurrency={props.primaryCurrency}
                                                                           accounts={accounts}/>}
-                <Grid  container spacing={2}>
-                        <Grid item xs={12} sm={12} md={12} lg={12}>
-                            <div style={validationErrorStyle}>{errors.get('transaction')}</div>
-                        </Grid>
-                </Grid>
+
             </DialogContent>
             <DialogActions>
                 <Button color='primary' disabled={!props.valid} onClick={::this.props.actions.editTransactionSave}>Save</Button>
@@ -419,7 +431,11 @@ export function TransactionDialog(props: TransactionDialogProps) {
                 <Tab label='Multiple operations' value='multi'/>
             </Tabs>
             {activeTab === 'simple' && <SimpleOperationsEditor operations={tx.operations} accounts={accounts} limitedAccounts={limitedAccounts} setOperationsFunc={setOperations}/>}
-        </DialogContent>
+            <Grid  container spacing={2}>
+                <Grid item xs={12} sm={12} md={12} lg={12}>
+                    <div style={validationErrorStyle}>{transactionValidity}</div>
+                </Grid>
+            </Grid>        </DialogContent>
         <DialogActions>
             <InputLabel htmlFor={'close-dialog'}>Close dialog on save</InputLabel>
             <Checkbox checked={autoClose} inputProps={{id: 'close-dialog'}}
