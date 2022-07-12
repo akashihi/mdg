@@ -23,7 +23,7 @@ import {produce} from 'immer';
 
 import {TransactionDialogProps} from "../../containers/TransactionEditor";
 import {Operation, Transaction} from "../../models/Transaction";
-import {validateOperation} from "../../util/TransactionValidation";
+import {validateAccountSelected, validateOperation, validateOperationAmount} from "../../util/TransactionValidation";
 import {accountMenu} from "../../util/AccountUtils";
 
 interface OperationsEditorProps {
@@ -52,19 +52,23 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
     const [amount, setAmount] = useState<string>(props.operations[0].amount.toFixed(2));
     useEffect(() => { setAmount(props.operations[0].amount.toFixed(2))}, [props]);
 
-    const leftValidity = validateOperation(props.operations[0]);
-    const rightValidity = validateOperation(props.operations[1]);
+    let amountValidity = validateOperationAmount(amount);
+    let leftValidity = validateAccountSelected(props.operations[0].account_id);
+    let rightValidity = validateAccountSelected(props.operations[1].account_id);
 
     const setLeftAccount = (id: number) => {
+        leftValidity = validateAccountSelected(id);
         props.setOperationsFunc([{...props.operations[0], account_id: id}, props.operations[1]]);
     }
 
     const setRightAccount = (id: number) => {
+        rightValidity = validateAccountSelected(id);
         props.setOperationsFunc([props.operations[0], {...props.operations[1], account_id: id}]);
     }
 
     const applyAmount = (value: string) => {
         const evaluated = evaluateEquation(value);
+        amountValidity = validateOperationAmount(amount);
         setAmount(String(evaluated));
         if (typeof evaluated === 'number') {
             props.setOperationsFunc([{...props.operations[0], amount: -1*evaluated}, {...props.operations[1], amount: evaluated}]);
@@ -73,8 +77,8 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
 
     return <Grid container spacing={2} sx={{marginTop: "10px"}}>
         <Grid item xs={5} sm={5} md={5} lg={4}>
-            <FormControl error={leftValidity.error} fullWidth={true}>
-                <InputLabel htmlFor={'source-simple'}>{leftValidity.error? leftValidity.account_error : 'Source'}</InputLabel>
+            <FormControl error={leftValidity !== null} fullWidth={true}>
+                <InputLabel htmlFor={'source-simple'}>{leftValidity !== null? leftValidity : 'Source'}</InputLabel>
                 <Select value={props.operations[0].account_id}
                         onChange={(ev) => setLeftAccount(ev.target.value as number)}
                         inputProps={{id: 'source-simple'}}>
@@ -84,13 +88,13 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
         </Grid>
         <Grid item xs={1}/>
         <Grid item xs={2} sm={2} md={2} lg={2}>
-            <TextField label={rightValidity.error ? rightValidity.amount_error : 'Amount'} error={rightValidity.error}
+            <TextField label={amountValidity !== null ? amountValidity : 'Amount'} error={amountValidity !== null}
                        value={amount} onChange={(ev)=>applyAmount(ev.target.value as string)}/>
         </Grid>
         <Grid item xs={1}/>
         <Grid item xs={5} sm={5} md={5} lg={4}>
-            <FormControl error={rightValidity.error} fullWidth={true}>
-                <InputLabel htmlFor={'destination-simple'}>{rightValidity.error ? rightValidity.account_error : 'Destination'}</InputLabel>
+            <FormControl error={rightValidity !== null} fullWidth={true}>
+                <InputLabel htmlFor={'destination-simple'}>{rightValidity !== null ? rightValidity : 'Destination'}</InputLabel>
                 <Select value={props.operations[1].account_id}
                         onChange={(ev) => setRightAccount(ev.target.value as number)}
                         inputProps={{id: 'destination-simple'}}>
@@ -273,21 +277,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
     }
 
     const setOperations = (ops: Operation[]) => setTx(produce((draft: Transaction) => {draft.operations = ops})(tx))
-    /*constructor(props) {
-        super(props);
-        var tab = 'simple';
-        if (!this.validForSimpleEditing(this.props.transaction)) {
-            tab = 'multi'
-        }
-
-        this.state = {
-            tabValue: tab,
-        };
-    }
-
-    onSaveCloseOnSave(value) {
-      this.props.actions.setCloseOnSave(value)
-    }
+    /*
 
     onChange(field, value) {
         const tx = this.props.transaction.set(field, value);

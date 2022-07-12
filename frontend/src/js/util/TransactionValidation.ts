@@ -7,6 +7,19 @@ export interface OperationValidity {
     rate_error?: string
 }
 
+export function validateOperationAmount(amount?: string): string|null {
+    if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(String(amount))) {
+        return 'Amount is invalid';
+    }
+    return null;
+}
+
+export function validateAccountSelected(account_id?: number) {
+    if (!account_id || account_id === -1) {
+        return 'Account is not selected';
+    }
+    return null;
+}
 export function validateOperation(o: Operation):OperationValidity {
     let validationResult: OperationValidity = {error: false};
     if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(String(o.amount))) {
