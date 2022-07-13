@@ -54,10 +54,7 @@ function evaluateEquation(value:string):string {
 }
 
 function SimpleOperationsEditor(props: OperationsEditorProps) {
-    const [amount, setAmount] = useState<string>(String(props.operations[1].amountValue));
-    useEffect(() => { setAmount(String(props.operations[1].amountValue))}, [props]);
-
-    let amountValidity = validateOperationAmount(amount);
+    let amountValidity = validateOperationAmount(props.operations[1].amountValue);
     let leftValidity = validateAccountSelected(props.operations[0].account_id);
     let rightValidity = validateAccountSelected(props.operations[1].account_id);
 
@@ -74,7 +71,6 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
     const applyAmount = (value: string) => {
         const evaluated = evaluateEquation(value);
         amountValidity = validateOperationAmount(value);
-        setAmount(String(evaluated));
         let updatedOps = [{...props.operations[0], amountValue: evaluated}, {...props.operations[1], amountValue: evaluated}]
         if (amountValidity === null) {
             const amount = parseFloat(evaluated);
@@ -97,7 +93,7 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
         <Grid item xs={1}/>
         <Grid item xs={2} sm={2} md={2} lg={2}>
             <TextField label={amountValidity !== null ? amountValidity : 'Amount'} error={amountValidity !== null}
-                       value={amount} onChange={(ev)=>applyAmount(ev.target.value as string)}/>
+                       value={props.operations[1].amountValue} onChange={(ev)=>applyAmount(ev.target.value as string)}/>
         </Grid>
         <Grid item xs={1}/>
         <Grid item xs={5} sm={5} md={5} lg={4}>
@@ -120,13 +116,6 @@ interface OperationsFullEditorProps  extends OperationsEditorProps {
 }
 
 function FullOperationsEditor(props: OperationsFullEditorProps) {
-    const [amounts, setAmounts] = useState<string[]>(props.operations.map(o => String(o.amount)));
-    const [rates, setRates] = useState<string[]>(props.operations.map(o => String(o.rate)));
-    useEffect(() => {
-        setAmounts(props.operations.map(o => String(o.amount)));
-        setRates(props.operations.map(o => String(o.rate)));
-    }, [props]);
-
 
     const checkRateDisabled = (op: Operation):boolean => {
         // First check - if we only have ops in same currency, rate should be definitely disabled.
@@ -152,48 +141,45 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
     }
 
     const applyAccount = (index:number, account_id: number) => {
-        //props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].account_id = account_id})(props.operations));
+        props.setOperationsFunc(produce((draft:EditedOperation[]) => {draft[index].account_id = account_id})(props.operations));
     }
 
     const applyRate = (index:number, rate: string) => {
         const evaluated = evaluateEquation(rate);
-        setRates(produce((draft:string[]) => {draft[index]=evaluated})(rates));
+        let updatedOps = produce((draft:EditedOperation[]) => {draft[index].rateValue = evaluated})(props.operations)
         if (validateRate(rate) === null) {
-            if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
-                const parsed = parseFloat(evaluated);
-                //props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].rate = parsed})(props.operations));
-            }
+            const parsed = parseFloat(evaluated);
+            updatedOps = produce((draft:EditedOperation[]) => {draft[index].rate = parsed})(updatedOps);
         }
-
+        props.setOperationsFunc(updatedOps);
     }
 
     const applyAmount = (index:number, amount: string) => {
         const evaluated = evaluateEquation(amount);
-        setAmounts(produce((draft:string[]) => {draft[index]=evaluated})(amounts));
+        let updatedOps = produce((draft:EditedOperation[]) => {draft[index].amountValue = evaluated})(props.operations)
         if (validateOperationAmount(amount) === null) {
-            if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
-                const parsed = parseFloat(evaluated);
-                //props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].amount = parsed})(props.operations));
-            }
+            const parsed = parseFloat(evaluated);
+            updatedOps = produce((draft:EditedOperation[]) => {draft[index].amount = parsed})(updatedOps);
         }
+        props.setOperationsFunc(updatedOps);
     }
 
     const addOp = () => {
-        //props.setOperationsFunc([...props.operations, {account_id:-1, amount:0, rate: 1}]);
+        props.setOperationsFunc([...props.operations, {account_id:-1, amount:0, amountValue:"0", rate: 1, rateValue: "1"}]);
     }
 
     const ops = props.operations.map((op,index) => {
-        let amountValidity = validateOperationAmount(amounts[index]);
+        let amountValidity = validateOperationAmount(props.operations[index].amountValue);
         let accountValidity = validateAccountSelected(op.account_id);
-        let rateValidity = validateRate(rates[index]);
+        let rateValidity = validateRate(props.operations[index].rateValue);
 
         return <Grid  container spacing={2}  key={'op'+index} style={{marginTop: "5px"}}>
             <Grid item xs={4} sm={4} md={4} lg={4}>
-                <TextField label={amountValidity !== null?amountValidity : 'Amount'} error={amountValidity !== null} value={amounts[index]}
+                <TextField label={amountValidity !== null?amountValidity : 'Amount'} error={amountValidity !== null} value={props.operations[index].amountValue}
                            onChange={(ev) => applyAmount(index, ev.target.value)}/>
             </Grid>
             <Grid item xs={4} sm={4} md={4} lg={4}>
-                <TextField label={rateValidity !== null? rateValidity : 'Rate'} error={rateValidity !== null} value={rates[index]}
+                <TextField label={rateValidity !== null? rateValidity : 'Rate'} error={rateValidity !== null} value={props.operations[index].rateValue}
                            onChange={(ev) => applyRate(index, ev.target.value)}
                            disabled={checkRateDisabled(op)}/>
             </Grid>
