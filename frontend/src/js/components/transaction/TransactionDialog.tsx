@@ -245,11 +245,11 @@ export function TransactionDialog(props: TransactionDialogProps) {
             setTransactionValidity("");
             return;
         }
-        if (tx.editedOperations.map(o => validateOperationAmount(o.amount)).some(e => e !== null)) {
+        if (tx.editedOperations.map(o => validateOperationAmount(o.amountValue)).some(e => e !== null)) {
             setTransactionValidity("");
             return;
         }
-        if (tx.editedOperations.map(o => validateRate(o.rate)).some(e => e !== null)) {
+        if (tx.editedOperations.map(o => validateRate(o.rateValue)).some(e => e !== null)) {
             setTransactionValidity("");
             return;
         }
