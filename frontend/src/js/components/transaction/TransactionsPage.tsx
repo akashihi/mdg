@@ -1,4 +1,5 @@
 import React, {Fragment, useEffect, useState} from 'react';
+import {produce} from 'immer';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
@@ -148,7 +149,7 @@ export function TransactionsPage(props: TransactionViewerProps) {
 
     }
 
-    useEffect(() => {
+    const loadTransactions = () => {
         setLoading(true);
         let query: object = {
             notEarlier: filter.notEarlier.format('YYYY-MM-DDT00:00:00'),
@@ -174,8 +175,41 @@ export function TransactionsPage(props: TransactionViewerProps) {
                 setCursorNext(json.next);
                 setTransactions(enrichTransaction(json.transactions));
                 setLoading(false);
+            });
+    }
+
+    useEffect(() => {loadTransactions()}, [filter,limit]);
+
+    useEffect(() => {
+        if (props.savableTransaction) {
+            setLoading(true);
+            let url = '/api/transactions'
+            let method = 'POST'
+            if (props.savableTransaction.id !== -1) {
+                url = `/api/transactions/${props.savableTransaction.id}`
+                method = 'PUT'
+            }
+
+            fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/vnd.mdg+json;version=1'
+                },
+                body: JSON.stringify(props.savableTransaction)
             })
-    }, [filter,limit]);
+                .then(parseJSON)
+                .then(checkApiError)
+                .then((json:any) => {
+                    setLoading(false);
+                    props.loadAccountList();
+                    props.loadTotalsReport();
+                    if (props.currentBudgetId !== undefined) {
+                        props.loadBudgetInfoById(props.currentBudgetId);
+                    }
+                    loadTransactions();
+            })
+        }
+    }, [props.savableTransaction])
 
     const loadNextPage = () => {
         if (cursorNext) { // Do not load whole DB accidentally

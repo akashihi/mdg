@@ -7,6 +7,8 @@ import moment from 'moment';
 export const DefaultTransaction: Transaction = {
     id: -1,
     timestamp: moment().format('YYYY-MM-DDTHH:mm:ss'),
+    comment: '',
+    tags: [],
     operations: [
         {
             amount: 0,
@@ -24,6 +26,7 @@ export const DefaultTransaction: Transaction = {
 export interface TransactionState {
     lastTransactionList: Transaction[];
     editedTransaction: Transaction;
+    savableTransaction?: Transaction;
     transactionDialogVisible: boolean;
 }
 
@@ -45,6 +48,8 @@ export default function transactionReducer(state: TransactionState = initialStat
             return produce(state, draft => {draft.transactionDialogVisible = true; draft.editedTransaction = action.payload[0]})
         case TransactionActionType.TransactionDialogClose:
             return produce(state, draft => {draft.transactionDialogVisible = false})
+        case TransactionActionType.TransactionSave:
+            return produce(state, draft => {draft.savableTransaction = action.payload[0]})
         default:
             return state
     }

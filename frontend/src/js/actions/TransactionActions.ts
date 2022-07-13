@@ -65,52 +65,8 @@ export function closeTransactionDialog():TransactionAction {
     }
 }
 export function updateTransaction(tx:Transaction) {
-    console.log(tx);
-    /*return (dispatch, getState) => {
-      dispatch({
-        type: TRANSACTION_PARTIAL_UPDATE,
-        payload: {
-          id: tx.get('id', -1),
-          tx: tx.set('loading', true)
-        }
-      })
-
-      const selectedBudgetId = getCurrentBudgetId(getState())
-
-      let url = '/api/transaction'
-      let method = 'POST'
-      if (tx.has('id')) {
-        url = url + '/' + tx.get('id')
-        method = 'PUT'
-      }
-
-      fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/vnd.mdg+json'
-        },
-        body: JSON.stringify(mapToData(tx.get('id', -1), tx))
-      })
-        .then(parseJSON)
-        .then(singleToMap)
-        .then(checkApiError)
-        .then(map => {
-          if (!tx.has('id')) {
-            dispatch(loadTransactionList())
-            dispatch(loadLastTransactions())
-          } else {
-            dispatch({
-              type: TRANSACTION_PARTIAL_SUCCESS,
-              payload: {
-                id: tx.get('id', -1),
-                tx: map.first()
-              }
-            })
-          }
-        })
-        .then(() => dispatch(loadAccountList())) // Reloading accounts will trigger transactions reload
-        .then(() => dispatch(loadTotalsReport()))
-        .then(() => { if (selectedBudgetId) { dispatch(loadBudgetInfoById(selectedBudgetId)) } })
-        .catch(() => dispatch(loadTransactionList()))
-    }*/
+    return {
+        type: TransactionActionType.TransactionSave,
+        payload: [tx]
+    }
 }

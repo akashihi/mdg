@@ -7,14 +7,17 @@ import {loadTotalsReport} from '../actions/ReportActions';
 import {RootState} from '../reducers/rootReducer';
 import {getCurrentBudgetId} from '../selectors/StateGetters';
 import {editTransaction} from '../actions/TransactionActions';
+import {Transaction} from "../models/Transaction";
 
 export interface TransactionViewerState {
     currentBudgetId: number|undefined;
+    savableTransaction?: Transaction
 }
 
 const mapStateToProps = (state: RootState):TransactionViewerState => {
   return {
-      currentBudgetId: getCurrentBudgetId(state)
+      currentBudgetId: getCurrentBudgetId(state),
+      savableTransaction: state.transaction.savableTransaction
   }
 }
 

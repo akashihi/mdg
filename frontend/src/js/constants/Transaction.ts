@@ -4,4 +4,5 @@ export enum TransactionActionType {
     TransactionCreate = "TransactionCreate",
     TransactionEdit = "TransactionEdit",
     TransactionDialogClose = "TransactionDialogClose",
+    TransactionSave = "TransactionSave"
 }
