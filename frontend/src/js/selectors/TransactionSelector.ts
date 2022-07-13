@@ -84,6 +84,11 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
     // positive, it is still spending.
     //
     // In other cases it's a 'transfer' transaction.
+    if (!tx.operations.some(o => o.account.account_type !== 'ASSET')) {
+        //Ok, this is asset only.
+        const positiveAssetSum = tx.operations.filter(o => o.account.account_type === 'ASSET').filter(o => o.amount>=0).reduce((partialSum, o) => partialSum + o.amount*o.rate, 0);
+        return {color: 'orange', total: positiveAssetSum}
+    }
     const opsByType = tx.operations.reduce((groups, item) => ({
         ...groups,
         [item.account.account_type]: [...(groups[item.account.account_type] || []), item.amount * item.rate]
@@ -105,7 +110,6 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
         return {color: 'red', total: summary.EXPENSE}
     }
 
-    // Positive only
-    const positiveAssetSum = tx.operations.filter(o => o.account.account_type === 'ASSET').filter(o => o.amount>=0).reduce((partialSum, o) => partialSum + o.amount, 0);
-    return {color: 'orange', total: positiveAssetSum}
+    // Default fallback
+    return {color: 'black', total: summary.ASSET}
 }
