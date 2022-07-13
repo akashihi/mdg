@@ -105,5 +105,7 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
         return {color: 'red', total: summary.EXPENSE}
     }
 
-    return {color: 'orange', total: summary.ASSET}
+    // Positive only
+    const positiveAssetSum = tx.operations.filter(o => o.account.account_type === 'ASSET').filter(o => o.amount>=0).reduce((partialSum, o) => partialSum + o.amount, 0);
+    return {color: 'orange', total: positiveAssetSum}
 }
