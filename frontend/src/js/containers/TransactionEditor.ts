@@ -4,7 +4,7 @@ import TransactionDialog from '../components/transaction/TransactionDialog';
 import {closeTransactionDialog, updateTransaction} from '../actions/TransactionActions';
 import {Transaction} from '../models/Transaction';
 import {RootState} from '../reducers/rootReducer';
-import {selectCloseOnExit} from '../selectors/SettingsSelector';
+import {selectCloseOnExit, selectPrimaryCurrencyId} from '../selectors/SettingsSelector';
 import {selectAccountCurrencies} from '../selectors/AccountSelector';
 import {AccountTreeNode} from "../models/Account";
 
@@ -14,6 +14,7 @@ export interface TransactionEditorState {
     closeOnExit: boolean;
     tags: string[];
     accountCurrencies: Record<number, number>;
+    primaryCurrencyId: number;
     assetTree: AccountTreeNode;
     incomeTree: AccountTreeNode;
     expenseTree: AccountTreeNode;
@@ -26,6 +27,7 @@ const mapStateToProps = (state:RootState):TransactionEditorState => {
         closeOnExit: selectCloseOnExit(state),
         tags: state.tag.tags,
         accountCurrencies: selectAccountCurrencies(state),
+        primaryCurrencyId: selectPrimaryCurrencyId(state),
         assetTree: state.account.assetTree,
         incomeTree: state.account.incomeTree,
         expenseTree: state.account.expenseTree,

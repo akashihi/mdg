@@ -1,7 +1,6 @@
 import {Action} from 'redux';
 import jQuery from 'jquery';
 import moment from 'moment';
-import {Map} from 'immutable';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
@@ -113,43 +112,5 @@ export function updateTransaction(tx:Transaction) {
         .then(() => dispatch(loadTotalsReport()))
         .then(() => { if (selectedBudgetId) { dispatch(loadBudgetInfoById(selectedBudgetId)) } })
         .catch(() => dispatch(loadTransactionList()))
-    }*/
-}
-
-export function setCloseOnSave(value) {
-    /*return {
-      type: TRANSACTION_DIALOG_CLOSESAVE_SET,
-      payload: value
-    }*/
-}
-
-export function editTransactionCancel() {
-    /*return {
-      type: TRANSACTION_DIALOG_CLOSE,
-      payload: true
-    }*/
-}
-
-export function editTransactionChange(tx) {
-    /*return {
-      type: TRANSACTION_DIALOG_CHANGE,
-      payload: tx
-    }*/
-}
-
-export function editTransactionSave() {
-    /*return (dispatch, getState) => {
-      const state = getState()
-      if (state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
-        dispatch({
-          type: TRANSACTION_DIALOG_CLOSE,
-          payload: true
-        })
-      }
-      const transaction = state.get('transaction').getIn(['dialog', 'transaction'])
-      dispatch(updateTransaction(transaction))
-      if (!state.get('transaction').getIn(['dialog', 'closeOnSave'])) {
-        dispatch(createTransaction())
-      }
     }*/
 }

@@ -113,118 +113,112 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
     </Grid>
 }
 
-/*class FullOperationsEditor extends React.Component {
-    checkRateDisabled(operation) {
-        const props = this.props;
+
+interface OperationsFullEditorProps  extends OperationsEditorProps {
+    accountCurrencies: Record<number, number>;
+    primaryCurrencyId: number
+}
+
+function FullOperationsEditor(props: OperationsFullEditorProps) {
+    const [amounts, setAmounts] = useState<string[]>(props.operations.map(o => String(o.amount)));
+    const [rates, setRates] = useState<string[]>(props.operations.map(o => String(o.rate)));
+    useEffect(() => {
+        setAmounts(props.operations.map(o => String(o.amount)));
+        setRates(props.operations.map(o => String(o.rate)));
+    }, [props]);
+
+
+    const checkRateDisabled = (op: Operation):boolean => {
         // First check - if we only have ops in same currency, rate should be definitely disabled.
-        var accounts = props.accounts.accounts;
-        var currencies = props.operations
-            .map((item) => item.account_id)
-            .filter((item) => !(item === undefined))
-            .map((acc_id) => accounts.get(acc_id))
-            .filter((item) => !(item === undefined))
-            .map((item) => item.get('currency_id'))
-            .filter((value, index, self) => self.indexOf(value) === index);
-        if (currencies.length <= 1) {
-            return true
+        const usedCurrencies = props.operations.map(o => props.accountCurrencies[o.account_id]).filter((currency, index, self) => self.indexOf(currency) === index);
+        if (usedCurrencies.length <= 1) {
+            return true;
         }
 
         //Second check - in case our currency is the primary currency
-        if (accounts.has(operation.account_id)) {
-            if (accounts.get(operation.account_id).get('currency_id') === props.primaryCurrency) {
-                return true;
-            }
+        if (props.accountCurrencies[op.account_id] === props.primaryCurrencyId) {
+            return true;
         }
 
         //Third check - in case we don't have any op with primary currency
         //we should disable rate for all ops, having same currency as the first
         //op of the transaction
-        var txCurrencies = props.operations
-            .map((item) => item.account_id)
-            .filter((item) => !(item === undefined || item === -1))
-            .map((acc_id) => accounts.get(acc_id))
-            .map((item) => item.get('currency_id'))
-            .filter((value, index, self) => self.indexOf(value) === index)
-            .filter((item) => item === props.primaryCurrency);
-        if (txCurrencies.length === 0) {
+        const nonPrimary = props.operations.map(o => props.accountCurrencies[o.account_id]).filter(currency => currency === props.primaryCurrencyId);
+        if (nonPrimary.length === 0) {
             //Ok, we do not have primary currency at the transaction
-            if (props.operations.length > 0) {
-                if (accounts.has(props.operations[0].account_id)) {
-                    var firstCurrency = accounts.get(props.operations[0].account_id);
-                    if (firstCurrency === accounts.get(operation.account_id)) {
-                        return true
-                    }
-                }
-            }
+            return props.accountCurrencies[props.operations[0].account_id] === props.accountCurrencies[op.account_id];
         }
-
         return false;
     }
 
-    render() {
-        const parent = this;
-        const props = this.props;
-        const errors = props.errors;
-
-        var ops = this.props.operations.map(function (item, index) {
-            var textLabel = 'Amount';
-            var textError = false;
-            if (errors.get('operations').get(index).has('amount')) {
-                textLabel = errors.get('operations').get(index).get('amount');
-                textError = true
-            }
-
-            var textRateLabel = 'Rate';
-            var textRateError = false;
-            if (errors.get('operations').get(index).has('rate')) {
-                textRateLabel = errors.get('operations').get(index).get('rate');
-                textRateError = true
-            }
-
-            var textAccountLabel = 'Account';
-            var textAccountError = false;
-            if (errors.get('operations').get(index).has('account_id')) {
-                textAccountLabel = errors.get('operations').get(index).get('account_id');
-                textAccountError = true
-            }
-
-            return (
-                <Grid  container spacing={2}  key={'op'+index}>
-                        <Grid item xs={4} sm={4} md={4} lg={4}>
-                            <TextField label={textLabel} error={textError} value={item.amount}
-                                       onChange={(ev) => props.onAmountFunc(index, ev.target.value)}/>
-                        </Grid>
-                        <Grid item xs={4} sm={4} md={4} lg={4}>
-                            <TextField label={textRateLabel} error={textRateError} value={item.rate}
-                                       onChange={(ev) => props.onRateFunc(index, ev.target.value)}
-                                       disabled={parent.checkRateDisabled(item)}/>
-                        </Grid>
-                        <Grid item xs={4} sm={4} md={4} lg={4}>
-                            <FormControl error={textAccountError} fullWidth={true}>
-                                <InputLabel htmlFor={'destination-simple'}>{textAccountLabel}</InputLabel>
-                                <Select value={item.account_id}
-                                        onChange={(ev) => props.onAccountFunc(index, ev.target.value)}
-                                        inputProps={{id: 'destination-simple'}}>
-                                    {props.accounts.getAccounts()}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                </Grid>)
-        });
-
-        return (
-            <Fragment>
-                {ops}
-                    <Grid  container spacing={2}>
-                            <Grid item xs={1} xsOffset={5} sm={1} smOffset={5} md={1} mdOffset={5} lg={1}
-                                 lgOffset={5}>
-                                <IconButton onClick={props.operationAddFunc}><PlaylistAdd/></IconButton>
-                            </Grid>
-                    </Grid>
-            </Fragment>
-        );
+    const applyAccount = (index:number, account_id: number) => {
+        props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].account_id = account_id})(props.operations));
     }
-}*/
+
+    const applyRate = (index:number, rate: string) => {
+        const evaluated = evaluateEquation(rate);
+        setRates(produce((draft:string[]) => {draft[index]=evaluated})(rates));
+        if (validateRate(rate) === null) {
+            if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
+                const parsed = parseFloat(evaluated);
+                props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].rate = parsed})(props.operations));
+            }
+        }
+
+    }
+
+    const applyAmount = (index:number, amount: string) => {
+        const evaluated = evaluateEquation(amount);
+        setAmounts(produce((draft:string[]) => {draft[index]=evaluated})(amounts));
+        if (validateOperationAmount(amount) === null) {
+            if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
+                const parsed = parseFloat(evaluated);
+                props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].amount = parsed})(props.operations));
+            }
+        }
+    }
+
+    const addOp = () => {
+        props.setOperationsFunc([...props.operations, {account_id:-1, amount:0, rate: 1}]);
+    }
+
+    const ops = props.operations.map((op,index) => {
+        let amountValidity = validateOperationAmount(amounts[index]);
+        let accountValidity = validateAccountSelected(op.account_id);
+        let rateValidity = validateRate(rates[index]);
+
+        return <Grid  container spacing={2}  key={'op'+index} style={{marginTop: "5px"}}>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+                <TextField label={amountValidity !== null?amountValidity : 'Amount'} error={amountValidity !== null} value={amounts[index]}
+                           onChange={(ev) => applyAmount(index, ev.target.value)}/>
+            </Grid>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+                <TextField label={rateValidity !== null? rateValidity : 'Rate'} error={rateValidity !== null} value={rates[index]}
+                           onChange={(ev) => applyRate(index, ev.target.value)}
+                           disabled={checkRateDisabled(op)}/>
+            </Grid>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+                <FormControl error={accountValidity !== null} fullWidth={true}>
+                    <InputLabel htmlFor={'destination-simple'}>{accountValidity !== null? accountValidity : 'Account'}</InputLabel>
+                    <Select value={op.account_id}
+                            onChange={(ev) => applyAccount(index, ev.target.value as number)}
+                            inputProps={{id: 'destination-simple'}}>
+                        {props.accounts}
+                    </Select>
+                </FormControl>
+            </Grid>
+        </Grid>
+    });
+    return <Fragment>
+        {ops}
+        <Grid  container spacing={2}>
+            <Grid item xs={5} sm={5} md={5} lg={5}/>
+            <Grid item xs={1} sm={1} md={1} lg={1}>
+                <IconButton onClick={addOp}><PlaylistAdd/></IconButton>
+            </Grid>
+        </Grid>
+    </Fragment>
+}
 
 export function TransactionDialog(props: TransactionDialogProps) {
     const [autoClose, setAutoClose] = useState(props.closeOnExit);
@@ -328,76 +322,6 @@ export function TransactionDialog(props: TransactionDialogProps) {
             props.closeTransactionDialog();
         }
     }
-    /*
-
-    onChange(field, value) {
-        const tx = this.props.transaction.set(field, value);
-        this.props.actions.editTransactionChange(tx);
-    }
-
-    onTagEdit(value) {
-        const tags = value.map((item) => item.value);
-        this.onChange('tags', tags)
-    }
-
-
-    onOperationAdd() {
-        const ops = this.props.transaction.get('operations');
-        ops.push({amount: 0, account_id: -1});
-        this.onChange('operations', ops);
-    }
-
-    onCombinedAmountChange(ev) {
-        const value = TransactionDialog.evaluateEquation(ev.target.value);
-
-        const ops = this.props.transaction.get('operations');
-        ops[0].amount = -1 * value;
-        ops[1].amount = value;
-        this.onChange('operations', ops);
-    }
-
-    onAmountChange(index, value) {
-        const ops = this.props.transaction.get('operations');
-        ops[index].amount = TransactionDialog.evaluateEquation(value);
-        this.onChange('operations', ops);
-    }
-
-    onAccountChange(index, value) {
-        const ops = this.props.transaction.get('operations');
-        ops[index].account_id = value;
-        this.onChange('operations', ops)
-    }
-
-    onRateChange(index, value) {
-        const ops = this.props.transaction.get('operations');
-        ops[index].rate = TransactionDialog.evaluateEquation(value);
-        this.onChange('operations', ops)
-    }
-
-    render() {
-        const props = this.props;
-        const transaction = props.transaction;
-        const errors = props.errors;
-
-
-        const enableSimpleEditor = this.validForSimpleEditing(transaction);
-        let activeTab = this.state.tabValue;
-
-        if (!enableSimpleEditor) {
-             activeTab = 'multi';
-        }
-
-
-        return (
-                {activeTab === 'multi' && <FullOperationsEditor errors={errors}
-                                                                          operations={transaction.get('operations')}
-                                                                          onAmountFunc={::this.onAmountChange}
-                                                                          onAccountFunc={::this.onAccountChange}
-                                                                          onRateFunc={::this.onRateChange}
-                                                                          operationAddFunc={::this.onOperationAdd}
-                                                                          primaryCurrency={props.primaryCurrency}
-                                                                          accounts={accounts}/>}
-    }*/
 
     const validForSimpleEditing = (transaction: Transaction): boolean => {
         if (transaction.operations.length > 2) { //Too many operations
@@ -450,6 +374,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
                 <Tab label='Multiple operations' value='multi'/>
             </Tabs>
             {activeTab === 'simple' && <SimpleOperationsEditor operations={tx.operations} accounts={accounts} limitedAccounts={limitedAccounts} setOperationsFunc={setOperations}/>}
+            {activeTab === 'multi' && <FullOperationsEditor operations={tx.operations} accounts={accounts} limitedAccounts={limitedAccounts} accountCurrencies={props.accountCurrencies} primaryCurrencyId={props.primaryCurrencyId} setOperationsFunc={setOperations}/>}
             <Grid  container spacing={2}>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                     <div style={validationErrorStyle}>{transactionValidity}</div>
