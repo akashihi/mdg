@@ -1,4 +1,4 @@
-import {Transaction} from "../models/Transaction";
+import {EditedTransaction} from "../models/Transaction";
 
 export function validateOperationAmount(amount?: string | number): string|null {
     if (String(amount).endsWith(".")) {
@@ -24,8 +24,8 @@ export function validateRate(rate?: string|number): string|null {
     return null
 }
 
-export function validateTransaction(tx: Transaction): string|null {
-    const ops = tx.operations.filter((item) => item.amount !== 0);
+export function validateTransaction(tx: EditedTransaction): string|null {
+    const ops = tx.editedOperations.filter((item) => item.amount !== 0);
     if (ops.length === 0) {
         return 'Empty transaction';
     }

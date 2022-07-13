@@ -8,7 +8,12 @@ export interface Operation {
 }
 
 export interface EnrichedOperation extends Operation {
-    color: string
+    color: string;
+}
+
+export interface EditedOperation extends Operation {
+    rateValue: string;
+    amountValue: string;
 }
 
 export interface Transaction {
@@ -29,4 +34,8 @@ export interface EnrichedTransaction extends Transaction {
     accountNames: string;
     summary: TransactionSummary;
     operations: EnrichedOperation[];
+}
+
+export interface EditedTransaction extends Transaction {
+    editedOperations: EditedOperation[];
 }

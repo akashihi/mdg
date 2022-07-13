@@ -22,7 +22,7 @@ import RSelect from 'react-select';
 import {produce} from 'immer';
 
 import {TransactionDialogProps} from "../../containers/TransactionEditor";
-import {Operation, Transaction} from "../../models/Transaction";
+import {EditedOperation, EditedTransaction, Operation, Transaction} from "../../models/Transaction";
 import {
     validateAccountSelected,
     validateOperationAmount,
@@ -32,10 +32,10 @@ import {
 import {accountMenu} from "../../util/AccountUtils";
 
 interface OperationsEditorProps {
-    operations: Operation[],
+    operations: EditedOperation[],
     accounts: ReturnType<typeof accountMenu>,
     limitedAccounts: ReturnType<typeof accountMenu>,
-    setOperationsFunc: (ops: Operation[]) => void;
+    setOperationsFunc: (ops: EditedOperation[]) => void;
 }
 
 function evaluateEquation(value:string):string {
@@ -54,8 +54,8 @@ function evaluateEquation(value:string):string {
 }
 
 function SimpleOperationsEditor(props: OperationsEditorProps) {
-    const [amount, setAmount] = useState<string>(String(props.operations[1].amount));
-    useEffect(() => { setAmount(String(props.operations[1].amount))}, [props]);
+    const [amount, setAmount] = useState<string>(String(props.operations[1].amountValue));
+    useEffect(() => { setAmount(String(props.operations[1].amountValue))}, [props]);
 
     let amountValidity = validateOperationAmount(amount);
     let leftValidity = validateAccountSelected(props.operations[0].account_id);
@@ -75,12 +75,12 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
         const evaluated = evaluateEquation(value);
         amountValidity = validateOperationAmount(value);
         setAmount(String(evaluated));
+        let updatedOps = [{...props.operations[0], amountValue: evaluated}, {...props.operations[1], amountValue: evaluated}]
         if (amountValidity === null) {
-            if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
-                const amount = parseFloat(evaluated);
-                props.setOperationsFunc([{...props.operations[0], amount: -1*amount}, {...props.operations[1], amount: amount}]);
-            }
+            const amount = parseFloat(evaluated);
+            updatedOps = [{...updatedOps[0], amount: -1*amount}, {...updatedOps[1], amount: amount}];
         }
+        props.setOperationsFunc(updatedOps);
     }
 
     return <Grid container spacing={2} sx={{marginTop: "10px"}}>
@@ -152,7 +152,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
     }
 
     const applyAccount = (index:number, account_id: number) => {
-        props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].account_id = account_id})(props.operations));
+        //props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].account_id = account_id})(props.operations));
     }
 
     const applyRate = (index:number, rate: string) => {
@@ -161,7 +161,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
         if (validateRate(rate) === null) {
             if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
                 const parsed = parseFloat(evaluated);
-                props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].rate = parsed})(props.operations));
+                //props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].rate = parsed})(props.operations));
             }
         }
 
@@ -173,13 +173,13 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
         if (validateOperationAmount(amount) === null) {
             if (!evaluated.endsWith('0')) { // Trailing zero means that user is typing, but it's not an error
                 const parsed = parseFloat(evaluated);
-                props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].amount = parsed})(props.operations));
+                //props.setOperationsFunc(produce((draft:Operation[]) => {draft[index].amount = parsed})(props.operations));
             }
         }
     }
 
     const addOp = () => {
-        props.setOperationsFunc([...props.operations, {account_id:-1, amount:0, rate: 1}]);
+        //props.setOperationsFunc([...props.operations, {account_id:-1, amount:0, rate: 1}]);
     }
 
     const ops = props.operations.map((op,index) => {
@@ -255,15 +255,15 @@ export function TransactionDialog(props: TransactionDialogProps) {
             setTransactionValidity(globalValidity);
             return;
         }
-        if (tx.operations.map(o => validateAccountSelected(o.account_id)).some(e => e !== null)) {
+        if (tx.editedOperations.map(o => validateAccountSelected(o.account_id)).some(e => e !== null)) {
             setTransactionValidity("");
             return;
         }
-        if (tx.operations.map(o => validateOperationAmount(o.amount)).some(e => e !== null)) {
+        if (tx.editedOperations.map(o => validateOperationAmount(o.amount)).some(e => e !== null)) {
             setTransactionValidity("");
             return;
         }
-        if (tx.operations.map(o => validateRate(o.rate)).some(e => e !== null)) {
+        if (tx.editedOperations.map(o => validateRate(o.rate)).some(e => e !== null)) {
             setTransactionValidity("");
             return;
         }
@@ -288,7 +288,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
                 second: dt.get('second')
             })
         }
-        setTx(produce((draft: Transaction) => {
+        setTx(produce((draft: EditedTransaction) => {
             draft.timestamp = newDate.format('YYYY-MM-DDTHH:mm:ss')
         })(tx));
     }
@@ -303,27 +303,32 @@ export function TransactionDialog(props: TransactionDialogProps) {
                 second: newTime.get('second')
             })
         }
-        setTx(produce((draft: Transaction) => {
+        setTx(produce((draft: EditedTransaction) => {
             draft.timestamp = dt.format('YYYY-MM-DDTHH:mm:ss')
         })(tx));
     }
     const setTags = (value: { label: string, value: string }[]) => {
         const tags = value.map(item => item.value);
-        setTx(produce((draft: Transaction) => {
+        setTx(produce((draft: EditedTransaction) => {
             draft.tags = tags
         })(tx));
     }
 
-    const setOperations = (ops: Operation[]) => {setTx(produce((draft: Transaction) => {draft.operations = ops})(tx))}
+    const setOperations = (ops: EditedOperation[]) => {setTx(produce((draft: EditedTransaction) => {draft.editedOperations = ops})(tx))}
 
     const save = () => {
-        props.updateTransaction(tx);
+        const txToSave = {
+            ...tx,
+            operations: tx.editedOperations.map((edited, index) => {return {...tx.operations[index], amount: edited.amount, rate: edited.rate, account_id: edited.account_id}})
+        };
+        setTx(txToSave)
+        props.updateTransaction(txToSave);
         if (autoClose) {
             props.closeTransactionDialog();
         }
     }
 
-    const validForSimpleEditing = (transaction: Transaction): boolean => {
+    const validForSimpleEditing = (transaction: EditedTransaction): boolean => {
         if (transaction.operations.length > 2) { //Too many operations
             return false
         }
@@ -331,7 +336,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
             return true
         }
 
-        return props.accountCurrencies[transaction.operations[0].account_id] === props.accountCurrencies[transaction.operations[1].account_id]
+        return props.accountCurrencies[transaction.editedOperations[0].account_id] === props.accountCurrencies[transaction.editedOperations[1].account_id]
     }
 
     const tags = props.tags.map((item) => {
@@ -345,7 +350,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
     }
 
     const accounts = accountMenu(props.assetTree, props.incomeTree, props.expenseTree);
-    const limitedAccounts = accountMenu(props.assetTree, props.incomeTree, props.expenseTree, props.accountCurrencies[tx.operations[0].account_id]);
+    const limitedAccounts = accountMenu(props.assetTree, props.incomeTree, props.expenseTree, props.accountCurrencies[tx.editedOperations[0].account_id]);
 
     return <Dialog title='Transaction editing' open={props.visible} scroll={'paper'} maxWidth={'md'} fullWidth={true}
                    onClose={props.closeTransactionDialog}>
@@ -363,7 +368,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                     <TextField label='Comment on transaction' fullWidth={true} multiline={true} rows={4}
                                value={tx.comment} variant='outlined'
-                               onChange={(ev) => setTx(produce((draft: Transaction) => {
+                               onChange={(ev) => setTx(produce((draft: EditedTransaction) => {
                                    draft.comment = ev.target.value
                                })(tx))}/>
                 </Grid>
@@ -373,8 +378,8 @@ export function TransactionDialog(props: TransactionDialogProps) {
                 <Tab label='Simple' value='simple' disabled={!validForSimpleEditing(tx)}/>
                 <Tab label='Multiple operations' value='multi'/>
             </Tabs>
-            {activeTab === 'simple' && <SimpleOperationsEditor operations={tx.operations} accounts={accounts} limitedAccounts={limitedAccounts} setOperationsFunc={setOperations}/>}
-            {activeTab === 'multi' && <FullOperationsEditor operations={tx.operations} accounts={accounts} limitedAccounts={limitedAccounts} accountCurrencies={props.accountCurrencies} primaryCurrencyId={props.primaryCurrencyId} setOperationsFunc={setOperations}/>}
+            {activeTab === 'simple' && <SimpleOperationsEditor operations={tx.editedOperations} accounts={accounts} limitedAccounts={limitedAccounts} setOperationsFunc={setOperations}/>}
+            {activeTab === 'multi' && <FullOperationsEditor operations={tx.editedOperations} accounts={accounts} limitedAccounts={limitedAccounts} accountCurrencies={props.accountCurrencies} primaryCurrencyId={props.primaryCurrencyId} setOperationsFunc={setOperations}/>}
             <Grid  container spacing={2}>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                     <div style={validationErrorStyle}>{transactionValidity}</div>
