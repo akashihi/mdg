@@ -4,12 +4,6 @@ import moment from 'moment';
 
 import {checkApiError, parseJSON} from '../util/ApiUtils';
 
-import {getCurrentBudgetId} from '../selectors/StateGetters';
-
-import {loadAccountList} from './AccountActions';
-import {loadBudgetInfoById} from './BudgetEntryActions';
-import {loadTotalsReport} from './ReportActions';
-
 import {TransactionActionType } from '../constants/Transaction'
 import {Transaction} from "../models/Transaction";
 
@@ -65,8 +59,8 @@ export function closeTransactionDialog():TransactionAction {
     }
 }
 export function updateTransaction(tx:Transaction) {
-    return {
-        type: TransactionActionType.TransactionSave,
-        payload: [tx]
+    return (dispatch) => {
+        dispatch({type: TransactionActionType.TransactionSave, payload: [tx]});
+        dispatch(createTransaction());
     }
 }

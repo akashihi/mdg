@@ -3,6 +3,7 @@ import {TransactionActionType} from '../constants/Transaction'
 import {Transaction} from "../models/Transaction";
 import {TransactionAction} from "../actions/TransactionActions";
 import moment from 'moment';
+import {selectCloseOnExit} from "../selectors/SettingsSelector";
 
 export const DefaultTransaction: Transaction = {
     id: -1,
@@ -49,7 +50,9 @@ export default function transactionReducer(state: TransactionState = initialStat
         case TransactionActionType.TransactionDialogClose:
             return produce(state, draft => {draft.transactionDialogVisible = false})
         case TransactionActionType.TransactionSave:
-            return produce(state, draft => {draft.savableTransaction = action.payload[0]})
+            return produce(state, draft => {
+                draft.savableTransaction = action.payload[0];
+            })
         default:
             return state
     }
