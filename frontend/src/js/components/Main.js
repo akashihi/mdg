@@ -37,7 +37,7 @@ export default class Main extends Component {
           </Grid>
         </Grid>
         <TransactionCreate />
-        <TransactionEditor unmountOnExit />
+        <TransactionEditor/>
       </div>
     )
   }
