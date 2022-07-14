@@ -1,26 +1,45 @@
-import moment from 'moment'
-import { checkApiError, parseJSON, dateToYMD, dataToMap } from '../util/ApiUtils'
+import {Action} from 'redux';
+import moment from 'moment';
+import { checkApiError, parseJSON, dateToYMD, dataToMap } from '../util/ApiUtils';
 
 import {
-  GET_BUDGETLIST_REQUEST,
-  GET_BUDGETLIST_SUCCESS,
-  GET_BUDGETLIST_FAILURE,
-  TOGGLE_HIDDEN_ENTRIES
+    GET_BUDGETLIST_REQUEST,
+    GET_BUDGETLIST_SUCCESS,
+    GET_BUDGETLIST_FAILURE,
+    TOGGLE_HIDDEN_ENTRIES, BudgetActionType
 } from '../constants/Budget'
 
 import { loadBudgetInfoById } from './BudgetEntryActions'
+import {Budget} from "../models/Budget";
+
+export interface BudgetAction extends Action {
+    payload?: Budget
+}
+
+export function getCurrentBudget () {
+    return (dispatch) => {
+      const id = moment().format('YYYYMMDD');
+        fetch(`/api/budgets/${id}`)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then((json: any) => {
+               dispatch({type: BudgetActionType.StoreCurrentBudget, payload: json as Budget})
+            });
+    }
+}
+
 
 export function toggleHiddenEntries (visible) {
-  return (dispatch) => {
+/*  return (dispatch) => {
     dispatch({
       type: TOGGLE_HIDDEN_ENTRIES,
       payload: visible
     })
-  }
+  }*/
 }
 
 export function loadBudgetList () {
-  return (dispatch) => {
+  /*return (dispatch) => {
     dispatch({
       type: GET_BUDGETLIST_REQUEST,
       payload: true
@@ -44,11 +63,11 @@ export function loadBudgetList () {
           payload: response.json
         })
       })
-  }
+  }*/
 }
 
 export function deleteBudget (id) {
-  return (dispatch) => {
+  /*return (dispatch) => {
     dispatch({
       type: GET_BUDGETLIST_REQUEST,
       payload: true
@@ -59,11 +78,11 @@ export function deleteBudget (id) {
       .then(checkApiError)
       .then(() => dispatch(loadBudgetList()))
       .catch(() => dispatch(loadBudgetList()))
-  }
+  }*/
 }
 
 export function budgetCreate (begin, end) {
-  return (dispatch) => {
+  /*return (dispatch) => {
     dispatch({
       type: GET_BUDGETLIST_REQUEST,
       payload: true
@@ -90,18 +109,11 @@ export function budgetCreate (begin, end) {
       .then(checkApiError)
       .then(() => dispatch(loadBudgetList()))
       .catch(() => dispatch(loadBudgetList()))
-  }
-}
-
-export function getCurrentBudget () {
-  return (dispatch) => {
-    const id = moment().format('YYYYMMDD')
-    dispatch(loadBudgetInfoById(id))
-  }
+  }*/
 }
 
 export function selectBudget (id) {
-  return (dispatch) => {
+  /*return (dispatch) => {
     dispatch(loadBudgetInfoById(id))
-  }
+  }*/
 }

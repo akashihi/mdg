@@ -90,7 +90,7 @@ export default class TopBar extends Component {
   componentDidMount () {
     this.props.currencyActions.loadCurrencyList()
     this.props.settingActions.loadSettingList()
-    this.props.budgetActions.loadBudgetList()
+    //this.props.budgetActions.loadBudgetList()
     this.props.tagActions.loadTagList()
     this.props.rateActions.loadRatesList()
   }

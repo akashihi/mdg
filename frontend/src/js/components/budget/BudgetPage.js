@@ -9,7 +9,7 @@ import ClipLoader from 'react-spinners/ClipLoader';
 
 import BudgetEntry from './BudgetEntry'
 import BudgetSelector from '../../containers/BudgetSelector'
-import BudgetOverviewPanel from './BudgetOverviewPanel'
+import BudgetInfo from './BudgetInfo'
 
 const cardStyle = {
     padding: '0px',
@@ -98,7 +98,7 @@ export default class BudgetPage extends Component {
                     <CardActions>
                         {hiddenButton}
                     </CardActions>
-                    <BudgetOverviewPanel budget={props.budget}/>
+                    <BudgetInfo budget={props.budget}/>
                 </Card>
                 <Divider/>
                 {::this.renderBudget()}
