@@ -110,24 +110,25 @@ export function BudgetInfo(props: BudgetInfoProps) {
                 <Grid item xs={1}>
                     <CircularProgressWithLabel value={incomePercentage} size="80px"/>
                 </Grid>
-                <Grid item xs={9} lg={expensePercentageOffset}/>
+                <Grid item xs={1} sm={1} md={1} lg={1}/>
+                <Grid item xs={4} sm={4} md={4} lg={4}>
+                    Spent today: {props.budget.state.allowed.actual}
+                </Grid>
+                <Grid item xs={3} sm={3} md={3} lg={3}>
+                    <div style={{ textAlign: 'right' }}>Left today: {props.budget.state.allowed.expected}</div>
+                </Grid>
+                <Grid item xs={1} sm={1} md={1} lg={1}/>
                 <Grid item xs={1}>
                     <CircularProgressWithLabel variant='determinate' value={expensePercentage} size="80px" sx={{textAlign: 'right'}}/>
                 </Grid>
-                <Grid item xs={6} sm={6} md={6} lg={6}>
+                <Grid item xs={3} sm={3} md={3} lg={3}>
                     {props.budget.state.income.actual} of {props.budget.state.income.expected}
                 </Grid>
                 <Grid item xs={5} sm={5} md={5} lg={5}>
-                    <div style={{textAlign:'right'}}>{props.budget.state.expense.actual} of {props.budget.state.expense.expected}</div>
-                </Grid>
-                <Grid item xs={3} sm={2} md={2} lg={2}>
-                    Spent today: {props.budget.state.allowed.actual}
-                </Grid>
-                <Grid item xs={6} sm={8} md={8} lg={8}>
                     <LinearProgress variant='determinate' value={percentActualChange} />
                 </Grid>
-                <Grid item xs={3} sm={2} md={2} lg={2}>
-                    <div style={{ textAlign: 'right' }}>Left today: {props.budget.state.allowed.expected}</div>
+                <Grid item xs={3} sm={3} md={3} lg={3}>
+                    <div style={{textAlign:'right'}}>{props.budget.state.expense.actual} of {props.budget.state.expense.expected}</div>
                 </Grid>
             </Grid>
         </CardContent>
