@@ -2,6 +2,7 @@ import {produce} from 'immer';
 import {Action} from 'redux';
 import { checkApiError, parseJSON} from '../util/ApiUtils';
 import { loadBudgetEntryList } from './BudgetEntryActions';
+import {loadCurrentBudget} from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
 import { AccountActionType } from '../constants/Account'
@@ -133,6 +134,7 @@ export function updateAccount (account: Partial<Account>) {
           .then(checkApiError)
           .then(() => dispatch(loadAccountList()))
           .then(() => dispatch(loadTotalsReport()))
+          .then(() => dispatch(loadCurrentBudget()))
           .then(() => { if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId)) } })
           .catch(() => dispatch(loadAccountList()))
   }

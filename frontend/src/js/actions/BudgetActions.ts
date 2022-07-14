@@ -16,7 +16,7 @@ export interface BudgetAction extends Action {
     payload?: Budget
 }
 
-export function getCurrentBudget () {
+export function loadCurrentBudget () {
     return (dispatch) => {
       const id = moment().format('YYYYMMDD');
         fetch(`/api/budgets/${id}`)

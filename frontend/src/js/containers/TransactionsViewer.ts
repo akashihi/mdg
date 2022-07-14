@@ -7,7 +7,8 @@ import {loadTotalsReport} from '../actions/ReportActions';
 import {RootState} from '../reducers/rootReducer';
 import {getCurrentBudgetId} from '../selectors/StateGetters';
 import {editTransaction} from '../actions/TransactionActions';
-import {Transaction} from "../models/Transaction";
+import {Transaction} from '../models/Transaction';
+import {loadCurrentBudget} from '../actions/BudgetActions'
 
 export interface TransactionViewerState {
     currentBudgetId: number|undefined;
@@ -21,7 +22,7 @@ const mapStateToProps = (state: RootState):TransactionViewerState => {
   }
 }
 
-const mapDispatchToProps = {loadAccountList, loadBudgetInfoById, loadTotalsReport, editTransaction}
+const mapDispatchToProps = {loadAccountList, loadBudgetInfoById, loadCurrentBudget, loadTotalsReport, editTransaction}
 
 export type TransactionViewerProps = TransactionViewerState & typeof mapDispatchToProps;
 

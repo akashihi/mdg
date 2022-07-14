@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import BudgetOverviewPanel from '../components/budget/BudgetOverviewPanel'
-import {getCurrentBudget} from '../actions/BudgetActions';
+import {loadCurrentBudget} from '../actions/BudgetActions';
 import {Budget} from "../models/Budget";
 
 export interface BudgetOverviewState {
@@ -14,7 +14,7 @@ const mapStateToProps = (state) => {
   }
 }
 
-const mapDispatchToProps = {getCurrentBudget}
+const mapDispatchToProps = {getCurrentBudget: loadCurrentBudget}
 
 export type BudgetOverviewProps = BudgetOverviewState & typeof mapDispatchToProps;
 
