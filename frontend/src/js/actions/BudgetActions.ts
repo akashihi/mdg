@@ -28,6 +28,16 @@ export function loadCurrentBudget () {
     }
 }
 
+export function loadSelectedBudget (id) {
+    return (dispatch) => {
+        fetch(`/api/budgets/${id}`)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then((json: any) => {
+                dispatch({type: BudgetActionType.StoreSelectedBudget, payload: json as Budget})
+            });
+    }
+}
 
 export function toggleHiddenEntries (visible) {
 /*  return (dispatch) => {
@@ -109,11 +119,5 @@ export function budgetCreate (begin, end) {
       .then(checkApiError)
       .then(() => dispatch(loadBudgetList()))
       .catch(() => dispatch(loadBudgetList()))
-  }*/
-}
-
-export function selectBudget (id) {
-  /*return (dispatch) => {
-    dispatch(loadBudgetInfoById(id))
   }*/
 }

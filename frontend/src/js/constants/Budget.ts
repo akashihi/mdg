@@ -5,5 +5,6 @@ export const GET_BUDGETLIST_SUCCESS = 'GET_BUDGETLIST_SUCCESS';
 export const GET_BUDGETLIST_FAILURE = 'GET_BUDGETLIST_FAILURE';
 
 export enum BudgetActionType {
-    StoreCurrentBudget = "StoreCurrentBudget"
+    StoreCurrentBudget = "StoreCurrentBudget",
+    StoreSelectedBudget = "StoreSelectedBudget"
 }

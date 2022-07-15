@@ -9,11 +9,14 @@ export interface BudgetState {
     allowed: BudgetPair
 }
 
-export interface Budget {
-    id: number,
-    state: BudgetState,
+export interface ShortBudget {
+    id: string,
     term_beginning: string,
     term_end: string,
+}
+
+export interface Budget extends ShortBudget {
+    state: BudgetState,
     incoming_amount: number,
     outgoing_amount: BudgetPair
 }

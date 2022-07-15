@@ -5,19 +5,19 @@ import {loadAccountList} from '../actions/AccountActions';
 import {loadBudgetInfoById} from '../actions/BudgetEntryActions';
 import {loadTotalsReport} from '../actions/ReportActions';
 import {RootState} from '../reducers/rootReducer';
-import {getCurrentBudgetId} from '../selectors/StateGetters';
 import {editTransaction} from '../actions/TransactionActions';
 import {Transaction} from '../models/Transaction';
 import {loadCurrentBudget} from '../actions/BudgetActions'
+import {selectSelectedBudgetId} from "../selectors/BudgetSelector";
 
 export interface TransactionViewerState {
-    currentBudgetId: number|undefined;
+    currentBudgetId: string;
     savableTransaction?: Transaction
 }
 
 const mapStateToProps = (state: RootState):TransactionViewerState => {
   return {
-      currentBudgetId: getCurrentBudgetId(state),
+      currentBudgetId: selectSelectedBudgetId(state),
       savableTransaction: state.transaction.savableTransaction
   }
 }

@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, {Fragment} from 'react';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -10,20 +10,21 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import BudgetEntry from './BudgetEntry'
 import BudgetSelector from '../../containers/BudgetSelector'
 import BudgetInfo from './BudgetInfo'
+import {BudgetViewerProps} from "../../containers/BudgetViewer";
 
 const cardStyle = {
     padding: '0px',
     paddingBottom: '16px'
 };
 
-class HiddenEntriesButton extends Component {
+/*class HiddenEntriesButton extends Component {
     render() {
         return (<Button onClick={this.props.handlerFunc}>{this.props.text}</Button>)
     }
-}
+}*/
 
-export default class BudgetPage extends Component {
-    onHiddenEntriesClick() {
+export function BudgetPage(prop: BudgetViewerProps) {
+    /*onHiddenEntriesClick() {
         this.props.actions.toggleHiddenEntries(!this.props.emptyVisible)
     }
 
@@ -104,5 +105,10 @@ export default class BudgetPage extends Component {
                 {::this.renderBudget()}
             </div>
         )
-    }
+    }*/
+    return <Fragment>
+        <BudgetSelector/>
+    </Fragment>;
 }
+
+export default BudgetPage;
