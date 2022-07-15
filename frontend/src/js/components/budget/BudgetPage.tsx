@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useState} from 'react';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -19,11 +19,12 @@ const cardStyle = {
 
 /*class HiddenEntriesButton extends Component {
     render() {
-        return (<Button onClick={this.props.handlerFunc}>{this.props.text}</Button>)
+        return ()
     }
 }*/
 
-export function BudgetPage(prop: BudgetViewerProps) {
+export function BudgetPage(props: BudgetViewerProps) {
+    const [showEmpty, setShowEmpty] = useState<boolean>(false);
     /*onHiddenEntriesClick() {
         this.props.actions.toggleHiddenEntries(!this.props.emptyVisible)
     }
@@ -81,20 +82,8 @@ export function BudgetPage(prop: BudgetViewerProps) {
     }
 
     render() {
-        const props = this.props;
-
-        let hiddenButton;
-        if (props.emptyVisible) {
-            hiddenButton =
-                <HiddenEntriesButton text='Hide empty entries' handlerFunc={this.onHiddenEntriesClick.bind(this)}/>
-        } else {
-            hiddenButton =
-                <HiddenEntriesButton text='Show empty entries' handlerFunc={this.onHiddenEntriesClick.bind(this)}/>
-        }
 
         return (
-            <div>
-                <BudgetSelector/>
                 <Card>
                     <CardActions>
                         {hiddenButton}
@@ -103,11 +92,25 @@ export function BudgetPage(prop: BudgetViewerProps) {
                 </Card>
                 <Divider/>
                 {::this.renderBudget()}
-            </div>
         )
     }*/
+
+    let emptyHiddenButton;
+    if (showEmpty) {
+        emptyHiddenButton = <Button onClick={() => setShowEmpty(false)}>Hide empty entries</Button>
+    } else {
+        emptyHiddenButton = <Button onClick={() => setShowEmpty(true)}>Show empty entries</Button>
+    }
     return <Fragment>
         <BudgetSelector/>
+        <Card>
+            <CardActions>
+                {emptyHiddenButton}
+            </CardActions>
+            <CardContent>
+                <BudgetInfo budget={props.budget} short={false}/>
+            </CardContent>
+        </Card>
     </Fragment>;
 }
 

@@ -63,8 +63,14 @@ export function BudgetInfo(props: BudgetInfoProps) {
         expensePercentageOffset = 10;
     }
 
-    const incomePercentage = Math.round(props.budget.state.income.actual / props.budget.state.income.expected * 100);
-    const expensePercentage =Math.round(props.budget.state.expense.actual / props.budget.state.expense.expected * 100);
+    let incomePercentage = 0;
+    if (props.budget.state.income.expected !== 0) {
+        incomePercentage = Math.round(props.budget.state.income.actual / props.budget.state.income.expected * 100);
+    }
+    let expensePercentage = 0;
+    if (props.budget.state.expense.expected !== 0) {
+        Math.round(props.budget.state.expense.actual / props.budget.state.expense.expected * 100);
+    }
 
     const totalChange = props.budget.state.allowed.actual + props.budget.state.allowed.expected;
     let percentActualChange = 0;
@@ -118,6 +124,7 @@ export function BudgetInfo(props: BudgetInfoProps) {
                     <div style={{ textAlign: 'right' }}>Left today: {props.budget.state.allowed.expected}</div>
                 </Grid>
                 <Grid item xs={1} sm={1} md={1} lg={1}/>
+                {!props.short && <Grid item xs={1} sm={1} md={1} lg={1}/>}
                 <Grid item xs={1}>
                     <CircularProgressWithLabel variant='determinate' value={expensePercentage} size="80px" sx={{textAlign: 'right'}}/>
                 </Grid>
