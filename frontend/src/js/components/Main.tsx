@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React  from 'react';
 
 import Grid from '@mui/material/Grid';
 import { Routes, Route } from 'react-router-dom';
@@ -14,12 +14,8 @@ import RateViewer from '../containers/RateViewer';
 import TransactionEditor from '../containers/TransactionEditor';
 import ReportsViewer from '../containers/ReportsViewer';
 
-window.notifications = React.createRef()
-
-export default class Main extends Component {
-  render () {
-    return (
-      <div>
+export function Main() {
+    return <div>
         <TopBar />
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={11} lg={11}>
@@ -39,6 +35,6 @@ export default class Main extends Component {
         <TransactionCreate />
         <TransactionEditor/>
       </div>
-    )
-  }
 }
+
+export default Main;
