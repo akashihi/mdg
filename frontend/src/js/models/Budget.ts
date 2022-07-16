@@ -1,27 +1,27 @@
-import {Account} from "./Account";
-import Category from "./Category";
+import { Account } from './Account';
+import Category from './Category';
 
 export interface BudgetPair {
-    actual: number,
-    expected: number
+    actual: number;
+    expected: number;
 }
 
 export interface BudgetState {
-    income: BudgetPair,
-    expense: BudgetPair,
-    allowed: BudgetPair
+    income: BudgetPair;
+    expense: BudgetPair;
+    allowed: BudgetPair;
 }
 
 export interface ShortBudget {
-    id: string,
-    term_beginning: string,
-    term_end: string,
+    id: string;
+    term_beginning: string;
+    term_end: string;
 }
 
 export interface Budget extends ShortBudget {
-    state: BudgetState,
-    incoming_amount: number,
-    outgoing_amount: BudgetPair
+    state: BudgetState;
+    incoming_amount: number;
+    outgoing_amount: BudgetPair;
 }
 
 export interface BudgetEntry {
@@ -46,5 +46,5 @@ export interface BudgetEntryTreeNode {
     allowed_spendings: number;
     spending_percent: number;
     entries: BudgetEntry[];
-    categories: BudgetEntryTreeNode[]
+    categories: BudgetEntryTreeNode[];
 }

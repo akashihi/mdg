@@ -17,20 +17,20 @@
 }
 
 .common-field-width {
-  width: 320px
+    width: 320px;
 }
 
 .nav-link {
     text-decoration: none;
 }
 
-.menu-button{
-    border:none;
-    margin-right: 1.2rem!important;
+.menu-button {
+    border: none;
+    margin-right: 1.2rem !important;
 }
 
-.selected-menu-btn{
-    border:none;
-    margin-right: 1.2rem!important;
-    border: 1px solid #ffffff!important;
+.selected-menu-btn {
+    border: none;
+    margin-right: 1.2rem !important;
+    border: 1px solid #ffffff !important;
 }

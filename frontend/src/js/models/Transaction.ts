@@ -1,4 +1,4 @@
-import {Account} from "./Account";
+import { Account } from './Account';
 
 export interface Operation {
     rate?: number;
@@ -17,7 +17,7 @@ export interface EditedOperation extends Operation {
 }
 
 export interface Transaction {
-    id: number,
+    id: number;
     comment?: string;
     tags?: string[];
     timestamp: string;
@@ -25,8 +25,8 @@ export interface Transaction {
 }
 
 export interface TransactionSummary {
-    total: number,
-    color:string
+    total: number;
+    color: string;
 }
 
 export interface EnrichedTransaction extends Transaction {

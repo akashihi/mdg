@@ -1,4 +1,4 @@
 export enum RateActionsType {
     RatesLoad = 'RatesLoad',
-    RatesStore = 'RatesStore'
+    RatesStore = 'RatesStore',
 }

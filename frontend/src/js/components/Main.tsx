@@ -1,4 +1,4 @@
-import React  from 'react';
+import React from 'react';
 
 import Grid from '@mui/material/Grid';
 import { Routes, Route } from 'react-router-dom';
@@ -15,26 +15,28 @@ import TransactionEditor from '../containers/TransactionEditor';
 import ReportsViewer from '../containers/ReportsViewer';
 
 export function Main() {
-    return <div>
-        <TopBar />
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} md={11} lg={11}>
-            <Routes>
-              <Route path='/' element={<Overview />} />
-              <Route path='/budget' element={<BudgetViewer />} />
-              <Route path='/transactions' element={<TransactionsViewer />} />
-              <Route path='/reports' element={<ReportsViewer />} />
-              <Route path='/accounts' element={<AccountsViewer />} />
-              <Route path='/settings' element={<SettingsPage />} />
-            </Routes>
-          </Grid>
-          <Grid item xs={0} sm={0} md={1} lg={1} className='hide-on-medium'>
-            <RateViewer />
-          </Grid>
-        </Grid>
-        <TransactionCreate />
-        <TransactionEditor/>
-      </div>
+    return (
+        <div>
+            <TopBar />
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={12} md={11} lg={11}>
+                    <Routes>
+                        <Route path="/" element={<Overview />} />
+                        <Route path="/budget" element={<BudgetViewer />} />
+                        <Route path="/transactions" element={<TransactionsViewer />} />
+                        <Route path="/reports" element={<ReportsViewer />} />
+                        <Route path="/accounts" element={<AccountsViewer />} />
+                        <Route path="/settings" element={<SettingsPage />} />
+                    </Routes>
+                </Grid>
+                <Grid item xs={0} sm={0} md={1} lg={1} className="hide-on-medium">
+                    <RateViewer />
+                </Grid>
+            </Grid>
+            <TransactionCreate />
+            <TransactionEditor />
+        </div>
+    );
 }
 
 export default Main;

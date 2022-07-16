@@ -9,32 +9,34 @@ import TransactionsOverview from '../containers/TransactionsOverview';
 
 export function Overview() {
     const cardStyle = {
-      height: 400,
-      marginTop: 15
+        height: 400,
+        marginTop: 15,
     };
 
-    return <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Card style={cardStyle}>
-            <AccountsOverview />
-          </Card>
+    return (
+        <Grid container spacing={2}>
+            <Grid item xs={12} sm={12} md={12} lg={6}>
+                <Card style={cardStyle}>
+                    <AccountsOverview />
+                </Card>
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={6}>
+                <Card style={cardStyle}>
+                    <FinanceOverview />
+                </Card>
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={6}>
+                <Card style={cardStyle}>
+                    <BudgetOverview />
+                </Card>
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={6}>
+                <Card style={cardStyle}>
+                    <TransactionsOverview />
+                </Card>
+            </Grid>
         </Grid>
-        <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Card style={cardStyle}>
-              <FinanceOverview />
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Card style={cardStyle}>
-              <BudgetOverview />
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Card style={cardStyle}>
-              <TransactionsOverview />
-          </Card>
-        </Grid>
-      </Grid>
+    );
 }
 
 export default Overview;

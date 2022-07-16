@@ -1,7 +1,7 @@
-import {EditedTransaction} from "../models/Transaction";
+import { EditedTransaction } from '../models/Transaction';
 
-export function validateOperationAmount(amount?: string | number): string|null {
-    if (String(amount).endsWith(".")) {
+export function validateOperationAmount(amount?: string | number): string | null {
+    if (String(amount).endsWith('.')) {
         return 'Amount is invalid';
     }
     if (!/^-?(0|[1-9]\d*)\.?\d{0,2}?$/.test(String(amount))) {
@@ -17,15 +17,15 @@ export function validateAccountSelected(account_id?: number) {
     return null;
 }
 
-export function validateRate(rate?: string|number): string|null {
+export function validateRate(rate?: string | number): string | null {
     if (rate && !/^-?(0|[1-9]\d*)\.?\d{0,5}?$/.test(String(rate))) {
         return 'Rate is invalid';
     }
-    return null
+    return null;
 }
 
-export function validateTransaction(tx: EditedTransaction): string|null {
-    const ops = tx.editedOperations.filter((item) => item.amount !== 0);
+export function validateTransaction(tx: EditedTransaction): string | null {
+    const ops = tx.editedOperations.filter(item => item.amount !== 0);
     if (ops.length === 0) {
         return 'Empty transaction';
     }
@@ -34,11 +34,14 @@ export function validateTransaction(tx: EditedTransaction): string|null {
             return acc + item.amount * item.rate;
         }
         return acc + item.amount;
-    }, 0)
-    const easeForMultiCurrency = ops.map(o => o.rate).some((r:number) => r && r!=1 );
+    }, 0);
+    const easeForMultiCurrency = ops.map(o => o.rate).some((r: number) => r && r != 1);
     if (!Number.isNaN(sum)) {
-        const fixedSum = sum.toFixed(2)
-        if (!(parseFloat(fixedSum) > -1 && parseFloat(fixedSum) < 1) || (parseFloat(fixedSum) !== 0 && !easeForMultiCurrency)) {
+        const fixedSum = sum.toFixed(2);
+        if (
+            !(parseFloat(fixedSum) > -1 && parseFloat(fixedSum) < 1) ||
+            (parseFloat(fixedSum) !== 0 && !easeForMultiCurrency)
+        ) {
             return `Transaction not balanced, disbalance is: ${fixedSum}`;
         }
     } else {

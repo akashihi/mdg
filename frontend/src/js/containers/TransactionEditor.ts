@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 
 import TransactionDialog from '../components/transaction/TransactionDialog';
-import {closeTransactionDialog, updateTransaction} from '../actions/TransactionActions';
-import {EditedTransaction} from '../models/Transaction';
-import {RootState} from '../reducers/rootReducer';
-import {selectCloseOnExit, selectPrimaryCurrencyId} from '../selectors/SettingsSelector';
-import {selectAccountCurrencies} from '../selectors/AccountSelector';
-import {AccountTreeNode} from "../models/Account";
+import { closeTransactionDialog, updateTransaction } from '../actions/TransactionActions';
+import { EditedTransaction } from '../models/Transaction';
+import { RootState } from '../reducers/rootReducer';
+import { selectCloseOnExit, selectPrimaryCurrencyId } from '../selectors/SettingsSelector';
+import { selectAccountCurrencies } from '../selectors/AccountSelector';
+import { AccountTreeNode } from '../models/Account';
 
 export interface TransactionEditorState {
     transaction: EditedTransaction;
@@ -20,7 +20,7 @@ export interface TransactionEditorState {
     expenseTree: AccountTreeNode;
 }
 
-const mapStateToProps = (state:RootState):TransactionEditorState => {
+const mapStateToProps = (state: RootState): TransactionEditorState => {
     return {
         transaction: state.transaction.editedTransaction,
         visible: state.transaction.transactionDialogVisible,
@@ -31,11 +31,11 @@ const mapStateToProps = (state:RootState):TransactionEditorState => {
         assetTree: state.account.assetTree,
         incomeTree: state.account.incomeTree,
         expenseTree: state.account.expenseTree,
-    }
-}
+    };
+};
 
-const mapDispatchToProps= {updateTransaction, closeTransactionDialog};
+const mapDispatchToProps = { updateTransaction, closeTransactionDialog };
 
 export type TransactionDialogProps = TransactionEditorState & typeof mapDispatchToProps;
 
-export default connect(mapStateToProps, mapDispatchToProps)(TransactionDialog)
+export default connect(mapStateToProps, mapDispatchToProps)(TransactionDialog);

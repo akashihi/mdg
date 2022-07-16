@@ -1,4 +1,4 @@
 export enum BudgetActionType {
-    StoreCurrentBudget = "StoreCurrentBudget",
-    StoreSelectedBudget = "StoreSelectedBudget"
+    StoreCurrentBudget = 'StoreCurrentBudget',
+    StoreSelectedBudget = 'StoreSelectedBudget',
 }

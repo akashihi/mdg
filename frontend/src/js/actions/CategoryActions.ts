@@ -1,22 +1,22 @@
-import {checkApiError, parseJSON} from '../util/ApiUtils'
-import {loadAccountList} from './AccountActions'
+import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { loadAccountList } from './AccountActions';
 
-import { CategoryActionType } from '../constants/Category'
+import { CategoryActionType } from '../constants/Category';
 
-import {Action} from 'redux';
-import Category from "../models/Category";
+import { Action } from 'redux';
+import Category from '../models/Category';
 import { produce } from 'immer';
-import {CategoryState} from "../reducers/CategoryReducer";
+import { CategoryState } from '../reducers/CategoryReducer';
 
 export interface CategoryAction extends Action {
     payload: Category[];
 }
 
 export function loadCategoryList() {
-    return (dispatch) => {
-        dispatch({type: CategoryActionType.CategoriesLoad, payload: {}})
+    return dispatch => {
+        dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
 
-        const url = '/api/categories'
+        const url = '/api/categories';
 
         fetch(url)
             .then(parseJSON)
@@ -24,22 +24,22 @@ export function loadCategoryList() {
             .then(function (data: any) {
                 dispatch({
                     type: CategoryActionType.CategoriesStore,
-                    payload: data.categories
-                })
+                    payload: data.categories,
+                });
             })
             .then(() => dispatch(loadAccountList()))
             .catch(function (response) {
                 dispatch({
                     type: CategoryActionType.CategoriesStore,
-                    payload: response.json
-                })
-            })
-    }
+                    payload: response.json,
+                });
+            });
+    };
 }
 
 export function updateCategory(category: Category) {
-    return (dispatch) => {
-        dispatch({type: CategoryActionType.CategoriesLoad, payload: {}});
+    return dispatch => {
+        dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
 
         let url = '/api/categories';
         let method = 'POST';
@@ -48,25 +48,29 @@ export function updateCategory(category: Category) {
             method = 'PUT';
         }
 
-        const updatedCategory:CategoryState= produce(draft => {if (category.parent_id === -1) { draft.parent_id = null }})(category);
+        const updatedCategory: CategoryState = produce(draft => {
+            if (category.parent_id === -1) {
+                draft.parent_id = null;
+            }
+        })(category);
 
         fetch(url, {
             method,
             headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1'
+                'Content-Type': 'application/vnd.mdg+json;version=1',
             },
-            body: JSON.stringify(updatedCategory)
+            body: JSON.stringify(updatedCategory),
         })
             .then(parseJSON)
             .then(checkApiError)
             .then(() => dispatch(loadCategoryList()))
-            .catch(() => dispatch(loadCategoryList()))
-    }
+            .catch(() => dispatch(loadCategoryList()));
+    };
 }
 
 export function deleteCategory(id: number) {
-    return (dispatch) => {
-        dispatch({type: CategoryActionType.CategoriesLoad, payload: {} });
+    return dispatch => {
+        dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
 
         const url = `/api/categories/${id}`;
         const method = 'DELETE';
@@ -74,12 +78,12 @@ export function deleteCategory(id: number) {
         fetch(url, {
             method,
             headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1'
-            }
+                'Content-Type': 'application/vnd.mdg+json;version=1',
+            },
         })
             .then(parseJSON)
             .then(checkApiError)
             .then(() => dispatch(loadCategoryList()))
             .catch(() => dispatch(loadCategoryList()));
-    }
+    };
 }

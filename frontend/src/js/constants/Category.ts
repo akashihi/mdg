@@ -1,5 +1,5 @@
 export enum CategoryActionType {
-    CategoriesLoad ='CategoriesLoad',
+    CategoriesLoad = 'CategoriesLoad',
     CategoriesStore = 'CategoriesStore',
     CategoriesFailure = 'CategoriesFailure',
 }

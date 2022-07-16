@@ -1,17 +1,13 @@
-import {connect} from 'react-redux'
+import { connect } from 'react-redux';
 
-import AccountsPage from '../components/account/AccountsPage'
-import Currency from "../models/Currency";
-import Category from "../models/Category";
-import {Account, AccountTreeNode} from "../models/Account";
-import {RootState} from "../reducers/rootReducer";
-import {selectActiveCurrencies, selectPrimaryCurrencyName} from "../selectors/CurrencySelector";
-import {
-    AccountTotals,
-    selectAccountTotals,
-    selectAssetAccount
-} from "../selectors/AccountSelector";
-import {selectPrimaryCurrencyId} from "../selectors/SettingsSelector";
+import AccountsPage from '../components/account/AccountsPage';
+import Currency from '../models/Currency';
+import Category from '../models/Category';
+import { Account, AccountTreeNode } from '../models/Account';
+import { RootState } from '../reducers/rootReducer';
+import { selectActiveCurrencies, selectPrimaryCurrencyName } from '../selectors/CurrencySelector';
+import { AccountTotals, selectAccountTotals, selectAssetAccount } from '../selectors/AccountSelector';
+import { selectPrimaryCurrencyId } from '../selectors/SettingsSelector';
 
 export interface AccountsPageProps {
     activeCurrencies: Currency[];
@@ -21,9 +17,9 @@ export interface AccountsPageProps {
     assetAccountsTree: AccountTreeNode;
     incomeAccountsTree: AccountTreeNode;
     expenseAccountsTree: AccountTreeNode;
-    available: boolean
+    available: boolean;
     primaryCurrencyName: string;
-    primaryCurrencyId: number,
+    primaryCurrencyId: number;
 }
 
 const mapStateToProps = (state: RootState): AccountsPageProps => {
@@ -38,7 +34,7 @@ const mapStateToProps = (state: RootState): AccountsPageProps => {
         available: state.account.available,
         primaryCurrencyName: selectPrimaryCurrencyName(state),
         primaryCurrencyId: selectPrimaryCurrencyId(state),
-    }
-}
+    };
+};
 
-export default connect(mapStateToProps)(AccountsPage)
+export default connect(mapStateToProps)(AccountsPage);

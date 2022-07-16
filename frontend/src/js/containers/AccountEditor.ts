@@ -1,12 +1,12 @@
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
 import AccountDialog from '../components/account/AccountDialog';
-import {updateAccount} from '../actions/AccountActions';
-import {Account} from "../models/Account";
-import {RootState} from "../reducers/rootReducer";
-import Category from "../models/Category";
-import Currency from "../models/Currency";
-import {selectActiveCurrencies} from "../selectors/CurrencySelector";
+import { updateAccount } from '../actions/AccountActions';
+import { Account } from '../models/Account';
+import { RootState } from '../reducers/rootReducer';
+import Category from '../models/Category';
+import Currency from '../models/Currency';
+import { selectActiveCurrencies } from '../selectors/CurrencySelector';
 
 export interface AccountEditorProps {
     account: Account;
@@ -31,12 +31,12 @@ const mapStateToProps = (state: RootState, ownProps: AccountEditorProps): Accoun
         account: ownProps.account,
         full: ownProps.full,
         open: ownProps.open,
-        close: ownProps.close
-    }
-}
+        close: ownProps.close,
+    };
+};
 
-const mapDispatchToProps = {updateAccount};
+const mapDispatchToProps = { updateAccount };
 
-export type AccountDialogProps = AccountEditorState & typeof mapDispatchToProps
+export type AccountDialogProps = AccountEditorState & typeof mapDispatchToProps;
 
-export default connect(mapStateToProps, mapDispatchToProps)(AccountDialog)
+export default connect(mapStateToProps, mapDispatchToProps)(AccountDialog);
