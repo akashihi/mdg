@@ -7,7 +7,6 @@ import CurrencyReducer from './CurrencyReducer';
 import AccountReducer from './AccountReducer';
 import TransactionReducer from './TransactionReducer';
 import TagReducer from './TagReducer';
-import BudgetEntryReducer from './BudgetEntryReducer';
 import SettingReducer from './SettingReducer';
 import RateReducer from './RateReducer';
 import ReportReducer from './ReportReducer';
@@ -19,7 +18,6 @@ const rootReducer =  () => combineReducers({
   account: AccountReducer,
   transaction: TransactionReducer,
   tag: TagReducer,
-  budgetentry: BudgetEntryReducer,
   setting: SettingReducer,
   rate: RateReducer,
   report: ReportReducer

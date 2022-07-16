@@ -1,5 +1,6 @@
 import React, {Fragment, useState, useEffect} from 'react';
-import {produce} from 'immer';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -48,11 +49,14 @@ export function BudgetPage(props: BudgetViewerProps) {
     const [showEmpty, setShowEmpty] = useState<boolean>(false);
     const [incomeEntries, setIncomeEntries] = useState<BudgetEntryTreeNode|null>(null);
     const [expenseEntries, setExpenseEntries] = useState<BudgetEntryTreeNode|null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    useEffect(() => {
+    const loadEntries = () => {
         if (props.budget === null) {
             return;
         }
+
+        setLoading(true);
 
         let filter = 'nonzero';
         if (showEmpty) {
@@ -64,11 +68,14 @@ export function BudgetPage(props: BudgetViewerProps) {
             .then((json: any) => {
                 setIncomeEntries(json.income as BudgetEntryTreeNode);
                 setExpenseEntries(json.expense as BudgetEntryTreeNode);
+                setLoading(false);
             });
+    }
 
-    }, [props.budget, showEmpty])
+    useEffect(loadEntries, [props.budget, showEmpty])
 
     const saveEntry = (entry:BudgetEntryType) => {
+        setLoading(true);
         let url = `/api/budgets/${props.budget.id}/entries/${entry.id}`;
         const method = 'PUT';
 
@@ -81,33 +88,8 @@ export function BudgetPage(props: BudgetViewerProps) {
         })
             .then(parseJSON)
             .then(checkApiError)
-            .then((json:any) => {
-                // Now we need to replace object in the tree
-                let oldTree = expenseEntries;
-                if (entry.account.account_type === 'INCOME') {
-                    oldTree = incomeEntries;
-                }
-
-                const newTree = produce((draft:BudgetEntryTreeNode) => {
-                    const checkLevelAndReplace = (tree: BudgetEntryTreeNode) => {
-                        const index = tree.entries.findIndex(e => e.id === entry.id);
-                        if (index != -1) {
-                            tree.entries[index].expected_amount = json.expected_amount;
-                            tree.entries[index].proration = json.proration;
-                            tree.entries[index].even_distribution = json.even_distribution;
-                            return;
-                        }
-                        tree.categories.forEach(checkLevelAndReplace);
-                    }
-                    checkLevelAndReplace(draft);
-                })(oldTree);
-
-                
-                if (entry.account.account_type === 'INCOME') {
-                    setIncomeEntries(newTree);
-                } else {
-                    setExpenseEntries(newTree);
-                }
+            .then(() => {
+                loadEntries(); //Reload both trees to update categories sub-totals
             })
     }
 
@@ -118,6 +100,9 @@ export function BudgetPage(props: BudgetViewerProps) {
         emptyHiddenButton = <Button onClick={() => setShowEmpty(true)}>Show empty entries</Button>
     }
     return <Fragment>
+        <Backdrop open={loading}>
+            <CircularProgress color="inherit" />
+        </Backdrop>
         <BudgetSelector/>
         <Card>
             <CardActions>

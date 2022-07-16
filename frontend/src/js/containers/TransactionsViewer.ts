@@ -2,12 +2,11 @@ import { connect } from 'react-redux'
 
 import TransactionsPage from '../components/transaction/TransactionsPage'
 import {loadAccountList} from '../actions/AccountActions';
-import {loadBudgetInfoById} from '../actions/BudgetEntryActions';
 import {loadTotalsReport} from '../actions/ReportActions';
 import {RootState} from '../reducers/rootReducer';
 import {editTransaction} from '../actions/TransactionActions';
 import {Transaction} from '../models/Transaction';
-import {loadCurrentBudget} from '../actions/BudgetActions'
+import {loadCurrentBudget, loadSelectedBudget} from '../actions/BudgetActions'
 import {selectSelectedBudgetId} from "../selectors/BudgetSelector";
 
 export interface TransactionViewerState {
@@ -22,7 +21,7 @@ const mapStateToProps = (state: RootState):TransactionViewerState => {
   }
 }
 
-const mapDispatchToProps = {loadAccountList, loadBudgetInfoById, loadCurrentBudget, loadTotalsReport, editTransaction}
+const mapDispatchToProps = {loadAccountList, loadSelectedBudget, loadCurrentBudget, loadTotalsReport, editTransaction}
 
 export type TransactionViewerProps = TransactionViewerState & typeof mapDispatchToProps;
 

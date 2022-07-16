@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, Fragment} from 'react';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import CircularProgressWithLabel  from '../../widgets/CircularProgressWithLabel';
@@ -64,54 +64,38 @@ export function BudgetEntry(props: BudgetEntryProps) {
         const newEntry = {...props.entry, expected_amount: expectedAmount};
         props.save(newEntry);
     }
-    /*
-    render() {
-        const props = this.props;
-        const entry = this.state.entry;
 
-        if (entry.get('loading')) {
-            // Fast processing
-            return <ClipLoader sizeUnit={'px'} size={15} loading={true}/>
-        }
+    const setEvenDistribution = (value: boolean) => {
+        const newEntry = {...props.entry, even_distribution: value};
+        props.save(newEntry);
+    }
 
+    const setProration = (value: boolean) => {
+        const newEntry = {...props.entry, proration: value};
+        props.save(newEntry);
+    }
 
-        let progress = 0;
-        if (entry.get('expected_amount') !== 0) {
-            progress = Math.round(entry.get('actual_amount') / entry.get('expected_amount') * 100);
-            if (progress > 100) {
-                progress = 100
-            }
-        } else if (entry.get('actual_amount') > 0) {
-            progress = 100
-        }
-
-        let change = <div/>;
-        let editors = <div/>;
-        if (entry.get('account_type') === 'expense') {
-            editors = (
-                <Fragment>
-                    <Grid item xsOffset={5} xs={3} smOffset={5} sm={3} mdOffset={6} md={3} lgOffset={1} lg={1}>
-                        <FormControlLabel control={<Checkbox color='primary' checked={entry.get('even_distribution')} onChange={(ev, value) => ::this.onEdit('even_distribution', value, true)}/>} label={'Evenly distributed'}/>
-                    </Grid>
-                    <Grid item xs={3} sm={3} md={3} lg={1}>
-                        <FormControlLabel control={<Checkbox color='primary' checked={entry.get('proration')} onChange={(ev, value) => ::this.onEdit('proration', value, true)} disabled={!entry.get('even_distribution')}/>} label={'Prorate spendings'}/>
-                    </Grid>
-                </Fragment>
-            );
-            if (entry.get('change_amount')) {
-                change = <div>{entry.get('change_amount')} allowed</div>;
-            }
-        }
-
-    }*/
-
+    let editors = <div/>;
+    if (props.entry.account.account_type === 'EXPENSE') {
+        editors = (
+            <Fragment>
+                <Grid item xs={5} sm={5} md={6} lg={1}/>
+                <Grid item xs={3} sm={3} md={3} lg={1}>
+                    <FormControlLabel control={<Checkbox color='primary' checked={props.entry.even_distribution} onChange={(_, value) => setEvenDistribution(value)}/>} label={'Evenly distributed'}/>
+                </Grid>
+                <Grid item xs={3} sm={3} md={3} lg={1}>
+                    <FormControlLabel control={<Checkbox color='primary' checked={props.entry.proration} onChange={(_, value) => setProration(value)} disabled={!props.entry.even_distribution}/>} label={'Prorate spendings'}/>
+                </Grid>
+            </Fragment>
+        );
+    }
     return <div style={{paddingBottom:'8px', marginLeft: props.indent*15+10}}>
         <Grid container spacing={2}>
             <Grid item xs={3} sm={3} md={4} lg={3}>
                 <div>{props.entry.account.name}&nbsp;({props.entry.account.currency.name})</div>
             </Grid>
             <Grid item xs={3} sm={3} md={2} lg={1}>
-                {props.entry.allowed_spendings > 0 ? `${props.entry.allowed_spendings} allowed` : ""}
+                {props.entry.account.account_type === 'EXPENSE' && props.entry.allowed_spendings > 0 ? `${props.entry.allowed_spendings} allowed` : ""}
             </Grid>
             <Grid item xs={2} sm={2} md={2} lg={1}>
                 <div style={{width: '60px', height: '60px'}}>
@@ -124,7 +108,7 @@ export function BudgetEntry(props: BudgetEntryProps) {
             <Grid item xs={2} sm={2} md={2} lg={1}>
                 <div>{props.entry.actual_amount}</div>
             </Grid>
-            {/*editors*/}
+            {editors}
         </Grid>
     </div>
 }

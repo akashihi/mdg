@@ -1,13 +1,13 @@
 import {produce} from 'immer';
 import {Action} from 'redux';
 import { checkApiError, parseJSON} from '../util/ApiUtils';
-import { loadBudgetEntryList } from './BudgetEntryActions';
-import {loadCurrentBudget} from './BudgetActions';
+import {loadCurrentBudget, loadSelectedBudget} from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
 import { AccountActionType } from '../constants/Account'
-import {Account, AccountTreeNode} from "../models/Account";
-import {RootState} from "../reducers/rootReducer";
+import {Account, AccountTreeNode} from '../models/Account';
+import {RootState} from '../reducers/rootReducer';
+import {selectSelectedBudgetId} from '../selectors/BudgetSelector';
 
 export interface AccountAction extends Action {
     payload: {
@@ -58,7 +58,7 @@ export function loadAccountTree () {
                     payload: {assetTree: data.asset, incomeTree: data.income, expenseTree: data.expense}
                 })
             })
-            .catch(function (response) {
+            .catch(function () {
                 dispatch({
                     type: AccountActionType.AccountsFailure,
                     payload: []
@@ -114,7 +114,7 @@ export function updateAccount (account: Partial<Account>) {
       dispatch({type: AccountActionType.AccountsLoad, payload: [] })
 
       const state = getState()
-      const selectedBudgetId = (state.budgetentry as any).get('currentBudget').get('id');
+      const selectedBudgetId = selectSelectedBudgetId(state);
 
       let url = '/api/accounts';
       let method = 'POST';
@@ -135,7 +135,7 @@ export function updateAccount (account: Partial<Account>) {
           .then(() => dispatch(loadAccountList()))
           .then(() => dispatch(loadTotalsReport()))
           .then(() => dispatch(loadCurrentBudget()))
-          .then(() => { if (selectedBudgetId) { dispatch(loadBudgetEntryList(selectedBudgetId)) } })
+          .then(() => { if (selectedBudgetId) { dispatch(loadSelectedBudget(selectedBudgetId)) } })
           .catch(() => dispatch(loadAccountList()))
   }
 }
