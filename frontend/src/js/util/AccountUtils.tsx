@@ -5,7 +5,7 @@ import ListSubheader from '@mui/material/ListSubheader';
 import React from 'react';
 import {AccountTreeNode} from "../models/Account";
 
-function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: number) {
+function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: number):JSX.Element[] {
     const subCategories = tree.categories.flatMap(c => accountList(c, indent + 1, currencyFilter));
     let filteredAccounts = tree.accounts;
     if (currencyFilter) {

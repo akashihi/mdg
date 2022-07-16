@@ -95,7 +95,7 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
     }), {})
 
     const summary = Object.fromEntries(Object.entries(opsByType).map((group: any[]) => {
-        const totals = group[1].reduce((partialSum, a) => partialSum + a, 0)
+        const totals = group[1].reduce((partialSum: number, a:number) => partialSum + a, 0)
         return [group[0], totals];
     }));
     if (summary.ASSET > 0 && (summary.INCOME !== 0 || summary.EXPENSE !== 0)) {

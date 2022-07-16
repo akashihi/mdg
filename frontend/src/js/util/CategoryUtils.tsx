@@ -2,7 +2,7 @@ import React from 'react';
 import Category from "../models/Category";
 import MenuItem from '@mui/material/MenuItem';
 
-export const mapCategoryListToMenu = (categories: Category[], account_type:string, category_id?: number):Node[] => {
+export const mapCategoryListToMenu = (categories: Category[], account_type:string, category_id?: number):JSX.Element[] => {
     let entries = [];
 
     let entry = <MenuItem key='top' value={-1}>&lt;TOP&gt;</MenuItem>;
@@ -27,5 +27,5 @@ export const mapCategoryListToMenu = (categories: Category[], account_type:strin
     categories.filter(v => v.account_type.toLowerCase() === account_type.toLowerCase()).forEach((c) => {
         mapEntry(c, 0)
     });
-    return entries
+    return entries;
 }
