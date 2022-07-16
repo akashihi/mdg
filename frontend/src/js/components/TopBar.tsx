@@ -1,4 +1,4 @@
-import React, { Component, Fragment, useState } from 'react';
+import React, {Component, Fragment, useEffect, useState} from 'react';
 
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -9,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { NavLink, useLocation } from 'react-router-dom';
+import {TopBarProps} from "../containers/TopBar";
 
 function SmallTopBar () {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -60,47 +61,36 @@ function PrimaryTopBar () {
   const pathname = useLocation().pathname;
 
   const leftButtons = (
-    <>
+    <Fragment>
       <NavLink to='/' className='nav-link'><Button variant='contained' className={pathname === '/' ? 'selected-menu-btn' : 'menu-button'}> Overview</Button></NavLink>
       <NavLink to='/budget' className='nav-link'><Button variant='contained' className={pathname === '/budget' ? 'selected-menu-btn' : 'menu-button'}>Budget</Button></NavLink>
       <NavLink to='/transactions' className='nav-link'><Button variant='contained' className={pathname === '/transactions' ? 'selected-menu-btn' : 'menu-button'}>Transactions</Button></NavLink>
       <NavLink to='/reports' className='nav-link'><Button variant='contained' className={pathname === '/reports' ? 'selected-menu-btn' : 'menu-button'}>Reports</Button></NavLink>
       <NavLink to='/accounts' className='nav-link'><Button variant='contained' className={pathname === '/accounts' ? 'selected-menu-btn' : 'menu-button'}>Accounts</Button></NavLink>
-    </>
+    </Fragment>
   )
 
-  const rightButtons = (
-    <>
-      <NavLink to='/settings' className='nav-link'><Button variant='contained' className={pathname === '/settings' ? 'selected-menu-btn' : 'menu-button'}>Settings</Button></NavLink>
-    </>
-  )
-  return (
-    <AppBar position='static' className='hide-on-small hide-on-medium'>
+  return <AppBar position='static' className='hide-on-small hide-on-medium'>
       <Toolbar>
-        <Typography type='title' color='inherit' style={{ flex: 1 }}>
+        <Typography color='inherit' style={{ flex: 1 }}>
           {leftButtons}
         </Typography>
-        {rightButtons}
+          <NavLink to='/settings' className='nav-link'><Button variant='contained' className={pathname === '/settings' ? 'selected-menu-btn' : 'menu-button'}>Settings</Button></NavLink>
       </Toolbar>
     </AppBar>
-  )
 }
 
-export default class TopBar extends Component {
-  componentDidMount () {
-    this.props.currencyActions.loadCurrencyList()
-    this.props.settingActions.loadSettingList()
-    //this.props.budgetActions.loadBudgetList()
-    this.props.tagActions.loadTagList()
-    this.props.rateActions.loadRatesList()
-  }
-
-  render () {
-    return (
-      <>
+export function TopBar(props: TopBarProps)  {
+    useEffect(() => {
+        props.loadCurrencyList();
+        props.loadSettingList();
+        props.loadTagList();
+        props.loadRatesList();
+    }, []);
+    return <Fragment>
         <PrimaryTopBar />
         <SmallTopBar />
-      </>
-    )
-  }
+      </Fragment>
 }
+
+export default TopBar;
