@@ -1,99 +1,70 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment, useState, useEffect} from 'react';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
-import ClipLoader from 'react-spinners/ClipLoader';
 
-import BudgetEntry from './BudgetEntry'
+import {BudgetCategoryEntry, BudgetEntry} from './BudgetEntry'
 import BudgetSelector from '../../containers/BudgetSelector'
 import BudgetInfo from './BudgetInfo'
 import {BudgetViewerProps} from "../../containers/BudgetViewer";
+import {BudgetEntryTreeNode} from "../../models/Budget";
+import { checkApiError, parseJSON} from '../../util/ApiUtils';
+import List from '@mui/material/List';
+import ListItemText from '@mui/material/ListItemText';
 
 const cardStyle = {
     padding: '0px',
     paddingBottom: '16px'
 };
 
-/*class HiddenEntriesButton extends Component {
-    render() {
-        return ()
+const mapEntries = (tree: BudgetEntryTreeNode, indent: number, hidden: boolean) => {
+    const subCategories = tree.categories.flatMap(c => mapEntries(c, indent +1, hidden));
+
+    let filteredEntries = tree.entries;
+    if (!hidden) {
+        filteredEntries = tree.entries.filter(e => e.actual_amount !== 0 || e.expected_amount !== 0);
     }
-}*/
+    const entries = filteredEntries.map(e => <ListItemText><BudgetEntry entry={e} indent={indent}/></ListItemText>);
+    if (tree.name !== undefined) {
+        return [<ListItemText><BudgetCategoryEntry entry={tree} indent={indent}/></ListItemText>].concat(entries).concat(subCategories);
+    }
+    return entries.concat(subCategories);
+}
+
+function BudgetEntries(props: {entries: BudgetEntryTreeNode, title: string, showEmpty: boolean}) {
+
+    return <Card style={cardStyle}>
+        <CardHeader style={{paddingTop: '0px'}} title={props.title.charAt(0).toUpperCase() + props.title.slice(1)}/>
+        <CardContent>
+            <List component='div' disablePadding>
+                {mapEntries(props.entries, 0, props.showEmpty)}
+            </List>
+        </CardContent>
+    </Card>
+}
 
 export function BudgetPage(props: BudgetViewerProps) {
     const [showEmpty, setShowEmpty] = useState<boolean>(false);
-    /*onHiddenEntriesClick() {
-        this.props.actions.toggleHiddenEntries(!this.props.emptyVisible)
-    }
+    const [incomeEntries, setIncomeEntries] = useState<BudgetEntryTreeNode|null>(null);
+    const [expenseEntries, setExpenseEntries] = useState<BudgetEntryTreeNode|null>(null);
 
-    mapEntry(item, id) {
-        const props = this.props;
-
-        const account = props.accounts.get(item.get('account_id'));
-
-        const currency = props.currencies.get(account.get('currency_id'));
-
-        return (
-            <BudgetEntry entry={item} id={id} key={id} currency={currency}
-                         saveBudgetEntryChange={props.entryActions.updateBudgetEntry}/>
-        )
-    }
-
-    renderEntries(entries, type) {
-        const props = this.props;
-        const mappedEntries = entries.filter((item) => props.accounts.filter((v) => v.get('account_type') === type).keySeq().toJS().includes(item.get('account_id'))).map(::this.mapEntry).valueSeq();
-
-        return  (
-            <Card style={cardStyle}>
-                <CardHeader style={{paddingTop: '0px'}} title={type.charAt(0).toUpperCase() + type.slice(1)}/>
-                <CardContent>{mappedEntries}</CardContent>
-            </Card>
-        );
-
-    }
-
-    renderBudget() {
-        const props = this.props;
-
-        if (props.loading) {
-            return <ClipLoader sizeUnit={'px'} size={150} loading={true}/>
+    useEffect(() => {
+        if (props.budget === null) {
+            return;
         }
 
-        if (props.error) {
-            return <h1>Unable to load budget entries</h1>
-        }
+        fetch(`/api/budgets/${props.budget.id}/entries/tree?embed=category,account,currency`)
+            .then(parseJSON)
+            .then(checkApiError)
+            .then((json: any) => {
+                setIncomeEntries(json.income as BudgetEntryTreeNode);
+                setExpenseEntries(json.expense as BudgetEntryTreeNode);
+            });
 
-        let nonEmptyEntries = props.entries;
-        if (!props.emptyVisible) {
-            nonEmptyEntries = props.entries.filter((item) => item.get('actual_amount') !== 0 || item.get('expected_amount') !== 0);
-        }
-
-        const incomeCard = this.renderEntries(nonEmptyEntries, 'income');
-        const expenseCard = this.renderEntries(nonEmptyEntries, 'expense');
-
-        return (<Fragment>
-            {incomeCard}
-            {expenseCard}
-        </Fragment>);
-
-    }
-
-    render() {
-
-        return (
-                <Card>
-                    <CardActions>
-                        {hiddenButton}
-                    </CardActions>
-                    <BudgetInfo budget={props.budget}/>
-                </Card>
-                <Divider/>
-                {::this.renderBudget()}
-        )
-    }*/
+    }, [props.budget])
 
     let emptyHiddenButton;
     if (showEmpty) {
@@ -111,6 +82,11 @@ export function BudgetPage(props: BudgetViewerProps) {
                 <BudgetInfo budget={props.budget} short={false}/>
             </CardContent>
         </Card>
+        <Divider/>
+        <Fragment>
+            {incomeEntries != null && <BudgetEntries title={'income'} entries={incomeEntries} showEmpty={showEmpty}/>}
+            {expenseEntries != null && <BudgetEntries title={'expense'} entries={expenseEntries} showEmpty={showEmpty}/>}
+        </Fragment>
     </Fragment>;
 }
 

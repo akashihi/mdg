@@ -8,10 +8,6 @@ import {
   BUDGETENTRY_PARTIAL_SUCCESS
 } from '../constants/BudgetEntry'
 
-import {
-  TOGGLE_HIDDEN_ENTRIES
-} from '../constants/Budget'
-
 const initialState = Map({
   currentBudget: Map({
     id: '',
@@ -61,8 +57,6 @@ export default function budgetEntryReducer (state = initialState, action) {
         .setIn(['ui', 'entryListLoading'], false)
     case SET_CURRENT_BUDGET:
       return state.set('currentBudget', action.payload)
-    case TOGGLE_HIDDEN_ENTRIES:
-      return state.setIn(['ui', 'hiddenEntriesVisible'], action.payload)
     default:
       return state
   }

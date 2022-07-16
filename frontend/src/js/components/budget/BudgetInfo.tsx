@@ -2,43 +2,17 @@ import React, { Fragment } from 'react'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Grid from '@mui/material/Grid'
-import CircularProgress, {CircularProgressProps} from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import {Budget} from '../../models/Budget';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
+import CircularProgressWithLabel from '../../widgets/CircularProgressWithLabel';
 
 export interface BudgetInfoProps {
     short: boolean,
     budget: Budget
 }
 
-function CircularProgressWithLabel(props: CircularProgressProps & { value: number }) {
-    return (
-        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-            <CircularProgress variant='determinate' {...props} />
-            <Box
-                sx={{
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    right: 0,
-                    position: 'absolute',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <Typography
-                    variant='caption'
-                    component='div'
-                    color='text.secondary'
-                >{`${Math.round(props.value)}%`}</Typography>
-            </Box>
-        </Box>
-    );
-}
+
 
 export function BudgetInfo(props: BudgetInfoProps) {
     if (props.budget === null) {
@@ -63,13 +37,13 @@ export function BudgetInfo(props: BudgetInfoProps) {
         expensePercentageOffset = 10;
     }
 
-    let incomePercentage = 0;
+    let incomePercentage = 100;
     if (props.budget.state.income.expected !== 0) {
         incomePercentage = Math.round(props.budget.state.income.actual / props.budget.state.income.expected * 100);
     }
-    let expensePercentage = 0;
+    let expensePercentage = 100;
     if (props.budget.state.expense.expected !== 0) {
-        Math.round(props.budget.state.expense.actual / props.budget.state.expense.expected * 100);
+        expensePercentage= Math.round(props.budget.state.expense.actual / props.budget.state.expense.expected * 100);
     }
 
     const totalChange = props.budget.state.allowed.actual + props.budget.state.allowed.expected;
@@ -114,7 +88,7 @@ export function BudgetInfo(props: BudgetInfoProps) {
                 </Grid>
                 <Grid item xs={1}/>
                 <Grid item xs={1}>
-                    <CircularProgressWithLabel value={incomePercentage} size="80px"/>
+                    <CircularProgressWithLabel value={incomePercentage} size='80px'/>
                 </Grid>
                 <Grid item xs={1} sm={1} md={1} lg={1}/>
                 <Grid item xs={4} sm={4} md={4} lg={4}>
@@ -126,7 +100,7 @@ export function BudgetInfo(props: BudgetInfoProps) {
                 <Grid item xs={1} sm={1} md={1} lg={1}/>
                 {!props.short && <Grid item xs={1} sm={1} md={1} lg={1}/>}
                 <Grid item xs={1}>
-                    <CircularProgressWithLabel variant='determinate' value={expensePercentage} size="80px" sx={{textAlign: 'right'}}/>
+                    <CircularProgressWithLabel variant='determinate' value={expensePercentage} size='80px' sx={{textAlign: 'right'}}/>
                 </Grid>
                 <Grid item xs={3} sm={3} md={3} lg={3}>
                     {props.budget.state.income.actual} of {props.budget.state.income.expected}

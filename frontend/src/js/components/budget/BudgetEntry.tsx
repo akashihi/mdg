@@ -1,13 +1,58 @@
 import React, {Component, Fragment} from 'react';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import CircularProgressWithLabel  from '@mui/material/CircularProgress';
+import CircularProgressWithLabel  from '../../widgets/CircularProgressWithLabel';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import ClipLoader from 'react-spinners/ClipLoader';
+import {BudgetEntry, BudgetEntryTreeNode} from "../../models/Budget";
+import Divider from '@mui/material/Divider';
 
-export default class BudgetEntry extends Component {
-    constructor(props) {
+function entryColor(progress: number, account_type: string):"error"|"secondary"|"success" {
+    let color_progress = progress;
+    if (account_type === 'INCOME') {
+        color_progress = 1/color_progress;
+    }
+    if (color_progress >= 95) {
+        return 'error';
+    } else if (color_progress >= 80) {
+        return 'secondary';
+    } else {
+        return 'success';
+    }
+}
+
+export function BudgetCategoryEntry(props: {entry: BudgetEntryTreeNode, indent: number}) {
+    let accountType = 'EXPENSE';
+    if (props.entry.entries.length !== 0) {
+       accountType = props.entry.entries[0].account.account_type;
+    }
+
+    return <div style={{paddingBottom:'8px', fontStyle: 'italic', marginLeft: props.indent*15}}>
+        <Grid container spacing={2}>
+            <Grid item xs={3} sm={3} md={4} lg={3}>
+                <div>{props.entry.name}</div>
+            </Grid>
+            <Grid item xs={3} sm={3} md={2} lg={1}>
+                {props.entry.allowed_spendings}
+            </Grid>
+            <Grid item xs={2} sm={2} md={2} lg={1}>
+                <div style={{width: '60px', height: '60px'}}>
+                    <CircularProgressWithLabel variant='determinate' value={props.entry.spending_percent} color={entryColor(props.entry.spending_percent, accountType)}/>
+                </div>
+            </Grid>
+            <Grid item xs={2} sm={2} md={2} lg={2}>
+                <div>{props.entry.expected_amount}</div>
+            </Grid>
+            <Grid item xs={2} sm={2} md={2} lg={1}>
+                <div>{props.entry.actual_amount}</div>
+            </Grid>
+        </Grid>
+        <Divider/>
+    </div>
+}
+
+export function BudgetEntry(props: {entry: BudgetEntry, indent: number}) {
+    /*constructor(props) {
         super(props);
         this.state = {entry: props.entry}
     }
@@ -41,19 +86,6 @@ export default class BudgetEntry extends Component {
             }
         } else if (entry.get('actual_amount') > 0) {
             progress = 100
-        }
-
-        let entry_color;
-        let color_progress = progress;
-        if (entry.get('account_type') === 'income') {
-            color_progress = 1/color_progress;
-        }
-        if (color_progress >= 95) {
-            entry_color = 'error'
-        } else if (color_progress >= 80) {
-            entry_color = 'secondary'
-        } else {
-            entry_color = 'success'
         }
 
         let change = <div/>;
@@ -99,5 +131,29 @@ export default class BudgetEntry extends Component {
                 </div>
             </Grid>
         )
-    }
+    }*/
+
+    return <div style={{paddingBottom:'8px', marginLeft: props.indent*15+10}}>
+        <Grid container spacing={2}>
+            <Grid item xs={3} sm={3} md={4} lg={3}>
+                <div>{props.entry.account.name}&nbsp;({props.entry.account.currency.name})</div>
+            </Grid>
+            <Grid item xs={3} sm={3} md={2} lg={1}>
+                {props.entry.allowed_spendings}
+            </Grid>
+            <Grid item xs={2} sm={2} md={2} lg={1}>
+                <div style={{width: '60px', height: '60px'}}>
+                    <CircularProgressWithLabel variant='determinate' value={props.entry.spending_percent} color={entryColor(props.entry.spending_percent, props.entry.account.account_type)}/>
+                </div>
+            </Grid>
+            <Grid item xs={2} sm={2} md={2} lg={2}>
+                {/*<TextField id={'budgetentry' + props.id} defaultValue={entry.get('expected_amount')} type='number'
+                           onBlur={::this.onSave} onChange={(ev) => ::this.onEdit('expected_amount', ev.target.value, false)}/>*/}
+            </Grid>
+            <Grid item xs={2} sm={2} md={2} lg={1}>
+                <div>{props.entry.actual_amount}</div>
+            </Grid>
+            {/*editors*/}
+        </Grid>
+    </div>
 }
