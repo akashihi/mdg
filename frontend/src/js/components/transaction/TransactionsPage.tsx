@@ -141,8 +141,9 @@ export function TransactionsPage(props: TransactionViewerProps) {
                 }
                 props.loadAccountList();
                 props.loadTotalsReport();
+                props.loadCurrentBudget();
                 if (props.currentBudgetId !== undefined) {
-                    props.loadBudgetInfoById(props.currentBudgetId);
+                    props.loadSelectedBudget(props.currentBudgetId);
                 }
             })
 
@@ -202,8 +203,9 @@ export function TransactionsPage(props: TransactionViewerProps) {
                     setLoading(false);
                     props.loadAccountList();
                     props.loadTotalsReport();
+                    props.loadCurrentBudget();
                     if (props.currentBudgetId !== undefined) {
-                        props.loadBudgetInfoById(props.currentBudgetId);
+                        props.loadSelectedBudget(props.currentBudgetId);
                     }
                     loadTransactions();
             })
