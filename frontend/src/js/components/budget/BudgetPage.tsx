@@ -20,27 +20,23 @@ const cardStyle = {
     paddingBottom: '16px'
 };
 
-const mapEntries = (tree: BudgetEntryTreeNode, indent: number, hidden: boolean) => {
-    const subCategories = tree.categories.flatMap(c => mapEntries(c, indent +1, hidden));
+const mapEntries = (tree: BudgetEntryTreeNode, indent: number) => {
+    const subCategories = tree.categories.flatMap(c => mapEntries(c, indent + 1));
 
-    let filteredEntries = tree.entries;
-    if (!hidden) {
-        filteredEntries = tree.entries.filter(e => e.actual_amount !== 0 || e.expected_amount !== 0);
-    }
-    const entries = filteredEntries.map(e => <ListItemText><BudgetEntry entry={e} indent={indent}/></ListItemText>);
+    const entries = tree.entries.map(e => <ListItemText><BudgetEntry entry={e} indent={indent}/></ListItemText>);
     if (tree.name !== undefined) {
         return [<ListItemText><BudgetCategoryEntry entry={tree} indent={indent}/></ListItemText>].concat(entries).concat(subCategories);
     }
     return entries.concat(subCategories);
 }
 
-function BudgetEntries(props: {entries: BudgetEntryTreeNode, title: string, showEmpty: boolean}) {
+function BudgetEntries(props: {entries: BudgetEntryTreeNode, title: string}) {
 
     return <Card style={cardStyle}>
         <CardHeader style={{paddingTop: '0px'}} title={props.title.charAt(0).toUpperCase() + props.title.slice(1)}/>
         <CardContent>
             <List component='div' disablePadding>
-                {mapEntries(props.entries, 0, props.showEmpty)}
+                {mapEntries(props.entries, 0)}
             </List>
         </CardContent>
     </Card>
@@ -56,7 +52,11 @@ export function BudgetPage(props: BudgetViewerProps) {
             return;
         }
 
-        fetch(`/api/budgets/${props.budget.id}/entries/tree?embed=category,account,currency`)
+        let filter = 'nonzero';
+        if (showEmpty) {
+            filter = 'all';
+        }
+        fetch(`/api/budgets/${props.budget.id}/entries/tree?embed=category,account,currency&filter=${filter}`)
             .then(parseJSON)
             .then(checkApiError)
             .then((json: any) => {
@@ -64,7 +64,7 @@ export function BudgetPage(props: BudgetViewerProps) {
                 setExpenseEntries(json.expense as BudgetEntryTreeNode);
             });
 
-    }, [props.budget])
+    }, [props.budget, showEmpty])
 
     let emptyHiddenButton;
     if (showEmpty) {
@@ -84,8 +84,8 @@ export function BudgetPage(props: BudgetViewerProps) {
         </Card>
         <Divider/>
         <Fragment>
-            {incomeEntries != null && <BudgetEntries title={'income'} entries={incomeEntries} showEmpty={showEmpty}/>}
-            {expenseEntries != null && <BudgetEntries title={'expense'} entries={expenseEntries} showEmpty={showEmpty}/>}
+            {incomeEntries != null && <BudgetEntries title={'income'} entries={incomeEntries}/>}
+            {expenseEntries != null && <BudgetEntries title={'expense'} entries={expenseEntries}/>}
         </Fragment>
     </Fragment>;
 }

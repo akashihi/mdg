@@ -7,7 +7,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import {BudgetEntry, BudgetEntryTreeNode} from "../../models/Budget";
 import Divider from '@mui/material/Divider';
 
-function entryColor(progress: number, account_type: string):"error"|"secondary"|"success" {
+function entryColor(progress: number, account_type: string):"error"|"warning"|"success" {
     let color_progress = progress;
     if (account_type === 'INCOME') {
         color_progress = 1/color_progress;
@@ -15,7 +15,7 @@ function entryColor(progress: number, account_type: string):"error"|"secondary"|
     if (color_progress >= 95) {
         return 'error';
     } else if (color_progress >= 80) {
-        return 'secondary';
+        return 'warning';
     } else {
         return 'success';
     }
