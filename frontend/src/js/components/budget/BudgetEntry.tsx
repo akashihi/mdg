@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, {useState} from 'react';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import CircularProgressWithLabel  from '../../widgets/CircularProgressWithLabel';
@@ -6,6 +6,12 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import {BudgetEntry, BudgetEntryTreeNode} from "../../models/Budget";
 import Divider from '@mui/material/Divider';
+
+export interface BudgetEntryProps {
+    entry: BudgetEntry,
+    indent: number,
+    save: (BudgetEntry) => void
+}
 
 function entryColor(progress: number, account_type: string):"error"|"warning"|"success" {
     let color_progress = progress;
@@ -33,7 +39,7 @@ export function BudgetCategoryEntry(props: {entry: BudgetEntryTreeNode, indent: 
                 <div>{props.entry.name}</div>
             </Grid>
             <Grid item xs={3} sm={3} md={2} lg={1}>
-                {props.entry.allowed_spendings}
+                {props.entry.allowed_spendings > 0 ? `${props.entry.allowed_spendings} allowed` : ""}
             </Grid>
             <Grid item xs={2} sm={2} md={2} lg={1}>
                 <div style={{width: '60px', height: '60px'}}>
@@ -41,7 +47,7 @@ export function BudgetCategoryEntry(props: {entry: BudgetEntryTreeNode, indent: 
                 </div>
             </Grid>
             <Grid item xs={2} sm={2} md={2} lg={2}>
-                <div>{props.entry.expected_amount}</div>
+                <div style={{textDecoration: "underline"}}>{props.entry.expected_amount}</div>
             </Grid>
             <Grid item xs={2} sm={2} md={2} lg={1}>
                 <div>{props.entry.actual_amount}</div>
@@ -51,23 +57,14 @@ export function BudgetCategoryEntry(props: {entry: BudgetEntryTreeNode, indent: 
     </div>
 }
 
-export function BudgetEntry(props: {entry: BudgetEntry, indent: number}) {
-    /*constructor(props) {
-        super(props);
-        this.state = {entry: props.entry}
-    }
-    onSave() {
-        const e = this.state.entry.set('loading', true);
-        this.setState({entry: e}, () => this.props.saveBudgetEntryChange(this.props.id, this.state.entry)); //We need to set it here, cause global setter will not update instance state.
-    }
+export function BudgetEntry(props: BudgetEntryProps) {
+    const [expectedAmount, setExpectedAmount] = useState<number>(props.entry.expected_amount);
 
-    onEdit(field, value, shouldSave) {
-        const e = this.state.entry.set(field, value);
-        this.setState({entry: e}, () => {if (shouldSave) {
-            ::this.onSave()
-        }});
+    const save = () => {
+        const newEntry = {...props.entry, expected_amount: expectedAmount};
+        props.save(newEntry);
     }
-
+    /*
     render() {
         const props = this.props;
         const entry = this.state.entry;
@@ -106,31 +103,6 @@ export function BudgetEntry(props: {entry: BudgetEntry, indent: number}) {
             }
         }
 
-        return (
-            <Grid container spacing={2}>
-                <div style={{paddingBottom:'8px'}}>
-                    <Grid item xs={3} sm={3} md={4} lg={3}>
-                        <div>{entry.get('account_name')}&nbsp;({props.currency.get('name')})</div>
-                    </Grid>
-                    <Grid item xs={3} sm={3} md={2} lg={1}>
-                        {change}
-                    </Grid>
-                    <Grid item xs={2} sm={2} md={2} lg={1}>
-                        <div style={{width: '60px', height: '60px'}}>
-                            <CircularProgressWithLabel variant='determinate' value={progress} color={entry_color}/>
-                        </div>
-                    </Grid>
-                    <Grid item xs={2} sm={2} md={2} lg={2}>
-                        <TextField id={'budgetentry' + props.id} defaultValue={entry.get('expected_amount')} type='number'
-                                   onBlur={::this.onSave} onChange={(ev) => ::this.onEdit('expected_amount', ev.target.value, false)}/>
-                    </Grid>
-                    <Grid item xs={2} sm={2} md={2} lg={1}>
-                        <div>{entry.get('actual_amount')}</div>
-                    </Grid>
-                    {editors}
-                </div>
-            </Grid>
-        )
     }*/
 
     return <div style={{paddingBottom:'8px', marginLeft: props.indent*15+10}}>
@@ -139,7 +111,7 @@ export function BudgetEntry(props: {entry: BudgetEntry, indent: number}) {
                 <div>{props.entry.account.name}&nbsp;({props.entry.account.currency.name})</div>
             </Grid>
             <Grid item xs={3} sm={3} md={2} lg={1}>
-                {props.entry.allowed_spendings}
+                {props.entry.allowed_spendings > 0 ? `${props.entry.allowed_spendings} allowed` : ""}
             </Grid>
             <Grid item xs={2} sm={2} md={2} lg={1}>
                 <div style={{width: '60px', height: '60px'}}>
@@ -147,8 +119,7 @@ export function BudgetEntry(props: {entry: BudgetEntry, indent: number}) {
                 </div>
             </Grid>
             <Grid item xs={2} sm={2} md={2} lg={2}>
-                {/*<TextField id={'budgetentry' + props.id} defaultValue={entry.get('expected_amount')} type='number'
-                           onBlur={::this.onSave} onChange={(ev) => ::this.onEdit('expected_amount', ev.target.value, false)}/>*/}
+                <TextField id={'budgetentry' + props.entry.id} value={expectedAmount} type='number' onBlur={save} onChange={(ev) => setExpectedAmount(parseInt(ev.target.value))}/>
             </Grid>
             <Grid item xs={2} sm={2} md={2} lg={1}>
                 <div>{props.entry.actual_amount}</div>
