@@ -94,7 +94,7 @@ export function BudgetPage(props: BudgetViewerProps) {
 
     const saveEntry = (entry: BudgetEntryType) => {
         setLoading(true);
-        let url = `/api/budgets/${props.budget.id}/entries/${entry.id}`;
+        const url = `/api/budgets/${props.budget.id}/entries/${entry.id}`;
         const method = 'PUT';
 
         fetch(url, {

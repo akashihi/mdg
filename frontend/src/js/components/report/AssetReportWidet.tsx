@@ -30,8 +30,7 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
                     dates: dates,
                     series: json.series,
                 });
-            })
-            .catch(function () {});
+            });
     }, [props]);
 
     const baseOptions = {

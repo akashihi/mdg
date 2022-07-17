@@ -80,7 +80,7 @@ export function BudgetList(props: BudgetSelectorProps) {
     };
 
     const newBudgetValidate = values => {
-        let errors = {};
+        const errors = {};
         if (!values.begin || !values.end) {
             return errors;
         }

@@ -18,7 +18,7 @@ export function ActiveCurrencyEditor(props: CurrencyEditorProps) {
         c.map((item, index) => {
             return (
                 <ListItem key={item.id} dense>
-                    <ListItemButton selected={selected === index} onClick={_ => setter(index)}>
+                    <ListItemButton selected={selected === index} onClick={() => setter(index)}>
                         <ListItemText primary={item.name} />
                     </ListItemButton>
                 </ListItem>

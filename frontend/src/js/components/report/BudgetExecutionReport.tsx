@@ -46,8 +46,7 @@ export function BudgetExecutionReport(props: ReportProps) {
                     expected_expense: json.expected_expense,
                     profit: json.profit,
                 });
-            })
-            .catch(function () {});
+            });
     }, [props]);
     const options = {
         title: {

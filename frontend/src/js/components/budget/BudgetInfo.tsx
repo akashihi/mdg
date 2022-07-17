@@ -27,14 +27,6 @@ export function BudgetInfo(props: BudgetInfoProps) {
         paddingBottom: '16px',
     };
 
-    // That circular thingy needs to be moved, while rendering as overview widget
-    let expensePercentageOffset;
-    if (props.short) {
-        expensePercentageOffset = 9;
-    } else {
-        expensePercentageOffset = 10;
-    }
-
     let incomePercentage = 100;
     if (props.budget.state.income.expected !== 0) {
         incomePercentage = Math.round((props.budget.state.income.actual / props.budget.state.income.expected) * 100);
@@ -52,7 +44,7 @@ export function BudgetInfo(props: BudgetInfoProps) {
 
     const actualProfit = props.budget.outgoing_amount.actual - props.budget.incoming_amount;
     const renderedActualProfit = (actualProfit <= 0 ? '' : '+') + actualProfit.toFixed(2);
-    let expectedProfit = props.budget.outgoing_amount.expected - props.budget.incoming_amount;
+    const expectedProfit = props.budget.outgoing_amount.expected - props.budget.incoming_amount;
     const renderedExpectedProfit = (expectedProfit <= 0 ? '' : '+') + expectedProfit.toFixed(2);
 
     const title = `Budget for: ${props.budget.term_beginning}  - ${props.budget.term_end}`;

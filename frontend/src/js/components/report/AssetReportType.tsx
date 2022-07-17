@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { ReportProps } from './ReportsPage';
 import { reportDatesToParams } from '../../util/ReportUtils';
 import AssetReportWidet from './AssetReportWidet';

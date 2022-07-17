@@ -7,9 +7,9 @@ export const mapCategoryListToMenu = (
     account_type: string,
     category_id?: number
 ): JSX.Element[] => {
-    let entries = [];
+    const entries = [];
 
-    let entry = (
+    const entry = (
         <MenuItem key="top" value={-1}>
             &lt;TOP&gt;
         </MenuItem>

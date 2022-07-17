@@ -148,9 +148,12 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
+      - name: Codestyle
+        working-directory: ./frontend
+        run: npx prettier --check src/
       - name: Lint
         working-directory: ./frontend
-        run: npm run lint
+        run: npx eslint src/js/**
 
   web-ui-build:
     runs-on: ubuntu-latest

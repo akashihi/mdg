@@ -92,7 +92,7 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
             .reduce((partialSum, o) => partialSum + o.amount * o.rate, 0);
         return { color: 'orange', total: positiveAssetSum };
     }
-    const opsByType = tx.operations.reduce(
+    const opsByType: Record<string, number[]> = tx.operations.reduce(
         (groups, item) => ({
             ...groups,
             [item.account.account_type]: [...(groups[item.account.account_type] || []), item.amount * item.rate],
@@ -101,7 +101,7 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
     );
 
     const summary = Object.fromEntries(
-        Object.entries(opsByType).map((group: any[]) => {
+        Object.entries(opsByType).map((group: [string, number[]]) => {
             const totals = group[1].reduce((partialSum: number, a: number) => partialSum + a, 0);
             return [group[0], totals];
         })

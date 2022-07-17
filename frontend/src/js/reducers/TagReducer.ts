@@ -1,7 +1,6 @@
 import produce from 'immer';
 import { TagActionType } from '../constants/Tag';
 import { TagAction } from '../actions/TagActions';
-import { SettingUiState } from '../constants/Setting';
 
 export interface TagState {
     tags: string[];

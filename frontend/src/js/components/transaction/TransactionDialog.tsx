@@ -22,7 +22,7 @@ import RSelect from 'react-select';
 import { produce } from 'immer';
 
 import { TransactionDialogProps } from '../../containers/TransactionEditor';
-import { EditedOperation, EditedTransaction, Operation, Transaction } from '../../models/Transaction';
+import { EditedOperation, EditedTransaction, Operation } from '../../models/Transaction';
 import {
     validateAccountSelected,
     validateOperationAmount,
@@ -43,7 +43,7 @@ function evaluateEquation(value: string): string {
         const strAmount = value.toString();
         if (strAmount.slice(-1) === '=') {
             //If it ends with =
-            let expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
+            const expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
             try {
                 value = evaluate(expr);
             } catch (e) {
@@ -203,9 +203,9 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
     };
 
     const ops = props.operations.map((op, index) => {
-        let amountValidity = validateOperationAmount(props.operations[index].amountValue);
-        let accountValidity = validateAccountSelected(op.account_id);
-        let rateValidity = validateRate(props.operations[index].rateValue);
+        const amountValidity = validateOperationAmount(props.operations[index].amountValue);
+        const accountValidity = validateAccountSelected(op.account_id);
+        const rateValidity = validateRate(props.operations[index].rateValue);
 
         return (
             <Grid container spacing={2} key={'op' + index} style={{ marginTop: '5px' }}>

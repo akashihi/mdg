@@ -37,8 +37,7 @@ export function EventsReportByWeight(props: EventReportProps) {
                     dates: dates,
                     data: data,
                 });
-            })
-            .catch(function () {});
+            });
     }, [props]);
 
     const options = {
