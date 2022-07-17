@@ -79,7 +79,7 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
         if (amountValidity === null) {
             const amount = parseFloat(evaluated);
             updatedOps = [
-                { ...updatedOps[0], amount: -1 * amount },
+                { ...updatedOps[0], amount: -1 * amount, amountValue: String(-1 * amount) },
                 { ...updatedOps[1], amount: amount },
             ];
         }
@@ -293,15 +293,15 @@ export function TransactionDialog(props: TransactionDialogProps) {
             return;
         }
         if (tx.editedOperations.map(o => validateAccountSelected(o.account_id)).some(e => e !== null)) {
-            setTransactionValidity('');
+            setTransactionValidity('Some accounts are missing');
             return;
         }
         if (tx.editedOperations.map(o => validateOperationAmount(o.amountValue)).some(e => e !== null)) {
-            setTransactionValidity('');
+            setTransactionValidity('Some ops are incorrect');
             return;
         }
         if (tx.editedOperations.map(o => validateRate(o.rateValue)).some(e => e !== null)) {
-            setTransactionValidity('');
+            setTransactionValidity('Some rates are incorrect');
             return;
         }
         setTransactionValidity(null);
