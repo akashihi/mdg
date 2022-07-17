@@ -14,6 +14,7 @@ import { FieldAttributes, useFormikContext } from 'formik';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function FormikDatePicker(props: FieldAttributes<any>) {
     const { setFieldValue } = useFormikContext();
 
