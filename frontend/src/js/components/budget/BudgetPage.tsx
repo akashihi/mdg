@@ -82,7 +82,7 @@ export function BudgetPage(props: BudgetViewerProps) {
         }
         fetch(`/api/budgets/${props.budget.id}/entries/tree?embed=category,account,currency&filter=${filter}`)
             .then(processApiResponse)
-            .then((json) => {
+            .then(json => {
                 setIncomeEntries(json.income as BudgetEntryTreeNode);
                 setExpenseEntries(json.expense as BudgetEntryTreeNode);
                 setLoading(false);

@@ -36,7 +36,7 @@ export function BudgetList(props: BudgetSelectorProps) {
         setLoading(true);
         fetch('/api/budgets')
             .then(processApiResponse)
-            .then((json) => {
+            .then(json => {
                 setBudgets(json.budgets as ShortBudget[]);
                 setLoading(false);
             });
@@ -70,7 +70,7 @@ export function BudgetList(props: BudgetSelectorProps) {
             body: JSON.stringify(newBudget),
         })
             .then(processApiResponse)
-            .then((response) => {
+            .then(response => {
                 setBudgets([...budgets, response as ShortBudget]);
                 props.loadSelectedBudget(response.id);
                 setLoading(false);

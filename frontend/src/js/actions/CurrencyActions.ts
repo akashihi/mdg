@@ -56,8 +56,6 @@ export function updateCurrency(currency: Currency, isActive: boolean) {
             body: JSON.stringify(updatedCurrency),
         })
             .then(processApiResponse)
-            .then((data) =>
-                dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [data as Currency] })
-            );
+            .then(data => dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [data as Currency] }));
     };
 }

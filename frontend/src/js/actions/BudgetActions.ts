@@ -15,7 +15,7 @@ export function loadCurrentBudget() {
         const id = moment().format('YYYYMMDD');
         fetch(`/api/budgets/${id}`)
             .then(processApiResponse)
-            .then((json) => {
+            .then(json => {
                 dispatch({ type: BudgetActionType.StoreCurrentBudget, payload: json as Budget });
             });
     };
@@ -25,7 +25,7 @@ export function loadSelectedBudget(id) {
     return dispatch => {
         fetch(`/api/budgets/${id}`)
             .then(processApiResponse)
-            .then((json) => {
+            .then(json => {
                 dispatch({ type: BudgetActionType.StoreSelectedBudget, payload: json as Budget });
             });
     };

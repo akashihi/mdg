@@ -1,7 +1,7 @@
 export interface Error {
-    title: string,
-    instance: string,
-    status: number
+    title: string;
+    instance: string;
+    status: number;
 }
 
 export function processApiResponse(response: Response) {
@@ -10,7 +10,7 @@ export function processApiResponse(response: Response) {
         return response.json();
     }
 
-    response.json().then((json) => {
+    response.json().then(json => {
         throw json as Error;
-    })
+    });
 }
