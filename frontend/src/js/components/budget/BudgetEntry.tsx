@@ -71,6 +71,15 @@ export function BudgetEntry(props: BudgetEntryProps) {
         props.save(newEntry);
     };
 
+    const applyExpectedAmount = (value: string) => {
+        const amount = parseInt(value);
+        if (isNaN(amount)) {
+            setExpectedAmount(0);
+        } else {
+            setExpectedAmount(amount);
+        }
+    }
+
     const setEvenDistribution = (value: boolean) => {
         const newEntry = { ...props.entry, even_distribution: value };
         props.save(newEntry);
@@ -142,7 +151,7 @@ export function BudgetEntry(props: BudgetEntryProps) {
                         value={expectedAmount}
                         type="number"
                         onBlur={save}
-                        onChange={ev => setExpectedAmount(parseInt(ev.target.value))}
+                        onChange={ev => applyExpectedAmount(ev.target.value)}
                     />
                 </Grid>
                 <Grid item xs={2} sm={2} md={2} lg={1}>
