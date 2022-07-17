@@ -1,5 +1,5 @@
-import Currency from "./Currency";
-import Category from "./Category";
+import Currency from './Currency';
+import Category from './Category';
 
 export interface Account {
     readonly id: number;

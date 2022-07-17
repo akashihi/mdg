@@ -5,4 +5,4 @@ export default interface Category {
     priority: number;
     account_type: string;
     children?: Category[];
-};
+}

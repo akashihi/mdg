@@ -1,15 +1,15 @@
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
 import TransactionsPageFilter from '../components/transaction/TransactionsPageFilter';
-import Currency from "../models/Currency";
-import {AccountTreeNode} from "../models/Account";
-import {RootState} from "../reducers/rootReducer";
-import {selectActiveCurrencies} from "../selectors/CurrencySelector";
-import {selectAccountNames} from "../selectors/AccountSelector";
-import {TransactionFilterParams} from "../components/transaction/TransactionsPage";
+import Currency from '../models/Currency';
+import { AccountTreeNode } from '../models/Account';
+import { RootState } from '../reducers/rootReducer';
+import { selectActiveCurrencies } from '../selectors/CurrencySelector';
+import { selectAccountNames } from '../selectors/AccountSelector';
+import { TransactionFilterParams } from '../components/transaction/TransactionsPage';
 
 export interface TransactionFilterOwnProps {
-    applyFunc: (f: TransactionFilterParams, l: number) => void
+    applyFunc: (f: TransactionFilterParams, l: number) => void;
 }
 
 export interface TransactionFilterProps extends TransactionFilterOwnProps {
@@ -18,7 +18,7 @@ export interface TransactionFilterProps extends TransactionFilterOwnProps {
     assetTree: AccountTreeNode;
     incomeTree: AccountTreeNode;
     expenseTree: AccountTreeNode;
-    accountNames: Record<number, string>,
+    accountNames: Record<number, string>;
 }
 
 const mapStateToProps = (state: RootState, ownProps: TransactionFilterOwnProps): TransactionFilterProps => {
@@ -29,8 +29,8 @@ const mapStateToProps = (state: RootState, ownProps: TransactionFilterOwnProps):
         incomeTree: state.account.incomeTree,
         expenseTree: state.account.expenseTree,
         accountNames: selectAccountNames(state),
-        applyFunc: ownProps.applyFunc
-    }
-}
+        applyFunc: ownProps.applyFunc,
+    };
+};
 
-export default connect(mapStateToProps)(TransactionsPageFilter)
+export default connect(mapStateToProps)(TransactionsPageFilter);

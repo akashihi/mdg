@@ -6,33 +6,41 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import EventsReportByAccount from './EventsReportByAccount';
 import EventsReportByWeight from './EventsReportByWeight';
-import {ReportProps} from "./ReportsPage";
+import { ReportProps } from './ReportsPage';
 
 export interface EventReportProps extends ReportProps {
-    type: string
+    type: string;
 }
 
 export function EventReportCollection(props: EventReportProps) {
     return (
-      <Fragment>
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            Income operations by account
-          </AccordionSummary>
-          <AccordionDetails>
-            <EventsReportByAccount startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName} type={props.type}/>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            Income accounts weight
-          </AccordionSummary>
-          <AccordionDetails>
-              <EventsReportByWeight startDate={props.startDate} endDate={props.endDate} granularity={props.granularity} primaryCurrencyName={props.primaryCurrencyName} type={props.type}/>
-          </AccordionDetails>
-        </Accordion>
-      </Fragment>
-    )
+        <Fragment>
+            <Accordion defaultExpanded>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>Income operations by account</AccordionSummary>
+                <AccordionDetails>
+                    <EventsReportByAccount
+                        startDate={props.startDate}
+                        endDate={props.endDate}
+                        granularity={props.granularity}
+                        primaryCurrencyName={props.primaryCurrencyName}
+                        type={props.type}
+                    />
+                </AccordionDetails>
+            </Accordion>
+            <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>Income accounts weight</AccordionSummary>
+                <AccordionDetails>
+                    <EventsReportByWeight
+                        startDate={props.startDate}
+                        endDate={props.endDate}
+                        granularity={props.granularity}
+                        primaryCurrencyName={props.primaryCurrencyName}
+                        type={props.type}
+                    />
+                </AccordionDetails>
+            </Accordion>
+        </Fragment>
+    );
 }
 
 export default EventReportCollection;

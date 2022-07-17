@@ -1,17 +1,17 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import {checkApiError, parseJSON} from '../../util/ApiUtils';
-import {Report} from "../../models/Report";
+import { processApiResponse } from '../../util/ApiUtils';
+import { Report } from '../../models/Report';
 import moment from 'moment';
 
 export interface AssetReportWidgetProps {
-    url: string,
+    url: string;
     options: HighchartsReact.Props;
 }
 
 export function AssetReportWidget(props: AssetReportWidgetProps) {
-    const [chartData, setChartData] = useState<Report>({dates: [], series: []});
+    const [chartData, setChartData] = useState<Report>({ dates: [], series: [] });
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {
@@ -21,33 +21,29 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
         chartComponentRef.current.chart.reflow();
 
         fetch(props.url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
-                const dates = json.dates.map(item => moment(item).format('DD. MMM\' YY'));
+            .then(processApiResponse)
+            .then(function (json) {
+                const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
 
                 setChartData({
-                    dates: dates, series: json.series
-                })
-
-            })
-            .catch(function () {
+                    dates: dates,
+                    series: json.series,
+                });
             });
-
     }, [props]);
 
     const baseOptions = {
         chart: {
-            type: 'area'
+            type: 'area',
         },
         title: {
-            text: 'Asset Totals '
+            text: 'Asset Totals ',
         },
         xAxis: {
             categories: chartData.dates,
         },
         tooltip: {
-            split: true
+            split: true,
         },
         plotOptions: {
             area: {
@@ -60,10 +56,10 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
                     radius: 2,
                     states: {
                         hover: {
-                            enabled: true
-                        }
-                    }
-                }
+                            enabled: true,
+                        },
+                    },
+                },
             },
             column: {
                 stacking: 'normal',
@@ -75,17 +71,17 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
                     radius: 2,
                     states: {
                         hover: {
-                            enabled: true
-                        }
-                    }
-                }
-            }
+                            enabled: true,
+                        },
+                    },
+                },
+            },
         },
-        series: chartData.series
+        series: chartData.series,
     };
 
-    const options = {...baseOptions, ...props.options};
-    return <HighchartsReact highcharts={Highcharts} options={options} ref={chartComponentRef}/>
+    const options = { ...baseOptions, ...props.options };
+    return <HighchartsReact highcharts={Highcharts} options={options} ref={chartComponentRef} />;
 }
 
 export default AssetReportWidget;

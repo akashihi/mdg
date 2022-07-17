@@ -1,13 +1,13 @@
-import {produce} from 'immer';
-import {Action} from 'redux';
-import { checkApiError, parseJSON} from '../util/ApiUtils';
-import {loadCurrentBudget, loadSelectedBudget} from './BudgetActions';
+import { produce } from 'immer';
+import { Action } from 'redux';
+import { processApiResponse } from '../util/ApiUtils';
+import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
-import { AccountActionType } from '../constants/Account'
-import {Account, AccountTreeNode} from '../models/Account';
-import {RootState} from '../reducers/rootReducer';
-import {selectSelectedBudgetId} from '../selectors/BudgetSelector';
+import { AccountActionType } from '../constants/Account';
+import { Account, AccountTreeNode } from '../models/Account';
+import { RootState } from '../reducers/rootReducer';
+import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 
 export interface AccountAction extends Action {
     payload: {
@@ -18,79 +18,83 @@ export interface AccountAction extends Action {
     };
 }
 
-export function loadAccountList () {
-  return (dispatch) => {
-    dispatch({type: AccountActionType.AccountsLoad, payload: [] })
+export function loadAccountList() {
+    return dispatch => {
+        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
 
-    const url = '/api/accounts?embed=currency'
-
-    fetch(url)
-      .then(parseJSON)
-      .then(checkApiError)
-      .then(function (data: any) {
-        dispatch({
-          type: AccountActionType.AccountsStore,
-          payload: {accounts: data.accounts}
-        })
-      })
-        .then(() => dispatch(loadAccountTree()))
-      .catch(function () {
-        dispatch({
-          type: AccountActionType.AccountsFailure,
-          payload: []
-        })
-      })
-  }
-}
-
-export function loadAccountTree () {
-    return (dispatch) => {
-        dispatch({type: AccountActionType.AccountsLoad, payload: [] })
-
-        const url = '/api/accounts/tree?embed=currency,category'
+        const url = '/api/accounts?embed=currency';
 
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (data: any) {
+            .then(processApiResponse)
+            .then(function (data) {
+                dispatch({
+                    type: AccountActionType.AccountsStore,
+                    payload: { accounts: data.accounts },
+                });
+            })
+            .then(() => dispatch(loadAccountTree()))
+            .catch(function () {
+                dispatch({
+                    type: AccountActionType.AccountsFailure,
+                    payload: [],
+                });
+            });
+    };
+}
+
+export function loadAccountTree() {
+    return dispatch => {
+        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
+
+        const url = '/api/accounts/tree?embed=currency,category';
+
+        fetch(url)
+            .then(processApiResponse)
+            .then(function (data) {
                 dispatch({
                     type: AccountActionType.AccountTreeStore,
-                    payload: {assetTree: data.asset, incomeTree: data.income, expenseTree: data.expense}
-                })
+                    payload: { assetTree: data.asset, incomeTree: data.income, expenseTree: data.expense },
+                });
             })
             .catch(function () {
                 dispatch({
                     type: AccountActionType.AccountsFailure,
-                    payload: []
-                })
-            })
-    }
+                    payload: [],
+                });
+            });
+    };
 }
 
 export function setFavorite(account: Account, favorite: boolean) {
-    return (dispatch) => {
-        const updatedAccount: Account = produce(draft => {draft.favorite = favorite})(account);
-        dispatch(updateAccount(updatedAccount))
-    }
+    return dispatch => {
+        const updatedAccount: Account = produce(draft => {
+            draft.favorite = favorite;
+        })(account);
+        dispatch(updateAccount(updatedAccount));
+    };
 }
 
 export function setOperational(account: Account, operational: boolean) {
-    return (dispatch) => {
-        const updatedAccount: Account = produce(draft => {draft.operational = operational})(account);
-        dispatch(updateAccount(updatedAccount))
-    }
+    return dispatch => {
+        const updatedAccount: Account = produce(draft => {
+            draft.operational = operational;
+        })(account);
+        dispatch(updateAccount(updatedAccount));
+    };
 }
 
 export function revealAccount(account: Account) {
-    return (dispatch) => {
-        const updatedAccount: Account = produce(draft => {draft.hidden = false})(account);
-        dispatch(updateAccount(updatedAccount))
-    }
+    return dispatch => {
+        const updatedAccount: Account = produce(draft => {
+            draft.hidden = false;
+        })(account);
+        dispatch(updateAccount(updatedAccount));
+    };
 }
 
-export function hideAccount(account:Account) {
-    return (dispatch) => {
-        dispatch({type: AccountActionType.AccountsLoad, payload: [] })
+export function hideAccount(account: Account) {
+    return dispatch => {
+        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
 
         const url = `/api/accounts/${account.id}`;
         const method = 'DELETE';
@@ -98,44 +102,45 @@ export function hideAccount(account:Account) {
         fetch(url, {
             method,
             headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1'
-            }
+                'Content-Type': 'application/vnd.mdg+json;version=1',
+            },
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => dispatch(loadAccountList()))
             .catch(() => dispatch(loadAccountList()));
-    }
+    };
 }
 
+export function updateAccount(account: Partial<Account>) {
+    return (dispatch, getState: () => RootState) => {
+        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
 
-export function updateAccount (account: Partial<Account>) {
-  return (dispatch, getState:()=>RootState) => {
-      dispatch({type: AccountActionType.AccountsLoad, payload: [] })
+        const state = getState();
+        const selectedBudgetId = selectSelectedBudgetId(state);
 
-      const state = getState()
-      const selectedBudgetId = selectSelectedBudgetId(state);
+        let url = '/api/accounts';
+        let method = 'POST';
+        if (account.id !== -1) {
+            url = `/api/accounts/${account.id}`;
+            method = 'PUT';
+        }
 
-      let url = '/api/accounts';
-      let method = 'POST';
-      if (account.id !== -1) {
-          url = `/api/accounts/${account.id}`;
-          method = 'PUT';
-      }
-
-      fetch(url, {
-          method,
-          headers: {
-              'Content-Type': 'application/vnd.mdg+json;version=1'
-          },
-          body: JSON.stringify(account)
-      })
-          .then(parseJSON)
-          .then(checkApiError)
-          .then(() => dispatch(loadAccountList()))
-          .then(() => dispatch(loadTotalsReport()))
-          .then(() => dispatch(loadCurrentBudget()))
-          .then(() => { if (selectedBudgetId) { dispatch(loadSelectedBudget(selectedBudgetId)) } })
-          .catch(() => dispatch(loadAccountList()))
-  }
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json;version=1',
+            },
+            body: JSON.stringify(account),
+        })
+            .then(processApiResponse)
+            .then(() => dispatch(loadAccountList()))
+            .then(() => dispatch(loadTotalsReport()))
+            .then(() => dispatch(loadCurrentBudget()))
+            .then(() => {
+                if (selectedBudgetId) {
+                    dispatch(loadSelectedBudget(selectedBudgetId));
+                }
+            })
+            .catch(() => dispatch(loadAccountList()));
+    };
 }

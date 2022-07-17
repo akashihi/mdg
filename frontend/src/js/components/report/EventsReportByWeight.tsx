@@ -1,18 +1,18 @@
-import React, {useEffect, useState, useRef} from 'react'
-import {reportDatesToParams} from "../../util/ReportUtils";
-import Highcharts, {PointOptionsObject} from 'highcharts';
+import React, { useEffect, useState, useRef } from 'react';
+import { reportDatesToParams } from '../../util/ReportUtils';
+import Highcharts, { PointOptionsObject } from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import {checkApiError, parseJSON} from '../../util/ApiUtils';
+import { processApiResponse } from '../../util/ApiUtils';
 import moment from 'moment';
-import {EventReportProps} from "./EventReportCollection";
+import { EventReportProps } from './EventReportCollection';
 
 interface PieData {
-    dates: string[],
-    data: PointOptionsObject[]
+    dates: string[];
+    data: PointOptionsObject[];
 }
 
 export function EventsReportByWeight(props: EventReportProps) {
-    const [chartData, setChartData] = useState<PieData>({dates: [], data: []});
+    const [chartData, setChartData] = useState<PieData>({ dates: [], data: [] });
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {
@@ -24,54 +24,53 @@ export function EventsReportByWeight(props: EventReportProps) {
         const url = `/api/reports/${props.type}/accounts/${reportDatesToParams(props)}`;
 
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
-                const dates = json.dates.map(item => moment(item).format('DD. MMM\' YY'));
+            .then(processApiResponse)
+            .then(function (json) {
+                const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
 
-                const data = json.series.map(item => {return {name: item.name, y: item.data[0]}});
+                const data = json.series.map(item => {
+                    return { name: item.name, y: item.data[0] };
+                });
 
                 setChartData({
-                    dates: dates, data: data
-                })
-
-            })
-            .catch(function () {
+                    dates: dates,
+                    data: data,
+                });
             });
-
     }, [props]);
 
-
     const options = {
-      chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
-        type: 'pie'
-      },
-      title: {
-        text: 'Income weight by account'
-      },
-      tooltip: {
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-      },
-      plotOptions: {
-        pie: {
-          allowPointSelect: true,
-          cursor: 'pointer',
-          dataLabels: {
-            enabled: true,
-            format: '<b>{point.name}</b>: {point.percentage:.1f}% ({point.y:.2f})'
-          }
-        }
-      },
-      series: [{
-        name: 'Incomes',
-        colorByPoint: true,
-        data: chartData.data
-      }]
-    }
-    return <HighchartsReact highcharts={Highcharts} options={options} ref={chartComponentRef}/>;
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie',
+        },
+        title: {
+            text: 'Income weight by account',
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f}% ({point.y:.2f})',
+                },
+            },
+        },
+        series: [
+            {
+                name: 'Incomes',
+                colorByPoint: true,
+                data: chartData.data,
+            },
+        ],
+    };
+    return <HighchartsReact highcharts={Highcharts} options={options} ref={chartComponentRef} />;
 }
 
 export default EventsReportByWeight;

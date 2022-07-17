@@ -37,13 +37,6 @@ const build = {
                 }]
             },
             {
-                test: /\.js$/, // Check for all js files
-                exclude: /node_modules/,
-                use: [{
-                    loader: 'babel-loader'
-                }]
-            },
-            {
                 test: /\.css$/,
                 include: /node_modules/,
                 use: [

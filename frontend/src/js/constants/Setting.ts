@@ -5,18 +5,18 @@ export enum SettingActionType {
     StoreSettings = 'StoreSettings',
     SettingsLoadFail = 'SettingsLoadFail',
     InitiateReindex = 'InitiateReindex',
-    ReindexFail = 'ReindexFail'
+    ReindexFail = 'ReindexFail',
 }
 
 export enum SettingUiState {
     Loading = 'Loading',
     Available = 'Available',
-    Errored = 'Error'
+    Errored = 'Error',
 }
 
 export enum ReindexUiState {
     NotRequested = 'NotRequested',
     InProgress = 'InProgress',
     Complete = 'Complete',
-    Failed = 'Failed'
+    Failed = 'Failed',
 }
