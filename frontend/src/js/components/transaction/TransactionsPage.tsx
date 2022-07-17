@@ -24,7 +24,7 @@ import TransactionFilter from '../../containers/TransactionsFilter';
 import TransactionDeleteDialog from './TransactionDeleteConfirmation';
 import moment, { Moment } from 'moment';
 import jQuery from 'jquery';
-import { checkApiError, parseJSON } from '../../util/ApiUtils';
+import { processApiResponse } from '../../util/ApiUtils';
 import { EnrichedTransaction } from '../../models/Transaction';
 import { enrichTransaction } from '../../selectors/TransactionSelector';
 import { TransactionViewerProps } from '../../containers/TransactionsViewer';
@@ -186,9 +186,8 @@ export function TransactionsPage(props: TransactionViewerProps) {
 
         const url = '/api/transactions' + '?' + jQuery.param(params);
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
+            .then(processApiResponse)
+            .then(function (json) {
                 setLeft(json.left);
                 setCursorNext(json.next);
                 setTransactions(enrichTransaction(json.transactions));
@@ -217,9 +216,8 @@ export function TransactionsPage(props: TransactionViewerProps) {
                 },
                 body: JSON.stringify(props.savableTransaction),
             })
-                .then(parseJSON)
-                .then(checkApiError)
-                .then((json: any) => {
+                .then(processApiResponse)
+                .then(() => {
                     setLoading(false);
                     props.loadAccountList();
                     props.loadTotalsReport();
@@ -238,9 +236,8 @@ export function TransactionsPage(props: TransactionViewerProps) {
             setLoading(true);
             const url = '/api/transactions' + '?' + jQuery.param({ cursor: cursorNext });
             fetch(url)
-                .then(parseJSON)
-                .then(checkApiError)
-                .then(function (json: any) {
+                .then(processApiResponse)
+                .then(function (json) {
                     setLeft(json.left);
                     setCursorNext(json.next);
                     setTransactions(transactions.concat(enrichTransaction(json.transactions)));

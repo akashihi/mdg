@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 import { Action } from 'redux';
-import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { processApiResponse } from '../util/ApiUtils';
 import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
@@ -25,9 +25,8 @@ export function loadAccountList() {
         const url = '/api/accounts?embed=currency';
 
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (data: any) {
+            .then(processApiResponse)
+            .then(function (data) {
                 dispatch({
                     type: AccountActionType.AccountsStore,
                     payload: { accounts: data.accounts },
@@ -50,9 +49,8 @@ export function loadAccountTree() {
         const url = '/api/accounts/tree?embed=currency,category';
 
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (data: any) {
+            .then(processApiResponse)
+            .then(function (data) {
                 dispatch({
                     type: AccountActionType.AccountTreeStore,
                     payload: { assetTree: data.asset, incomeTree: data.income, expenseTree: data.expense },
@@ -107,8 +105,7 @@ export function hideAccount(account: Account) {
                 'Content-Type': 'application/vnd.mdg+json;version=1',
             },
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => dispatch(loadAccountList()))
             .catch(() => dispatch(loadAccountList()));
     };
@@ -135,8 +132,7 @@ export function updateAccount(account: Partial<Account>) {
             },
             body: JSON.stringify(account),
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => dispatch(loadAccountList()))
             .then(() => dispatch(loadTotalsReport()))
             .then(() => dispatch(loadCurrentBudget()))

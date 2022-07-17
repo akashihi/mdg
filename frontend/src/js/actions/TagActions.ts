@@ -1,5 +1,5 @@
 import { Action } from 'redux';
-import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { processApiResponse } from '../util/ApiUtils';
 
 import { TagActionType } from '../constants/Tag';
 
@@ -12,9 +12,8 @@ export function loadTagList() {
         dispatch({ type: TagActionType.TagLoad, payload: [] });
 
         fetch('/api/tags')
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
+            .then(processApiResponse)
+            .then(function (json) {
                 dispatch({ type: TagActionType.TagStore, payload: json.tags });
             })
             .catch(function () {

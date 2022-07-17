@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 import moment from 'moment';
-import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { processApiResponse } from '../util/ApiUtils';
 
 import { BudgetActionType } from '../constants/Budget';
 
@@ -14,9 +14,8 @@ export function loadCurrentBudget() {
     return dispatch => {
         const id = moment().format('YYYYMMDD');
         fetch(`/api/budgets/${id}`)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then((json: any) => {
+            .then(processApiResponse)
+            .then((json) => {
                 dispatch({ type: BudgetActionType.StoreCurrentBudget, payload: json as Budget });
             });
     };
@@ -25,9 +24,8 @@ export function loadCurrentBudget() {
 export function loadSelectedBudget(id) {
     return dispatch => {
         fetch(`/api/budgets/${id}`)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then((json: any) => {
+            .then(processApiResponse)
+            .then((json) => {
                 dispatch({ type: BudgetActionType.StoreSelectedBudget, payload: json as Budget });
             });
     };

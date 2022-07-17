@@ -13,7 +13,7 @@ import BudgetSelector from '../../containers/BudgetSelector';
 import BudgetInfo from './BudgetInfo';
 import { BudgetViewerProps } from '../../containers/BudgetViewer';
 import { BudgetEntryTreeNode } from '../../models/Budget';
-import { checkApiError, parseJSON } from '../../util/ApiUtils';
+import { processApiResponse } from '../../util/ApiUtils';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import { BudgetEntry as BudgetEntryType } from '../../models/Budget';
@@ -81,9 +81,8 @@ export function BudgetPage(props: BudgetViewerProps) {
             filter = 'all';
         }
         fetch(`/api/budgets/${props.budget.id}/entries/tree?embed=category,account,currency&filter=${filter}`)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then((json: any) => {
+            .then(processApiResponse)
+            .then((json) => {
                 setIncomeEntries(json.income as BudgetEntryTreeNode);
                 setExpenseEntries(json.expense as BudgetEntryTreeNode);
                 setLoading(false);
@@ -104,8 +103,7 @@ export function BudgetPage(props: BudgetViewerProps) {
             },
             body: JSON.stringify(entry),
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => {
                 loadEntries(); //Reload both trees to update categories sub-totals
             });

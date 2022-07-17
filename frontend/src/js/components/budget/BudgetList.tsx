@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import { checkApiError, parseJSON } from '../../util/ApiUtils';
+import { processApiResponse } from '../../util/ApiUtils';
 import moment from 'moment';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -34,9 +34,8 @@ export function BudgetList(props: BudgetSelectorProps) {
     useEffect(() => {
         setLoading(true);
         fetch('/api/budgets')
-            .then(parseJSON)
-            .then(checkApiError)
-            .then((json: any) => {
+            .then(processApiResponse)
+            .then((json) => {
                 setBudgets(json.budgets as ShortBudget[]);
                 setLoading(false);
             });
@@ -69,9 +68,8 @@ export function BudgetList(props: BudgetSelectorProps) {
             },
             body: JSON.stringify(newBudget),
         })
-            .then(parseJSON)
-            .then(checkApiError)
-            .then((response: any) => {
+            .then(processApiResponse)
+            .then((response) => {
                 setBudgets([...budgets, response as ShortBudget]);
                 props.loadSelectedBudget(response.id);
                 setLoading(false);

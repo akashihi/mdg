@@ -1,4 +1,4 @@
-import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { processApiResponse } from '../util/ApiUtils';
 import { loadAccountList } from './AccountActions';
 
 import { CategoryActionType } from '../constants/Category';
@@ -19,9 +19,8 @@ export function loadCategoryList() {
         const url = '/api/categories';
 
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (data: any) {
+            .then(processApiResponse)
+            .then(function (data) {
                 dispatch({
                     type: CategoryActionType.CategoriesStore,
                     payload: data.categories,
@@ -61,8 +60,7 @@ export function updateCategory(category: Category) {
             },
             body: JSON.stringify(updatedCategory),
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => dispatch(loadCategoryList()))
             .catch(() => dispatch(loadCategoryList()));
     };
@@ -81,8 +79,7 @@ export function deleteCategory(id: number) {
                 'Content-Type': 'application/vnd.mdg+json;version=1',
             },
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => dispatch(loadCategoryList()))
             .catch(() => dispatch(loadCategoryList()));
     };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { checkApiError, parseJSON } from '../../util/ApiUtils';
+import { processApiResponse } from '../../util/ApiUtils';
 import { Report } from '../../models/Report';
 import moment from 'moment';
 
@@ -21,9 +21,8 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
         chartComponentRef.current.chart.reflow();
 
         fetch(props.url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
+            .then(processApiResponse)
+            .then(function (json) {
                 const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
 
                 setChartData({

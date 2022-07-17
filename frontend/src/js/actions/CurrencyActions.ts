@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 import { produce } from 'immer';
-import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { processApiResponse } from '../util/ApiUtils';
 
 import { CurrencyActionType } from '../constants/Currency';
 import { loadCategoryList } from './CategoryActions';
@@ -19,9 +19,8 @@ export function loadCurrencyList() {
         });
 
         fetch('/api/currencies')
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (data: any) {
+            .then(processApiResponse)
+            .then(function (data) {
                 dispatch({
                     type: CurrencyActionType.StoreCurrencies,
                     payload: data.currencies,
@@ -29,7 +28,7 @@ export function loadCurrencyList() {
             })
             .then(() => dispatch(loadCategoryList()))
             .then(() => dispatch(loadTotalsReport()))
-            .catch(function (response) {
+            .catch(function () {
                 dispatch({ type: CurrencyActionType.CurrenciesLoadFail, payload: {} });
             });
     };
@@ -56,9 +55,8 @@ export function updateCurrency(currency: Currency, isActive: boolean) {
             },
             body: JSON.stringify(updatedCurrency),
         })
-            .then(parseJSON)
-            .then(checkApiError)
-            .then((data: any) =>
+            .then(processApiResponse)
+            .then((data) =>
                 dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [data as Currency] })
             );
     };

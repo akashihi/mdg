@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { reportDatesToParams } from '../../util/ReportUtils';
 import Highcharts, { PointOptionsObject } from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { checkApiError, parseJSON } from '../../util/ApiUtils';
+import { processApiResponse } from '../../util/ApiUtils';
 import moment from 'moment';
 import { EventReportProps } from './EventReportCollection';
 
@@ -24,9 +24,8 @@ export function EventsReportByWeight(props: EventReportProps) {
         const url = `/api/reports/${props.type}/accounts/${reportDatesToParams(props)}`;
 
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
+            .then(processApiResponse)
+            .then(function (json) {
                 const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
 
                 const data = json.series.map(item => {

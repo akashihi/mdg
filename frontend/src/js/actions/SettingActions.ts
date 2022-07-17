@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 
-import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { processApiResponse } from '../util/ApiUtils';
 
 import { SettingActionType } from '../constants/Setting';
 import { loadAccountList } from './AccountActions';
@@ -21,9 +21,8 @@ export function loadSettingList() {
         dispatch({ type: SettingActionType.SettingsLoad, payload: {} });
 
         fetch('/api/settings')
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (data: any) {
+            .then(processApiResponse)
+            .then(function (data) {
                 const map = Object.fromEntries(data.settings.map(item => [item.id, item.value]));
                 dispatch({ type: SettingActionType.StoreSettings, payload: map });
             })
@@ -48,12 +47,11 @@ function applySetting(id: string, value: string) {
             },
             body: JSON.stringify(setting),
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => dispatch(loadSettingList()))
             .then(() => dispatch(loadAccountList()))
             .then(() => dispatch(loadTotalsReport()))
-            .catch(function (response) {
+            .catch(function () {
                 dispatch({
                     type: SettingActionType.SettingsLoadFail,
                     payload: {},
@@ -88,8 +86,7 @@ export function reindexTransactions() {
                 'Content-Type': 'application/vnd.mdg+json;version=1',
             },
         })
-            .then(parseJSON)
-            .then(checkApiError)
+            .then(processApiResponse)
             .then(() => dispatch(loadSettingList()))
             .catch(function () {
                 dispatch({

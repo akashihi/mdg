@@ -2,7 +2,7 @@ import { Action } from 'redux';
 import jQuery from 'jquery';
 import moment from 'moment';
 
-import { checkApiError, parseJSON } from '../util/ApiUtils';
+import { processApiResponse } from '../util/ApiUtils';
 
 import { TransactionActionType } from '../constants/Transaction';
 import { Transaction } from '../models/Transaction';
@@ -30,9 +30,8 @@ export function loadLastTransactions() {
         const url = '/api/transactions' + '?' + jQuery.param(params);
 
         fetch(url)
-            .then(parseJSON)
-            .then(checkApiError)
-            .then(function (json: any) {
+            .then(processApiResponse)
+            .then(function (json) {
                 dispatch({ type: TransactionActionType.TransactionsShortListStore, payload: json.transactions });
             });
     };
