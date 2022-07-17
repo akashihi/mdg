@@ -54,6 +54,9 @@ public class BudgetService {
 
         // Find actual spendings
         entry.setActualAmount(transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), entry.getAccount()));
+        if (entry.getAccount().getAccountType() == AccountType.INCOME) {
+            entry.setActualAmount(entry.getActualAmount().negate());
+        }
         return entry;
     }
 
