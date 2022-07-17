@@ -65,7 +65,7 @@ public class BudgetController {
         var allowedSpendings = getTotals(BudgetEntry::getAllowedSpendings, categoryEntries).add(getTotals(BudgetEntryTreeEntry::allowedSpendings, subCategories));
 
         var percent = BudgetService.getSpendingPercent(actualSpendings, expectedSpendings);
-        return Optional.of(new BudgetEntryTreeEntry(category.getId(), category.getName(), actualSpendings, expectedSpendings, percent, allowedSpendings, categoryEntries, subCategories));
+        return Optional.of(new BudgetEntryTreeEntry(category.getId(), category.getName(), actualSpendings, expectedSpendings, allowedSpendings, percent, categoryEntries, subCategories));
     }
 
     @PostMapping(value = "/budgets", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
