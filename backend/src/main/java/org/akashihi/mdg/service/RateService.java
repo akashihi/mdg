@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriTemplate;
 
 import javax.transaction.Transactional;
@@ -67,15 +68,20 @@ public class RateService {
         var uriTemplate = new UriTemplate(YF_URL);
         var uri = uriTemplate.expand(symbols);
         var client = WebClient.create();
-        var response = client.get().uri(uri).retrieve().toEntity(String.class).block();
+        try {
+            var response = client.get().uri(uri).retrieve().toEntity(String.class).block();
 
-        if (response != null && response.getStatusCode() == HttpStatus.OK) {
-            Double rateValue = JsonPath.parse(response.getBody()).read("$.spark.result[0].response[0].meta.regularMarketPrice");
-            if (rateValue != null) {
-                return Optional.of(BigDecimal.valueOf(rateValue));
+            if (response != null && response.getStatusCode() == HttpStatus.OK) {
+                Double rateValue = JsonPath.parse(response.getBody()).read("$.spark.result[0].response[0].meta.regularMarketPrice");
+                if (rateValue != null) {
+                    return Optional.of(BigDecimal.valueOf(rateValue));
+                }
             }
+            return Optional.empty();
+        } catch (WebClientResponseException.NotFound ignored) {
+            log.info("No direct rate for {}/{}", from, to);
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     protected void updateRateForPair(ImmutablePair<Currency, Currency> currencyPair) {
