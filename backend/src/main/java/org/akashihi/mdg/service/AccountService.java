@@ -24,6 +24,7 @@ import static org.akashihi.mdg.dao.AccountSpecification.filteredAccount;
 @Slf4j
 public class AccountService {
     private final AccountRepository accountRepository;
+    private final BudgetService budgetService;
     private final CategoryRepository categoryRepository;
     private final CurrencyRepository currencyRepository;
     private final TransactionService transactionService;
@@ -132,6 +133,7 @@ public class AccountService {
             if (!account.getCurrency().getId().equals(newAccount.getCurrencyId())) {
                 var currencyValue = currencyRepository.findById(newAccount.getCurrencyId());
                 currencyValue.ifPresent(currency -> transactionService.updateTransactionsCurrencyForAccount(account, currency));
+                currencyValue.ifPresent(currency -> budgetService.updateCurrencyForAccount(account, currency));
                 currencyValue.ifPresent(account::setCurrency);
             }
             if (newAccount.getFavorite() != null && newAccount.getFavorite() || newAccount.getOperational() != null && newAccount.getOperational()) {

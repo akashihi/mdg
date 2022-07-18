@@ -6,10 +6,12 @@ import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.BudgetEntryRepository;
 import org.akashihi.mdg.dao.BudgetRepository;
+import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
 import org.akashihi.mdg.entity.BudgetEntryMode;
+import org.akashihi.mdg.entity.Currency;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -184,6 +186,23 @@ public class BudgetService {
 
         budgetRepository.save(budget);
         return Optional.of(budget);
+    }
+
+    @Transactional
+    public void updateCurrencyForAccount(Account account, Currency newCurrency) {
+        // We should iterate over all budgets
+        // Find their beginning dates
+        // Detect the rate between old and new currencies for that date
+        // And apply that rate to the respective budget entry
+        for (Budget budget : budgetRepository.findAll()) {
+            var rate = rateService.getPair(budget.getBeginning().atTime(0,0), account.getCurrency(), newCurrency);
+            var entryValue = budgetEntryRepository.findByBudget(budget).stream().filter(e -> e.getAccount().equals(account)).findAny(); //Should be always one entry per account
+            if (entryValue.isPresent()) {
+                var entry = entryValue.get();
+                entry.setExpectedAmount(entry.getExpectedAmount().multiply(rate.getRate()));
+                budgetEntryRepository.save(entry);
+            }
+        }
     }
 
     public static BigDecimal getSpendingPercent(BigDecimal actualAmount, BigDecimal expectedAmount) {
