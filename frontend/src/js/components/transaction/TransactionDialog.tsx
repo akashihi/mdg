@@ -20,6 +20,8 @@ import TimePicker from 'react-time-picker';
 import Checkbox from '@mui/material/Checkbox';
 import RSelect from 'react-select';
 import { produce } from 'immer';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { TransactionDialogProps } from '../../containers/TransactionEditor';
 import { EditedOperation, EditedTransaction, Operation } from '../../models/Transaction';
@@ -262,6 +264,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
     const [tx, setTx] = useState(props.transaction);
     const [activeTab, setActiveTab] = useState('simple');
     const [transactionValidity, setTransactionValidity] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const validationErrorStyle = {
         position: 'relative',
@@ -273,6 +276,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
     } as React.CSSProperties;
 
     useEffect(() => {
+        setLoading(false);
         setTx(props.transaction);
 
         if (validForSimpleEditing(props.transaction)) {
@@ -366,6 +370,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
     };
 
     const save = () => {
+        setLoading(true);
         const txToSave = {
             ...tx,
             operations: tx.editedOperations.map((edited, index) => {
@@ -426,6 +431,9 @@ export function TransactionDialog(props: TransactionDialogProps) {
             maxWidth={'md'}
             fullWidth={true}
             onClose={props.closeTransactionDialog}>
+            <Backdrop open={loading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <DialogContent>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={12} md={6} lg={6}>
