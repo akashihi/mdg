@@ -201,32 +201,7 @@ export function TransactionsPage(props: TransactionViewerProps) {
 
     useEffect(() => {
         if (props.savableTransaction) {
-            setLoading(true);
-            let url = '/api/transactions';
-            let method = 'POST';
-            if (props.savableTransaction.id !== -1) {
-                url = `/api/transactions/${props.savableTransaction.id}`;
-                method = 'PUT';
-            }
-
-            fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/vnd.mdg+json;version=1',
-                },
-                body: JSON.stringify(props.savableTransaction),
-            })
-                .then(processApiResponse)
-                .then(() => {
-                    setLoading(false);
-                    props.loadAccountList();
-                    props.loadTotalsReport();
-                    props.loadCurrentBudget();
-                    if (props.currentBudgetId !== undefined) {
-                        props.loadSelectedBudget(props.currentBudgetId);
-                    }
-                    loadTransactions();
-                });
+            loadTransactions();
         }
     }, [props.savableTransaction]);
 

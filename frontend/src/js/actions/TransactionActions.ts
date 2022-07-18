@@ -6,6 +6,11 @@ import { processApiResponse } from '../util/ApiUtils';
 
 import { TransactionActionType } from '../constants/Transaction';
 import { Transaction } from '../models/Transaction';
+import { loadAccountList } from './AccountActions';
+import { loadTotalsReport } from './ReportActions';
+import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
+import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
+import { GetStateFunc } from '../reducers/rootReducer';
 
 export interface TransactionAction extends Action {
     payload: Transaction[];
@@ -58,8 +63,30 @@ export function closeTransactionDialog(): TransactionAction {
     };
 }
 export function updateTransaction(tx: Transaction) {
-    return dispatch => {
-        dispatch({ type: TransactionActionType.TransactionSave, payload: [tx] });
-        dispatch(createTransaction());
+    return (dispatch, getState: GetStateFunc) => {
+        let url = '/api/transactions';
+        let method = 'POST';
+        if (tx.id !== -1) {
+            url = `/api/transactions/${tx.id}`;
+            method = 'PUT';
+        }
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json;version=1',
+            },
+            body: JSON.stringify(tx),
+        })
+            .then(processApiResponse)
+            .then(() => {
+                dispatch(loadAccountList());
+                dispatch(loadTotalsReport());
+                dispatch(loadCurrentBudget());
+                dispatch(loadLastTransactions());
+                dispatch(loadSelectedBudget(selectSelectedBudgetId(getState())));
+                dispatch({ type: TransactionActionType.TransactionSave, payload: [tx] });
+                dispatch(createTransaction());
+            });
     };
 }

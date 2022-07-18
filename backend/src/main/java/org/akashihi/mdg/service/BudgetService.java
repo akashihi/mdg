@@ -54,6 +54,9 @@ public class BudgetService {
 
         // Find actual spendings
         entry.setActualAmount(transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), entry.getAccount()));
+        if (entry.getAccount().getAccountType() == AccountType.INCOME) {
+            entry.setActualAmount(entry.getActualAmount().negate());
+        }
         return entry;
     }
 
@@ -103,6 +106,20 @@ public class BudgetService {
         return new Budget.BudgetPair(actual, expected);
     }
 
+    protected Budget.BudgetPair getActualAndAllowedForDate(LocalDate from, LocalDate to, Collection<BudgetEntry> entries) {
+        var actual = entries.stream()
+                .filter(e -> e.getAccount().getAccountType().equals(AccountType.EXPENSE))
+                .map(e -> {
+                    var amount = transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), e.getAccount());
+                    return this.applyRateForEntry(amount, e);
+                }).reduce(BigDecimal.ZERO, BigDecimal::add);
+        var expected = entries.stream()
+                .filter(e -> e.getAccount().getAccountType().equals(AccountType.EXPENSE))
+                .map(e -> this.applyRateForEntry(e.getAllowedSpendings(), e))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new Budget.BudgetPair(actual, expected);
+    }
+
     protected Budget.BudgetPair getActualExpectedForBudget(Budget budget, Collection<BudgetEntry> entries, AccountType type) {
         return this.getActualExpectedForDate(budget.getBeginning(), budget.getEnd(), entries, type);
     }
@@ -142,7 +159,11 @@ public class BudgetService {
         var incomeTotals = getActualExpectedForBudget(budget, entries, AccountType.INCOME);
         incomeTotals = new Budget.BudgetPair(incomeTotals.actual().negate(), incomeTotals.expected()); // Incomes are subtractions from income account, so they are always negative. But for the budget purposes it should be positive
         var expenseTotals = getActualExpectedForBudget(budget, entries, AccountType.EXPENSE);
-        var allowedSpendingsTotals = getActualExpectedForDate(LocalDate.now(), LocalDate.now(), entries, AccountType.EXPENSE);
+        var allowedSpendingsTotals = new Budget.BudgetPair(BigDecimal.ZERO, BigDecimal.ZERO);
+        if (budget.getBeginning().compareTo(LocalDate.now()) <= 0 && budget.getEnd().compareTo(LocalDate.now()) >= 0) {
+            //We are outside of budget's period, no spendings allowed
+            allowedSpendingsTotals = getActualAndAllowedForDate(LocalDate.now(), LocalDate.now(), entries);
+        }
 
         var state = new Budget.BudgetState(incomeTotals, expenseTotals, allowedSpendingsTotals);
         budget.setState(state);

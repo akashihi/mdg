@@ -26,6 +26,7 @@ const rootReducer = () =>
 
 const store = createStore(rootReducer(), compose(applyMiddleware(thunk)));
 
+export type GetStateFunc = typeof store.getState;
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
