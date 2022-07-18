@@ -83,6 +83,7 @@ export function updateTransaction(tx: Transaction) {
                 dispatch(loadAccountList());
                 dispatch(loadTotalsReport());
                 dispatch(loadCurrentBudget());
+                dispatch(loadLastTransactions());
                 dispatch(loadSelectedBudget(selectSelectedBudgetId(getState())));
                 dispatch({ type: TransactionActionType.TransactionSave, payload: [tx] });
                 dispatch(createTransaction());
