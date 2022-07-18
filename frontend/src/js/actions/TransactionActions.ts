@@ -6,11 +6,11 @@ import { processApiResponse } from '../util/ApiUtils';
 
 import { TransactionActionType } from '../constants/Transaction';
 import { Transaction } from '../models/Transaction';
-import {loadAccountList} from './AccountActions';
-import {loadTotalsReport} from './ReportActions';
-import {loadCurrentBudget, loadSelectedBudget} from './BudgetActions';
-import {selectSelectedBudgetId} from '../selectors/BudgetSelector';
-import {GetStateFunc} from '../reducers/rootReducer';
+import { loadAccountList } from './AccountActions';
+import { loadTotalsReport } from './ReportActions';
+import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
+import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
+import { GetStateFunc } from '../reducers/rootReducer';
 
 export interface TransactionAction extends Action {
     payload: Transaction[];
@@ -63,7 +63,7 @@ export function closeTransactionDialog(): TransactionAction {
     };
 }
 export function updateTransaction(tx: Transaction) {
-    return (dispatch,getState: GetStateFunc) => {
+    return (dispatch, getState: GetStateFunc) => {
         let url = '/api/transactions';
         let method = 'POST';
         if (tx.id !== -1) {

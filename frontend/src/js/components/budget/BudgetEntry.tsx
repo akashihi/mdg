@@ -40,7 +40,9 @@ export function BudgetCategoryEntry(props: { entry: BudgetEntryTreeNode; indent:
                     <div>{props.entry.name}</div>
                 </Grid>
                 <Grid item xs={3} sm={3} md={2} lg={1}>
-                    {accountType === 'EXPENSE' && props.entry.allowed_spendings > 0 ? `${props.entry.allowed_spendings} allowed` : ''}
+                    {accountType === 'EXPENSE' && props.entry.allowed_spendings > 0
+                        ? `${props.entry.allowed_spendings} allowed`
+                        : ''}
                 </Grid>
                 <Grid item xs={2} sm={2} md={2} lg={1}>
                     <div style={{ width: '60px', height: '60px' }}>
@@ -78,7 +80,7 @@ export function BudgetEntry(props: BudgetEntryProps) {
         } else {
             setExpectedAmount(amount);
         }
-    }
+    };
 
     const setEvenDistribution = (value: boolean) => {
         const newEntry = { ...props.entry, even_distribution: value };
