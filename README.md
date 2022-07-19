@@ -4,7 +4,7 @@ A personal cloud-style accounting application. [![MDG CI](https://github.com/aka
 
 This application solves two issues, which are already solved in other existing personal accounting apps separately: desktop applications are truly personal, but you can access them only from your desktop, where they are running. Cloud based personal accounting solutions are available from anywhere, but using it you practically share your financional state and history with service owners. 
 
-MDG (acronim of Moi.Den.Gi, that means "my money" in Russian) is a truly personal tool that can be deployed anywhere on your personal server (in the internet) and will be available from any point, from which that server is accesible, so making it cloud like.
+MDG (acronym of Moi.Den.Gi, that means "my money" in Russian) is a truly personal tool that can be deployed anywhere on your personal server (in the internet) and will be available from any point, from which that server is accesible, so making it cloud like.
 
 ## Contents
 
@@ -101,51 +101,35 @@ Deployment from the source code is the most complex, but may be useful in case y
 
 Building:
 
-* [SBT 0.13](https://www.scala-sbt.org/)
-* [Go version 1.8.3 ](https://golang.org/)
-* [NPM version 3.10.10](https://www.npmjs.com/)
+* [Java 17](https://jdk.java.net/)
+* [NPM version 8](https://www.npmjs.com/)
 
 Other (and newer) versions should work too.
 
 Deployment:
 
-* [PostgreSQL 11.x](https://www.postgresql.org/)
+* [PostgreSQL 14.x](https://www.postgresql.org/)
 * [ElasticSearch 7.x](https://www.elastic.co/downloads/elasticsearch)
 * [Nginx](https://www.nginx.com/)
 
 #### Getting source code
 
-MDG consists of three sub applications:
-
-* MDG server
-* MDG Web UI
-* MDG rates loader (this one periodically loads currency exchange rates)
-
-You can get source code for all of them by cloning git repositories:
+MDG consists of java based backend application and React frontend, with source code in a single repository at Github:
 
     git clone https://github.com/akashihi/mdg.git
-    git clone https://github.com/akashihi/mdg-web-ui.git
-    git clone https://github.com/akashihi/mdg-rate-loader.git
 
 #### Building
 
-To build MDG server you need to use Scala built tool:
+To build MDG backend you'll have to use bundled Maven:
 
-    cd mdg
-    sbt dist
+    cd mdg/backend
+    mvnw clean package spring-boot:repackage
 
-This will produce file `target/universal/mdg.zip`.
+This will produce file `target/mdg.jar`.
 
-Building rate loader is almost same procedure:
+The web ui requires one more step:
 
-    cd mdg-rate-loader
-    go build
-
-This will make a `mdg-rate-loader` binary.
-
-Finally, a web ui requires one more step:
-
-    cd mdg-web-ui
+    cd mdg/frontend
     npm install
     npm run build
 
@@ -153,9 +137,10 @@ This will produce a `dist.tar.gz` archive.
 
 #### Environment preparation
 
-Start postgresql and create a database, using sql script at `mdg/docs/createdb.sql`
+Start postgresql and create a database owned by some user. By default database `mdg` with user `mdg` and password `mdg` is expected. You can
+adjust database credentials in the `application-local.properties` file. 
 
-Download [hunspell dictionaries](https://github.com/elastic/hunspell.git) and put the to the elastic configuration directory, then start elastic.
+Put provided hunspell dictionaries to the elastic configuration directory, then start elastic.
 Configure nginx to serve web ui files and proxy mdg server. Sample server configuration is below:
 
     server {
@@ -168,7 +153,7 @@ Configure nginx to serve web ui files and proxy mdg server. Sample server config
         }
 
         location /api {
-             proxy_pass http://localhost:9000;
+             proxy_pass http://localhost:8080/;
              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
              proxy_set_header X-Forwarded-Proto $scheme;
              proxy_set_header X-Forwarded-Port $server_port;
@@ -179,11 +164,10 @@ Configure nginx to serve web ui files and proxy mdg server. Sample server config
 
 #### Starting MDG
 
-* `unzip mdg.zip` somewhere, say `/opt/mdg` and run `/opt/mdg/bin/mdg`. This will start server and create database structure.
-* Start rate loading by running binary `mdg-rate-loader`
+* You can run `mdg.jar` as usual with `java -jar mdg.jar`. This will start server and create database structure.
 * Unpack web ui archive with `tar zxvf dist.tar.gz` to the path, specified in nginx config (`/opt/mdg-web/ui` for example) and start nginx.
 
-Check that everything works by accessing web uiser interface.
+Check that everything works by accessing web user interface.
 
 ## Usage
 
@@ -206,9 +190,3 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## License
 
 This project is licensed under the GPLv3 License - see the LICENSE file for details.
-
-Stop words for English, German, Russian languages are provided by [PostgreSQL](https://www.postgresql.org/), released under PostgreSQL License 
-
-Stop words for the Czech language are provided by [{Python Stop Words](https://github.com/Alir3z4/python-stop-words), released under BSD License
-
-Stop words for the Lithuanian language are provided by [{Stopwords-LT](https://github.com/stopwords-iso/stopwords-lt), released under MIT License
