@@ -13,7 +13,7 @@ export interface BudgetInfoProps {
 }
 
 export function BudgetInfo(props: BudgetInfoProps) {
-    if (props.budget === null) {
+    if (props.budget === null || props.budget === undefined) {
         return <p>Budget data not available</p>;
     }
 
