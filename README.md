@@ -1,6 +1,6 @@
 # Moi.Den.Gi
 
-A personal cloud-style accounting application. [![Build Status](https://travis-ci.org/akashihi/mdg.svg?branch=master)](https://travis-ci.org/akashihi/mdg)
+A personal cloud-style accounting application. [![MDG CI](https://github.com/akashihi/mdg/actions/workflows/mdg.yaml/badge.svg?branch=master)](https://github.com/akashihi/mdg/actions/workflows/mdg.yaml)
 
 This application solves two issues, which are already solved in other existing personal accounting apps separately: desktop applications are truly personal, but you can access them only from your desktop, where they are running. Cloud based personal accounting solutions are available from anywhere, but using it you practically share your financional state and history with service owners. 
 
@@ -21,7 +21,7 @@ MDG (acronim of Moi.Den.Gi, that means "my money" in Russian) is a truly persona
 
 ## Deployment
 
-###MDG appliance
+### MDG appliance
 
 This is a recommended way to deploy MDG for actual use. VM image contains Atomic OS image with MDG preinstalled and backup system preconfigured.
 
@@ -29,9 +29,9 @@ Appliances are available since version 0.5.0 and are built for each release. If 
 
 #### Deployment guide
 
-Just grab the VM package from [github](https://github.com/akashihi/mdg/releases/download/v0.5.1/MDG-appliance-v0.5.1.ova.bz2)  and import it
-into you virtualization system as a new VM. Boot up the VM and try to access MDG in VM's port 80. Default VM credentials for console login are root/mdg, please, don't forget 
-to change them right after deployment.
+Just grab the VM package from [github](https://github.com/akashihi/mdg/releases/download/v0.6.0/MDG-appliance-v0.6.0.ova.bz2)  and import it
+into you virtualization system as a new VM. Boot up the VM and try to access MDG in VM's port 80. Default VM credentials for _remote_ access are `mdg/mdg`. 
+Console access is passwordless.
 
 #### Database backup
 
@@ -43,9 +43,8 @@ Duplicati web interface is available at http://VM.ip:8200/ and needs to be confi
 
 MDG database can be restored from the dump by running following commands:
 
-    docker-compose -f /usr/local/etc/{next,docker-compose}.yml stop rates
-    docker-compose -f /usr/local/etc/{next,docker-compose}.yml stop mdg
-    docker run -i --rm --network etc_backend --link etc_postgres_1:postgres postgres psql -h postgres -U postgres < dump_mdg.sql
+    /opt/mdg.docker-compose -f /opt/mdg/docker-compose.yml stop mdg
+    podman run -i --rm --network mdg_backend --link mdg_postgres_1:postgres postgres psql -h postgres -U postgres < dump_mdg.sql
     systemctl restart mdg
 
 It is your duty to upload MDG database dump to the system.
@@ -54,76 +53,47 @@ It is your duty to upload MDG database dump to the system.
 
 To upgrade your MDG appliance make a [backup](#database-backup), move it out of the VM, delete VM, [redeploy](#mdg-appliance)
 with the new image and [restore database](#database-restore)
-  
-###Automatic deploy with Ansible on Atomic host
 
-Provided ansible playbook will deploy docker compose, run MDG and related services in docker containers, configure systemd services for automated start-up and, finally, configure [Duplicati](https://www.duplicati.com/) based backup solution for your data.
+#### Building appliance from scratch
 
-#### Prerequisites
+Appliance is based on the [CoreOS](https://getfedora.org/en/coreos?stream=stable) distribution,a minimal operating system for running containerized workloads.
+VM for Appliance is a 1 CPU/4GB virtual machine with 20GB of available space. The minimum requirement is about 10GB of disk space, rest is used for your data.
 
-* [Atomic linux host](https://www.projectatomic.io/)
-* [Ansible](https://www.ansible.com)
+Appliance is configured with Butane script at `mdg.bu`, which can be adjusted to meet your need. That script downloads MDG files, configures execution
+environment and prepares the appliance. Script needs to be converted to the Ignition file using [Butane tool](https://docs.fedoraproject.org/en-US/fedora-coreos/producing-ign/):
 
-#### Deployment guide
+```shell
+butate --pretty --strict mdg.bu > mdg.ign
+```
 
-1) Get a copy of recent mdg deploy, by either downloading or cloning it:
+Having ingition file ready, download latest CoreOS [OVA image](https://getfedora.org/en/coreos/download?tab=metal_virtualized&stream=stable&arch=x86_64) for Virtual box,
+import it and [apply the configuration](https://docs.fedoraproject.org/en-US/fedora-coreos/provisioning-virtualbox/)
 
+```shell
+VBoxManage import --vsys 0 --vmname "MDG" --cpus 1 --memory 1G fedora-coreos-36.20220618.3.1-virtualbox.x86_64.ova
+VBoxManage modifymedium disk /path/to/disk.vdi --resize 20G
+VBoxManage guestproperty set MDG /Ignition/Config "$(cat mdg.ign)"
+```
 
-    wget -O mdg-deploy.zip https://github.com/akashihi/mdg-deploy/archive/
-    unzip mdg-deploy.zip
-    
-or
-    
-    git clone https://github.com/akashihi/mdg-deploy.git
-    
-2) Configure your inverntory file: You need to set ip address to your host (default value is 192.168.1.253) and configure ssh access settings, if needed. Consult [Ansible manual](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) for details.
-
-
-    vi mdg-deploy/atomic/inventory
-
-3) Choose version, you would like to deploy, by editing playbook file:
-    
-    
-    vi mdg-deploy/atomic/mdg.yml
-
-You also need to edit a 'flavor' variable, setting it either to next(default), deploying a latest dev build ofr MDG, or to 'docker-compose', to deploy latest "stable" version.
-
-4) You can start your deployment now, by calling ansible:
-
-
-    cd mdg-deploy/atomic
-    ansible-playbook -i inventory mdg.yml -k
-
-5) After successful Ansible run you should check that mdg is available at http://yourip/
-
-#### Upgrade procedure
-
-To upgrade your MDG, deployed with ansible, you have to login to your Atomic host and issue following commands:
-
-    /usr/local/bin/docker-compose -f /usr/local/etc/{next,docker-compose}.yml pull
-    systemctl restart mdg
-
-Those two commands will pull new Docker images for MDG and restart the whole software stack.
-
-Use [same procedure](#database-backup) for the database backup and restore, as with the appliance.
-
-###Docker compose
+### Docker compose
 Another way of deployment is via [docker compose](https://docs.docker.com/compose/). 
 
-You need to install docker engine and docker compose before deployment, using appropriate procedure for your operating system. After that you have to download docker compose descriptor and start MDG:
+You need to install docker engine and docker compose before deployment, using appropriate procedure for your operating system.
 
-    wget -O mdg-deploy.zip https://github.com/akashihi/mdg-deploy/archive/master.zip
-    unzip mdg-deploy.zip
-    sudo docker-compose -f mdg-deploy-master/compose/docker-compose.yml up
+The version is configured by `.env` file specifying two tags:
+
+```shell
+MDG_TAG=master
+UI_TAG=master
+```
+
+You'll need to create that file and after that you have to download docker compose descriptor and start MDG:
+
+    wget https://github.com/akashihi/mdg/raw/master/docker-compose.yml
+    sudo docker-compose  up
 MDG should start in several seconds, depending on your hardware and internet connection and web interface will be available at http://yourip/
 
-There are two docker compose files:
-* docker-compose.yml will start last released "stable" version of MDG
-* next.yml will start latest dev build version of MDG
-
-Ansible based deployment procedure, mentioned above, uses same docker compose approach internally.
-
-###Deploy from source code
+### Deploy from source code
 
 Deployment from the source code is the most complex, but may be useful in case you do not like docker or would like to improve MDG. 
 
