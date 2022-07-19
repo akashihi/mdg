@@ -70,7 +70,7 @@ export function BudgetPage(props: BudgetViewerProps) {
     const [loading, setLoading] = useState<boolean>(false);
 
     const loadEntries = () => {
-        if (props.budget === null) {
+        if (props.budget === null || props.budget === undefined) {
             return;
         }
 

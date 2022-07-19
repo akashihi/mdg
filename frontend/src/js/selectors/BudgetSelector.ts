@@ -10,8 +10,8 @@ export const getSelectedBudget = createSelector(
 );
 
 export const selectSelectedBudgetId = createSelector([getBudgets], (budgetState: BudgetState): string => {
-    if (budgetState.selectedBudget === null) {
-        if (budgetState.currentBudget === null) {
+    if (budgetState.selectedBudget === null || budgetState.selectedBudget === undefined) {
+        if (budgetState.currentBudget === null || budgetState.currentBudget === undefined) {
             return moment().format('YYYYMMDD');
         } else {
             return budgetState.currentBudget.id;
