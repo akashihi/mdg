@@ -107,3 +107,4 @@ crashlytics-build.properties
 fabric.properties
 
 spring-boot-ehcache/
+*.ign

@@ -1,0 +1,179 @@
+variant: fcos
+version: 1.4.0
+passwd:
+  users:
+    - name: mdg
+      groups:
+        - wheel
+        - sudo
+      password_hash: $y$j9T$mBEcEM24btEmT8OQfLpPG1$vh2nbM4QbCuZTXTZyBSz91vjWcEGYN09QuYAzgjmTn.
+storage:
+  directories:
+    - path: /opt/mdg
+      overwrite: true
+    - path: /srv/mdgbackup
+      overwrite: true
+    - path: /srv/duplicati
+      overwrite: true
+    - path: /opt/mdg/dictionaries
+      overwrite: true
+    - path: /opt/mdg/dictionaries/cs_CZ
+      overwrite: true
+    - path: /opt/mdg/dictionaries/de
+      overwrite: true
+    - path: /opt/mdg/dictionaries/en
+      overwrite: true
+    - path: /opt/mdg/dictionaries/lt_LT
+      overwrite: true
+    - path: /opt/mdg/dictionaries/ru_RU
+      overwrite: true
+  files:
+    - path: /etc/sysctl.d/90-vm.conf
+      overwrite: true
+      contents:
+        inline: |
+          vm.max_map_count = 262144
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: mdg
+    - path: /etc/ssh/sshd_config.d/20-enable-passwords.conf
+      mode: 0644
+      contents:
+        inline: |
+          PasswordAuthentication yes
+    - path: /opt/mdg/.env
+      overwrite: true
+      mode: 0644
+      contents:
+        inline: |
+          MDG_TAG=master
+          UI_TAG=master
+    - path: /opt/mdg/docker-compose.yml
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/docker-compose.yml
+    - path: /usr/local/bin/docker-compose
+      overwrite: true
+      mode: 0555
+      contents:
+        source: https://github.com/docker/compose/releases/download/v2.6.1/docker-compose-linux-x86_64
+    - path: /opt/mdg/dictionaries/cs_CZ/cs_CZ.aff
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/cs_CZ/cs_CZ.aff
+    - path: /opt/mdg/dictionaries/cs_CZ/cs_CZ.dic
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/cs_CZ/cs_CZ.dic
+    - path: /opt/mdg/dictionaries/de/de_DE_frami.aff
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/de/de_DE_frami.aff
+    - path: /opt/mdg/dictionaries/de/de_DE_frami.dic
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/de/de_DE_frami.dic
+    - path: /opt/mdg/dictionaries/en/en_US.aff
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/en/en_US.aff
+    - path: /opt/mdg/dictionaries/en/en_US.dic
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/en/en_US.dic
+    - path: /opt/mdg/dictionaries/lt_LT/lt.aff
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/lt_LT/lt.aff
+    - path: /opt/mdg/dictionaries/lt_LT/lt.dic
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/lt_LT/lt.dic
+    - path: /opt/mdg/dictionaries/ru_RU/ru_RU.aff
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/ru_RU/ru_RU.aff
+    - path: /opt/mdg/dictionaries/ru_RU/ru_RU.dic
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://github.com/akashihi/mdg/raw/master/dictionaries/ru_RU/ru_RU.dic
+systemd:
+  units:
+    - name: mdg.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=MDG
+        After=network-online.target
+        Wants=network-online.target
+
+        [Service]
+        Restart=always
+        TimeoutStartSec=0
+        WorkingDirectory=/opt/mdg/
+        
+        # Remove old containers, images and volumes
+        ExecStartPre=/usr/local/bin/docker-compose -f /opt/mdg/docker-compose.yml down
+        ExecStartPre=/usr/local/bin/docker-compose -f /opt/mdg/docker-compose.yml rm
+        ExecStartPre=-/bin/bash -c '/usr/bin/docker rmi $(/usr/bin/docker images | grep "<none>" | awk \'{print $3}\')'
+        ExecStartPre=-/bin/bash -c '/usr/bin/docker rm -v $(/usr/bin/docker ps -aq)'
+        ExecStartPre=/bin/bash -c 'find /opt/mdg/dictionaries -type d  |xargs chmod a+rx && find /opt/mdg/dictionaries -type f  |xargs chmod a+rx && chcon -Rt svirt_sandbox_file_t /opt/mdg/dictionaries'
+        
+        # Compose up
+        ExecStart=/usr/local/bin/docker-compose -f /opt/mdg/docker-compose.yml up
+  
+        # Compose down, remove containers and volumes
+        ExecStop=/usr/local/bin/docker-compose -f /opt/mdg/docker-compose.yml down
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: mdg-backup.service
+      contents: |
+        [Unit]
+        Description=MDG backup service
+        Requires=mdg.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/bash -c '/usr/bin/docker exec -t mdg-postgres-1 pg_dumpall -c -U postgres > /srv/mdgbackup/dump_mdg.sql'
+    - name: mdg-backup.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run mdg backup everyday at 21:21
+
+        [Timer]
+        OnCalendar=*-*-* 21:21:00
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: duplicati.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Duplicati
+        Requires=docker.service
+        After=docker.service
+  
+        [Service]
+        Restart=always
+        # Remove old containers, images and volumes
+        ExecStartPre=-/usr/bin/docker rm -v -f duplicati
+        ExecStartPre=/bin/bash -c 'chcon -Rt svirt_sandbox_file_t /srv/duplicati && chcon -Rt svirt_sandbox_file_t /srv/mdgbackup'
+  
+        ExecStart=/usr/bin/docker run --name=duplicati -v /srv/duplicati:/config -v /srv/mdgbackup:/source -p 8200:8200 -e PGID=0 -e PUID=0 linuxserver/duplicati
+  
+        [Install]
+        WantedBy=multi-user.target
