@@ -116,10 +116,10 @@ public class TransactionService {
     @Transactional
     public ListResult list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
         var spec = TransactionSpecification.filteredTransactions(indexingService, filter, pointer);
-        var sorting = Sort.by("ts").descending().and(Sort.by("id").ascending()); //Sort by id then timestamp by default
+        var sorting = Sort.by("ts").descending().and(Sort.by("id").descending()); //Sort by timestamp amd then id by default
         if (sort.contains("-timestamp")) {
             //Reverse sort requested
-            sorting = Sort.by("ts").ascending().and(Sort.by("id").ascending());
+            sorting = Sort.by("ts").ascending().and(Sort.by("id").descending());
         }
         if (limit == null) {
             return new ListResult(transactionRepository.findAll(spec, sorting), 0L);
