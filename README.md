@@ -44,7 +44,7 @@ Duplicati web interface is available at http://VM.ip:8200/ and needs to be confi
 MDG database can be restored from the dump by running following commands:
 
     /opt/mdg.docker-compose -f /opt/mdg/docker-compose.yml stop mdg
-    podman run -i --rm --network mdg_backend --link mdg_postgres_1:postgres postgres psql -h postgres -U postgres < dump_mdg.sql
+    podman run -i --rm --network mdg_backend --link mdg-postgres-1:postgres -ePGPASSWORD=mdg postgres:14.3 psql -h postgres -U mdg -d postgres < dump_mdg.sql
     systemctl restart mdg
 
 It is your duty to upload MDG database dump to the system.
@@ -63,7 +63,7 @@ Appliance is configured with Butane script at `mdg.bu`, which can be adjusted to
 environment and prepares the appliance. Script needs to be converted to the Ignition file using [Butane tool](https://docs.fedoraproject.org/en-US/fedora-coreos/producing-ign/):
 
 ```shell
-butate --pretty --strict mdg.bu > mdg.ign
+butane --pretty --strict mdg.bu > mdg.ign
 ```
 
 Having ingition file ready, download latest CoreOS [OVA image](https://getfedora.org/en/coreos/download?tab=metal_virtualized&stream=stable&arch=x86_64) for Virtual box,

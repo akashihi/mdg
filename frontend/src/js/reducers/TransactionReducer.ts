@@ -66,6 +66,9 @@ export default function transactionReducer(state: TransactionState = initialStat
             return produce(state, draft => {
                 draft.transactionDialogVisible = true;
                 draft.editedTransaction = DefaultTransaction;
+                draft.editedTransaction = produce(draft.editedTransaction, txDraft => {
+                    txDraft.timestamp = moment().format('YYYY-MM-DDTHH:mm:ss');
+                });
             });
         case TransactionActionType.TransactionEdit:
             return produce(state, draft => {
