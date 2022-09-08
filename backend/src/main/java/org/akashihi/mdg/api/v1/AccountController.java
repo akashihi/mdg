@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -39,7 +40,7 @@ public class AccountController {
         var topAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(a -> a.getCategoryId() == null).toList();
 
         var topCategories = new ArrayList<CategoryTreeEntry>();
-        var favoriteAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(Account::getFavorite).toList();
+        var favoriteAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(a -> Objects.nonNull(a.getFavorite()) && a.getFavorite()).toList();
         if (!favoriteAccounts.isEmpty()) {
             var favoriteCategory = new CategoryTreeEntry(-1L, "Favorite", favoriteAccounts, Collections.emptyList());
             topCategories.add(0, favoriteCategory);
