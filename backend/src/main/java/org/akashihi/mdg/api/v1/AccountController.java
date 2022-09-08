@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 @RestController
@@ -35,7 +37,16 @@ public class AccountController {
 
     protected CategoryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<Account> accounts) {
         var topAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(a -> a.getCategoryId() == null).toList();
-        var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, accounts)).filter(Optional::isPresent).map(Optional::get).toList();
+
+        var topCategories = new ArrayList<CategoryTreeEntry>();
+        var favoriteAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(Account::getFavorite).toList();
+        if (!favoriteAccounts.isEmpty()) {
+            var favoriteCategory = new CategoryTreeEntry(-1L, "Favorite", favoriteAccounts, Collections.emptyList());
+            topCategories.add(0, favoriteCategory);
+        }
+
+        topCategories.addAll(categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, accounts)).filter(Optional::isPresent).map(Optional::get).toList());
+
         return new CategoryTreeEntry(null, null, topAccounts, topCategories);
     }
 
