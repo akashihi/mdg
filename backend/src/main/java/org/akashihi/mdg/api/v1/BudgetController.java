@@ -12,6 +12,8 @@ import org.akashihi.mdg.entity.BudgetEntry;
 import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.service.BudgetService;
 import org.akashihi.mdg.service.CategoryService;
+import org.akashihi.mdg.service.RateService;
+import org.akashihi.mdg.service.SettingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,34 +37,47 @@ import java.util.function.Function;
 public class BudgetController {
     private final BudgetService budgetService;
     private final CategoryService categoryService;
+    private final RateService rateService;
+    private final SettingService settingService;
 
-    protected static <T> BigDecimal getTotals(Function<T,BigDecimal> f, Collection<T> entries) {
+    protected static BigDecimal getCategoryTotals(Function<BudgetEntryTreeEntry,BigDecimal> f, Collection<BudgetEntryTreeEntry> entries) {
         return entries.stream().map(f).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    protected static BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
+    protected BigDecimal getEntryTotals(Function<BudgetEntry,BigDecimal> f, Collection<BudgetEntry> entries) {
+        return entries.stream().map(e -> {
+            var amount = f.apply(e);
+            if (!settingService.getCurrentCurrencyPrimary().map(c -> c.equals(e.getAccount().getCurrency())).orElse(true)) {
+                var rate = rateService.getCurrentRateForPair(e.getAccount().getCurrency(), settingService.getCurrentCurrencyPrimary().get());
+                amount = amount.multiply(rate.getRate());
+            }
+            return amount;
+        }).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    protected BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
         var topEntries = entries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
                 .filter(e -> Objects.isNull(e.getAccount().getCategory()))
                 .map(Embedding.embedBudgetEntryObject(embed))
                 .toList();
         var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
-        var actualSpendingsCategories = getTotals(BudgetEntryTreeEntry::actualAmount, topCategories);
-        var expectedSpendingsCategories = getTotals(BudgetEntryTreeEntry::expectedAmount, topCategories);
-        var allowedSpendingsCategories = getTotals(BudgetEntryTreeEntry::allowedSpendings, topCategories);
+        var actualSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::actualAmount, topCategories);
+        var expectedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, topCategories);
+        var allowedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, topCategories);
         var percent = BudgetService.getSpendingPercent(actualSpendingsCategories, expectedSpendingsCategories);
         return new BudgetEntryTreeEntry(null, null, actualSpendingsCategories, expectedSpendingsCategories, percent, allowedSpendingsCategories, topEntries, topCategories);
     }
 
-    protected static Optional<BudgetEntryTreeEntry> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
+    protected Optional<BudgetEntryTreeEntry> convertCategory(Category category, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
         var categoryEntries = entries.stream().filter(e -> e.getAccount().getCategory() != null).filter(e -> e.getAccount().getCategory().equals(category)).map(Embedding.embedBudgetEntryObject(embed)).toList();
         var subCategories = category.getChildren().stream().map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
 
         if (categoryEntries.isEmpty() && subCategories.isEmpty()) {
             return Optional.empty();
         }
-        var actualSpendings = getTotals(BudgetEntry::getActualAmount, categoryEntries).add(getTotals(BudgetEntryTreeEntry::actualAmount, subCategories));
-        var expectedSpendings = getTotals(BudgetEntry::getExpectedAmount, categoryEntries).add(getTotals(BudgetEntryTreeEntry::expectedAmount, subCategories));
-        var allowedSpendings = getTotals(BudgetEntry::getAllowedSpendings, categoryEntries).add(getTotals(BudgetEntryTreeEntry::allowedSpendings, subCategories));
+        var actualSpendings = getEntryTotals(BudgetEntry::getActualAmount, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::actualAmount, subCategories));
+        var expectedSpendings = getEntryTotals(BudgetEntry::getExpectedAmount, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, subCategories));
+        var allowedSpendings = getEntryTotals(BudgetEntry::getAllowedSpendings, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, subCategories));
 
         var percent = BudgetService.getSpendingPercent(actualSpendings, expectedSpendings);
         return Optional.of(new BudgetEntryTreeEntry(category.getId(), category.getName(), actualSpendings, expectedSpendings, allowedSpendings, percent, categoryEntries, subCategories));
