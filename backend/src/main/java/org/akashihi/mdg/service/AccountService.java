@@ -6,6 +6,7 @@ import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.CategoryRepository;
 import org.akashihi.mdg.dao.CurrencyRepository;
+import org.akashihi.mdg.dao.OperationRepository;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.springframework.data.domain.Sort;
@@ -30,6 +31,7 @@ public class AccountService {
     private final TransactionService transactionService;
     private final SettingService settingService;
     private final RateService rateService;
+    private final OperationRepository operationRepository;
 
     protected Account applyBalance(Account a) {
         var balance = accountRepository.getBalance(a.getId()).orElse(BigDecimal.ZERO);
@@ -149,5 +151,10 @@ public class AccountService {
         var account = accountRepository.findById(id).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
         account.setHidden(true);
         accountRepository.save(account);
+    }
+
+    @Transactional public Boolean isDeletable(Long id) {
+        var account = accountRepository.findById(id).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d/status".formatted(id)));
+        return !operationRepository.doOperationsExistForAccount(account.getId()).orElse(false);
     }
 }
