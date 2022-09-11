@@ -64,10 +64,19 @@ describe('Account operations', () => {
     });
 
     it('Hide account', async () => {
+
         await e2e.step('Hide account')
-            .spec('delete')
-            .delete('/accounts/{id}')
-            .withPathParams('id', '$S{AccountID}');
+          .spec('update')
+          .put('/accounts/{id}')
+          .withPathParams('id', '$S{AccountID}')
+          .withJson({
+              '@DATA:TEMPLATE@': 'Account:Expense:V1',
+              '@OVERRIDES@': {
+                  name: 'Monthly rent', //For specific filtering
+                  hidden: true
+              }
+          })
+          .expectJson('hidden', true);
     });
 
     it('Hidden account is in non-filtered account lists', async () => {
