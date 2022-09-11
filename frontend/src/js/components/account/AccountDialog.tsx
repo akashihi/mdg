@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { produce } from 'immer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,7 +13,7 @@ import * as Yup from 'yup';
 import { AccountDialogProps } from '../../containers/AccountEditor';
 import { mapCategoryListToMenu } from '../../util/CategoryUtils';
 import { Account } from '../../models/Account';
-import {processApiResponse} from "../../util/ApiUtils";
+import { processApiResponse } from '../../util/ApiUtils';
 
 function AccountDialog(props: AccountDialogProps) {
     const [loading, setLoading] = useState<boolean>(true);
@@ -25,8 +25,8 @@ function AccountDialog(props: AccountDialogProps) {
         setLoading(true);
         fetch(url)
             .then(processApiResponse)
-            .then((data) => {
-                setDeletable(data.deletable)
+            .then(data => {
+                setDeletable(data.deletable);
                 setLoading(false);
             });
     }, [props.account.id]);
@@ -175,10 +175,17 @@ function AccountDialog(props: AccountDialogProps) {
                             />
                         </DialogContent>
                         <DialogActions>
-                            <LoadingButton color="error" disabled={!deletable} loading={loading} onClick={props.close}>
+                            <LoadingButton
+                                color="error"
+                                disabled={!deletable}
+                                loading={loading}
+                                onClick={() => {
+                                    props.close();
+                                    props.deleteAccount(props.account);
+                                }}>
                                 Delete
                             </LoadingButton>
-                            <div style={{flex: '1 0 0'}} />
+                            <div style={{ flex: '1 0 0' }} />
                             <Button color="primary" disabled={isSubmitting} onClick={submitForm}>
                                 Save
                             </Button>
