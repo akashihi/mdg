@@ -149,8 +149,10 @@ public class AccountService {
     @Transactional
     public void delete(Long id) {
         var account = accountRepository.findById(id).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
-        account.setHidden(true);
-        accountRepository.save(account);
+        if (!isDeletable(account.getId())) {
+            throw new RestException("ACCOUNT_IN_USE", 409, "/accounts/%d".formatted(id));
+        }
+        accountRepository.delete(account);
     }
 
     @Transactional public Boolean isDeletable(Long id) {
