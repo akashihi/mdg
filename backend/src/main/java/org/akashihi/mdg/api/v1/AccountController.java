@@ -2,6 +2,7 @@ package org.akashihi.mdg.api.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.akashihi.mdg.api.v1.dto.AccountStatus;
 import org.akashihi.mdg.api.v1.dto.Accounts;
 import org.akashihi.mdg.api.v1.dto.CategoryTree;
 import org.akashihi.mdg.api.v1.dto.CategoryTreeEntry;
@@ -106,5 +107,10 @@ public class AccountController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable("id") Long id) {
         accountService.delete(id);
+    }
+
+    @GetMapping(value = "/accounts/{id}/status", produces = "application/vnd.mdg+json;version=1")
+    AccountStatus getStatus(@PathVariable("id") Long id) {
+        return new AccountStatus(id, accountService.isDeletable(id));
     }
 }

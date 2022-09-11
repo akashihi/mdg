@@ -83,32 +83,20 @@ export function setOperational(account: Account, operational: boolean) {
     };
 }
 
-export function revealAccount(account: Account) {
+function updateHidden(account: Account, value: boolean) {
     return dispatch => {
         const updatedAccount: Account = produce(draft => {
-            draft.hidden = false;
+            draft.hidden = value;
         })(account);
         dispatch(updateAccount(updatedAccount));
     };
 }
+export function revealAccount(account: Account) {
+    return updateHidden(account, false);
+}
 
 export function hideAccount(account: Account) {
-    return dispatch => {
-        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
-
-        const url = `/api/accounts/${account.id}`;
-        const method = 'DELETE';
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-        })
-            .then(processApiResponse)
-            .then(() => dispatch(loadAccountList()))
-            .catch(() => dispatch(loadAccountList()));
-    };
+    return updateHidden(account, true);
 }
 
 export function updateAccount(account: Partial<Account>) {
@@ -141,6 +129,25 @@ export function updateAccount(account: Partial<Account>) {
                     dispatch(loadSelectedBudget(selectedBudgetId));
                 }
             })
+            .catch(() => dispatch(loadAccountList()));
+    };
+}
+
+export function deleteAccount(account: Account) {
+    return dispatch => {
+        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
+
+        const url = `/api/accounts/${account.id}`;
+        const method = 'DELETE';
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/vnd.mdg+json;version=1',
+            },
+        })
+            .then(processApiResponse)
+            .then(() => dispatch(loadAccountList()))
             .catch(() => dispatch(loadAccountList()));
     };
 }

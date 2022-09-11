@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { produce } from 'immer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { TextField, Switch } from 'formik-mui';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,8 +13,24 @@ import * as Yup from 'yup';
 import { AccountDialogProps } from '../../containers/AccountEditor';
 import { mapCategoryListToMenu } from '../../util/CategoryUtils';
 import { Account } from '../../models/Account';
+import { processApiResponse } from '../../util/ApiUtils';
 
 function AccountDialog(props: AccountDialogProps) {
+    const [loading, setLoading] = useState<boolean>(true);
+    const [deletable, setDeletable] = useState<boolean>(false);
+
+    useEffect(() => {
+        const url = `/api/accounts/${props.account.id}/status`;
+
+        setLoading(true);
+        fetch(url)
+            .then(processApiResponse)
+            .then(data => {
+                setDeletable(data.deletable);
+                setLoading(false);
+            });
+    }, [props.account.id]);
+
     const onSubmit = (values: Account) => {
         props.close();
 
@@ -158,6 +175,17 @@ function AccountDialog(props: AccountDialogProps) {
                             />
                         </DialogContent>
                         <DialogActions>
+                            <LoadingButton
+                                color="error"
+                                disabled={!deletable}
+                                loading={loading}
+                                onClick={() => {
+                                    props.close();
+                                    props.deleteAccount(props.account);
+                                }}>
+                                Delete
+                            </LoadingButton>
+                            <div style={{ flex: '1 0 0' }} />
                             <Button color="primary" disabled={isSubmitting} onClick={submitForm}>
                                 Save
                             </Button>

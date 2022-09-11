@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import AccountDialog from '../components/account/AccountDialog';
-import { updateAccount } from '../actions/AccountActions';
+import { updateAccount, deleteAccount } from '../actions/AccountActions';
 import { Account } from '../models/Account';
 import { RootState } from '../reducers/rootReducer';
 import Category from '../models/Category';
@@ -35,7 +35,7 @@ const mapStateToProps = (state: RootState, ownProps: AccountEditorProps): Accoun
     };
 };
 
-const mapDispatchToProps = { updateAccount };
+const mapDispatchToProps = { updateAccount, deleteAccount };
 
 export type AccountDialogProps = AccountEditorState & typeof mapDispatchToProps;
 

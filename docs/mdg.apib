@@ -252,7 +252,7 @@ Only `hidden`, `name`, `category_id`, `favorite` and `operational` fields could 
     
 ### Delete an account [DELETE]
 
-Actually accounts are immortal, deleting an account puts a 'hidden' flag on it.
+Only accounts without operations will be deleted. If there exists any operations, referring to the account, an error will be returned instead. Check the `status` object below.
 
 + Response 204
 
@@ -331,6 +331,20 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
             ]    
         }
 
+## Account status [/accounts/{account_id}/status]
+
++ parameters
+    + account_id: 2 (number, required) - ID of an account in form of integer
+
++ Attributes
+    + id: 2 (number, required) - Account id
+    + deletable: false (boolean, required) - Whether account could be deleted or not.
+
+### Retrieve account status [GET]
+
++ Response 201 (application/vnd.mdg+json;version=1)
+    + Attributes (Account status)
+    
 # Group Tags
 
 Transaction tags dictionary. Each tag is an unique, case-insensitive string.

@@ -49,4 +49,6 @@ databaseChangeLog:
       file: conf/liquibase/24-mqt_refresh.sql
   - include:
       file: conf/liquibase/25-nonegativebudgetentry.sql
+  - include:
+      file: conf/liquibase/26-accountdeletionerror.sql
 
