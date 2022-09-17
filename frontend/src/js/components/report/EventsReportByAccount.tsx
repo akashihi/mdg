@@ -22,7 +22,7 @@ export function EventsReportByAccount(props: EventReportProps) {
             },
         },
     };
-    return <AssetReportWidet url={url} options={options} />;
+    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName}/>;
 }
 
 export default EventsReportByAccount;

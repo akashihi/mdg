@@ -8,6 +8,7 @@ import moment from 'moment';
 export interface AssetReportWidgetProps {
     url: string;
     options: HighchartsReact.Props;
+    primaryCurrencyName: string;
 }
 
 export function AssetReportWidget(props: AssetReportWidgetProps) {
