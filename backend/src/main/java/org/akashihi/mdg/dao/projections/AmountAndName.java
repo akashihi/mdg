@@ -4,5 +4,6 @@ import java.math.BigDecimal;
 
 public interface AmountAndName {
     BigDecimal getAmount();
+    BigDecimal getPrimaryAmount();
     String getName();
 }

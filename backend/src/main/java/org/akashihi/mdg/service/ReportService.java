@@ -99,6 +99,11 @@ public class ReportService {
                 }
 
                 @Override
+                public BigDecimal getPrimaryAmount() {
+                    return amount.getPrimaryAmount().negate();
+                }
+
+                @Override
                 public String getName() {
                     return amount.getName();
                 }
