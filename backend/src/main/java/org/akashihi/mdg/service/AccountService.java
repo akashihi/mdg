@@ -29,20 +29,13 @@ public class AccountService {
     private final CategoryRepository categoryRepository;
     private final CurrencyRepository currencyRepository;
     private final TransactionService transactionService;
-    private final SettingService settingService;
     private final RateService rateService;
     private final OperationRepository operationRepository;
 
     protected Account applyBalance(Account a) {
         var balance = accountRepository.getBalance(a.getId()).orElse(BigDecimal.ZERO);
         a.setBalance(balance);
-        var defaultCurrency = settingService.getCurrentCurrencyPrimary();
-        if (defaultCurrency.isEmpty() || a.getCurrency().equals(defaultCurrency.get())) {
-            a.setPrimaryBalance(a.getBalance());
-        } else {
-            var rate = rateService.getCurrentRateForPair(a.getCurrency(), defaultCurrency.get());
-            a.setPrimaryBalance(a.getBalance().multiply(rate.getRate()));
-        }
+        a.setPrimaryBalance(rateService.toCurrentDefaultCurrency(a.getCurrency(), a.getBalance()));
         return a;
     }
 
