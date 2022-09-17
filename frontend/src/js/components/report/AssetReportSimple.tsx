@@ -23,7 +23,7 @@ export function AssetReportSimple(props: ReportProps) {
         },
     };
 
-    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName}/>;
+    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
 }
 
 export default AssetReportSimple;

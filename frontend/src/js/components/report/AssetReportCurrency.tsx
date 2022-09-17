@@ -15,10 +15,10 @@ export function AssetReportCurrency(props: ReportProps) {
             split: true,
             formatter: function () {
                 return this.points.map(p => `${p.point.custom} ${p.series.name} (${p.y} ${props.primaryCurrencyName})`);
-            }
-        }
+            },
+        },
     };
-    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName}/>;
+    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
 }
 
 export default AssetReportCurrency;

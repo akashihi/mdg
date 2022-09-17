@@ -8,7 +8,13 @@ import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.Category;
 import org.akashihi.mdg.entity.Currency;
-import org.akashihi.mdg.entity.report.*;
+import org.akashihi.mdg.entity.report.Amount;
+import org.akashihi.mdg.entity.report.BudgetExecutionReport;
+import org.akashihi.mdg.entity.report.ReportSeries;
+import org.akashihi.mdg.entity.report.ReportSeriesEntry;
+import org.akashihi.mdg.entity.report.SimpleReport;
+import org.akashihi.mdg.entity.report.TotalsReport;
+import org.akashihi.mdg.entity.report.TotalsReportEntry;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
