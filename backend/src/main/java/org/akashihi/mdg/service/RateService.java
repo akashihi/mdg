@@ -30,6 +30,7 @@ public class RateService {
     private static final String YF_URL = "https://query1.finance.yahoo.com/v7/finance/spark?range=1d&interval=60m&indicators=close&includeTimestamps=true&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance&symbols={symbols}";
     private final CurrencyService currencyService;
     private final RateRepository rateRepository;
+    private final SettingService settingService;
 
     public Collection<Rate> listForTs(LocalDateTime dt) {
         return rateRepository.findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(dt, dt);
@@ -46,6 +47,19 @@ public class RateService {
 
     public Rate getCurrentRateForPair(Currency from, Currency to) {
         return this.getPair(LocalDateTime.now(), from.getId(), to.getId());
+    }
+
+    public BigDecimal toCurrentDefaultCurrency(Currency from, BigDecimal amount) {
+        var primaryCurrencyVal = settingService.getCurrentCurrencyPrimary();
+        if (primaryCurrencyVal.isEmpty()) {
+            return amount;
+        }
+        var primaryCurrency = primaryCurrencyVal.get();
+        if (primaryCurrency.equals(from)) {
+            return amount;
+        }
+        var currentRate = getCurrentRateForPair(from, primaryCurrencyVal.get());
+        return amount.multiply(currentRate.getRate());
     }
 
     public LocalDateTime lastUpdate() {

@@ -753,6 +753,14 @@ Budget specific thing. As budget manages a predicted future and harsh reality at
     + actual: 1000 (number, required) - Amount that actually was reached during budget execution
     + expected: 2000 (number, required) - Amount that planned to be reached during budget execution
 
+## ReportSeriesEntry
+
+A single entry of report series. Names of the fields are based on [Highcharts API requirements](https://api.highcharts.com/highcharts/series.area.data.y): 
+
++ Attributes
+    + y: 0.06(number, required) - A single datapoint. In case it is a monetary value, it will be converted to the primary currency.
+    + custom: 120 (number, required) - Original monetary value in the original currency. Should be ignored for non-monetary values.
+
 ## ReportSeries
 
 Report series represent a single data-series for reporting, consists of a series name, datapoints array and recommended chart type

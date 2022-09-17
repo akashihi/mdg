@@ -11,6 +11,7 @@ import org.akashihi.mdg.entity.Currency;
 import org.akashihi.mdg.entity.report.Amount;
 import org.akashihi.mdg.entity.report.BudgetExecutionReport;
 import org.akashihi.mdg.entity.report.ReportSeries;
+import org.akashihi.mdg.entity.report.ReportSeriesEntry;
 import org.akashihi.mdg.entity.report.SimpleReport;
 import org.akashihi.mdg.entity.report.TotalsReport;
 import org.akashihi.mdg.entity.report.TotalsReportEntry;
@@ -85,8 +86,8 @@ public class ReportService {
 
     public SimpleReport simpleAssetReport(LocalDate from, LocalDate to, Integer granularity) {
         var dates = expandPeriod(from, to, granularity);
-        var amounts = dates.stream().map(d -> accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO).setScale(2, RoundingMode.DOWN)).toList();
-        var series = new ReportSeries("Total assets", amounts, "area");
+        var amounts = dates.stream().map(d -> accountRepository.getTotalAssetsForDate(d).orElse(BigDecimal.ZERO).setScale(2, RoundingMode.DOWN)).map(a -> new ReportSeriesEntry(a, a)).toList();
+        var series = new ReportSeries("Total assets", amounts,"area");
         return new SimpleReport(dates, Collections.singletonList(series));
     }
 
@@ -96,6 +97,11 @@ public class ReportService {
                 @Override
                 public BigDecimal getAmount() {
                     return amount.getAmount().negate();
+                }
+
+                @Override
+                public BigDecimal getPrimaryAmount() {
+                    return amount.getPrimaryAmount().negate();
                 }
 
                 @Override
@@ -110,9 +116,11 @@ public class ReportService {
 
     protected Collection<ReportSeries> amountToSeries(final Stream<AmountAndName> amounts, final String type) {
         return amounts.collect(Collectors.groupingBy(AmountAndName::getName)).entrySet().stream().map(group -> {
-            var data = group.getValue().stream().map(AmountAndName::getAmount).toList();
+            var data = group.getValue().stream().map(an -> new ReportSeriesEntry(an.getPrimaryAmount(), an.getAmount())).toList();
             return new ReportSeries(group.getKey(), data, type); // Area is the default type
-        }).toList();
+        })
+                .filter(s -> !s.data().stream().map(ReportSeriesEntry::y).allMatch(v -> v.compareTo(BigDecimal.ZERO) == 0))
+                .toList();
     }
 
     protected SimpleReport typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {

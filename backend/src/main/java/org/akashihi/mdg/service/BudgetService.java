@@ -33,7 +33,6 @@ public class BudgetService {
     private final BudgetRepository budgetRepository;
     private final BudgetEntryRepository budgetEntryRepository;
     private final TransactionService transactionService;
-    private final SettingService settingService;
     private final RateService rateService;
 
     protected Boolean validateBudget(Budget budget) {
@@ -86,12 +85,7 @@ public class BudgetService {
     }
 
     protected BigDecimal applyRateForEntry(BigDecimal amount, BudgetEntry entry) {
-        var primaryCurrency = settingService.getCurrentCurrencyPrimary();
-        if (primaryCurrency.map(c -> c.equals(entry.getAccount().getCurrency())).orElse(true)) {
-            return amount;
-        }
-        var rate = rateService.getCurrentRateForPair(entry.getAccount().getCurrency(), primaryCurrency.get());
-        return amount.multiply(rate.getRate());
+        return rateService.toCurrentDefaultCurrency(entry.getAccount().getCurrency(), amount);
     }
 
     protected Budget.BudgetPair getActualExpectedForDate(LocalDate from, LocalDate to, Collection<BudgetEntry> entries, AccountType type) {

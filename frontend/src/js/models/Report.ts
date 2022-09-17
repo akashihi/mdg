@@ -13,6 +13,7 @@ export interface TotalsReport {
 export interface ReportSeries {
     name: string;
     data: number[];
+    custom: number[];
     type: string;
 }
 
