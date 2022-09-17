@@ -112,7 +112,9 @@ public class ReportService {
         return amounts.collect(Collectors.groupingBy(AmountAndName::getName)).entrySet().stream().map(group -> {
             var data = group.getValue().stream().map(an -> new ReportSeriesEntry(an.getPrimaryAmount(), an.getAmount())).toList();
             return new ReportSeries(group.getKey(), data, type); // Area is the default type
-        }).toList();
+        })
+                .filter(s -> !s.data().stream().map(ReportSeriesEntry::y).allMatch(v -> v.compareTo(BigDecimal.ZERO) == 0))
+                .toList();
     }
 
     protected SimpleReport typedAssetReportReport(LocalDate from, LocalDate to, Integer granularity, Function<LocalDate, List<AmountAndName>> query) {
