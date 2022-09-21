@@ -54,7 +54,7 @@ public class BudgetControllerV0 {
     }
 
     private BudgetEntryData.Attributes toDto(BudgetEntry entry) {
-        return new BudgetEntryData.Attributes(entry.getAccount().getId(), entry.getAccount().getName(), entry.getAccount().getAccountType().toDbValue(), entry.getDistribution()!=BudgetEntryMode.SINGLE, entry.getDistribution() == BudgetEntryMode.SINGLE, entry.getExpectedAmount(), entry.getActualAmount(), entry.getAllowedSpendings());
+        return new BudgetEntryData.Attributes(entry.getAccount().getId(), entry.getAccount().getName(), entry.getAccount().getAccountType().toDbValue(), entry.getDistribution()!=BudgetEntryMode.SINGLE, entry.getDistribution() == BudgetEntryMode.PRORATED, entry.getExpectedAmount(), entry.getActualAmount(), entry.getAllowedSpendings());
     }
 
     @GetMapping(value = "/api/budget", produces = "application/vnd.mdg+json")

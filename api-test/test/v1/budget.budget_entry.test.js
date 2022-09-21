@@ -38,8 +38,7 @@ describe('Budget <-> entry calculations', () => {
             .withJson({
                 id: '$S{incomeEntryID}',
                 account_id: '$S{IncomeAccountID}',
-                even_distribution: false,
-                proration: false,
+                distribution: 'SINGLE',
                 expected_amount: 9000,
                 actual_amount: 150
             })
@@ -60,8 +59,7 @@ describe('Budget <-> entry calculations', () => {
             .withJson({
                 id: '$S{expenseEntryID}',
                 account_id: '$S{ExpenseAccountID}',
-                even_distribution: false,
-                proration: false,
+                distribution: 'SINGLE',
                 expected_amount: 100500,
                 actual_amount: 150
             })
