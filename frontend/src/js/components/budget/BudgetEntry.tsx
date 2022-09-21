@@ -84,7 +84,6 @@ export function BudgetEntry(props: BudgetEntryProps) {
     const setDistribution = (value: ReactThreeToggleProps['values'][0]) => {
         if (typeof value != 'string') {
             if (props.entry.distribution != value.value) {
-                console.log(value);
                 const newEntry = { ...props.entry, distribution: value.value };
                 props.save(newEntry);
             }
