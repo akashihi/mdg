@@ -505,8 +505,11 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
     + account (Account, optional) - Related account information.
     + category_id: 1 (number, optional) - Related account's category id, may be missing in case account doesn't belongs to the any category.
     + category (Category, optional) - Related account's associated category object.
-    + even_distribution: `true` (boolean, required) - whether expected change on that account should be evenly distributes over Budget term or it is expected to be occasional based. For example, 'meal budget' is usually evenly distributed, you spent it in small pieces almost every day during Budget period. On the other hand, 'flat rent' is usually occasional, as you pay it only once during Budget period.
-    + proration: `true` (boolean, optional) - affects the change_amount calculation. Only valid when `even_distribution` is `True`
+    + ditribution: 'SINGLE' (enum[string], required) - Sets the rules of that budget category. 'SINGLE' -- a single event is expected. 'EVEN' - changes on that accounts will be evenly distributed. 'PRORATED' - changes on that accounts will be evenly distributed and residuals will be added to the future changes.
+      + Members
+        + `SINGLE`
+        + `EVEN`
+        + `PRORATED`    
     + expected_amount: 1000 (number, required) - your expected change on account_id amount during Budget effective period.
     + actual_amount: 50 (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
     + allowed_spendings: 5 (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
