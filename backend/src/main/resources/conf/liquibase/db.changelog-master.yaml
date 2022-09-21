@@ -51,4 +51,7 @@ databaseChangeLog:
       file: conf/liquibase/25-nonegativebudgetentry.sql
   - include:
       file: conf/liquibase/26-accountdeletionerror.sql
+  - include:
+      file: conf/liquibase/27-budgetentryenum.sql
+
 
