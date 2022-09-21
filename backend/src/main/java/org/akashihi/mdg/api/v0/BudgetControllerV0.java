@@ -9,6 +9,7 @@ import org.akashihi.mdg.api.v0.dto.RequestException;
 import org.akashihi.mdg.api.v1.RestException;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
+import org.akashihi.mdg.entity.BudgetEntryMode;
 import org.akashihi.mdg.service.BudgetService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,13 +49,12 @@ public class BudgetControllerV0 {
     private BudgetEntry fromDto(BudgetEntryData data) {
         var entry = new BudgetEntry();
         entry.setExpectedAmount(data.getAttributes().expected_amount());
-        entry.setEvenDistribution(data.getAttributes().even_distribution());
-        entry.setProration(data.getAttributes().proration());
+        entry.setDistribution(BudgetEntryMode.from(data.getAttributes().even_distribution(), data.getAttributes().proration()));
         return entry;
     }
 
     private BudgetEntryData.Attributes toDto(BudgetEntry entry) {
-        return new BudgetEntryData.Attributes(entry.getAccount().getId(), entry.getAccount().getName(), entry.getAccount().getAccountType().toDbValue(), entry.getEvenDistribution(), entry.getProration(), entry.getExpectedAmount(), entry.getActualAmount(), entry.getAllowedSpendings());
+        return new BudgetEntryData.Attributes(entry.getAccount().getId(), entry.getAccount().getName(), entry.getAccount().getAccountType().toDbValue(), entry.getDistribution()!=BudgetEntryMode.SINGLE, entry.getDistribution() == BudgetEntryMode.PRORATED, entry.getExpectedAmount(), entry.getActualAmount(), entry.getAllowedSpendings());
     }
 
     @GetMapping(value = "/api/budget", produces = "application/vnd.mdg+json")

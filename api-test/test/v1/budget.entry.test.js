@@ -57,8 +57,7 @@ describe('Budget entries operations', () => {
             .withJson({
                 id: '$S{BudgetEntryID}',
                 account_id: '$S{BudgetEntryAccountID}',
-                even_distribution: true,
-                proration: true,
+                distribution: 'PRORATED',
                 expected_amount: 9000,
                 actual_amount: 150
             })
@@ -69,32 +68,6 @@ describe('Budget entries operations', () => {
             .get('/budgets/{id}/entries/{entryId}')
             .withPathParams({id: '$S{BudgetID}', entryId: '$S{BudgetEntryID}'})
             .expectJson('expected_amount', 9000);
-    });
-
-    it('Proration follows equal distribution', async () => {
-        await e2e.step('Update budget entry')
-            .spec('update')
-            .put('/budgets/{id}/entries/{entryId}')
-            .withPathParams({id: '$S{BudgetID}', entryId: '$S{BudgetEntryID}'})
-            .withJson({
-                id: '$S{BudgetEntryID}',
-                account_id: '$S{BudgetEntryAccountID}',
-                account_type: 'income',
-                account_name: 'Salary',
-                even_distribution: false,
-                proration: true,
-                expected_amount: 9000,
-                actual_amount: 150
-            })
-            .expectJson('even_distribution', false)
-            .expectJson('proration', false);
-
-        await e2e.step('Read budget entry')
-            .spec('read')
-            .get('/budgets/{id}/entries/{entryId}')
-            .withPathParams({id: '$S{BudgetID}', entryId: '$S{BudgetEntryID}'})
-            .expectJson('even_distribution', false)
-            .expectJson('proration', false);
         await e2e.cleanup();
     });
 });

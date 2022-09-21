@@ -1,9 +1,8 @@
 package org.akashihi.mdg.entity;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public enum BudgetEntryMode {
     SINGLE,
@@ -28,12 +27,8 @@ public enum BudgetEntryMode {
         }
     }
 
-    public static BudgetEntryMode from(BudgetEntry entry) {
-        return BudgetEntryMode.from(Objects.nonNull(entry.getEvenDistribution()) && entry.getEvenDistribution(), Objects.nonNull(entry.getProration()) && entry.getProration());
-    }
-
     public static BudgetEntryMode flatten(Collection<BudgetEntryMode> modes) {
-        var presence = modes.stream().distinct().collect(Collectors.toSet());
+        var presence = new HashSet<>(modes);
         if (!presence.contains(EVEN) && !presence.contains(SINGLE)) {
             return PRORATED;
         } else if (!presence.contains(SINGLE)) {

@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.akashihi.mdg.dao.BudgetEntryModeConverter;
 
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -44,9 +46,8 @@ public class BudgetEntry {
     private Long categoryId;
     @Transient
     private Category category;
-    @JsonProperty("even_distribution")
-    private Boolean evenDistribution;
-    private Boolean proration;
+    @Convert(converter = BudgetEntryModeConverter.class)
+    private BudgetEntryMode distribution;
     @JsonProperty("expected_amount")
     private BigDecimal expectedAmount;
     @JsonProperty("actual_amount")
@@ -66,8 +67,7 @@ public class BudgetEntry {
         this.account = entry.account;
         this.categoryId = entry.categoryId;
         this.category = entry.category;
-        this.evenDistribution = entry.evenDistribution;
-        this.proration = entry.proration;
+        this.distribution = entry.distribution;
         this.expectedAmount = entry.expectedAmount;
         this.actualAmount = entry.actualAmount;
         this.allowedSpendings = entry.allowedSpendings;
