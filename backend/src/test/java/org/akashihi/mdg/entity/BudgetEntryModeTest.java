@@ -40,11 +40,7 @@ class BudgetEntryModeTest {
             "true,false,even",
             "true,true,prorated"})
     void testFromEntry(Boolean even, Boolean prorated, String mode) {
-        BudgetEntry entry = new BudgetEntry();
-        entry.setEvenDistribution(even);
-        entry.setProration(prorated);
-
-        assertEquals(BudgetEntryMode.from(mode), BudgetEntryMode.from(entry));
+        assertEquals(BudgetEntryMode.from(mode), BudgetEntryMode.from(even, prorated));
     }
 
     @Test

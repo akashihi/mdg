@@ -242,7 +242,7 @@ public class BudgetService {
 
         var from = entry.getBudget().getBeginning();
         var to = entry.getBudget().getEnd();
-        entry.setAllowedSpendings(getAllowedSpendings(entry.getActualAmount(), entry.getExpectedAmount(), from, to, forDay, BudgetEntryMode.from(entry)));
+        entry.setAllowedSpendings(getAllowedSpendings(entry.getActualAmount(), entry.getExpectedAmount(), from, to, forDay, entry.getDistribution()));
         return entry;
     }
 
@@ -275,12 +275,7 @@ public class BudgetService {
         } else {
             throw new RestException("BUDGETENTRY_IS_NEGATIVE", 422, "/budgets/%d/entry/%d".formatted(entry.getBudget().getId(), entryId));
         }
-        entry.setEvenDistribution(newEntry.getEvenDistribution());
-        if (newEntry.getEvenDistribution()) {
-            entry.setProration(newEntry.getProration());
-        } else {
-            entry.setProration(false);
-        }
+        entry.setDistribution(newEntry.getDistribution());
 
         this.applyActualAmount(entry);
         analyzeSpendings(entry, LocalDate.now());
