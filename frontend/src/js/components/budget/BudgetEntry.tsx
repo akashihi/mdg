@@ -1,11 +1,10 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useMemo } from 'react';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import CircularProgressWithLabel from '../../widgets/CircularProgressWithLabel';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { BudgetEntry, BudgetEntryTreeNode } from '../../models/Budget';
 import Divider from '@mui/material/Divider';
+import ReactThreeToggle, { ReactThreeToggleProps } from 'react-three-toggle';
 
 export interface BudgetEntryProps {
     entry: BudgetEntry;
@@ -82,15 +81,24 @@ export function BudgetEntry(props: BudgetEntryProps) {
         }
     };
 
-    const setEvenDistribution = (value: boolean) => {
-        const newEntry = { ...props.entry, even_distribution: value };
-        props.save(newEntry);
+    const setDistribution = (value: ReactThreeToggleProps['values'][0]) => {
+        if (typeof value != 'string') {
+            if (props.entry.distribution != value.value) {
+                console.log(value);
+                const newEntry = { ...props.entry, distribution: value.value };
+                props.save(newEntry);
+            }
+        }
     };
 
-    const setProration = (value: boolean) => {
-        const newEntry = { ...props.entry, proration: value };
-        props.save(newEntry);
-    };
+    const distributionModes = useMemo(
+        () => [
+            { label: 'Single', value: 'SINGLE' },
+            { label: 'Even', value: 'EVEN' },
+            { label: 'Prorated', value: 'PRORATED' },
+        ],
+        []
+    );
 
     let editors = <div />;
     if (props.entry.account.account_type === 'EXPENSE') {
@@ -98,33 +106,16 @@ export function BudgetEntry(props: BudgetEntryProps) {
             <Fragment>
                 <Grid item xs={5} sm={5} md={6} lg={1} />
                 <Grid item xs={3} sm={3} md={3} lg={1}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                color="primary"
-                                checked={props.entry.even_distribution}
-                                onChange={(_, value) => setEvenDistribution(value)}
-                            />
-                        }
-                        label={'Evenly distributed'}
-                    />
-                </Grid>
-                <Grid item xs={3} sm={3} md={3} lg={1}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                color="primary"
-                                checked={props.entry.proration}
-                                onChange={(_, value) => setProration(value)}
-                                disabled={!props.entry.even_distribution}
-                            />
-                        }
-                        label={'Prorate spendings'}
+                    <ReactThreeToggle
+                        values={distributionModes}
+                        initialValue={props.entry.distribution}
+                        onChange={setDistribution}
                     />
                 </Grid>
             </Fragment>
         );
     }
+
     return (
         <div style={{ paddingBottom: '8px', marginLeft: props.indent * 15 + 10 }}>
             <Grid container spacing={2}>

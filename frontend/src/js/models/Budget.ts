@@ -24,14 +24,14 @@ export interface Budget extends ShortBudget {
     outgoing_amount: BudgetPair;
 }
 
+export type BudgetEntryMode = 'SINGLE' | 'EVEN' | 'PRORATED';
 export interface BudgetEntry {
     id: number;
     account_id: number;
     account: Account;
     category_id: number;
     category: Category;
-    even_distribution: boolean;
-    proration: boolean;
+    readonly distribution: BudgetEntryMode;
     expected_amount: number;
     actual_amount: number;
     allowed_spendings: number;
