@@ -147,7 +147,7 @@ systemd:
 
         [Service]
         Type=oneshot
-        ExecStart=/bin/bash -c '/usr/bin/docker exec -t mdg-postgres-1 pg_dumpall -c -U postgres > /srv/mdgbackup/dump_mdg.sql'
+        ExecStart=/bin/bash -c '/usr/bin/docker exec -t -e PGPASSWORD=mdg mdg-postgres-1 pg_dumpall -c -U mdg > /srv/mdgbackup/dump_mdg.sql'
     - name: mdg-backup.timer
       enabled: true
       contents: |
@@ -173,7 +173,7 @@ systemd:
         ExecStartPre=-/usr/bin/docker rm -v -f duplicati
         ExecStartPre=/bin/bash -c 'chcon -Rt svirt_sandbox_file_t /srv/duplicati && chcon -Rt svirt_sandbox_file_t /srv/mdgbackup'
   
-        ExecStart=/usr/bin/docker run --name=duplicati -v /srv/duplicati:/config -v /srv/mdgbackup:/source -p 8200:8200 -e PGID=0 -e PUID=0 linuxserver/duplicati
+        ExecStart=/usr/bin/docker run --name=duplicati -v /srv/duplicati:/config -v /srv/mdgbackup:/source -p 8200:8200 -e PGID=0 -e PUID=0 linuxserver/duplicati:2.0.6
   
         [Install]
         WantedBy=multi-user.target
