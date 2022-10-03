@@ -34,19 +34,11 @@ function lint() {
         .pipe(eslint.failAfterError());
 }
 
-function test_v0() {
-    return gulp.src('test/v0/*.js', {read: false})
-        // `gulp-mocha` needs filepaths so you can't have any plugins before it
-        .pipe(mocha({reporter: 'list'}));
-}
-
-function test_v1() {
-    return gulp.src('test/v1/*.js', {read: false})
+function test_api() {
+    return gulp.src('test/*.js', {read: false})
         // `gulp-mocha` needs filepaths so you can't have any plugins before it
         .pipe(mocha({reporter: 'list'}));
 }
 
 exports.default = series(standardjs, jshint_task, lint)
-exports.test = series(test_v0, test_v1)
-exports.test_v0 = test_v0
-exports.test_v1 = test_v1
+exports.test = test_api
