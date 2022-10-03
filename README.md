@@ -43,8 +43,8 @@ Duplicati web interface is available at http://VM.ip:8200/ and needs to be confi
 
 MDG database can be restored from the dump by running following commands:
 
-    /opt/mdg.docker-compose -f /opt/mdg/docker-compose.yml stop mdg
-    podman run -i --rm --network mdg_backend --link mdg-postgres-1:postgres -ePGPASSWORD=mdg postgres:14.3 psql -h postgres -U mdg -d postgres < dump_mdg.sql
+    docker-compose -f /opt/mdg/docker-compose.yml stop mdg
+    docker run -i --rm --network mdg_backend --link mdg-postgres-1:postgres -ePGPASSWORD=mdg postgres:14.3 psql -h postgres -U mdg -d postgres < dump_mdg.sql
     systemctl restart mdg
 
 It is your duty to upload MDG database dump to the system.
