@@ -1,2 +1,2 @@
 export {Problem} from './models/Problem';
-export {Setting} from './models/Setting';
+export {SettingKey, Setting} from './models/Setting';

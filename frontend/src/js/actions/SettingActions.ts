@@ -7,6 +7,7 @@ import { loadAccountList } from './AccountActions';
 import { loadTotalsReport } from './ReportActions';
 
 import * as API from '../api/api';
+import * as Model from '../api/model';
 
 export interface SettingApiObject {
     'currency.primary': string;
@@ -27,43 +28,31 @@ function wrap(fn) {
 export function loadSettingList() {
     return wrap(async dispatch => {
         dispatch({ type: SettingActionType.SettingsLoad, payload: {} });
-        const settings = await API.listSettings();
-        if (settings.ok) {
-            const parsedSettings = Object.fromEntries(settings.val.map(item => [item.id, item.value]));
+        const result = await API.listSettings();
+        if (result.ok) {
+            const parsedSettings = Object.fromEntries(result.val.map(item => [item.id, item.value]));
             dispatch({ type: SettingActionType.StoreSettings, payload: parsedSettings });
         } else {
-            dispatch({ type: SettingActionType.SettingsLoadFail, payload: settings.val });
+            dispatch({ type: SettingActionType.SettingsLoadFail, payload: result.val });
         }
     });
 }
 
-function applySetting(id: string, value: string) {
-    return dispatch => {
+function applySetting(id: Model.SettingKey, value: string) {
+    return wrap(async dispatch => {
         dispatch({ type: SettingActionType.SettingsLoad, payload: {} });
 
-        const url = `/api/settings/${id}`;
-        const method = 'PUT';
         const setting = { id: id, value: value };
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-            body: JSON.stringify(setting),
-        })
-            .then(processApiResponse)
-            .then(() => dispatch(loadSettingList()))
-            .then(() => dispatch(loadAccountList()))
-            .then(() => dispatch(loadTotalsReport()))
-            .catch(function () {
-                dispatch({
-                    type: SettingActionType.SettingsLoadFail,
-                    payload: {},
-                });
-                dispatch(loadAccountList());
-            });
-    };
+        const result = await API.saveSetting(setting);
+        if (result.ok) {
+            await dispatch(loadSettingList());
+            await dispatch(loadAccountList());
+            await dispatch(loadTotalsReport());
+        } else {
+            await dispatch(loadAccountList());
+            dispatch({ type: SettingActionType.SettingsLoadFail, payload: result.val });
+        }
+    });
 }
 
 export function setPrimaryCurrency(currencyId: number) {
