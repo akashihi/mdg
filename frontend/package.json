@@ -68,6 +68,7 @@
         "redux-thunk": "^2.4.1",
         "reselect": "^4.1.6",
         "sprintf-js": "^1.1.1",
+        "ts-results": "^3.3.0",
         "whatwg-fetch": "^3.0.0",
         "yup": "^0.32.11"
     }

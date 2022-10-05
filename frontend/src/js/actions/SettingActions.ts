@@ -6,6 +6,8 @@ import { SettingActionType } from '../constants/Setting';
 import { loadAccountList } from './AccountActions';
 import { loadTotalsReport } from './ReportActions';
 
+import * as API from '../api/api';
+
 export interface SettingApiObject {
     'currency.primary': string;
     'ui.transaction.closedialog': string;
@@ -16,20 +18,23 @@ export interface SettingAction extends Action {
     payload: Partial<SettingApiObject>;
 }
 
-export function loadSettingList() {
-    return dispatch => {
-        dispatch({ type: SettingActionType.SettingsLoad, payload: {} });
-
-        fetch('/api/settings')
-            .then(processApiResponse)
-            .then(function (data) {
-                const map = Object.fromEntries(data.settings.map(item => [item.id, item.value]));
-                dispatch({ type: SettingActionType.StoreSettings, payload: map });
-            })
-            .catch(function () {
-                dispatch({ type: SettingActionType.SettingsLoadFail, payload: {} });
-            });
+function wrap(fn) {
+    return function(dispatch) {
+        fn(dispatch).catch(error => dispatch({ type: 'ERROR', error }));
     };
+}
+
+export function loadSettingList() {
+    return wrap(async dispatch => {
+        dispatch({ type: SettingActionType.SettingsLoad, payload: {} });
+        const settings = await API.listSettings();
+        if (settings.ok) {
+            const parsedSettings = Object.fromEntries(settings.val.map(item => [item.id, item.value]));
+            dispatch({ type: SettingActionType.StoreSettings, payload: parsedSettings });
+        } else {
+            dispatch({ type: SettingActionType.SettingsLoadFail, payload: settings.val });
+        }
+    });
 }
 
 function applySetting(id: string, value: string) {
