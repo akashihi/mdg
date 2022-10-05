@@ -1,7 +1,7 @@
 export interface Problem {
-    status: number;
-    code: string;
-    title: string;
-    instance?: string;
-    detail?: string;
+    readonly status: number;
+    readonly code: string;
+    readonly title: string;
+    readonly instance?: string;
+    readonly detail?: string;
 }

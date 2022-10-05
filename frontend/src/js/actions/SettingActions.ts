@@ -1,13 +1,12 @@
 import { Action } from 'redux';
 
-import { processApiResponse } from '../util/ApiUtils';
-
 import { SettingActionType } from '../constants/Setting';
 import { loadAccountList } from './AccountActions';
 import { loadTotalsReport } from './ReportActions';
 
 import * as API from '../api/api';
 import * as Model from '../api/model';
+import {Setting} from "../api/model";
 
 export interface SettingApiObject {
     'currency.primary': string;
@@ -68,25 +67,16 @@ export function setLanguage(locale: string) {
 }
 
 export function reindexTransactions() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: SettingActionType.InitiateReindex, payload: {} });
 
-        const url = '/api/settings/mnt.transaction.reindex';
-        const method = 'PUT';
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-        })
-            .then(processApiResponse)
-            .then(() => dispatch(loadSettingList()))
-            .catch(function () {
-                dispatch({
-                    type: SettingActionType.ReindexFail,
-                    payload: {},
-                });
-            });
-    };
+        const setting: Setting = { id: "mnt.transaction.reindex", value: "true" };
+        const result = await API.saveSetting(setting);
+        if (result.ok) {
+            await dispatch(loadSettingList());
+        } else {
+            await dispatch(loadAccountList());
+            dispatch({ type: SettingActionType.ReindexFail, payload: result.val });
+        }
+    });
 }
