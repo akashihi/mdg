@@ -2,7 +2,19 @@ import {Err, Ok, Result} from "ts-results";
 import * as Model from "./model";
 import * as Errors from "./errors";
 import {parseResponse, updateRequestParameters} from "./base";
+import Ajv, {JSONSchemaType} from "ajv"
 
+const ajv = new Ajv()
+const settingSchema: JSONSchemaType<Model.Setting> = {
+    type: "object",
+    properties: {
+        id: {type: "string"},
+        value: {type: "string"}
+    },
+    required: ["id", "value"],
+    additionalProperties: false
+}
+const settingValidate = ajv.compile(settingSchema)
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 function settingListConvert(json: any): Result<Model.Setting[], Model.Problem> {
