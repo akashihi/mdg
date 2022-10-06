@@ -1,11 +1,13 @@
 package org.akashihi.mdg.entity;
 
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.akashihi.mdg.api.v1.json.TsSerializer;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,8 +30,10 @@ public class Rate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "rate_beginning")
+    @JsonSerialize(using = TsSerializer.class)
     private LocalDateTime beginning;
     @Column(name = "rate_end")
+    @JsonSerialize(using = TsSerializer.class)
     private LocalDateTime end;
     @Column(name = "from_id")
     private Long from;
