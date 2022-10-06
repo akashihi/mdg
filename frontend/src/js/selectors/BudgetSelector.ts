@@ -6,8 +6,8 @@ import { Budget } from '../models/Budget';
 
 export const getSelectedBudget = createSelector(
     [getBudgets],
-    (budgetState: BudgetState): Budget => budgetState.selectedBudget
-);
+    (budgetState: BudgetState): Budget | undefined => budgetState.selectedBudget
+)
 
 export const selectSelectedBudgetId = createSelector([getBudgets], (budgetState: BudgetState): string => {
     if (budgetState.selectedBudget === null || budgetState.selectedBudget === undefined) {

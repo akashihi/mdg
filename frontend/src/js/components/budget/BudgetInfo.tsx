@@ -13,10 +13,6 @@ export interface BudgetInfoProps {
 }
 
 export function BudgetInfo(props: BudgetInfoProps) {
-    if (props.budget === null || props.budget === undefined) {
-        return <p>Budget data not available</p>;
-    }
-
     const cardHeaderStyle = {
         paddingTop: '0px',
         textAlign: 'center',

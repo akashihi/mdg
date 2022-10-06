@@ -21,7 +21,7 @@ const mapStateToProps = (state: RootState, ownProps: AccountItemProps): AccountI
     return {
         account: ownProps.account,
         edit: ownProps.edit,
-        previewMode: ownProps.previewMode,
+        previewMode: ownProps.previewMode ? ownProps.previewMode : false,
     };
 };
 

@@ -115,12 +115,13 @@ export function BudgetEntry(props: BudgetEntryProps) {
         );
     }
 
+    const currency_name = props.entry.account.currency ? `(${props.entry.account.currency.name})`: "";
     return (
         <div style={{ paddingBottom: '8px', marginLeft: props.indent * 15 + 10 }}>
             <Grid container spacing={2}>
                 <Grid item xs={3} sm={3} md={4} lg={3}>
                     <div>
-                        {props.entry.account.name}&nbsp;({props.entry.account.currency.name})
+                        {props.entry.account.name}&nbsp;{currency_name})
                     </div>
                 </Grid>
                 <Grid item xs={3} sm={3} md={2} lg={1}>

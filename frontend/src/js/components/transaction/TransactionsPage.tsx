@@ -57,7 +57,7 @@ function TransactionFullWidget(props: TransactionFullWidgetProps) {
     const ops = props.tx.operations.map((o, number) => (
         <TableRow key={`${props.tx.id}-${number}`}>
             <TableCell sx={{ color: o.color }} align="left">
-                {o.account.name}
+                {o.account ? o.account.name : ""}
             </TableCell>
             <TableCell sx={{ color: o.color }} align="right">
                 {o.amount}
@@ -78,7 +78,7 @@ function TransactionFullWidget(props: TransactionFullWidgetProps) {
                 <TableCell>{props.tx.comment}</TableCell>
                 <TableCell sx={{ color: props.tx.summary.color }}>{props.tx.summary.total}</TableCell>
                 <TableCell>{props.tx.accountNames}</TableCell>
-                <TableCell>{props.tx.tags.join(',')}</TableCell>
+                <TableCell>{props.tx.tags ? props.tx.tags.join(',') : ""}</TableCell>
                 <TableCell>
                     <IconButton aria-label="Edit" onClick={() => props.editFunc(props.tx)}>
                         <Edit />
@@ -139,8 +139,8 @@ export function TransactionsPage(props: TransactionViewerProps) {
     };
 
     const confirmTransactionDeletion = (tx: EnrichedTransaction) => {
-        setDeleteVisible(true);
         setTransactionToDelete(tx);
+        setDeleteVisible(true);
     };
 
     const closeDeleteDialog = () => {
@@ -286,7 +286,7 @@ export function TransactionsPage(props: TransactionViewerProps) {
                     </TableBody>
                 </Table>
             </TableContainer>
-            {left > 0 && (
+            {left && left > 0 && (
                 <Link sx={{ justifyContent: 'center', display: 'flex' }} onClick={loadNextPage}>
                     Load next {limit < left ? limit : left} from remaining {left}
                 </Link>

@@ -16,4 +16,9 @@ const App = () => (
     </Router>
 );
 
-createRoot(document.getElementById('main')).render(<App />);
+const main = document.getElementById('main');
+if (!main) {
+    console.log('#main is not defined')
+} else {
+    createRoot(main).render(<App />);
+}

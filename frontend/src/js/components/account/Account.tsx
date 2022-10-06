@@ -74,7 +74,7 @@ function Account(props: AccountWidgetProps) {
             </Grid>
             <Grid item xs={6} sm={6} md={4} lg={4}>
                 <div style={balanceStyle}>
-                    {props.account.balance} {props.account.currency.name}
+                    {props.account.balance} {props.account.currency? props.account.currency.name : ""}
                 </div>
             </Grid>
             {!props.previewMode && (

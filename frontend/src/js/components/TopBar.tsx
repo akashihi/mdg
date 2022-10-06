@@ -12,7 +12,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { TopBarProps } from '../containers/TopBar';
 
 function SmallTopBar() {
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState<Element | null>(null);
     const [menuOpen, setMenuOpen] = useState(false);
 
     const location = useLocation();

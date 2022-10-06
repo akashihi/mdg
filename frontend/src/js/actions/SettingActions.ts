@@ -15,7 +15,7 @@ export interface SettingApiObject {
 }
 
 export interface SettingAction extends Action {
-    payload: Partial<SettingApiObject>;
+    payload: SettingApiObject;
 }
 
 function wrap(fn) {

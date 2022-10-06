@@ -92,6 +92,9 @@ export function BudgetPage(props: BudgetViewerProps) {
     useEffect(loadEntries, [props.budget, showEmpty]);
 
     const saveEntry = (entry: BudgetEntryType) => {
+        if (!props.budget) {
+            return; //Don't try to save non-existent budgets
+        }
         setLoading(true);
         const url = `/api/budgets/${props.budget.id}/entries/${entry.id}`;
         const method = 'PUT';
@@ -124,7 +127,7 @@ export function BudgetPage(props: BudgetViewerProps) {
             <Card>
                 <CardActions>{emptyHiddenButton}</CardActions>
                 <CardContent>
-                    <BudgetInfo budget={props.budget} short={false} />
+                    {props.budget ? <BudgetInfo budget={props.budget} short={false} /> : <p>Budget data not available</p>}
                 </CardContent>
             </Card>
             <Divider />

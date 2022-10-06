@@ -27,15 +27,19 @@ export default function accountViewReducer(state: AccountState = initialState, a
             });
         case AccountActionType.AccountsStore:
             return produce(state, draft => {
-                draft.available = true;
-                draft.accountList = action.payload.accounts;
+                if (action.payload.accounts) {
+                    draft.available = true;
+                    draft.accountList = action.payload.accounts;
+                }
             });
         case AccountActionType.AccountTreeStore:
             return produce(state, draft => {
-                draft.available = true;
-                draft.assetTree = action.payload.assetTree;
-                draft.incomeTree = action.payload.incomeTree;
-                draft.expenseTree = action.payload.expenseTree;
+                if (action.payload.assetTree && action.payload.incomeTree && action.payload.expenseTree) {
+                    draft.available = true;
+                    draft.assetTree = action.payload.assetTree;
+                    draft.incomeTree = action.payload.incomeTree;
+                    draft.expenseTree = action.payload.expenseTree;
+                }
             });
         case AccountActionType.AccountsFailure:
             return produce(state, draft => {

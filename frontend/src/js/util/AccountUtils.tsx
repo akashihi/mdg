@@ -13,12 +13,14 @@ function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: num
     }
     const accounts = filteredAccounts
         .filter(a => !a.hidden)
-        .map(a => (
+        .map(a => {
+            const currency_name = a.currency ? `(${a.currency.name}` : '';
+            return (
             <MenuItem
                 key={a.id}
                 value={a.id}
-                style={{ marginLeft: indent * 15 + 10 }}>{`${a.name} (${a.currency.name})`}</MenuItem>
-        ));
+                style={{ marginLeft: indent * 15 + 10 }}>{`${a.name} ${currency_name}`}</MenuItem>
+        )});
     if (subCategories.length === 0 && accounts.length === 0) {
         // Skip leafs in case there are no accounts and subleafs
         return [];

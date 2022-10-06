@@ -9,10 +9,7 @@ export interface BudgetState {
     selectedBudget?: Budget;
 }
 
-const initialState: BudgetState = {
-    currentBudget: null,
-    selectedBudget: null,
-};
+const initialState: BudgetState = { };
 
 export default function budgetSelector(state: BudgetState = initialState, action: BudgetAction) {
     switch (action.type) {

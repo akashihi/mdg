@@ -408,7 +408,7 @@ export function TransactionDialog(props: TransactionDialogProps) {
     const tags = props.tags.map(item => {
         return { label: item, value: item };
     });
-    let selectedTags = [];
+    let selectedTags: {label:string, value:string}[] = [];
     if (tx.tags !== undefined) {
         selectedTags = tx.tags.map(item => {
             return { label: item, value: item };

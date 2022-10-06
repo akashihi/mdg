@@ -16,9 +16,13 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {
+        // @ts-ignore
         const container = chartComponentRef.current.container.current;
+        // @ts-ignore
         container.style.height = '100%';
+        // @ts-ignore
         container.style.width = '100%';
+        // @ts-ignore
         chartComponentRef.current.chart.reflow();
 
         fetch(props.url)
