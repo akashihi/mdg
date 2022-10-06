@@ -7,6 +7,7 @@ import { loadTotalsReport } from './ReportActions';
 import * as API from '../api/api';
 import * as Model from '../api/model';
 import {Setting} from "../api/model";
+import {wrap} from "./base";
 
 export interface SettingApiObject {
     'currency.primary': string;
@@ -16,12 +17,6 @@ export interface SettingApiObject {
 
 export interface SettingAction extends Action {
     payload: SettingApiObject;
-}
-
-function wrap(fn) {
-    return function(dispatch) {
-        fn(dispatch).catch(error => dispatch({ type: 'ERROR', error }));
-    };
 }
 
 export function loadSettingList() {

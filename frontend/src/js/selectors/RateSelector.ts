@@ -2,7 +2,7 @@ import { createSelector } from 'reselect';
 import { getRates } from './StateGetters';
 import Currency from '../models/Currency';
 import { selectPrimaryCurrencyId } from './SettingsSelector';
-import Rate from '../models/Rate';
+import {Rate} from "../api/model";
 import { selectActiveCurrencies } from './CurrencySelector';
 import { produce } from 'immer';
 

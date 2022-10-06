@@ -1,4 +1,4 @@
-export default interface Rate {
+export interface Rate {
     readonly id: number;
     readonly from: number;
     readonly to: number;

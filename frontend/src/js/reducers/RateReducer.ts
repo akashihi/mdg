@@ -1,5 +1,5 @@
 import { RateActionsType } from '../constants/Rate';
-import Rate from '../models/Rate';
+import {Rate} from "../api/model";
 import { produce } from 'immer';
 import { RateAction } from '../actions/RateActions';
 
