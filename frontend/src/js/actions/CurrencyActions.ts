@@ -29,8 +29,11 @@ export function loadCurrencyList() {
     });
 }
 
-export function updateCurrency(currency: Currency, isActive: boolean) {
+export function updateCurrency(isActive: boolean, currency?: Currency) {
     return wrap(async dispatch => {
+        if (currency === undefined) {
+            return;
+        }
         dispatch({ type: CurrencyActionType.CurrenciesLoad, payload: {} });
 
         const updatedCurrency: Currency = produce(draft => {
