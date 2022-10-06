@@ -63,6 +63,8 @@ const renderTransactionAccountList = (transaction: Transaction): string => {
         //Ok, we have non-asset accounts
         return transaction.operations
             .filter(o => o.account && o.account.account_type !== 'ASSET')
+            // Presence of the account is confirmed by the filter above
+            // eslint-disable-next-line
             // @ts-ignore
             .map(o => o.account.name)
             .join(', ');
@@ -99,6 +101,8 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
         .reduce(
         (groups, item) => ({
             ...groups,
+            // Presence of the accounts is confirmed by filter above
+            // eslint-disable-next-line
             // @ts-ignore
             [item.account.account_type]: [...(groups[item.account.account_type] || []), item.amount * item.rate],
         }),

@@ -16,12 +16,19 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {
+        // Compiler is lawfully arguing for the unchecked updates below
+        // However as i'm messing with highcharts internal fields,
+        // there is no way to convince compiler that everything is correct.
+        // eslint-disable-next-line
         // @ts-ignore
         const container = chartComponentRef.current.container.current;
+        // eslint-disable-next-line
         // @ts-ignore
         container.style.height = '100%';
+        // eslint-disable-next-line
         // @ts-ignore
         container.style.width = '100%';
+        // eslint-disable-next-line
         // @ts-ignore
         chartComponentRef.current.chart.reflow();
 
