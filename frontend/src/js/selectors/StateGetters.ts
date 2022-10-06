@@ -1,4 +1,3 @@
-import Currency from '../models/Currency';
 import { RootState } from '../reducers/rootReducer';
 import * as Model from "../api/model";
 import { SettingState } from '../reducers/SettingReducer';
@@ -16,7 +15,7 @@ export const getAccounts = (state: RootState): Account[] => state.account.accoun
 export const getBudgets = (state: RootState): BudgetState => state.budget;
 
 // Currency
-export const getCurrencies = (state: RootState): Currency[] => state.currency.currencies;
+export const getCurrencies = (state: RootState): Model.Currency[] => state.currency.currencies;
 
 // Rate
 export const getRates = (state: RootState): Model.Rate[] => state.rate.rateList;

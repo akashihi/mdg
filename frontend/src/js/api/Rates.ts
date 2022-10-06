@@ -4,10 +4,8 @@ import * as Errors from "./errors";
 import {parseResponse} from "./base";
 import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 import moment from 'moment';
-import addFormats from "ajv-formats"
 
 const ajv = new Ajv()
-addFormats(ajv)
 const rateSchema: JTDSchemaType<Model.Rate> = {
     properties: {
         id: {type: "uint32"},

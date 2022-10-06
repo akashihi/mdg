@@ -5,7 +5,7 @@ import { updateAccount, deleteAccount } from '../actions/AccountActions';
 import { Account } from '../models/Account';
 import { RootState } from '../reducers/rootReducer';
 import Category from '../models/Category';
-import Currency from '../models/Currency';
+import {Currency} from '../api/model';
 import { selectActiveCurrencies } from '../selectors/CurrencySelector';
 
 export interface AccountEditorProps {

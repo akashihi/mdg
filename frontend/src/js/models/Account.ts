@@ -1,4 +1,4 @@
-import Currency from './Currency';
+import {Currency} from '../api/model';
 import Category from './Category';
 
 export interface Account {
