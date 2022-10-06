@@ -1,7 +1,6 @@
-import {Err, Ok, Result} from "ts-results";
+import {Result} from "ts-results";
 import * as Model from "./model";
-import * as Errors from "./errors";
-import {parseResponse} from "./base";
+import {parseListResponse} from "./base";
 import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 import moment from 'moment';
 
@@ -27,17 +26,8 @@ const rateListSchema: JTDSchemaType<{ rates: Model.Rate[] }> = {
 
 const rateListParse = ajv.compileParser<Record<string,Model.Rate[]>>(rateListSchema)
 
-function rateListConvert(json: string): Result<Model.Rate[], Model.Problem> {
-    const data = rateListParse(json);
-    if (data === undefined) {
-        return new Err(Errors.InvalidObject(rateListParse.message as string));
-    } else {
-        return new Ok(data["rates"]);
-    }
-}
-
 export async function listRates(when: moment.Moment): Promise<Result<Model.Rate[], Model.Problem>> {
     const ts = when.format('YYYY-MM-DDTHH:mm:ss')
     const response = await fetch(`/api/rates/${ts}`);
-    return parseResponse(response, rateListConvert)
+    return parseListResponse(response, rateListParse, "rates")
 }
