@@ -1,11 +1,11 @@
 import {Problem} from "./models/Problem";
 
-const API_FIELD_MISSING = 615;
+const API_INVALID_OBJECT = 615;
 const API_ROOT_ARRAY_MISSING = 617;
 const API_ROOT_ARRAY_INCORRECT = 622;
 
-export function FieldMissing(title: string): Problem {
-    return {status: API_FIELD_MISSING, code: "API_FIELD_MISSING", title: title}
+export function InvalidObject(title: string): Problem {
+    return {status: API_INVALID_OBJECT, code: "API_INVALID_OBJECT", title: title}
 }
 
 export function RootMissing(title: string): Problem {

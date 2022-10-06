@@ -2,42 +2,40 @@ import {Err, Ok, Result} from "ts-results";
 import * as Model from "./model";
 import * as Errors from "./errors";
 import {parseResponse, updateRequestParameters} from "./base";
-import Ajv, {JSONSchemaType} from "ajv"
+import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 
 const ajv = new Ajv()
-const settingSchema: JSONSchemaType<Model.Setting> = {
-    type: "object",
+const settingSchema: JTDSchemaType<Model.Setting> = {
     properties: {
-        id: {type: "string"},
+        id: {enum: ["currency.primary", "ui.transaction.closedialog", "ui.language", "mnt.transaction.reindex"]},
         value: {type: "string"}
-    },
-    required: ["id", "value"],
-    additionalProperties: false
+    }
 }
-const settingValidate = ajv.compile(settingSchema)
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-function settingListConvert(json: any): Result<Model.Setting[], Model.Problem> {
-    if (!("settings" in json)) {
-        return new Err(Errors.RootMissing("Settings list's root array is missing"));
+const settingListSchema: JTDSchemaType<{ settings: Model.Setting[] }> = {
+    properties: {
+        settings: {elements: settingSchema}
     }
-    if (!Array.isArray(json["settings"])) {
-        return new Err(Errors.RootIncorrect("Settings list's root array is broken"));
-    }
-    for (const r of json["settings"]) {
-        if (!("id" in r) || !("value" in r)) {
-            return new Err(Errors.FieldMissing("Setting object is missing a field"));
-        }
-    }
-    return new Ok(json["settings"] as Model.Setting[]);
 }
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-function settingConvert(json: any): Result<Model.Setting, Model.Problem> {
-    if (!("id" in json) || !("value" in json)) {
-        return new Err(Errors.FieldMissing("Setting object is missing a field"));
+const settingParse = ajv.compileParser<Model.Setting>(settingSchema)
+const settingListParse = ajv.compileParser<Record<string,Model.Setting[]>>(settingListSchema)
+
+function settingListConvert(json: string): Result<Model.Setting[], Model.Problem> {
+    const data = settingListParse(json);
+    if (data === undefined) {
+        return new Err(Errors.InvalidObject(settingParse.message as string));
+    } else {
+        return new Ok(data["settings"]);
     }
-    return new Ok(json as Model.Setting);
+}
+
+function settingConvert(json: string): Result<Model.Setting, Model.Problem> {
+    const data = settingParse(json);
+    if (data === undefined) {
+        return new Err(Errors.InvalidObject(settingParse.message as string));
+    } else {
+        return new Ok(data);
+    }
 }
 
 export async function listSettings(): Promise<Result<Model.Setting[], Model.Problem>> {

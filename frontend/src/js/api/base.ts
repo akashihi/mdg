@@ -1,16 +1,33 @@
 import * as Model from "./model";
 import {Err, Result} from "ts-results";
+import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-function parseError(response: Response, messageJson: any): Model.Problem {
-    if ("status" in messageJson && "code" in messageJson && "title") {
-        return new messageJson as Model.Problem;
+const ajv = new Ajv()
+const problemSchema: JTDSchemaType<Model.Problem> = {
+    properties: {
+        status: {type: "int16"},
+        code: {type: "string"},
+        title: {type: "string"},
+    },
+    optionalProperties: {
+        instance: {type: "string"},
+        detail: {type: "string"},
     }
-    return {status: response.status, code: "BACKEND_ERROR", title: "Non-documented backend error has occurred"}
+}
+const problemParse = ajv.compileParser<Model.Problem>(problemSchema)
+
+
+function parseError(response: Response, messageJson: string): Model.Problem {
+    const data = problemParse(messageJson);
+    if (data === undefined) {
+        return {status: response.status, code: "BACKEND_ERROR", title: "Non-documented backend error has occurred"};
+    } else {
+        return data;
+    }
 }
 
-export async function parseResponse<T>(response: Response, convertor: (any) => Result<T, Model.Problem>): Promise<Result<T, Model.Problem>> {
-    const responseJson = await response.json();
+export async function parseResponse<T>(response: Response, convertor: (json:string) => Result<T, Model.Problem>): Promise<Result<T, Model.Problem>> {
+    const responseJson = await response.text();
     if (response.status >= 400) {
         return new Err(parseError(response, responseJson));
     } else {
