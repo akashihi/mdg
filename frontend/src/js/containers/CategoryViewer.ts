@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 import CategoryViewerWidget from '../components/category/CategoryViewerWidget';
 import { updateCategory, deleteCategory } from '../actions/CategoryActions';
-import Category from '../models/Category';
+import {Category} from '../api/model';
 import { RootState } from '../reducers/rootReducer';
 
 export interface CategoryViewerState {

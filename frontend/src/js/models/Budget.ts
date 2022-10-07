@@ -1,5 +1,5 @@
 import { Account } from './Account';
-import Category from './Category';
+import {Category} from '../api/model';
 
 export interface BudgetPair {
     actual: number;

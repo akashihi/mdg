@@ -1,5 +1,5 @@
 import React from 'react';
-import Category from '../models/Category';
+import {Category} from '../api/model';
 import MenuItem from '@mui/material/MenuItem';
 
 export const mapCategoryListToMenu = (

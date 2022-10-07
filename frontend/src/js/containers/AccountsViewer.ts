@@ -1,8 +1,7 @@
 import { connect } from 'react-redux';
 
 import AccountsPage from '../components/account/AccountsPage';
-import {Currency} from '../api/model';
-import Category from '../models/Category';
+import {Currency, Category} from '../api/model';
 import { Account, AccountTreeNode } from '../models/Account';
 import { RootState } from '../reducers/rootReducer';
 import { selectActiveCurrencies, selectPrimaryCurrencyName } from '../selectors/CurrencySelector';

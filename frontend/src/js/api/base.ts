@@ -18,7 +18,7 @@ const problemSchema: JTDSchemaType<Model.Problem> = {
 const problemParse = ajv.compileParser<Model.Problem>(problemSchema)
 
 
-function parseError(response: Response, messageJson: string): Model.Problem {
+export function parseError(response: Response, messageJson: string): Model.Problem {
     const data = problemParse(messageJson);
     if (data === undefined) {
         return {status: response.status, code: "BACKEND_ERROR", title: "Non-documented backend error has occurred"};
@@ -57,12 +57,15 @@ export async function parseResponse<T>(response: Response, parser: JTDParser<T>)
     }
 }
 
-export function updateRequestParameters<T>(method: string, data: T): RequestInit {
-    return {
+export function updateRequestParameters<T>(method: string, data?: T): RequestInit {
+    let parameters = {
         method,
         headers: {
             'Content-Type': 'application/vnd.mdg+json;version=1',
         },
-        body: JSON.stringify(data),
+    };
+    if (data !== undefined) {
+        parameters["body"] = JSON.stringify(data);
     }
+    return parameters;
 }

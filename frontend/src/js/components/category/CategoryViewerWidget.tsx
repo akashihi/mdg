@@ -7,7 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
-import Category from '../../models/Category';
+import {Category} from '../../api/model';
 import { CategoryViewerProps } from '../../containers/CategoryViewer';
 
 import CategoryDialog from './CategoryDialog';

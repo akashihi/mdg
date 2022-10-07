@@ -1,5 +1,4 @@
-import {Currency} from '../api/model';
-import Category from './Category';
+import {Currency, Category} from '../api/model';
 
 export interface Account {
     readonly id: number;
