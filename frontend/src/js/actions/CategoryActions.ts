@@ -6,6 +6,8 @@ import { Action } from 'redux';
 import {Category} from '../api/model';
 import {wrap} from "./base";
 import * as API from "../api/api";
+import * as Model from "../api/model";
+import {produce} from "immer";
 
 export interface CategoryAction extends Action {
     payload: Category[];
@@ -34,7 +36,12 @@ export function updateCategory(category: Category) {
     return wrap(async dispatch => {
         dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
 
-        await API.saveCategory(category);
+        const updatedCategory: Model.Category = produce(draft => {
+            if (category.parent_id === -1) {
+                draft.parent_id = category.id;
+            }
+        })(category);
+        await API.saveCategory(updatedCategory);
         await dispatch(loadCategoryList());
     });
 }

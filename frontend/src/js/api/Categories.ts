@@ -1,7 +1,6 @@
 import {Result, Option, Some, None} from "ts-results";
 import * as Model from "./model";
 import {parseError, parseListResponse, parseResponse, updateRequestParameters} from "./base";
-import {produce} from "immer";
 import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 
 const ajv = new Ajv()
@@ -59,12 +58,7 @@ export async function saveCategory(category: Model.Category): Promise<Result<Mod
         method = 'PUT';
     }
 
-    const updatedCategory: Model.Category = produce(draft => {
-        if (category.parent_id === -1) {
-            draft.parent_id = null;
-        }
-    })(category);
-    const response = await fetch(url, updateRequestParameters(method, updatedCategory));
+    const response = await fetch(url, updateRequestParameters(method, category));
     return parseResponse(response, categoryParse);
 }
 
