@@ -1,24 +1,54 @@
-import {Err, Ok, Result, Option, Some, None} from "ts-results";
+import {Result, Option, Some, None} from "ts-results";
 import * as Model from "./model";
-import {parseError, updateRequestParameters} from "./base";
-import * as Errors from "./errors";
+import {parseError, parseListResponse, parseResponse, updateRequestParameters} from "./base";
 import {produce} from "immer";
+import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 
-// As JTD doesn't seem to support recursion, no validation is provided
+const ajv = new Ajv()
+const categorySchema: JTDSchemaType<Model.Category, {category: Model.Category}> = {
+    definitions: {
+        category: {
+            properties: {
+                name: {type: "string"},
+                priority: {type: "int16"},
+                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
+            },
+            optionalProperties: {
+                id: {type: "uint32"},
+                parent_id: {type: "uint32"},
+                children: {elements: {ref: "category"}}
+            }
+        }
+    },
+    ref: "category"
+}
+
+const categoryListSchema: JTDSchemaType<{ categories: Model.Category[]}, {category: Model.Category}> = {
+    definitions: {
+        category: {
+            properties: {
+                name: {type: "string"},
+                priority: {type: "int16"},
+                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
+            },
+            optionalProperties: {
+                id: {type: "uint32"},
+                parent_id: {type: "uint32"},
+                children: {elements: {ref: "category"}}
+            }
+        }
+    },
+    properties: {
+        categories: {elements: {ref: "category"}}
+    }
+}
+
+const categoryParse = ajv.compileParser<Model.Category>(categorySchema)
+const categoryListParse = ajv.compileParser<Record<string,Model.Category[]>>(categoryListSchema)
+
 export async function listCategories(): Promise<Result<Model.Category[], Model.Problem>> {
     const response = await fetch('/api/categories');
-    const responseJson = await response.text();
-    if (response.status >= 400) {
-        return new Err(parseError(response, responseJson));
-    } else {
-        // Should be fine, try to convert
-        try {
-            const data =JSON.parse(responseJson);
-            return new Ok(data.categories as Model.Category[]);
-        } catch(err) {
-            return new Err(Errors.InvalidObject(err as string));
-        }
-    }
+    return parseListResponse(response, categoryListParse, "categories");
 }
 
 export async function saveCategory(category: Model.Category): Promise<Result<Model.Category, Model.Problem>> {
@@ -35,18 +65,7 @@ export async function saveCategory(category: Model.Category): Promise<Result<Mod
         }
     })(category);
     const response = await fetch(url, updateRequestParameters(method, updatedCategory));
-    const responseJson = await response.text();
-    if (response.status >= 400) {
-        return new Err(parseError(response, responseJson));
-    } else {
-        // Should be fine, try to convert
-        try {
-            const data =JSON.parse(responseJson);
-            return new Ok(data as Model.Category);
-        } catch(err) {
-            return new Err(Errors.InvalidObject(err as string));
-        }
-    }
+    return parseResponse(response, categoryParse);
 }
 
 export async function deleteCategory(id: number): Promise<Option<Model.Problem>> {

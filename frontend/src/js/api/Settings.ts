@@ -21,11 +21,11 @@ const settingListParse = ajv.compileParser<Record<string,Model.Setting[]>>(setti
 
 export async function listSettings(): Promise<Result<Model.Setting[], Model.Problem>> {
     const response = await fetch('/api/settings');
-    return parseListResponse(response, settingListParse, "settings")
+    return parseListResponse(response, settingListParse, "settings");
 }
 
 export async function saveSetting(setting: Model.Setting): Promise<Result<Model.Setting, Model.Problem>> {
     const url = `/api/settings/${setting.id}`;
     const response = await fetch(url, updateRequestParameters('PUT', setting));
-    return await parseResponse(response, settingParse);
+    return parseResponse(response, settingParse);
 }
