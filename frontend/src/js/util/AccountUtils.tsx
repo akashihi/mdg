@@ -3,7 +3,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 import React from 'react';
-import { AccountTreeNode } from '../models/Account';
+import { AccountTreeNode } from '../api/models/Account';
 
 function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: number): JSX.Element[] {
     const subCategories = tree.categories.flatMap(c => accountList(c, indent + 1, currencyFilter));

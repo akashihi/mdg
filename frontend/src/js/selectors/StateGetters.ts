@@ -1,7 +1,7 @@
 import { RootState } from '../reducers/rootReducer';
 import * as Model from "../api/model";
 import { SettingState } from '../reducers/SettingReducer';
-import { Account } from '../models/Account';
+import { Account } from '../api/models/Account';
 import { Transaction } from '../models/Transaction';
 import { BudgetState } from '../reducers/BudgetReducer';
 

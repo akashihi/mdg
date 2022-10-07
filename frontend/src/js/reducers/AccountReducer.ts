@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 import { AccountActionType } from '../constants/Account';
-import { Account, AccountTreeNode } from '../models/Account';
+import { Account, AccountTreeNode } from '../api/models/Account';
 import { AccountAction } from '../actions/AccountActions';
 
 export interface AccountState {

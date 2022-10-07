@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 import AccountDialog from '../components/account/AccountDialog';
 import { updateAccount, deleteAccount } from '../actions/AccountActions';
-import { Account } from '../models/Account';
+import { Account } from '../api/models/Account';
 import { RootState } from '../reducers/rootReducer';
 import {Currency, Category} from '../api/model';
 import { selectActiveCurrencies } from '../selectors/CurrencySelector';

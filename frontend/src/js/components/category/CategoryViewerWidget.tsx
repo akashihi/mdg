@@ -56,7 +56,7 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
     const renderTree = (nodes: Category[]) => {
         return nodes.map(node => {
             return (
-                <TreeItem key={node.id} nodeId={node.id.toString()} label={renderCategoryLabel(node)}>
+                <TreeItem key={node.id} nodeId={node.id? node.id.toString() : "-1"} label={renderCategoryLabel(node)}>
                     {Array.isArray(node.children) ? renderTree(node.children) : null}
                 </TreeItem>
             );

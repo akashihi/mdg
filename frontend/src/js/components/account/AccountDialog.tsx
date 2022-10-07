@@ -12,7 +12,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { AccountDialogProps } from '../../containers/AccountEditor';
 import { mapCategoryListToMenu } from '../../util/CategoryUtils';
-import { Account } from '../../models/Account';
+import { Account } from '../../api/models/Account';
 import { processApiResponse } from '../../util/ApiUtils';
 
 function AccountDialog(props: AccountDialogProps) {

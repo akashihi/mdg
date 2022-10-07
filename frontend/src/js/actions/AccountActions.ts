@@ -5,7 +5,7 @@ import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
 import { AccountActionType } from '../constants/Account';
-import { Account, AccountTreeNode } from '../models/Account';
+import { Account, AccountTreeNode } from '../api/models/Account';
 import { RootState } from '../reducers/rootReducer';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 
