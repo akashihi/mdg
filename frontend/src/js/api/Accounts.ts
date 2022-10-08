@@ -4,6 +4,12 @@ import {parseError, parseListResponse, parseResponse, updateRequestParameters} f
 import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 
 const ajv = new Ajv()
+const accountStatusSchema: JTDSchemaType<Model.AccountStatus> = {
+    properties: {
+        id: {type: "uint32"},
+        deletable: {type: "boolean"}
+    }
+}
 const accountSchema: JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account}> = {
     definitions: {
         category: {
@@ -95,10 +101,17 @@ const accountListSchema: JTDSchemaType<{ accounts: Model.Account[]}, {category: 
 
 const accountParse = ajv.compileParser<Model.Account>(accountSchema);
 const accountListParse = ajv.compileParser<Record<string,Model.Account[]>>(accountListSchema);
+const accountStatusParse = ajv.compileParser<Model.AccountStatus>(accountStatusSchema);
 
 export async function listAccounts(): Promise<Result<Model.Account[], Model.Problem>> {
     const response = await fetch('/api/accounts?embed=currency');
     return parseListResponse(response, accountListParse, "accounts");
+}
+
+export async function getAccountStatus(account: Model.Account): Promise<Result<Model.AccountStatus, Model.Problem>> {
+    const url = `/api/accounts/${account.id}/status`;
+    const response = await fetch(url);
+    return parseResponse(response, accountStatusParse);
 }
 
 export async function saveAccount(account: Model.Account): Promise<Result<Model.Account, Model.Problem>> {

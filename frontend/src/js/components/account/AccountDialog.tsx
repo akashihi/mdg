@@ -13,22 +13,28 @@ import * as Yup from 'yup';
 import { AccountDialogProps } from '../../containers/AccountEditor';
 import { mapCategoryListToMenu } from '../../util/CategoryUtils';
 import { Account } from '../../api/models/Account';
-import { processApiResponse } from '../../util/ApiUtils';
+import * as API from '../../api/api';
 
 function AccountDialog(props: AccountDialogProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [deletable, setDeletable] = useState<boolean>(false);
 
     useEffect(() => {
-        const url = `/api/accounts/${props.account.id}/status`;
+        if (props.account.id < 0) {
+            setDeletable(false); //Negative IDs are used for local object only, that can't be deleted
+            return;
+        }
 
         setLoading(true);
-        fetch(url)
-            .then(processApiResponse)
-            .then(data => {
-                setDeletable(data.deletable);
-                setLoading(false);
-            });
+        (async function deletable() {
+            const status = await API.getAccountStatus(props.account)
+            if (status.ok) {
+                setDeletable(status.val.deletable);
+            } else {
+                setDeletable(false); //No matter what happened, just don't delete it
+            }
+            setLoading(false);
+        })();
     }, [props.account.id]);
 
     const onSubmit = (values: Account) => {

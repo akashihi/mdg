@@ -23,3 +23,8 @@ export interface AccountTreeNode {
     readonly accounts: Account[];
     readonly categories: AccountTreeNode[];
 }
+
+export interface AccountStatus {
+    readonly id: number;
+    readonly deletable: boolean;
+}
