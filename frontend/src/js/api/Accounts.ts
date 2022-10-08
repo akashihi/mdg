@@ -2,6 +2,8 @@ import {Result, Option, Some, None} from "ts-results";
 import * as Model from "./model";
 import {parseError, parseListResponse, parseResponse, updateRequestParameters} from "./base";
 import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
+import {categoryDefinition} from "./Categories";
+import {currencyDefinition} from "./Currency";
 
 const ajv = new Ajv()
 const accountStatusSchema: JTDSchemaType<Model.AccountStatus> = {
@@ -10,89 +12,38 @@ const accountStatusSchema: JTDSchemaType<Model.AccountStatus> = {
         deletable: {type: "boolean"}
     }
 }
+const accountDefinition = {
+    properties: {
+        id: {type: "uint32"},
+        account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
+        currency_id: {type: "uint32"},
+        name: {type: "string"},
+        balance: {type: "float32"},
+        primary_balance: {type: "float32"},
+        operational: {type: "boolean"},
+        favorite: {type: "boolean"}
+    },
+    optionalProperties: {
+        hidden: {type: "boolean"},
+        category_id: {type: "uint32"},
+        currency: {ref: "currency"},
+        category: {ref: "category"}
+    }
+}
+
 const accountSchema: JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account}> = {
     definitions: {
-        category: {
-            properties: {
-                name: {type: "string"},
-                priority: {type: "int16"},
-                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
-            },
-            optionalProperties: {
-                id: {type: "uint32"},
-                parent_id: {type: "uint32"},
-                children: {elements: {ref: "category"}}
-            }
-        },
-        currency: {
-            properties: {
-                id: {type: "uint32"},
-                code: {type: "string"},
-                name: {type: "string"},
-                active: {type: "boolean"},
-            },
-        },
-        account: {
-            properties: {
-                id: {type: "uint32"},
-                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
-                currency_id: {type: "uint32"},
-                name: {type: "string"},
-                balance: {type: "float32"},
-                primary_balance: {type: "float32"},
-                operational: {type: "boolean"},
-                favorite: {type: "boolean"}
-            },
-            optionalProperties: {
-                hidden: {type: "boolean"},
-                category_id: {type: "uint32"},
-                currency: {ref: "currency"},
-                category: {ref: "category"}
-            }
-        }
+        category: categoryDefinition as JTDSchemaType<Model.Category, {category: Model.Category, currency: Model.Currency, account: Model.Account}>,
+        currency: currencyDefinition as JTDSchemaType<Model.Currency, {category: Model.Category, currency: Model.Currency, account: Model.Account}>,
+        account: accountDefinition as JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account}>
     },
     ref: "account"
 }
 const accountListSchema: JTDSchemaType<{ accounts: Model.Account[]}, {category: Model.Category, currency: Model.Currency, account: Model.Account}> = {
     definitions: {
-        category: {
-            properties: {
-                name: {type: "string"},
-                priority: {type: "int16"},
-                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
-            },
-            optionalProperties: {
-                id: {type: "uint32"},
-                parent_id: {type: "uint32"},
-                children: {elements: {ref: "category"}}
-            }
-        },
-        currency: {
-            properties: {
-                id: {type: "uint32"},
-                code: {type: "string"},
-                name: {type: "string"},
-                active: {type: "boolean"},
-            },
-        },
-        account: {
-            properties: {
-                id: {type: "uint32"},
-                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
-                currency_id: {type: "uint32"},
-                name: {type: "string"},
-                balance: {type: "float32"},
-                primary_balance: {type: "float32"},
-                operational: {type: "boolean"},
-                favorite: {type: "boolean"}
-            },
-            optionalProperties: {
-                hidden: {type: "boolean"},
-                category_id: {type: "uint32"},
-                currency: {ref: "currency"},
-                category: {ref: "category"}
-            }
-        }
+        category: categoryDefinition as JTDSchemaType<Model.Category, {category: Model.Category, currency: Model.Currency, account: Model.Account}>,
+        currency: currencyDefinition as JTDSchemaType<Model.Currency, {category: Model.Category, currency: Model.Currency, account: Model.Account}>,
+        account: accountDefinition as JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account}>
     },
     properties: {
         accounts: {elements: {ref: "account"}}

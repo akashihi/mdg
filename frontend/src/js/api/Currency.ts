@@ -4,7 +4,7 @@ import {parseListResponse, parseResponse, updateRequestParameters} from "./base"
 import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 
 const ajv = new Ajv()
-const currencySchema: JTDSchemaType<Model.Currency> = {
+export const currencyDefinition = {
     properties: {
         id: {type: "uint32"},
         code: {type: "string"},
@@ -12,9 +12,18 @@ const currencySchema: JTDSchemaType<Model.Currency> = {
         active: {type: "boolean"},
     },
 }
-const currencyListSchema: JTDSchemaType<{ currencies: Model.Currency[] }> = {
+const currencySchema: JTDSchemaType<Model.Currency, {"currency": Model.Currency}> = {
+    definitions: {
+        "currency": currencyDefinition as JTDSchemaType<Model.Currency, {"currency": Model.Currency}>
+    },
+    ref:"currency"
+}
+const currencyListSchema: JTDSchemaType<{ currencies: Model.Currency[] }, {"currency": Model.Currency}> = {
+    definitions: {
+        "currency": currencyDefinition as JTDSchemaType<Model.Currency, {"currency": Model.Currency}>
+    },
     properties: {
-        currencies: {elements: currencySchema}
+        currencies: {elements: {ref: "currency"}}
     }
 }
 

@@ -4,38 +4,28 @@ import {parseError, parseListResponse, parseResponse, updateRequestParameters} f
 import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 
 const ajv = new Ajv()
+export const categoryDefinition = {
+        properties: {
+            name: {type: "string"},
+            priority: {type: "int16"},
+            account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
+        },
+        optionalProperties: {
+            id: {type: "uint32"},
+            parent_id: {type: "uint32"},
+            children: {elements: {ref: "category"}}
+        }
+}
 const categorySchema: JTDSchemaType<Model.Category, {category: Model.Category}> = {
     definitions: {
-        category: {
-            properties: {
-                name: {type: "string"},
-                priority: {type: "int16"},
-                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
-            },
-            optionalProperties: {
-                id: {type: "uint32"},
-                parent_id: {type: "uint32"},
-                children: {elements: {ref: "category"}}
-            }
-        }
+        category: categoryDefinition as JTDSchemaType<Model.Category, { category: Model.Category }>
     },
     ref: "category"
 }
 
 const categoryListSchema: JTDSchemaType<{ categories: Model.Category[]}, {category: Model.Category}> = {
     definitions: {
-        category: {
-            properties: {
-                name: {type: "string"},
-                priority: {type: "int16"},
-                account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
-            },
-            optionalProperties: {
-                id: {type: "uint32"},
-                parent_id: {type: "uint32"},
-                children: {elements: {ref: "category"}}
-            }
-        }
+        category: categoryDefinition as JTDSchemaType<Model.Category, { category: Model.Category }>
     },
     properties: {
         categories: {elements: {ref: "category"}}
