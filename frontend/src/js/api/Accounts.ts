@@ -117,8 +117,8 @@ export async function getAccountStatus(account: Model.Account): Promise<Result<M
 export async function saveAccount(account: Model.Account): Promise<Result<Model.Account, Model.Problem>> {
     let url = '/api/accounts';
     let method = 'POST';
-    if (account.id !== undefined) {
-        url = `/api/categories/${account.id}`;
+    if (account.id !== undefined && account.id >= 0) {
+        url = `/api/accounts/${account.id}`;
         method = 'PUT';
     }
 

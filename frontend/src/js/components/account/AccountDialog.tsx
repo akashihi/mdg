@@ -22,6 +22,7 @@ function AccountDialog(props: AccountDialogProps) {
     useEffect(() => {
         if (props.account.id < 0) {
             setDeletable(false); //Negative IDs are used for local object only, that can't be deleted
+            setLoading(false);
             return;
         }
 
