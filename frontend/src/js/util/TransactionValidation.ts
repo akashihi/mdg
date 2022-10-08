@@ -1,4 +1,4 @@
-import { EditedTransaction } from '../models/Transaction';
+import { EditedTransaction } from '../api/models/Transaction';
 
 export function validateOperationAmount(amount?: string | number): string | null {
     if (String(amount).endsWith('.')) {

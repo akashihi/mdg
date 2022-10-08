@@ -6,7 +6,7 @@ import { loadTotalsReport } from './ReportActions';
 
 import { AccountActionType } from '../constants/Account';
 import { Account, AccountTreeNode } from '../api/models/Account';
-import { RootState } from '../reducers/rootReducer';
+import {GetStateFunc, RootState} from '../reducers/rootReducer';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 import {wrap} from "./base";
 
@@ -93,7 +93,7 @@ export function hideAccount(account: Account) {
 }
 
 export function updateAccount(account: Account) {
-    return wrap(async (dispatch, getState: () => RootState) => {
+    return wrap(async (dispatch, getState: GetStateFunc) => {
         dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
 
         const state = getState();

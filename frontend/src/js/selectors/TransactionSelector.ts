@@ -8,7 +8,7 @@ import {
     Operation,
     Transaction,
     TransactionSummary,
-} from '../models/Transaction';
+} from '../api/models/Transaction';
 
 export const selectLastTransactions = createSelector([getLastTransactions], enrichTransaction);
 

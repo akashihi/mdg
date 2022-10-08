@@ -19,23 +19,15 @@ import Edit from '@mui/icons-material/Edit';
 import Delete from '@mui/icons-material/Delete';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
+import * as API from '../../api/api';
 
 import TransactionFilter from '../../containers/TransactionsFilter';
 import TransactionDeleteDialog from './TransactionDeleteConfirmation';
-import moment, { Moment } from 'moment';
-import jQuery from 'jquery';
-import { processApiResponse } from '../../util/ApiUtils';
-import { EnrichedTransaction } from '../../models/Transaction';
+import moment from 'moment';
+import { EnrichedTransaction } from '../../api/models/Transaction';
 import { enrichTransaction } from '../../selectors/TransactionSelector';
 import { TransactionViewerProps } from '../../containers/TransactionsViewer';
-
-export interface TransactionFilterParams {
-    readonly notEarlier: Moment;
-    readonly notLater: Moment;
-    readonly comment: string | undefined;
-    readonly account_id: number[];
-    readonly tag: string[];
-}
+import {TransactionFilterParams} from "../../api/api";
 
 const defaultFilter: TransactionFilterParams = {
     notEarlier: moment().subtract(1, 'month'),
@@ -151,11 +143,10 @@ export function TransactionsPage(props: TransactionViewerProps) {
     const deleteTransaction = (tx: EnrichedTransaction) => {
         closeDeleteDialog();
         setLoading(true);
-        const url = `/api/transactions/${tx.id}`;
-
-        fetch(url, { method: 'DELETE' }).then(function (response) {
+        (async () => {
+            const result = await API.deleteTransaction(tx.id);
             setLoading(false);
-            if (response.status === 204) {
+            if (result.some) {
                 setTransactions(transactions.filter(t => t.id !== tx.id));
             }
             props.loadAccountList();
@@ -164,14 +155,14 @@ export function TransactionsPage(props: TransactionViewerProps) {
             if (props.currentBudgetId !== undefined) {
                 props.loadSelectedBudget(props.currentBudgetId);
             }
-        });
+        })();
     };
 
     const loadTransactions = () => {
         setLoading(true);
         let query: object = {
-            notEarlier: filter.notEarlier.format('YYYY-MM-DDT00:00:00'),
-            notLater: filter.notLater.format('YYYY-MM-DDT23:59:59'),
+            notEarlier: filter.notEarlier,
+            notLater: filter.notLater,
         };
         if (filter.comment) {
             query = { ...query, comment: filter.comment };
@@ -182,17 +173,16 @@ export function TransactionsPage(props: TransactionViewerProps) {
         if (filter.tag.length !== 0) {
             query = { ...query, tag: filter.tag };
         }
-        const params = Object.assign({}, { q: JSON.stringify(query) }, { limit: limit }, { embed: 'account' });
 
-        const url = '/api/transactions' + '?' + jQuery.param(params);
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (json) {
-                setLeft(json.left);
-                setCursorNext(json.next);
-                setTransactions(enrichTransaction(json.transactions));
-                setLoading(false);
-            });
+        (async () => {
+            const result = await API.listTransactions(query, limit);
+            setLoading(false);
+            if (result.ok) {
+                setLeft(result.val.left);
+                setCursorNext(result.val.next);
+                setTransactions(enrichTransaction(result.val.transactions));
+            }
+        })();
     };
 
     useEffect(() => {
@@ -209,15 +199,16 @@ export function TransactionsPage(props: TransactionViewerProps) {
         if (cursorNext) {
             // Do not load whole DB accidentally
             setLoading(true);
-            const url = '/api/transactions' + '?' + jQuery.param({ cursor: cursorNext });
-            fetch(url)
-                .then(processApiResponse)
-                .then(function (json) {
-                    setLeft(json.left);
-                    setCursorNext(json.next);
-                    setTransactions(transactions.concat(enrichTransaction(json.transactions)));
-                    setLoading(false);
-                });
+            (async () => {
+                const result = await API.loadTransactions(cursorNext);
+                setLoading(false);
+                if (result.ok) {
+                    setLeft(result.val.left);
+                    setCursorNext(result.val.next);
+                    setTransactions(transactions.concat(enrichTransaction(result.val.transactions)));
+                }
+
+            })();
         }
     };
 

@@ -12,7 +12,7 @@ const accountStatusSchema: JTDSchemaType<Model.AccountStatus> = {
         deletable: {type: "boolean"}
     }
 }
-const accountDefinition = {
+export const accountDefinition = {
     properties: {
         id: {type: "uint32"},
         account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},

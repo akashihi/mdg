@@ -5,7 +5,7 @@ import { loadAccountList } from '../actions/AccountActions';
 import { loadTotalsReport } from '../actions/ReportActions';
 import { RootState } from '../reducers/rootReducer';
 import { editTransaction } from '../actions/TransactionActions';
-import { Transaction } from '../models/Transaction';
+import { Transaction } from '../api/models/Transaction';
 import { loadCurrentBudget, loadSelectedBudget } from '../actions/BudgetActions';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 

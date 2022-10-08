@@ -3,7 +3,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { EnrichedTransaction } from '../../models/Transaction';
+import { EnrichedTransaction } from '../../api/models/Transaction';
 
 interface TransactionDeleteProps {
     tx?: EnrichedTransaction;

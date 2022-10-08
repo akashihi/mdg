@@ -8,6 +8,7 @@ import org.akashihi.mdg.api.v1.dto.Transactions;
 import org.akashihi.mdg.api.v1.filtering.Embedding;
 import org.akashihi.mdg.api.util.FilterConverter;
 import org.akashihi.mdg.entity.Transaction;
+import org.akashihi.mdg.service.AccountService;
 import org.akashihi.mdg.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
@@ -31,6 +33,8 @@ import java.util.Optional;
 public class TransactionController {
     private final ObjectMapper objectMapper;
     private final TransactionService transactionService;
+
+    private final AccountService accountService;
 
     protected Optional<TransactionCursor> cursorFromString(String cursor) {
         var cursorBytes = Base64.getUrlDecoder().decode(cursor);
@@ -71,7 +75,7 @@ public class TransactionController {
         var transactions = listResult.transactions();
         var left = listResult.left();
         var operationEmbedded = Embedding.embedOperationObjects(Optional.of(txCursor.embed()));
-        transactions.forEach(tx -> tx.setOperations(tx.getOperations().stream().map(operationEmbedded).toList()));
+        transactions.forEach(tx -> tx.setOperations(tx.getOperations().stream().peek(o -> {o.getAccount().setBalance(BigDecimal.ZERO); o.getAccount().setPrimaryBalance(BigDecimal.ZERO);}).map(operationEmbedded).toList()));
 
         String self = cursorToString(txCursor).orElse("");
         String first = "";

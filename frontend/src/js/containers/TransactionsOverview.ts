@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import TransactionsOverviewPanel from '../components/transaction/TransactionsOverviewPanel';
-import { EnrichedTransaction } from '../models/Transaction';
+import { EnrichedTransaction } from '../api/models/Transaction';
 import { RootState } from '../reducers/rootReducer';
 import { loadLastTransactions } from '../actions/TransactionActions';
 import { selectLastTransactions } from '../selectors/TransactionSelector';

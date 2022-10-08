@@ -24,7 +24,7 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { TransactionDialogProps } from '../../containers/TransactionEditor';
-import { EditedOperation, EditedTransaction, Operation } from '../../models/Transaction';
+import { EditedOperation, EditedTransaction, Operation } from '../../api/models/Transaction';
 import {
     validateAccountSelected,
     validateOperationAmount,
@@ -164,7 +164,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
     const applyAccount = (index: number, account_id: number) => {
         props.setOperationsFunc(
             produce((draft: EditedOperation[]) => {
-                draft[index].account_id = account_id;
+                draft[index] = produce(d => d.account_id = account_id)(draft[index]);
             })(props.operations)
         );
     };
@@ -177,7 +177,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
         if (validateRate(rate) === null) {
             const parsed = parseFloat(evaluated);
             updatedOps = produce((draft: EditedOperation[]) => {
-                draft[index].rate = parsed;
+                draft[index] = produce(d => d.rate = parsed)(draft[index]);
             })(updatedOps);
         }
         props.setOperationsFunc(updatedOps);
@@ -191,7 +191,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
         if (validateOperationAmount(amount) === null) {
             const parsed = parseFloat(evaluated);
             updatedOps = produce((draft: EditedOperation[]) => {
-                draft[index].amount = parsed;
+                draft[index] = produce(d => d.amount = parsed)(draft[index]);
             })(updatedOps);
         }
         props.setOperationsFunc(updatedOps);
