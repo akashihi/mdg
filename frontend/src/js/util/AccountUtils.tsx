@@ -14,7 +14,7 @@ function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: num
     const accounts = filteredAccounts
         .filter(a => !a.hidden)
         .map(a => {
-            const currency_name = a.currency ? `(${a.currency.name}` : '';
+            const currency_name = a.currency ? `(${a.currency.name})` : '';
             return (
             <MenuItem
                 key={a.id}
