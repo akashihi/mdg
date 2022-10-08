@@ -1,7 +1,6 @@
 import { produce } from 'immer';
 import { Action } from 'redux';
 import * as API from '../api/api';
-import { processApiResponse } from '../util/ApiUtils';
 import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
@@ -35,33 +34,28 @@ export function loadAccountList() {
         } else {
             dispatch({
                 type: AccountActionType.AccountsFailure,
-                payload: [],
+                payload: result.val,
             });
         }
     });
 }
 
 export function loadAccountTree() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
-
-        const url = '/api/accounts/tree?embed=currency,category';
-
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (data) {
-                dispatch({
-                    type: AccountActionType.AccountTreeStore,
-                    payload: { assetTree: data.asset, incomeTree: data.income, expenseTree: data.expense },
-                });
-            })
-            .catch(function () {
-                dispatch({
-                    type: AccountActionType.AccountsFailure,
-                    payload: [],
-                });
+        const result = await API.accountsTree();
+        if (result.ok) {
+            dispatch({
+                type: AccountActionType.AccountTreeStore,
+                payload: { assetTree: result.val.asset, incomeTree: result.val.income, expenseTree: result.val.expense },
             });
-    };
+        } else {
+            dispatch({
+                type: AccountActionType.AccountsFailure,
+                payload: result.val,
+            });
+        }
+    });
 }
 
 export function setFavorite(account: Account, favorite: boolean) {

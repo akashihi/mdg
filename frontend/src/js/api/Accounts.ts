@@ -50,13 +50,41 @@ const accountListSchema: JTDSchemaType<{ accounts: Model.Account[]}, {category: 
     }
 }
 
+const accountTreeSchema: JTDSchemaType<{asset: Model.AccountTreeNode, expense: Model.AccountTreeNode, income: Model.AccountTreeNode}, {category: Model.Category, currency: Model.Currency, account: Model.Account, accountTreeNode: Model.AccountTreeNode}> = {
+    definitions: {
+        category: categoryDefinition as JTDSchemaType<Model.Category, {category: Model.Category, currency: Model.Currency, account: Model.Account, accountTreeNode: Model.AccountTreeNode}>,
+        currency: currencyDefinition as JTDSchemaType<Model.Currency, {category: Model.Category, currency: Model.Currency, account: Model.Account, accountTreeNode: Model.AccountTreeNode}>,
+        account: accountDefinition as JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account, accountTreeNode: Model.AccountTreeNode}>,
+        accountTreeNode: {
+            properties: {
+                accounts: {elements: {ref: "account"}},
+                categories: {elements: {ref: "accountTreeNode"}}
+            },
+            optionalProperties: {
+                id: {type: "int32"},
+                name: {type: "string"}
+            }
+        }
+    },
+    properties:{
+        asset: {ref: "accountTreeNode"},
+        income: {ref: "accountTreeNode"},
+        expense: {ref: "accountTreeNode"},
+    }
+}
 const accountParse = ajv.compileParser<Model.Account>(accountSchema);
 const accountListParse = ajv.compileParser<Record<string,Model.Account[]>>(accountListSchema);
 const accountStatusParse = ajv.compileParser<Model.AccountStatus>(accountStatusSchema);
+const accountTreeParse = ajv.compileParser<Record<string,Model.AccountTreeNode>>(accountTreeSchema);
 
 export async function listAccounts(): Promise<Result<Model.Account[], Model.Problem>> {
     const response = await fetch('/api/accounts?embed=currency');
     return parseListResponse(response, accountListParse, "accounts");
+}
+
+export async function accountsTree(): Promise<Result<Record<string,Model.AccountTreeNode>, Model.Problem>> {
+    const response = await fetch('/api/accounts/tree?embed=currency,category');
+    return parseResponse(response, accountTreeParse);
 }
 
 export async function getAccountStatus(account: Model.Account): Promise<Result<Model.AccountStatus, Model.Problem>> {

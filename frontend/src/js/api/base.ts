@@ -33,10 +33,8 @@ export async function parseListResponse<T>(response: Response, parser: JTDParser
         return new Err(parseError(response, responseJson));
     } else {
         // Should be fine, try to convert
-        console.log(responseJson);
         const data = parser(responseJson);
         if (data === undefined) {
-            console.log(parser.message);
             return new Err(Errors.InvalidObject(parser.message as string));
         } else {
             return new Ok(data[root]);
