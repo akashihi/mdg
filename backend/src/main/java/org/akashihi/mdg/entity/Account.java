@@ -1,5 +1,6 @@
 package org.akashihi.mdg.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,15 +35,18 @@ public class Account {
     private String name;
     @ManyToOne
     @JoinColumn(name="currency_id", nullable = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Currency currency;
     @Transient
     @JsonProperty("currency_id")
     private Long currencyId;
     @ManyToOne
     @JoinColumn(name="category_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Category category;
     @Transient
     @JsonProperty("category_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long categoryId;
     @Transient
     private BigDecimal balance;
