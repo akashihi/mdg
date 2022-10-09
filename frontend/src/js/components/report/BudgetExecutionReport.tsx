@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { BudgetExecutionReport as BudgetExecutionReportType } from '../../models/Report';
+import { BudgetExecutionReport as BudgetExecutionReportType } from '../../api/models/Report';
 import { ReportProps } from './ReportsPage';
 import { reportDatesToParams } from '../../util/ReportUtils';
 import { processApiResponse } from '../../util/ApiUtils';

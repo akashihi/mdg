@@ -6,3 +6,4 @@ export * from './Accounts';
 export {listTags} from './Tags';
 export * from './Transactions';
 export * from './Budgets';
+export * from './Reports';

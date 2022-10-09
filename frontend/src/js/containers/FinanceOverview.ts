@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 import FinanceOverviewPanel from '../components/report/FinanceOverviewPanel';
 import { RootState } from '../reducers/rootReducer';
-import { TotalsReport } from '../models/Report';
+import { TotalsReport } from '../api/models/Report';
 import { selectPrimaryCurrencyName } from '../selectors/CurrencySelector';
 
 export interface FinanceOverviewPanelProps {

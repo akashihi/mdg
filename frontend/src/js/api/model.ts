@@ -6,3 +6,4 @@ export {Category} from './models/Category';
 export * from './models/Account';
 export * from './models/Transaction';
 export * from './models/Budget';
+export * from './models/Report';

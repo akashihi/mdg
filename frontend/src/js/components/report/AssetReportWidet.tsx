@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { processApiResponse } from '../../util/ApiUtils';
-import { Report } from '../../models/Report';
+import { Report } from '../../api/models/Report';
 import moment from 'moment';
 
 export interface AssetReportWidgetProps {

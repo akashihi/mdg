@@ -1,7 +1,7 @@
 export interface ReportAmount {
     amount: number;
     name?: string;
-    data: Date;
+    data?: Date;
 }
 
 export interface TotalsReport {
