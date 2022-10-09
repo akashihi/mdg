@@ -10,7 +10,7 @@ import { loadCurrentBudget, loadSelectedBudget } from '../actions/BudgetActions'
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 
 export interface TransactionViewerState {
-    currentBudgetId: string;
+    currentBudgetId: number;
     savableTransaction?: Transaction;
 }
 

@@ -12,11 +12,12 @@ import { BudgetCategoryEntry, BudgetEntry } from './BudgetEntry';
 import BudgetSelector from '../../containers/BudgetSelector';
 import BudgetInfo from './BudgetInfo';
 import { BudgetViewerProps } from '../../containers/BudgetViewer';
-import { BudgetEntryTreeNode } from '../../models/Budget';
+import { BudgetEntryTreeNode } from '../../api/models/Budget';
 import { processApiResponse } from '../../util/ApiUtils';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
-import { BudgetEntry as BudgetEntryType } from '../../models/Budget';
+import { BudgetEntry as BudgetEntryType } from '../../api/models/Budget';
+import * as API from '../../api/api';
 
 const cardStyle = {
     padding: '0px',
@@ -92,24 +93,17 @@ export function BudgetPage(props: BudgetViewerProps) {
     useEffect(loadEntries, [props.budget, showEmpty]);
 
     const saveEntry = (entry: BudgetEntryType) => {
-        if (!props.budget) {
-            return; //Don't try to save non-existent budgets
+        const budget = props.budget; //Workaround over TS type coercion
+        if (budget !== undefined) { //Don't try to save non-existent budgets
+            setLoading(true);
+            (async () => {
+                const result = await API.saveBudgetEntry(entry, budget.id);
+                console.log(result);
+                if (result.ok) {
+                    await loadEntries();
+                }
+            })();
         }
-        setLoading(true);
-        const url = `/api/budgets/${props.budget.id}/entries/${entry.id}`;
-        const method = 'PUT';
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-            body: JSON.stringify(entry),
-        })
-            .then(processApiResponse)
-            .then(() => {
-                loadEntries(); //Reload both trees to update categories sub-totals
-            });
     };
 
     let emptyHiddenButton;

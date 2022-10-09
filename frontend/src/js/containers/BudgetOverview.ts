@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 import BudgetOverviewPanel from '../components/budget/BudgetOverviewPanel';
 import { loadCurrentBudget } from '../actions/BudgetActions';
-import { Budget } from '../models/Budget';
+import { Budget } from '../api/models/Budget';
 
 export interface BudgetOverviewState {
     budget?: Budget;

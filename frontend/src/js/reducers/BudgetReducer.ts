@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 
-import { Budget } from '../models/Budget';
+import { Budget } from '../api/models/Budget';
 import { BudgetAction } from '../actions/BudgetActions';
 import { BudgetActionType } from '../constants/Budget';
 

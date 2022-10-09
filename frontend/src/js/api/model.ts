@@ -3,5 +3,6 @@ export {SettingKey, Setting} from './models/Setting';
 export {Rate} from './models/Rate';
 export {Currency} from './models/Currency';
 export {Category} from './models/Category';
-export {Account, AccountTreeNode, AccountStatus, AccountType} from './models/Account';
+export * from './models/Account';
 export * from './models/Transaction';
+export * from './models/Budget';
