@@ -56,11 +56,13 @@ public class BudgetController {
     }
 
     protected BudgetEntryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<BudgetEntry> entries, Optional<Collection<String>> embed) {
-        var topEntries = entries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
+        var enrichedEntries = entries.stream().peek(e -> {e.getAccount().setBalance(BigDecimal.ZERO); e.getAccount().setPrimaryBalance(BigDecimal.ZERO);}).toList();
+
+        var topEntries = enrichedEntries.stream().filter(e -> e.getAccount().getAccountType().equals(accountType))
                 .filter(e -> Objects.isNull(e.getAccount().getCategory()))
                 .map(Embedding.embedBudgetEntryObject(embed))
                 .toList();
-        var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, entries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
+        var topCategories = categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, enrichedEntries, embed)).filter(Optional::isPresent).map(Optional::get).toList();
         var actualSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::actualAmount, topCategories);
         var expectedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, topCategories);
         var allowedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, topCategories);

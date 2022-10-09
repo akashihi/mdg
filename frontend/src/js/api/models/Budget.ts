@@ -39,12 +39,17 @@ export interface BudgetEntry {
 }
 
 export interface BudgetEntryTreeNode {
-    readonly id: number;
-    readonly name: string;
+    readonly id?: number;
+    readonly name?: string;
     readonly expected_amount: number;
     readonly actual_amount: number;
     readonly allowed_spendings: number;
     readonly spending_percent: number;
     readonly entries: BudgetEntry[];
     readonly categories: BudgetEntryTreeNode[];
+}
+
+export interface BudgetEntryTree {
+    readonly income: BudgetEntryTreeNode;
+    readonly expense: BudgetEntryTreeNode;
 }

@@ -5,6 +5,8 @@ import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 import {categoryDefinition} from "./Categories";
 import {currencyDefinition} from "./Currency";
 import {accountDefinition} from "./Accounts";
+import {processApiResponse} from "../util/ApiUtils";
+import {BudgetEntryTreeNode} from "./model";
 
 const ajv = new Ajv()
 
@@ -51,6 +53,21 @@ const budgetEntryDefinition = {
     }
 }
 
+const budgetEntryTreeNodeDefinition = {
+    properties: {
+        expected_amount: {type: "float32"},
+        actual_amount: {type: "float32"},
+        allowed_spendings: {type: "float32"},
+        spending_percent: {type: "float32"},
+        entries: {elements: {ref: "budgetEntry"}},
+        categories: {elements: {ref: "budgetEntryTreeNode"}}
+    },
+    optionalProperties: {
+        id: {type: "uint32"},
+        name: {type: "string"},
+    }
+}
+
 const shortBudgetSchema: JTDSchemaType<Model.ShortBudget> = {
     properties: {
         id: {type: "uint32"},
@@ -86,10 +103,25 @@ const shortBudgetListSchema: JTDSchemaType<{ budgets: Model.ShortBudget[]}> = {
     }
 }
 
+const budgetEntryTreeSchema: JTDSchemaType<Model.BudgetEntryTree, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}> = {
+    definitions: {
+        category: categoryDefinition as JTDSchemaType<Model.Category, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
+        currency: currencyDefinition as JTDSchemaType<Model.Currency, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
+        account: accountDefinition as JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
+        budgetEntry: budgetEntryDefinition as JTDSchemaType<Model.BudgetEntry, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
+        budgetEntryTreeNode: budgetEntryTreeNodeDefinition as JTDSchemaType<Model.BudgetEntryTreeNode, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
+    },
+    properties: {
+        income: {ref: "budgetEntryTreeNode"},
+        expense: {ref: "budgetEntryTreeNode"},
+    }
+}
+
 const budgetParse = ajv.compileParser<Model.Budget>(budgetSchema);
 const budgetEntryParse = ajv.compileParser<Model.BudgetEntry>(budgetEntrySchema);
 const shortBudgetParse = ajv.compileParser<Model.Budget>(shortBudgetSchema);
 const shortBudgetListParse = ajv.compileParser<Record<string,Model.ShortBudget[]>>(shortBudgetListSchema);
+const budgetEntryTreeParse = ajv.compileParser<Model.BudgetEntryTree>(budgetEntryTreeSchema);
 
 export async function listBudgets(): Promise<Result<Model.ShortBudget[], Model.Problem>> {
     const response = await fetch('/api/budgets');
@@ -130,4 +162,10 @@ export async function deleteBudget(id: number): Promise<Option<Model.Problem>> {
         return new Some(parseError(response, responseJson))
     }
     return None;
+}
+
+export async function loadBudgetEntries(budget_id: number, filter: string): Promise<Result<Model.BudgetEntryTree, Model.Problem>> {
+    const url = `/api/budgets/${budget_id}/entries/tree?embed=category,account,currency&filter=${filter}`;
+    const response = await fetch(url);
+    return parseResponse(response, budgetEntryTreeParse);
 }

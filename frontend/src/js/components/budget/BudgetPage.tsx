@@ -71,23 +71,23 @@ export function BudgetPage(props: BudgetViewerProps) {
     const [loading, setLoading] = useState<boolean>(false);
 
     const loadEntries = () => {
-        if (props.budget === null || props.budget === undefined) {
-            return;
-        }
+        const budget = props.budget;
+        if (budget !== null && budget !== undefined) {
+            setLoading(true);
 
-        setLoading(true);
-
-        let filter = 'nonzero';
-        if (showEmpty) {
-            filter = 'all';
+            let filter = 'nonzero';
+            if (showEmpty) {
+                filter = 'all';
+            }
+            (async () => {
+                const result = await API.loadBudgetEntries(budget.id, filter);
+                if (result.ok) {
+                    setIncomeEntries(result.val.income);
+                    setExpenseEntries(result.val.expense);
+                    setLoading(false);
+                }
+            })();
         }
-        fetch(`/api/budgets/${props.budget.id}/entries/tree?embed=category,account,currency&filter=${filter}`)
-            .then(processApiResponse)
-            .then(json => {
-                setIncomeEntries(json.income as BudgetEntryTreeNode);
-                setExpenseEntries(json.expense as BudgetEntryTreeNode);
-                setLoading(false);
-            });
     };
 
     useEffect(loadEntries, [props.budget, showEmpty]);
@@ -98,7 +98,6 @@ export function BudgetPage(props: BudgetViewerProps) {
             setLoading(true);
             (async () => {
                 const result = await API.saveBudgetEntry(entry, budget.id);
-                console.log(result);
                 if (result.ok) {
                     await loadEntries();
                 }
