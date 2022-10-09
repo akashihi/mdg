@@ -1,8 +1,5 @@
 import { Action } from 'redux';
-import jQuery from 'jquery';
 import moment from 'moment';
-
-import { processApiResponse } from '../util/ApiUtils';
 
 import { TransactionActionType } from '../constants/Transaction';
 import { Transaction } from '../api/models/Transaction';

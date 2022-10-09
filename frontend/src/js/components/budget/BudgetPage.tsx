@@ -13,7 +13,6 @@ import BudgetSelector from '../../containers/BudgetSelector';
 import BudgetInfo from './BudgetInfo';
 import { BudgetViewerProps } from '../../containers/BudgetViewer';
 import { BudgetEntryTreeNode } from '../../api/models/Budget';
-import { processApiResponse } from '../../util/ApiUtils';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import { BudgetEntry as BudgetEntryType } from '../../api/models/Budget';

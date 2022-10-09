@@ -1,3 +1,5 @@
+import {PointOptionsObject} from "highcharts";
+
 export interface ReportAmount {
     amount: number;
     name?: string;
@@ -29,4 +31,9 @@ export interface BudgetExecutionReport {
     expected_income: number[];
     expected_expense: number[];
     profit: number[];
+}
+
+export interface PieData {
+    readonly dates: string[];
+    readonly data: PointOptionsObject[];
 }

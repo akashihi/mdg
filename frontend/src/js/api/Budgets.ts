@@ -5,8 +5,6 @@ import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
 import {categoryDefinition} from "./Categories";
 import {currencyDefinition} from "./Currency";
 import {accountDefinition} from "./Accounts";
-import {processApiResponse} from "../util/ApiUtils";
-import {BudgetEntryTreeNode} from "./model";
 
 const ajv = new Ajv()
 

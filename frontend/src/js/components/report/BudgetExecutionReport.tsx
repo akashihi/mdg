@@ -2,12 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { BudgetExecutionReport as BudgetExecutionReportType } from '../../api/models/Report';
-import { ReportProps } from './ReportsPage';
-import { reportDatesToParams } from '../../util/ReportUtils';
-import { processApiResponse } from '../../util/ApiUtils';
-import moment from 'moment';
+import { ReportParams } from '../../api/api';
+import * as API from '../../api/api';
 
-export function BudgetExecutionReport(props: ReportProps) {
+export function BudgetExecutionReport(props: ReportParams) {
     const [chartData, setChartData] = useState<BudgetExecutionReportType>({
         dates: [],
         actual_income: [],
@@ -52,22 +50,12 @@ export function BudgetExecutionReport(props: ReportProps) {
         // eslint-disable-next-line
         // @ts-ignore
         chartComponentRef.current.chart.reflow();
-
-        const url = `/api/reports/budget/execution/${reportDatesToParams(props)}`;
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (json) {
-                const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-                setChartData({
-                    dates: dates,
-                    actual_income: json.actual_income,
-                    actual_expense: json.actual_expense,
-                    expected_income: json.expected_income,
-                    expected_expense: json.expected_expense,
-                    profit: json.profit,
-                });
-            });
+        (async () => {
+            const result = await API.loadBudgetReport(props);
+            if (result.ok) {
+                setChartData(result.val);
+            }
+        })();
     }, [props]);
     const options = {
         title: {

@@ -1,11 +1,8 @@
 import React from 'react';
-import { ReportProps } from './ReportsPage';
-import { reportDatesToParams } from '../../util/ReportUtils';
+import { ReportParams } from '../../api/api';
 import AssetReportWidet from './AssetReportWidet';
 
-export function AssetReportSimple(props: ReportProps) {
-    const url = `/api/reports/assets/simple/${reportDatesToParams(props)}`;
-
+export function AssetReportSimple(props: ReportParams) {
     const options = {
         chart: {
             type: 'area',
@@ -23,7 +20,7 @@ export function AssetReportSimple(props: ReportProps) {
         },
     };
 
-    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
+    return <AssetReportWidet type="assets/simple" params={props} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
 }
 
 export default AssetReportSimple;

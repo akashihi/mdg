@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { reportDatesToParams } from '../../util/ReportUtils';
-import Highcharts, { PointOptionsObject } from 'highcharts';
+import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { processApiResponse } from '../../util/ApiUtils';
-import moment from 'moment';
 import { EventReportProps } from './EventReportCollection';
-
-interface PieData {
-    dates: string[];
-    data: PointOptionsObject[];
-}
+import {PieData} from "../../api/model";
+import * as API from '../../api/api';
 
 export function EventsReportByWeight(props: EventReportProps) {
     const [chartData, setChartData] = useState<PieData>({ dates: [], data: [] });
@@ -32,22 +26,12 @@ export function EventsReportByWeight(props: EventReportProps) {
         // @ts-ignore
         chartComponentRef.current.chart.reflow();
 
-        const url = `/api/reports/${props.type}/accounts/${reportDatesToParams(props)}`;
-
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (json) {
-                const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-                const data = json.series.map(item => {
-                    return { name: item.name, y: item.data[0] };
-                });
-
-                setChartData({
-                    dates: dates,
-                    data: data,
-                });
-            });
+        (async () => {
+            const result = await API.loadEventsReport(props.type, props);
+            if (result.ok) {
+                setChartData(result.val);
+            }
+        })();
     }, [props]);
 
     const options = {

@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { processApiResponse } from '../../util/ApiUtils';
-import { Report } from '../../api/models/Report';
-import moment from 'moment';
+import { Report } from '../../api/model';
+import {ReportParams} from "../../api/api";
+import * as API from '../../api/api';
 
 export interface AssetReportWidgetProps {
-    url: string;
+    type: string;
     options: HighchartsReact.Props;
-    primaryCurrencyName: string;
+    primaryCurrencyName: string,
+    params: ReportParams
 }
 
 export function AssetReportWidget(props: AssetReportWidgetProps) {
@@ -32,16 +33,12 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
         // @ts-ignore
         chartComponentRef.current.chart.reflow();
 
-        fetch(props.url)
-            .then(processApiResponse)
-            .then(function (json) {
-                const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-                setChartData({
-                    dates: dates,
-                    series: json.series,
-                });
-            });
+        (async () => {
+            const result = await API.loadAssetReport(props.type, props.params);
+            if (result.ok) {
+                setChartData(result.val);
+            }
+        })();
     }, [props]);
 
     const baseOptions = {

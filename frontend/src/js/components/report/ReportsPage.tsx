@@ -14,13 +14,6 @@ import BudgetExecutionReport from './BudgetExecutionReport';
 import EventReportCollection from './EventReportCollection';
 import { ReportsViewerProps } from '../../containers/ReportsViewer';
 
-export interface ReportProps {
-    startDate: Moment;
-    endDate: Moment;
-    granularity: number;
-    primaryCurrencyName: string;
-}
-
 export function ReportsPage(props: ReportsViewerProps) {
     const [startDate, setStartDate] = useState<Moment>(moment().subtract(1, 'month'));
     const [endDate, setEndDate] = useState<Moment>(moment());

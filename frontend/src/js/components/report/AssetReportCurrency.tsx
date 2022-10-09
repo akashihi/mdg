@@ -1,12 +1,9 @@
 import React from 'react';
-import { ReportProps } from './ReportsPage';
-import { reportDatesToParams } from '../../util/ReportUtils';
+import { ReportParams } from '../../api/api';
 
 import AssetReportWidet from './AssetReportWidet';
 
-export function AssetReportCurrency(props: ReportProps) {
-    const url = `/api/reports/assets/currency/${reportDatesToParams(props)}`;
-
+export function AssetReportCurrency(props: ReportParams) {
     const options = {
         subtitle: {
             text: 'by currency',
@@ -18,7 +15,7 @@ export function AssetReportCurrency(props: ReportProps) {
             },
         },
     };
-    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
+    return <AssetReportWidet type="assets/currency" params={props} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
 }
 
 export default AssetReportCurrency;

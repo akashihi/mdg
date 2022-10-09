@@ -7,9 +7,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AssetReportSimple from './AssetReportSimple';
 import AssetReportCurrency from './AssetReportCurrency';
 import AssetReportType from './AssetReportType';
-import { ReportProps } from './ReportsPage';
+import { ReportParams } from '../../api/api';
 
-export function AssetReportCollection(props: ReportProps): ReactElement {
+export function AssetReportCollection(props: ReportParams): ReactElement {
     return (
         <Fragment>
             <Accordion defaultExpanded>
