@@ -55,7 +55,7 @@ describe('Category-Account operations', () => {
             .get('/accounts/{id}')
             .withPathParams('id', '$S{AccountID}')
             .withQueryParams({ embed: 'category' })
-            .expectJson('category_id', null);
+            .expectJson('category_id', undefined);
     });
 
     it('Create one more category', async () => {
