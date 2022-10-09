@@ -2,7 +2,7 @@ import { Action } from 'redux';
 
 import { ReportActionType } from '../constants/Report';
 import { TotalsReport } from '../api/model';
-import {wrap} from "./base";
+import { wrap } from './base';
 import * as API from '../api/api';
 
 export interface ReportAction extends Action {

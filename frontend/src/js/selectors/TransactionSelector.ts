@@ -61,15 +61,17 @@ const renderTransactionAccountList = (transaction: Transaction): string => {
     // they should be used
     if (transaction.operations.some(o => o.account && o.account.account_type !== 'ASSET')) {
         //Ok, we have non-asset accounts
-        return transaction.operations
-            .filter(o => o.account && o.account.account_type !== 'ASSET')
-            // Presence of the account is confirmed by the filter above
-            // eslint-disable-next-line
-            // @ts-ignore
-            .map(o => o.account.name)
-            .join(', ');
+        return (
+            transaction.operations
+                .filter(o => o.account && o.account.account_type !== 'ASSET')
+                // Presence of the account is confirmed by the filter above
+                // eslint-disable-next-line
+                // @ts-ignore
+                .map(o => o.account.name)
+                .join(', ')
+        );
     }
-    return transaction.operations.map(o => o.account ? o.account.name : "").join(', ');
+    return transaction.operations.map(o => (o.account ? o.account.name : '')).join(', ');
 };
 
 const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
@@ -97,17 +99,19 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
     }
     const opsByType: Record<string, number[]> = tx.operations
         .filter(o => o.account)
-        .map(o => {return {...o, rate: o.rate ? o.rate : 1}})
+        .map(o => {
+            return { ...o, rate: o.rate ? o.rate : 1 };
+        })
         .reduce(
-        (groups, item) => ({
-            ...groups,
-            // Presence of the accounts is confirmed by filter above
-            // eslint-disable-next-line
-            // @ts-ignore
-            [item.account.account_type]: [...(groups[item.account.account_type] || []), item.amount * item.rate],
-        }),
-        {}
-    );
+            (groups, item) => ({
+                ...groups,
+                // Presence of the accounts is confirmed by filter above
+                // eslint-disable-next-line
+                // @ts-ignore
+                [item.account.account_type]: [...(groups[item.account.account_type] || []), item.amount * item.rate],
+            }),
+            {}
+        );
 
     const summary = Object.fromEntries(
         Object.entries(opsByType).map((group: [string, number[]]) => {

@@ -23,7 +23,7 @@ function TransactionShortWidget(props: EnrichedTransaction) {
                 {props.accountNames}
             </Grid>
             <Grid item xs={1} sm={3} md={2} lg={2} className="hide-on-small">
-                {props.tags? props.tags.join(', ') : ""}
+                {props.tags ? props.tags.join(', ') : ''}
             </Grid>
         </Grid>
     );

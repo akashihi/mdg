@@ -1,129 +1,288 @@
-import {Result, Option, Some, None} from "ts-results";
-import * as Model from "./model";
-import {parseError, parseListResponse, parseResponse, updateRequestParameters} from "./base";
-import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
-import {categoryDefinition} from "./Categories";
-import {currencyDefinition} from "./Currency";
-import {accountDefinition} from "./Accounts";
+import { Result, Option, Some, None } from 'ts-results';
+import * as Model from './model';
+import { parseError, parseListResponse, parseResponse, updateRequestParameters } from './base';
+import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
+import { categoryDefinition } from './Categories';
+import { currencyDefinition } from './Currency';
+import { accountDefinition } from './Accounts';
 
-const ajv = new Ajv()
+const ajv = new Ajv();
 
 const budgetPairDefinition = {
     properties: {
-        actual: {type: "float32"},
-        expected: {type: "float32"}
-    }
-}
+        actual: { type: 'float32' },
+        expected: { type: 'float32' },
+    },
+};
 
 const budgetStateDefinition = {
     properties: {
-        income: {ref: "budgetPair"},
-        expense: {ref: "budgetPair"},
-        allowed: {ref: "budgetPair"},
-    }
-}
+        income: { ref: 'budgetPair' },
+        expense: { ref: 'budgetPair' },
+        allowed: { ref: 'budgetPair' },
+    },
+};
 
 const budgetDefinition = {
     properties: {
-        id: {type: "uint32"},
-        term_beginning: {type: "string"},
-        term_end: {type: "string"},
-        state: {ref: "budgetState"},
-        incoming_amount: {type: "float32"},
-        outgoing_amount: {ref: "budgetPair"}
-    }
-}
+        id: { type: 'uint32' },
+        term_beginning: { type: 'string' },
+        term_end: { type: 'string' },
+        state: { ref: 'budgetState' },
+        incoming_amount: { type: 'float32' },
+        outgoing_amount: { ref: 'budgetPair' },
+    },
+};
 
 const budgetEntryDefinition = {
     properties: {
-        id: {type: "uint32"},
-        account_id: {type: "uint32"},
-        distribution: {enum: ["SINGLE", "EVEN", "PRORATED"]},
-        expected_amount: {type: "float32"},
-        actual_amount: {type: "float32"},
-        allowed_spendings: {type: "float32"},
-        spending_percent: {type: "float32"}
+        id: { type: 'uint32' },
+        account_id: { type: 'uint32' },
+        distribution: { enum: ['SINGLE', 'EVEN', 'PRORATED'] },
+        expected_amount: { type: 'float32' },
+        actual_amount: { type: 'float32' },
+        allowed_spendings: { type: 'float32' },
+        spending_percent: { type: 'float32' },
     },
     optionalProperties: {
-        account: {ref: "account"},
-        category_id: {type: "uint32"},
-        category: {ref: "category"},
-    }
-}
+        account: { ref: 'account' },
+        category_id: { type: 'uint32' },
+        category: { ref: 'category' },
+    },
+};
 
 const budgetEntryTreeNodeDefinition = {
     properties: {
-        expected_amount: {type: "float32"},
-        actual_amount: {type: "float32"},
-        allowed_spendings: {type: "float32"},
-        spending_percent: {type: "float32"},
-        entries: {elements: {ref: "budgetEntry"}},
-        categories: {elements: {ref: "budgetEntryTreeNode"}}
+        expected_amount: { type: 'float32' },
+        actual_amount: { type: 'float32' },
+        allowed_spendings: { type: 'float32' },
+        spending_percent: { type: 'float32' },
+        entries: { elements: { ref: 'budgetEntry' } },
+        categories: { elements: { ref: 'budgetEntryTreeNode' } },
     },
     optionalProperties: {
-        id: {type: "uint32"},
-        name: {type: "string"},
-    }
-}
+        id: { type: 'uint32' },
+        name: { type: 'string' },
+    },
+};
 
 const shortBudgetSchema: JTDSchemaType<Model.ShortBudget> = {
     properties: {
-        id: {type: "uint32"},
-        term_beginning: {type: "string"},
-        term_end: {type: "string"}
+        id: { type: 'uint32' },
+        term_beginning: { type: 'string' },
+        term_end: { type: 'string' },
+    },
+};
+const budgetSchema: JTDSchemaType<
+    Model.Budget,
+    {
+        category: Model.Category;
+        currency: Model.Currency;
+        account: Model.Account;
+        budgetPair: Model.BudgetPair;
+        budgetState: Model.BudgetState;
+        budget: Model.Budget;
     }
-}
-const budgetSchema: JTDSchemaType<Model.Budget, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetPair: Model.BudgetPair, budgetState: Model.BudgetState, budget: Model.Budget}> = {
+> = {
     definitions: {
-        category: categoryDefinition as JTDSchemaType<Model.Category, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetPair: Model.BudgetPair, budgetState: Model.BudgetState, budget: Model.Budget}>,
-        currency: currencyDefinition as JTDSchemaType<Model.Currency, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetPair: Model.BudgetPair, budgetState: Model.BudgetState, budget: Model.Budget}>,
-        account: accountDefinition as JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetPair: Model.BudgetPair, budgetState: Model.BudgetState, budget: Model.Budget}>,
-        budgetPair: budgetPairDefinition as JTDSchemaType<Model.BudgetPair, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetPair: Model.BudgetPair, budgetState: Model.BudgetState, budget: Model.Budget}>,
-        budgetState: budgetStateDefinition as JTDSchemaType<Model.BudgetState, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetPair: Model.BudgetPair, budgetState: Model.BudgetState, budget: Model.Budget}>,
-        budget: budgetDefinition as JTDSchemaType<Model.Budget, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetPair: Model.BudgetPair, budgetState: Model.BudgetState, budget: Model.Budget}>,
+        category: categoryDefinition as JTDSchemaType<
+            Model.Category,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetPair: Model.BudgetPair;
+                budgetState: Model.BudgetState;
+                budget: Model.Budget;
+            }
+        >,
+        currency: currencyDefinition as JTDSchemaType<
+            Model.Currency,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetPair: Model.BudgetPair;
+                budgetState: Model.BudgetState;
+                budget: Model.Budget;
+            }
+        >,
+        account: accountDefinition as JTDSchemaType<
+            Model.Account,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetPair: Model.BudgetPair;
+                budgetState: Model.BudgetState;
+                budget: Model.Budget;
+            }
+        >,
+        budgetPair: budgetPairDefinition as JTDSchemaType<
+            Model.BudgetPair,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetPair: Model.BudgetPair;
+                budgetState: Model.BudgetState;
+                budget: Model.Budget;
+            }
+        >,
+        budgetState: budgetStateDefinition as JTDSchemaType<
+            Model.BudgetState,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetPair: Model.BudgetPair;
+                budgetState: Model.BudgetState;
+                budget: Model.Budget;
+            }
+        >,
+        budget: budgetDefinition as JTDSchemaType<
+            Model.Budget,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetPair: Model.BudgetPair;
+                budgetState: Model.BudgetState;
+                budget: Model.Budget;
+            }
+        >,
     },
-    ref: "budget"
-}
+    ref: 'budget',
+};
 
-const budgetEntrySchema: JTDSchemaType<Model.BudgetEntry, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry}> = {
+const budgetEntrySchema: JTDSchemaType<
+    Model.BudgetEntry,
+    { category: Model.Category; currency: Model.Currency; account: Model.Account; budgetEntry: Model.BudgetEntry }
+> = {
     definitions: {
-        category: categoryDefinition as JTDSchemaType<Model.Category, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry}>,
-        currency: currencyDefinition as JTDSchemaType<Model.Currency, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry}>,
-        account: accountDefinition as JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry}>,
-        budgetEntry: budgetEntryDefinition as JTDSchemaType<Model.BudgetEntry, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry}>,
+        category: categoryDefinition as JTDSchemaType<
+            Model.Category,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+            }
+        >,
+        currency: currencyDefinition as JTDSchemaType<
+            Model.Currency,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+            }
+        >,
+        account: accountDefinition as JTDSchemaType<
+            Model.Account,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+            }
+        >,
+        budgetEntry: budgetEntryDefinition as JTDSchemaType<
+            Model.BudgetEntry,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+            }
+        >,
     },
-    ref: "budgetEntry"
-}
+    ref: 'budgetEntry',
+};
 
-const shortBudgetListSchema: JTDSchemaType<{ budgets: Model.ShortBudget[]}> = {
+const shortBudgetListSchema: JTDSchemaType<{ budgets: Model.ShortBudget[] }> = {
     properties: {
-        budgets: {elements: shortBudgetSchema}
-    }
-}
+        budgets: { elements: shortBudgetSchema },
+    },
+};
 
-const budgetEntryTreeSchema: JTDSchemaType<Model.BudgetEntryTree, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}> = {
+const budgetEntryTreeSchema: JTDSchemaType<
+    Model.BudgetEntryTree,
+    {
+        category: Model.Category;
+        currency: Model.Currency;
+        account: Model.Account;
+        budgetEntry: Model.BudgetEntry;
+        budgetEntryTreeNode: Model.BudgetEntryTreeNode;
+    }
+> = {
     definitions: {
-        category: categoryDefinition as JTDSchemaType<Model.Category, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
-        currency: currencyDefinition as JTDSchemaType<Model.Currency, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
-        account: accountDefinition as JTDSchemaType<Model.Account, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
-        budgetEntry: budgetEntryDefinition as JTDSchemaType<Model.BudgetEntry, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
-        budgetEntryTreeNode: budgetEntryTreeNodeDefinition as JTDSchemaType<Model.BudgetEntryTreeNode, {category: Model.Category, currency: Model.Currency, account: Model.Account, budgetEntry: Model.BudgetEntry, budgetEntryTreeNode: Model.BudgetEntryTreeNode}>,
+        category: categoryDefinition as JTDSchemaType<
+            Model.Category,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+                budgetEntryTreeNode: Model.BudgetEntryTreeNode;
+            }
+        >,
+        currency: currencyDefinition as JTDSchemaType<
+            Model.Currency,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+                budgetEntryTreeNode: Model.BudgetEntryTreeNode;
+            }
+        >,
+        account: accountDefinition as JTDSchemaType<
+            Model.Account,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+                budgetEntryTreeNode: Model.BudgetEntryTreeNode;
+            }
+        >,
+        budgetEntry: budgetEntryDefinition as JTDSchemaType<
+            Model.BudgetEntry,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+                budgetEntryTreeNode: Model.BudgetEntryTreeNode;
+            }
+        >,
+        budgetEntryTreeNode: budgetEntryTreeNodeDefinition as JTDSchemaType<
+            Model.BudgetEntryTreeNode,
+            {
+                category: Model.Category;
+                currency: Model.Currency;
+                account: Model.Account;
+                budgetEntry: Model.BudgetEntry;
+                budgetEntryTreeNode: Model.BudgetEntryTreeNode;
+            }
+        >,
     },
     properties: {
-        income: {ref: "budgetEntryTreeNode"},
-        expense: {ref: "budgetEntryTreeNode"},
-    }
-}
+        income: { ref: 'budgetEntryTreeNode' },
+        expense: { ref: 'budgetEntryTreeNode' },
+    },
+};
 
 const budgetParse = ajv.compileParser<Model.Budget>(budgetSchema);
 const budgetEntryParse = ajv.compileParser<Model.BudgetEntry>(budgetEntrySchema);
 const shortBudgetParse = ajv.compileParser<Model.Budget>(shortBudgetSchema);
-const shortBudgetListParse = ajv.compileParser<Record<string,Model.ShortBudget[]>>(shortBudgetListSchema);
+const shortBudgetListParse = ajv.compileParser<Record<string, Model.ShortBudget[]>>(shortBudgetListSchema);
 const budgetEntryTreeParse = ajv.compileParser<Model.BudgetEntryTree>(budgetEntryTreeSchema);
 
 export async function listBudgets(): Promise<Result<Model.ShortBudget[], Model.Problem>> {
     const response = await fetch('/api/budgets');
-    return parseListResponse(response, shortBudgetListParse, "budgets");
+    return parseListResponse(response, shortBudgetListParse, 'budgets');
 }
 
 export async function loadBudget(id: number): Promise<Result<Model.Budget, Model.Problem>> {
@@ -144,7 +303,10 @@ export async function saveBudget(budget: Model.ShortBudget): Promise<Result<Mode
     return parseResponse(response, shortBudgetParse);
 }
 
-export async function saveBudgetEntry(entry: Model.BudgetEntry, budget_id: number): Promise<Result<Model.BudgetEntry, Model.Problem>> {
+export async function saveBudgetEntry(
+    entry: Model.BudgetEntry,
+    budget_id: number
+): Promise<Result<Model.BudgetEntry, Model.Problem>> {
     const url = `/api/budgets/${budget_id}/entries/${entry.id}`;
     const response = await fetch(url, updateRequestParameters('PUT', entry));
 
@@ -155,14 +317,17 @@ export async function deleteBudget(id: number): Promise<Option<Model.Problem>> {
     const url = `/api/budgets/${id}`;
     const method = 'DELETE';
     const response = await fetch(url, updateRequestParameters(method));
-    if (response.status<400) {
+    if (response.status < 400) {
         const responseJson = await response.text();
-        return new Some(parseError(response, responseJson))
+        return new Some(parseError(response, responseJson));
     }
     return None;
 }
 
-export async function loadBudgetEntries(budget_id: number, filter: string): Promise<Result<Model.BudgetEntryTree, Model.Problem>> {
+export async function loadBudgetEntries(
+    budget_id: number,
+    filter: string
+): Promise<Result<Model.BudgetEntryTree, Model.Problem>> {
     const url = `/api/budgets/${budget_id}/entries/tree?embed=category,account,currency&filter=${filter}`;
     const response = await fetch(url);
     return parseResponse(response, budgetEntryTreeParse);

@@ -3,7 +3,7 @@ import moment from 'moment';
 import * as API from '../api/api';
 import * as Model from '../api/model';
 import { RateActionsType } from '../constants/Rate';
-import {wrap} from "./base";
+import { wrap } from './base';
 
 export interface RateAction extends Action {
     payload: Model.Rate[];

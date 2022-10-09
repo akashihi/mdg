@@ -1,7 +1,7 @@
 import { Action } from 'redux';
 
 import { TagActionType } from '../constants/Tag';
-import {wrap} from "./base";
+import { wrap } from './base';
 import * as API from '../api/api';
 
 export interface TagAction extends Action {

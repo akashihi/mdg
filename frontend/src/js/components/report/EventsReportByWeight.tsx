@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { EventReportProps } from './EventReportCollection';
-import {PieData} from "../../api/model";
+import { PieData } from '../../api/model';
 import * as API from '../../api/api';
 
 export function EventsReportByWeight(props: EventReportProps) {

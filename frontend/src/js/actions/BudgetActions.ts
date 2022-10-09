@@ -4,7 +4,7 @@ import moment from 'moment';
 import { BudgetActionType } from '../constants/Budget';
 
 import { Budget } from '../api/models/Budget';
-import {wrap} from "./base";
+import { wrap } from './base';
 import * as API from '../api/api';
 
 export interface BudgetAction extends Action {

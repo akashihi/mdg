@@ -4,7 +4,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
-import {Currency} from '../../api/model';
+import { Currency } from '../../api/model';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Backdrop from '@mui/material/Backdrop';

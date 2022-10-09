@@ -2,14 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { Report } from '../../api/model';
-import {ReportParams} from "../../api/api";
+import { ReportParams } from '../../api/api';
 import * as API from '../../api/api';
 
 export interface AssetReportWidgetProps {
     type: string;
     options: HighchartsReact.Props;
-    primaryCurrencyName: string,
-    params: ReportParams
+    primaryCurrencyName: string;
+    params: ReportParams;
 }
 
 export function AssetReportWidget(props: AssetReportWidgetProps) {

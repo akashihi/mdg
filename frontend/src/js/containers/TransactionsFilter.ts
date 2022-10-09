@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import TransactionsPageFilter from '../components/transaction/TransactionsPageFilter';
-import {Currency} from '../api/model';
+import { Currency } from '../api/model';
 import { AccountTreeNode } from '../api/models/Account';
 import { RootState } from '../reducers/rootReducer';
 import { selectActiveCurrencies } from '../selectors/CurrencySelector';

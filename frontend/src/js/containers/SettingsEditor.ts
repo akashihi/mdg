@@ -9,7 +9,7 @@ import {
     reindexTransactions,
 } from '../actions/SettingActions';
 import { SettingState } from '../reducers/SettingReducer';
-import {Currency} from '../api/model';
+import { Currency } from '../api/model';
 import { getSettings } from '../selectors/StateGetters';
 import { RootState } from '../reducers/rootReducer';
 

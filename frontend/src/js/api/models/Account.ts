@@ -1,6 +1,6 @@
-import {Currency, Category} from '../model';
+import { Currency, Category } from '../model';
 
-export type AccountType = "ASSET" | "INCOME" | "EXPENSE";
+export type AccountType = 'ASSET' | 'INCOME' | 'EXPENSE';
 
 export interface Account {
     readonly id: number;

@@ -8,7 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
-import {Category} from '../../api/model';
+import { Category } from '../../api/model';
 import { mapCategoryListToMenu } from '../../util/CategoryUtils';
 
 export interface CategoryDialogProps {

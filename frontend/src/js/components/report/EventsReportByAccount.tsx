@@ -19,7 +19,14 @@ export function EventsReportByAccount(props: EventReportProps) {
             },
         },
     };
-    return <AssetReportWidet type={`${props.type}/events`} params={props} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
+    return (
+        <AssetReportWidet
+            type={`${props.type}/events`}
+            params={props}
+            options={options}
+            primaryCurrencyName={props.primaryCurrencyName}
+        />
+    );
 }
 
 export default EventsReportByAccount;

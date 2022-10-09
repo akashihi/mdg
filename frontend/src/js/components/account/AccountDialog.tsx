@@ -28,7 +28,7 @@ function AccountDialog(props: AccountDialogProps) {
 
         setLoading(true);
         (async function deletable() {
-            const status = await API.getAccountStatus(props.account)
+            const status = await API.getAccountStatus(props.account);
             if (status.ok) {
                 setDeletable(status.val.deletable);
             } else {

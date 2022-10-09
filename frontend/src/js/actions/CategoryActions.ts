@@ -3,11 +3,11 @@ import { loadAccountList } from './AccountActions';
 import { CategoryActionType } from '../constants/Category';
 
 import { Action } from 'redux';
-import {Category} from '../api/model';
-import {wrap} from "./base";
-import * as API from "../api/api";
-import * as Model from "../api/model";
-import {produce} from "immer";
+import { Category } from '../api/model';
+import { wrap } from './base';
+import * as API from '../api/api';
+import * as Model from '../api/model';
+import { produce } from 'immer';
 
 export interface CategoryAction extends Action {
     payload: Category[];

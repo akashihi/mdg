@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import { getCurrencies } from './StateGetters';
-import {Currency} from '../api/model';
+import { Currency } from '../api/model';
 import { selectPrimaryCurrencyId } from './SettingsSelector';
 
 export const selectActiveCurrencies = createSelector([getCurrencies], (currencies: Currency[]) =>

@@ -1,4 +1,4 @@
-import {AccountType} from "./Account";
+import { AccountType } from './Account';
 
 export interface Category {
     readonly id?: number;

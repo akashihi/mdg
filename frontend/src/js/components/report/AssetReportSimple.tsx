@@ -20,7 +20,14 @@ export function AssetReportSimple(props: ReportParams) {
         },
     };
 
-    return <AssetReportWidet type="assets/simple" params={props} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
+    return (
+        <AssetReportWidet
+            type="assets/simple"
+            params={props}
+            options={options}
+            primaryCurrencyName={props.primaryCurrencyName}
+        />
+    );
 }
 
 export default AssetReportSimple;

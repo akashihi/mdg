@@ -41,9 +41,9 @@ export interface EditedTransaction extends Transaction {
 }
 
 export interface TransactionList {
-    readonly transactions: Transaction[],
-    readonly self: string,
-    readonly first: string,
-    readonly next: string,
-    readonly left: number
+    readonly transactions: Transaction[];
+    readonly self: string;
+    readonly first: string;
+    readonly next: string;
+    readonly left: number;
 }

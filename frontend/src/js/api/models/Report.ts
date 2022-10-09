@@ -1,4 +1,4 @@
-import {PointOptionsObject} from "highcharts";
+import { PointOptionsObject } from 'highcharts';
 
 export interface ReportAmount {
     amount: number;

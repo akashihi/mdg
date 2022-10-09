@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import {Category} from '../api/model';
+import { Category } from '../api/model';
 import { CategoryAction } from '../actions/CategoryActions';
 import { CategoryActionType } from '../constants/Category';
 

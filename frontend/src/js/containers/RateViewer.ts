@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 import RateWidget from '../components/RateWidget';
 import { selectActiveRatesWithNames } from '../selectors/RateSelector';
-import {Rate} from "../api/model";
+import { Rate } from '../api/model';
 import { RootState } from '../reducers/rootReducer';
 
 export interface RateViewerState {

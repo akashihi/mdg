@@ -22,14 +22,21 @@ export function TransactionDeleteConfirmation(props: TransactionDeleteProps) {
                     <Button key="cancel-button" color="primary" onClick={props.close}>
                         Cancel
                     </Button>
-                    <Button key="delete-button" color="secondary" onClick={() => {if(props.tx) {props.delete(props.tx)}}}>
+                    <Button
+                        key="delete-button"
+                        color="secondary"
+                        onClick={() => {
+                            if (props.tx) {
+                                props.delete(props.tx);
+                            }
+                        }}>
                         Delete
                     </Button>
                 </DialogActions>
             </Dialog>
         );
     } else {
-        return <div/>
+        return <div />;
     }
 }
 

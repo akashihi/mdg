@@ -4,9 +4,9 @@ import { produce } from 'immer';
 import { CurrencyActionType } from '../constants/Currency';
 import { loadCategoryList } from './CategoryActions';
 import { loadTotalsReport } from './ReportActions';
-import {Currency} from '../api/model';
-import {wrap} from "./base";
-import * as API from "../api/api";
+import { Currency } from '../api/model';
+import { wrap } from './base';
+import * as API from '../api/api';
 
 export interface CurrencyAction extends Action {
     payload: Currency[];
@@ -18,7 +18,7 @@ export function loadCurrencyList() {
             type: CurrencyActionType.CurrenciesLoad,
             payload: {},
         });
-        const result = await API.listCurrencies()
+        const result = await API.listCurrencies();
         if (result.ok) {
             dispatch({ type: CurrencyActionType.StoreCurrencies, payload: result.val });
             await dispatch(loadCategoryList());
@@ -41,7 +41,7 @@ export function updateCurrency(isActive: boolean, currency?: Currency) {
         })(currency);
         const result = await API.saveCurrency(updatedCurrency);
         if (result.ok) {
-            dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [result.val] })
+            dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [result.val] });
         } else {
             dispatch({ type: CurrencyActionType.CurrencyUpdateFail, payload: result.val });
         }

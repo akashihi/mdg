@@ -16,11 +16,12 @@ function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: num
         .map(a => {
             const currency_name = a.currency ? `(${a.currency.name})` : '';
             return (
-            <MenuItem
-                key={a.id}
-                value={a.id}
-                style={{ marginLeft: indent * 15 + 10 }}>{`${a.name} ${currency_name}`}</MenuItem>
-        )});
+                <MenuItem
+                    key={a.id}
+                    value={a.id}
+                    style={{ marginLeft: indent * 15 + 10 }}>{`${a.name} ${currency_name}`}</MenuItem>
+            );
+        });
     if (subCategories.length === 0 && accounts.length === 0) {
         // Skip leafs in case there are no accounts and subleafs
         return [];

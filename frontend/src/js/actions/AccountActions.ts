@@ -6,9 +6,9 @@ import { loadTotalsReport } from './ReportActions';
 
 import { AccountActionType } from '../constants/Account';
 import { Account, AccountTreeNode } from '../api/models/Account';
-import {GetStateFunc, RootState} from '../reducers/rootReducer';
+import { GetStateFunc } from '../reducers/rootReducer';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
-import {wrap} from "./base";
+import { wrap } from './base';
 
 export interface AccountAction extends Action {
     payload: {
@@ -47,7 +47,11 @@ export function loadAccountTree() {
         if (result.ok) {
             dispatch({
                 type: AccountActionType.AccountTreeStore,
-                payload: { assetTree: result.val.asset, incomeTree: result.val.income, expenseTree: result.val.expense },
+                payload: {
+                    assetTree: result.val.asset,
+                    incomeTree: result.val.income,
+                    expenseTree: result.val.expense,
+                },
             });
         } else {
             dispatch({

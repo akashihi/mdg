@@ -1,43 +1,43 @@
-import {Result, Option, Some, None} from "ts-results";
-import * as Model from "./model";
-import {parseError, parseListResponse, parseResponse, updateRequestParameters} from "./base";
-import Ajv, {JTDSchemaType} from "ajv/dist/jtd"
+import { Result, Option, Some, None } from 'ts-results';
+import * as Model from './model';
+import { parseError, parseListResponse, parseResponse, updateRequestParameters } from './base';
+import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 
-const ajv = new Ajv()
+const ajv = new Ajv();
 export const categoryDefinition = {
-        properties: {
-            name: {type: "string"},
-            priority: {type: "int16"},
-            account_type: {enum: ["ASSET", "EXPENSE", "INCOME"]},
-        },
-        optionalProperties: {
-            id: {type: "uint32"},
-            parent_id: {type: "uint32"},
-            children: {elements: {ref: "category"}}
-        }
-}
-const categorySchema: JTDSchemaType<Model.Category, {category: Model.Category}> = {
-    definitions: {
-        category: categoryDefinition as JTDSchemaType<Model.Category, { category: Model.Category }>
+    properties: {
+        name: { type: 'string' },
+        priority: { type: 'int16' },
+        account_type: { enum: ['ASSET', 'EXPENSE', 'INCOME'] },
     },
-    ref: "category"
-}
-
-const categoryListSchema: JTDSchemaType<{ categories: Model.Category[]}, {category: Model.Category}> = {
+    optionalProperties: {
+        id: { type: 'uint32' },
+        parent_id: { type: 'uint32' },
+        children: { elements: { ref: 'category' } },
+    },
+};
+const categorySchema: JTDSchemaType<Model.Category, { category: Model.Category }> = {
     definitions: {
-        category: categoryDefinition as JTDSchemaType<Model.Category, { category: Model.Category }>
+        category: categoryDefinition as JTDSchemaType<Model.Category, { category: Model.Category }>,
+    },
+    ref: 'category',
+};
+
+const categoryListSchema: JTDSchemaType<{ categories: Model.Category[] }, { category: Model.Category }> = {
+    definitions: {
+        category: categoryDefinition as JTDSchemaType<Model.Category, { category: Model.Category }>,
     },
     properties: {
-        categories: {elements: {ref: "category"}}
-    }
-}
+        categories: { elements: { ref: 'category' } },
+    },
+};
 
-const categoryParse = ajv.compileParser<Model.Category>(categorySchema)
-const categoryListParse = ajv.compileParser<Record<string,Model.Category[]>>(categoryListSchema)
+const categoryParse = ajv.compileParser<Model.Category>(categorySchema);
+const categoryListParse = ajv.compileParser<Record<string, Model.Category[]>>(categoryListSchema);
 
 export async function listCategories(): Promise<Result<Model.Category[], Model.Problem>> {
     const response = await fetch('/api/categories');
-    return parseListResponse(response, categoryListParse, "categories");
+    return parseListResponse(response, categoryListParse, 'categories');
 }
 
 export async function saveCategory(category: Model.Category): Promise<Result<Model.Category, Model.Problem>> {
@@ -56,9 +56,9 @@ export async function deleteCategory(id: number): Promise<Option<Model.Problem>>
     const url = `/api/categories/${id}`;
     const method = 'DELETE';
     const response = await fetch(url, updateRequestParameters(method));
-    if (response.status<400) {
+    if (response.status < 400) {
         const responseJson = await response.text();
-        return new Some(parseError(response, responseJson))
+        return new Some(parseError(response, responseJson));
     }
     return None;
 }

@@ -14,7 +14,14 @@ export function AssetReportType(props: ReportParams) {
         },
     };
 
-    return <AssetReportWidet type="assets/type" params={props} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
+    return (
+        <AssetReportWidet
+            type="assets/type"
+            params={props}
+            options={options}
+            primaryCurrencyName={props.primaryCurrencyName}
+        />
+    );
 }
 
 export default AssetReportType;

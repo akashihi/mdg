@@ -6,8 +6,8 @@ import { loadTotalsReport } from './ReportActions';
 
 import * as API from '../api/api';
 import * as Model from '../api/model';
-import {Setting} from "../api/model";
-import {wrap} from "./base";
+import { Setting } from '../api/model';
+import { wrap } from './base';
 
 export interface SettingApiObject {
     'currency.primary': string;
@@ -65,7 +65,7 @@ export function reindexTransactions() {
     return wrap(async dispatch => {
         dispatch({ type: SettingActionType.InitiateReindex, payload: {} });
 
-        const setting: Setting = { id: "mnt.transaction.reindex", value: "true" };
+        const setting: Setting = { id: 'mnt.transaction.reindex', value: 'true' };
         const result = await API.saveSetting(setting);
         if (result.ok) {
             await dispatch(loadSettingList());

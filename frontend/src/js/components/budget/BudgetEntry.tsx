@@ -115,17 +115,20 @@ export function BudgetEntry(props: BudgetEntryProps) {
         );
     }
 
-    const currency_name = (props.entry.account && props.entry.account.currency) ? `(${props.entry.account.currency.name})`: "";
+    const currency_name =
+        props.entry.account && props.entry.account.currency ? `(${props.entry.account.currency.name})` : '';
     return (
         <div style={{ paddingBottom: '8px', marginLeft: props.indent * 15 + 10 }}>
             <Grid container spacing={2}>
                 <Grid item xs={3} sm={3} md={4} lg={3}>
                     <div>
-                        {props.entry.account? props.entry.account.name:"???"}&nbsp;{currency_name})
+                        {props.entry.account ? props.entry.account.name : '???'}&nbsp;{currency_name})
                     </div>
                 </Grid>
                 <Grid item xs={3} sm={3} md={2} lg={1}>
-                    {props.entry.account && props.entry.account.account_type === 'EXPENSE' && props.entry.allowed_spendings > 0
+                    {props.entry.account &&
+                    props.entry.account.account_type === 'EXPENSE' &&
+                    props.entry.allowed_spendings > 0
                         ? `${props.entry.allowed_spendings} allowed`
                         : ''}
                 </Grid>
@@ -134,7 +137,10 @@ export function BudgetEntry(props: BudgetEntryProps) {
                         <CircularProgressWithLabel
                             variant="determinate"
                             value={props.entry.spending_percent}
-                            color={entryColor(props.entry.spending_percent, props.entry.account? props.entry.account.account_type: "EXPENSE")}
+                            color={entryColor(
+                                props.entry.spending_percent,
+                                props.entry.account ? props.entry.account.account_type : 'EXPENSE'
+                            )}
                         />
                     </div>
                 </Grid>

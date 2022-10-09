@@ -93,7 +93,8 @@ export function BudgetPage(props: BudgetViewerProps) {
 
     const saveEntry = (entry: BudgetEntryType) => {
         const budget = props.budget; //Workaround over TS type coercion
-        if (budget !== undefined) { //Don't try to save non-existent budgets
+        if (budget !== undefined) {
+            //Don't try to save non-existent budgets
             setLoading(true);
             (async () => {
                 const result = await API.saveBudgetEntry(entry, budget.id);
@@ -119,7 +120,11 @@ export function BudgetPage(props: BudgetViewerProps) {
             <Card>
                 <CardActions>{emptyHiddenButton}</CardActions>
                 <CardContent>
-                    {props.budget ? <BudgetInfo budget={props.budget} short={false} /> : <p>Budget data not available</p>}
+                    {props.budget ? (
+                        <BudgetInfo budget={props.budget} short={false} />
+                    ) : (
+                        <p>Budget data not available</p>
+                    )}
                 </CardContent>
             </Card>
             <Divider />

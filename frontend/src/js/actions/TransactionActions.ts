@@ -8,7 +8,7 @@ import { loadTotalsReport } from './ReportActions';
 import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 import { GetStateFunc } from '../reducers/rootReducer';
-import {wrap} from "./base";
+import { wrap } from './base';
 import * as API from '../api/api';
 
 export interface TransactionAction extends Action {
@@ -20,10 +20,10 @@ export function loadLastTransactions() {
         dispatch({ type: TransactionActionType.TransactionsShortListLoad, payload: [] });
 
         const periodParams = {
-            notLater: moment()
+            notLater: moment(),
         };
 
-        const result = await API.listTransactions(periodParams, 5)
+        const result = await API.listTransactions(periodParams, 5);
         if (result.ok) {
             dispatch({ type: TransactionActionType.TransactionsShortListStore, payload: result.val.transactions });
         }
@@ -61,7 +61,6 @@ export function updateTransaction(tx: Transaction) {
             await dispatch(loadSelectedBudget(selectSelectedBudgetId(getState())));
             await dispatch({ type: TransactionActionType.TransactionSave, payload: [tx] });
             await dispatch(createTransaction());
-
         }
     });
 }
