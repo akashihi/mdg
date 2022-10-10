@@ -1,4 +1,5 @@
 const pactum = require('pactum');
+const { notIncludes } = require('pactum-matchers');
 
 describe('Category-Account operations', () => {
     const e2e = pactum.e2e('Category-Account operations');
@@ -55,7 +56,10 @@ describe('Category-Account operations', () => {
             .get('/accounts/{id}')
             .withPathParams('id', '$S{AccountID}')
             .withQueryParams({ embed: 'category' })
-            .expectJson('category_id', undefined);
+            .expectJsonLike({
+                '@DATA:TEMPLATE@': 'Account:Expense:V1',
+                '@REMOVES@': [ "category_id" ]
+            });
     });
 
     it('Create one more category', async () => {
