@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 
 import { ReportActionType } from '../constants/Report';
-import { TotalsReport } from '../models/Report';
+import { TotalsReport } from '../api/models/Report';
 import { ReportAction } from '../actions/ReportActions';
 
 export interface ReportState {

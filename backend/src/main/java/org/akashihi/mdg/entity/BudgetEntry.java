@@ -1,6 +1,7 @@
 package org.akashihi.mdg.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,11 +41,14 @@ public class BudgetEntry {
     private Long accountId;
     @ManyToOne
     @JoinColumn(name="account_id", nullable = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Account account;
     @JsonProperty("category_id")
     @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long categoryId;
     @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Category category;
     @Convert(converter = BudgetEntryModeConverter.class)
     private BudgetEntryMode distribution;

@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 import { TransactionActionType } from '../constants/Transaction';
-import { EditedTransaction, Transaction } from '../models/Transaction';
+import { EditedTransaction, Transaction } from '../api/models/Transaction';
 import { TransactionAction } from '../actions/TransactionActions';
 import moment from 'moment';
 

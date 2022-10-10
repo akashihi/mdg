@@ -1,11 +1,8 @@
 import React from 'react';
-import { ReportProps } from './ReportsPage';
-import { reportDatesToParams } from '../../util/ReportUtils';
+import { ReportParams } from '../../api/api';
 import AssetReportWidet from './AssetReportWidet';
 
-export function AssetReportType(props: ReportProps) {
-    const url = `/api/reports/assets/type/${reportDatesToParams(props)}`;
-
+export function AssetReportType(props: ReportParams) {
     const options = {
         subtitle: {
             text: 'by asset type',
@@ -17,7 +14,14 @@ export function AssetReportType(props: ReportProps) {
         },
     };
 
-    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
+    return (
+        <AssetReportWidet
+            type="assets/type"
+            params={props}
+            options={options}
+            primaryCurrencyName={props.primaryCurrencyName}
+        />
+    );
 }
 
 export default AssetReportType;

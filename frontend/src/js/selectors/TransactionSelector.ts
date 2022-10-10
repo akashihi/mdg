@@ -8,9 +8,7 @@ import {
     Operation,
     Transaction,
     TransactionSummary,
-} from '../models/Transaction';
-
-export const selectTransactions = createSelector([getLastTransactions], enrichTransaction);
+} from '../api/models/Transaction';
 
 export const selectLastTransactions = createSelector([getLastTransactions], enrichTransaction);
 
@@ -40,16 +38,18 @@ function timestampToFormattedDate(ts: string): string {
 
 const enrichOperation = (op: Operation): EnrichedOperation => {
     let color = 'black';
-    switch (op.account.account_type) {
-        case 'INCOME':
-            color = 'lime';
-            break;
-        case 'ASSET':
-            color = 'orange';
-            break;
-        case 'EXPENSE':
-            color = 'red';
-            break;
+    if (op.account) {
+        switch (op.account.account_type) {
+            case 'INCOME':
+                color = 'lime';
+                break;
+            case 'ASSET':
+                color = 'orange';
+                break;
+            case 'EXPENSE':
+                color = 'red';
+                break;
+        }
     }
     return { ...op, color: color };
 };
@@ -59,14 +59,19 @@ const renderTransactionAccountList = (transaction: Transaction): string => {
     // account.
     // If transaction is built only of asset accounts,
     // they should be used
-    if (transaction.operations.some(o => o.account.account_type !== 'ASSET')) {
+    if (transaction.operations.some(o => o.account && o.account.account_type !== 'ASSET')) {
         //Ok, we have non-asset accounts
-        return transaction.operations
-            .filter(o => o.account.account_type !== 'ASSET')
-            .map(o => o.account.name)
-            .join(', ');
+        return (
+            transaction.operations
+                .filter(o => o.account && o.account.account_type !== 'ASSET')
+                // Presence of the account is confirmed by the filter above
+                // eslint-disable-next-line
+                // @ts-ignore
+                .map(o => o.account.name)
+                .join(', ')
+        );
     }
-    return transaction.operations.map(o => o.account.name).join(', ');
+    return transaction.operations.map(o => (o.account ? o.account.name : '')).join(', ');
 };
 
 const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
@@ -84,21 +89,29 @@ const calculateTransactionTotals = (tx: Transaction): TransactionSummary => {
     // positive, it is still spending.
     //
     // In other cases it's a 'transfer' transaction.
-    if (!tx.operations.some(o => o.account.account_type !== 'ASSET')) {
+    if (!tx.operations.some(o => o.account && o.account.account_type !== 'ASSET')) {
         //Ok, this is asset only.
         const positiveAssetSum = tx.operations
-            .filter(o => o.account.account_type === 'ASSET')
+            .filter(o => o.account && o.account.account_type === 'ASSET')
             .filter(o => o.amount >= 0)
-            .reduce((partialSum, o) => partialSum + o.amount * o.rate, 0);
+            .reduce((partialSum, o) => partialSum + o.amount * (o.rate ? o.rate : 1), 0);
         return { color: 'orange', total: positiveAssetSum };
     }
-    const opsByType: Record<string, number[]> = tx.operations.reduce(
-        (groups, item) => ({
-            ...groups,
-            [item.account.account_type]: [...(groups[item.account.account_type] || []), item.amount * item.rate],
-        }),
-        {}
-    );
+    const opsByType: Record<string, number[]> = tx.operations
+        .filter(o => o.account)
+        .map(o => {
+            return { ...o, rate: o.rate ? o.rate : 1 };
+        })
+        .reduce(
+            (groups, item) => ({
+                ...groups,
+                // Presence of the accounts is confirmed by filter above
+                // eslint-disable-next-line
+                // @ts-ignore
+                [item.account.account_type]: [...(groups[item.account.account_type] || []), item.amount * item.rate],
+            }),
+            {}
+        );
 
     const summary = Object.fromEntries(
         Object.entries(opsByType).map((group: [string, number[]]) => {

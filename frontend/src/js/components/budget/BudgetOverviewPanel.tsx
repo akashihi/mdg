@@ -7,7 +7,11 @@ export function BudgetOverviewPanel(props: BudgetOverviewProps) {
         props.getCurrentBudget();
     }, []);
 
-    return <BudgetInfo short budget={props.budget} />;
+    if (props.budget) {
+        return <BudgetInfo short budget={props.budget} />;
+    } else {
+        return <p>Budget data not available</p>;
+    }
 }
 
 export default BudgetOverviewPanel;

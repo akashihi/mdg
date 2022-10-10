@@ -1,8 +1,7 @@
 import { createSelector } from 'reselect';
 import { getRates } from './StateGetters';
-import Currency from '../models/Currency';
 import { selectPrimaryCurrencyId } from './SettingsSelector';
-import Rate from '../models/Rate';
+import { Rate, Currency } from '../api/model';
 import { selectActiveCurrencies } from './CurrencySelector';
 import { produce } from 'immer';
 
@@ -14,6 +13,9 @@ export const selectActiveRatesWithNames = createSelector(
             .filter(r => currencies.find(c => c.id === r.from))
             .map(r => {
                 return produce<Rate>(draft => {
+                    // Presence of the currency is confirmed by the filter above.
+                    // eslint-disable-next-line
+                    // @ts-ignore
                     draft.currencyCode = currencies.find(c => c.id === r.from).code;
                 })(r);
             });

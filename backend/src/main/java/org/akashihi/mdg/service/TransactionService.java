@@ -107,6 +107,7 @@ public class TransactionService {
         tx.getOperations().forEach(o -> {o.setTransaction(savedTransaction); operationRepository.save(o);});
 
         indexingService.storeTransaction(tx);
+        tx.setId(savedTransaction.getId());
 
         return tx;
     }

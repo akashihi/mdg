@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import { getAccounts } from './StateGetters';
-import { Account } from '../models/Account';
+import { Account } from '../api/models/Account';
 
 export interface AccountTotals {
     total: number;

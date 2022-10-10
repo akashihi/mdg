@@ -2,11 +2,11 @@ import { connect } from 'react-redux';
 
 import TransactionDialog from '../components/transaction/TransactionDialog';
 import { closeTransactionDialog, updateTransaction } from '../actions/TransactionActions';
-import { EditedTransaction } from '../models/Transaction';
+import { EditedTransaction } from '../api/models/Transaction';
 import { RootState } from '../reducers/rootReducer';
 import { selectCloseOnExit, selectPrimaryCurrencyId } from '../selectors/SettingsSelector';
 import { selectAccountCurrencies } from '../selectors/AccountSelector';
-import { AccountTreeNode } from '../models/Account';
+import { AccountTreeNode } from '../api/models/Account';
 
 export interface TransactionEditorState {
     transaction: EditedTransaction;

@@ -1,5 +1,6 @@
 package org.akashihi.mdg.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,6 +34,7 @@ public class Category {
     private Integer priority;
     @Transient
     @JsonProperty("parent_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long parentId;
     @Transient
     private Collection<Category> children;

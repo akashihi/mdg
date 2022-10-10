@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 
-import { Budget } from '../models/Budget';
+import { Budget } from '../api/models/Budget';
 import { BudgetAction } from '../actions/BudgetActions';
 import { BudgetActionType } from '../constants/Budget';
 
@@ -9,10 +9,7 @@ export interface BudgetState {
     selectedBudget?: Budget;
 }
 
-const initialState: BudgetState = {
-    currentBudget: null,
-    selectedBudget: null,
-};
+const initialState: BudgetState = {};
 
 export default function budgetSelector(state: BudgetState = initialState, action: BudgetAction) {
     switch (action.type) {

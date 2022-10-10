@@ -1,42 +1,37 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { reportDatesToParams } from '../../util/ReportUtils';
-import Highcharts, { PointOptionsObject } from 'highcharts';
+import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { processApiResponse } from '../../util/ApiUtils';
-import moment from 'moment';
 import { EventReportProps } from './EventReportCollection';
-
-interface PieData {
-    dates: string[];
-    data: PointOptionsObject[];
-}
+import { PieData } from '../../api/model';
+import * as API from '../../api/api';
 
 export function EventsReportByWeight(props: EventReportProps) {
     const [chartData, setChartData] = useState<PieData>({ dates: [], data: [] });
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {
+        // Compiler is lawfully arguing for the unchecked updates below
+        // However as i'm messing with highcharts internal fields,
+        // there is no way to convince compiler that everything is correct.
+        // eslint-disable-next-line
+        // @ts-ignore
         const container = chartComponentRef.current.container.current;
+        // eslint-disable-next-line
+        // @ts-ignore
         container.style.height = '100%';
+        // eslint-disable-next-line
+        // @ts-ignore
         container.style.width = '100%';
+        // eslint-disable-next-line
+        // @ts-ignore
         chartComponentRef.current.chart.reflow();
 
-        const url = `/api/reports/${props.type}/accounts/${reportDatesToParams(props)}`;
-
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (json) {
-                const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-                const data = json.series.map(item => {
-                    return { name: item.name, y: item.data[0] };
-                });
-
-                setChartData({
-                    dates: dates,
-                    data: data,
-                });
-            });
+        (async () => {
+            const result = await API.loadEventsReport(props.type, props);
+            if (result.ok) {
+                setChartData(result.val);
+            }
+        })();
     }, [props]);
 
     const options = {

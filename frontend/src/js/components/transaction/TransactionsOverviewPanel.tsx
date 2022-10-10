@@ -4,7 +4,7 @@ import CardHeader from '@mui/material/CardHeader';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { TransactionOverviewProps } from '../../containers/TransactionsOverview';
-import { EnrichedTransaction } from '../../models/Transaction';
+import { EnrichedTransaction } from '../../api/models/Transaction';
 import Grid from '@mui/material/Grid';
 
 function TransactionShortWidget(props: EnrichedTransaction) {
@@ -23,7 +23,7 @@ function TransactionShortWidget(props: EnrichedTransaction) {
                 {props.accountNames}
             </Grid>
             <Grid item xs={1} sm={3} md={2} lg={2} className="hide-on-small">
-                {props.tags.join(', ')}
+                {props.tags ? props.tags.join(', ') : ''}
             </Grid>
         </Grid>
     );

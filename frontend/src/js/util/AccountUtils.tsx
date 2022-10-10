@@ -3,7 +3,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 import React from 'react';
-import { AccountTreeNode } from '../models/Account';
+import { AccountTreeNode } from '../api/models/Account';
 
 function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: number): JSX.Element[] {
     const subCategories = tree.categories.flatMap(c => accountList(c, indent + 1, currencyFilter));
@@ -13,12 +13,15 @@ function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: num
     }
     const accounts = filteredAccounts
         .filter(a => !a.hidden)
-        .map(a => (
-            <MenuItem
-                key={a.id}
-                value={a.id}
-                style={{ marginLeft: indent * 15 + 10 }}>{`${a.name} (${a.currency.name})`}</MenuItem>
-        ));
+        .map(a => {
+            const currency_name = a.currency ? `(${a.currency.name})` : '';
+            return (
+                <MenuItem
+                    key={a.id}
+                    value={a.id}
+                    style={{ marginLeft: indent * 15 + 10 }}>{`${a.name} ${currency_name}`}</MenuItem>
+            );
+        });
     if (subCategories.length === 0 && accounts.length === 0) {
         // Skip leafs in case there are no accounts and subleafs
         return [];

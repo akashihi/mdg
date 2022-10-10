@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 
 import AccountItem from '../../containers/AccountItem';
-import { AccountTreeNode } from '../../models/Account';
+import { AccountTreeNode } from '../../api/models/Account';
 
 export interface CategorizedAccountListProps {
     tree: AccountTreeNode;

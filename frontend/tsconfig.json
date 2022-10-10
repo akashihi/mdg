@@ -7,6 +7,7 @@
         "target": "es5",
         "jsx": "react",
         "allowJs": false,
+        "strictNullChecks": true,
         "allowSyntheticDefaultImports": true,
         "moduleResolution": "Node"
     }

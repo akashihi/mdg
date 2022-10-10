@@ -1,41 +1,36 @@
 import { Action } from 'redux';
 import { produce } from 'immer';
-import { processApiResponse } from '../util/ApiUtils';
 
 import { CurrencyActionType } from '../constants/Currency';
 import { loadCategoryList } from './CategoryActions';
 import { loadTotalsReport } from './ReportActions';
-import Currency from '../models/Currency';
+import { Currency } from '../api/model';
+import { wrap } from './base';
+import * as API from '../api/api';
 
 export interface CurrencyAction extends Action {
     payload: Currency[];
 }
 
 export function loadCurrencyList() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({
             type: CurrencyActionType.CurrenciesLoad,
             payload: {},
         });
-
-        fetch('/api/currencies')
-            .then(processApiResponse)
-            .then(function (data) {
-                dispatch({
-                    type: CurrencyActionType.StoreCurrencies,
-                    payload: data.currencies,
-                });
-            })
-            .then(() => dispatch(loadCategoryList()))
-            .then(() => dispatch(loadTotalsReport()))
-            .catch(function () {
-                dispatch({ type: CurrencyActionType.CurrenciesLoadFail, payload: {} });
-            });
-    };
+        const result = await API.listCurrencies();
+        if (result.ok) {
+            dispatch({ type: CurrencyActionType.StoreCurrencies, payload: result.val });
+            await dispatch(loadCategoryList());
+            await dispatch(loadTotalsReport());
+        } else {
+            dispatch({ type: CurrencyActionType.CurrenciesLoadFail, payload: result.val });
+        }
+    });
 }
 
-export function updateCurrency(currency: Currency, isActive: boolean) {
-    return dispatch => {
+export function updateCurrency(isActive: boolean, currency?: Currency) {
+    return wrap(async dispatch => {
         if (currency === undefined) {
             return;
         }
@@ -44,18 +39,11 @@ export function updateCurrency(currency: Currency, isActive: boolean) {
         const updatedCurrency: Currency = produce(draft => {
             draft.active = isActive;
         })(currency);
-
-        const url = `/api/currencies/${currency.id}`;
-        const method = 'PUT';
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-            body: JSON.stringify(updatedCurrency),
-        })
-            .then(processApiResponse)
-            .then(data => dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [data as Currency] }));
-    };
+        const result = await API.saveCurrency(updatedCurrency);
+        if (result.ok) {
+            dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [result.val] });
+        } else {
+            dispatch({ type: CurrencyActionType.CurrencyUpdateFail, payload: result.val });
+        }
+    });
 }

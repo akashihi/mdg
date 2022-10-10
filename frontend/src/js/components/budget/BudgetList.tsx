@@ -1,5 +1,4 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import { processApiResponse } from '../../util/ApiUtils';
 import moment from 'moment';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,10 +8,11 @@ import { Formik, Form, Field } from 'formik';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import { BudgetSelectorProps } from '../../containers/BudgetSelector';
-import { ShortBudget } from '../../models/Budget';
+import { ShortBudget } from '../../api/model';
 import { FieldAttributes, useFormikContext } from 'formik';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
+import * as API from '../../api/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function FormikDatePicker(props: FieldAttributes<any>) {
@@ -34,47 +34,44 @@ export function BudgetList(props: BudgetSelectorProps) {
 
     useEffect(() => {
         setLoading(true);
-        fetch('/api/budgets')
-            .then(processApiResponse)
-            .then(json => {
-                setBudgets(json.budgets as ShortBudget[]);
-                setLoading(false);
-            });
+        (async () => {
+            const result = await API.listBudgets();
+            setLoading(false);
+            if (result.ok) {
+                setBudgets(result.val);
+            }
+        })();
     }, []);
 
     const onDeleteBudget = () => {
         setLoading(true);
-        const url = `/api/budgets/${props.selectedBudgetId}`;
-        fetch(url, { method: 'DELETE' }).then(response => {
-            if (response.status === 204) {
+        (async () => {
+            const result = await API.deleteBudget(props.selectedBudgetId);
+            setLoading(false);
+            if (result.some) {
                 setBudgets(budgets.filter(b => b.id !== props.selectedBudgetId));
-                props.loadCurrentBudget();
+                await props.loadCurrentBudget();
                 if (budgets.length !== 0) {
-                    props.loadSelectedBudget(budgets[0].id);
+                    await props.loadSelectedBudget(budgets[0].id);
                 }
-                setLoading(false);
             }
-        });
+        })();
     };
     const onCreateBudget = (values, form) => {
         setLoading(true);
         const newBudget = {
+            id: -1,
             term_beginning: moment(values.begin).format('YYYY-MM-DD'),
             term_end: moment(values.end).format('YYYY-MM-DD'),
         };
-        fetch('/api/budgets', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-            body: JSON.stringify(newBudget),
-        })
-            .then(processApiResponse)
-            .then(response => {
-                setBudgets([...budgets, response as ShortBudget]);
-                props.loadSelectedBudget(response.id);
-                setLoading(false);
-            });
+        (async () => {
+            const result = await API.saveBudget(newBudget);
+            if (result.ok) {
+                setBudgets([...budgets, result.val]);
+                props.loadSelectedBudget(result.val.id);
+            }
+            setLoading(false);
+        })();
         form.resetForm();
     };
 
@@ -125,7 +122,7 @@ export function BudgetList(props: BudgetSelectorProps) {
             <Select
                 disabled={budgets.length === 0}
                 value={props.selectedBudgetId}
-                onChange={ev => props.loadSelectedBudget(ev.target.value)}>
+                onChange={ev => props.loadSelectedBudget(ev.target.value as number)}>
                 {budgetList}
             </Select>
             <Button color="primary" onClick={onDeleteBudget}>

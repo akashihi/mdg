@@ -1,9 +1,9 @@
 import { Action } from 'redux';
 
-import { processApiResponse } from '../util/ApiUtils';
-
 import { ReportActionType } from '../constants/Report';
-import { TotalsReport } from '../models/Report';
+import { TotalsReport } from '../api/model';
+import { wrap } from './base';
+import * as API from '../api/api';
 
 export interface ReportAction extends Action {
     payload: {
@@ -11,13 +11,11 @@ export interface ReportAction extends Action {
     };
 }
 export function loadTotalsReport() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: ReportActionType.TotalsReportLoad, payload: true });
-
-        fetch('/api/reports/totals')
-            .then(processApiResponse)
-            .then(function (map) {
-                dispatch({ type: ReportActionType.TotalsReportStore, payload: { totals: map.report } });
-            });
-    };
+        const result = await API.loadTotalsReport();
+        if (result.ok) {
+            dispatch({ type: ReportActionType.TotalsReportStore, payload: { totals: result.val } });
+        }
+    });
 }

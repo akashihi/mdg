@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { CurrencyActionType } from '../constants/Currency';
-import Currency from '../models/Currency';
+import { Currency } from '../api/model';
 import { CurrencyAction } from '../actions/CurrencyActions';
 
 export interface CurrencyState {

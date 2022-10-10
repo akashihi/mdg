@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 
 import TransactionsPageFilter from '../components/transaction/TransactionsPageFilter';
-import Currency from '../models/Currency';
-import { AccountTreeNode } from '../models/Account';
+import { Currency } from '../api/model';
+import { AccountTreeNode } from '../api/models/Account';
 import { RootState } from '../reducers/rootReducer';
 import { selectActiveCurrencies } from '../selectors/CurrencySelector';
 import { selectAccountNames } from '../selectors/AccountSelector';
-import { TransactionFilterParams } from '../components/transaction/TransactionsPage';
+import { TransactionFilterParams } from '../api/api';
 
 export interface TransactionFilterOwnProps {
     applyFunc: (f: TransactionFilterParams, l: number) => void;

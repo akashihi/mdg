@@ -1,11 +1,8 @@
 import React from 'react';
-import { reportDatesToParams } from '../../util/ReportUtils';
 import AssetReportWidet from './AssetReportWidet';
 import { EventReportProps } from './EventReportCollection';
 
 export function EventsReportByAccount(props: EventReportProps) {
-    const url = `/api/reports/${props.type}/events/${reportDatesToParams(props)}`;
-
     const options = {
         chart: {
             type: 'column',
@@ -22,7 +19,14 @@ export function EventsReportByAccount(props: EventReportProps) {
             },
         },
     };
-    return <AssetReportWidet url={url} options={options} primaryCurrencyName={props.primaryCurrencyName} />;
+    return (
+        <AssetReportWidet
+            type={`${props.type}/events`}
+            params={props}
+            options={options}
+            primaryCurrencyName={props.primaryCurrencyName}
+        />
+    );
 }
 
 export default EventsReportByAccount;

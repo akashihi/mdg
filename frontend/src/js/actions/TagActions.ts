@@ -1,23 +1,21 @@
 import { Action } from 'redux';
-import { processApiResponse } from '../util/ApiUtils';
 
 import { TagActionType } from '../constants/Tag';
+import { wrap } from './base';
+import * as API from '../api/api';
 
 export interface TagAction extends Action {
     payload: string[];
 }
 
 export function loadTagList() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: TagActionType.TagLoad, payload: [] });
-
-        fetch('/api/tags')
-            .then(processApiResponse)
-            .then(function (json) {
-                dispatch({ type: TagActionType.TagStore, payload: json.tags });
-            })
-            .catch(function () {
-                dispatch({ type: TagActionType.TagLoad, payload: [] });
-            });
-    };
+        const result = await API.listTags();
+        if (result.ok) {
+            dispatch({ type: TagActionType.TagStore, payload: result.val });
+        } else {
+            dispatch({ type: TagActionType.TagLoad, payload: [] });
+        }
+    });
 }

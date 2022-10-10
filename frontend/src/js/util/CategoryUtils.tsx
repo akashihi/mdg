@@ -1,14 +1,16 @@
 import React from 'react';
-import Category from '../models/Category';
+import { Category } from '../api/model';
 import MenuItem from '@mui/material/MenuItem';
 
 export const mapCategoryListToMenu = (
     categories: Category[],
-    account_type: string,
+    account_type?: string,
     category_id?: number
 ): JSX.Element[] => {
-    const entries = [];
-
+    const entries: JSX.Element[] = [];
+    if (!account_type) {
+        return entries;
+    }
     const entry = (
         <MenuItem key="top" value={-1}>
             &lt;TOP&gt;

@@ -55,7 +55,10 @@ describe('Category-Account operations', () => {
             .get('/accounts/{id}')
             .withPathParams('id', '$S{AccountID}')
             .withQueryParams({ embed: 'category' })
-            .expectJson('category_id', null);
+            .expectJsonLike({
+                '@DATA:TEMPLATE@': 'Account:Expense:V1',
+                '@REMOVES@': [ "category_id" ]
+            });
     });
 
     it('Create one more category', async () => {

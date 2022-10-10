@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { processApiResponse } from '../../util/ApiUtils';
-import { Report } from '../../models/Report';
-import moment from 'moment';
+import { Report } from '../../api/model';
+import { ReportParams } from '../../api/api';
+import * as API from '../../api/api';
 
 export interface AssetReportWidgetProps {
-    url: string;
+    type: string;
     options: HighchartsReact.Props;
     primaryCurrencyName: string;
+    params: ReportParams;
 }
 
 export function AssetReportWidget(props: AssetReportWidgetProps) {
@@ -16,21 +17,28 @@ export function AssetReportWidget(props: AssetReportWidgetProps) {
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     useEffect(() => {
+        // Compiler is lawfully arguing for the unchecked updates below
+        // However as i'm messing with highcharts internal fields,
+        // there is no way to convince compiler that everything is correct.
+        // eslint-disable-next-line
+        // @ts-ignore
         const container = chartComponentRef.current.container.current;
+        // eslint-disable-next-line
+        // @ts-ignore
         container.style.height = '100%';
+        // eslint-disable-next-line
+        // @ts-ignore
         container.style.width = '100%';
+        // eslint-disable-next-line
+        // @ts-ignore
         chartComponentRef.current.chart.reflow();
 
-        fetch(props.url)
-            .then(processApiResponse)
-            .then(function (json) {
-                const dates = json.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-                setChartData({
-                    dates: dates,
-                    series: json.series,
-                });
-            });
+        (async () => {
+            const result = await API.loadAssetReport(props.type, props.params);
+            if (result.ok) {
+                setChartData(result.val);
+            }
+        })();
     }, [props]);
 
     const baseOptions = {

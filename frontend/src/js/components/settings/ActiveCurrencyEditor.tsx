@@ -4,15 +4,15 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
-import Currency from '../../models/Currency';
+import { Currency } from '../../api/model';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
 export function ActiveCurrencyEditor(props: CurrencyEditorProps) {
-    const [selectedActive, setSelectedActive] = useState<number | undefined>(null);
-    const [selectedInactive, setSelectedInactive] = useState<number | undefined>(null);
+    const [selectedActive, setSelectedActive] = useState<number>(0);
+    const [selectedInactive, setSelectedInactive] = useState<number>(0);
 
     const currencyToListItems = (c: Currency[], selected: number, setter: typeof setSelectedActive) =>
         c.map((item, index) => {
@@ -46,14 +46,14 @@ export function ActiveCurrencyEditor(props: CurrencyEditorProps) {
                 <Grid item xs={6} sm={1} md={1} lg={1}>
                     <Button
                         color="primary"
-                        onClick={() => props.updateCurrency(props.activeCurrencies[selectedActive], false)}>
+                        onClick={() => props.updateCurrency(false, props.activeCurrencies[selectedActive])}>
                         &lt;&lt;
                     </Button>
                 </Grid>
                 <Grid item xs={6} sm={1} md={1} lg={1}>
                     <Button
                         color="primary"
-                        onClick={() => props.updateCurrency(props.inactiveCurrencies[selectedInactive], true)}>
+                        onClick={() => props.updateCurrency(true, props.inactiveCurrencies[selectedInactive])}>
                         &gt;&gt;
                     </Button>
                 </Grid>

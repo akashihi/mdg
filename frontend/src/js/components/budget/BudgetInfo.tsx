@@ -3,7 +3,7 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
-import { Budget } from '../../models/Budget';
+import { Budget } from '../../api/model';
 import LinearProgress from '@mui/material/LinearProgress';
 import CircularProgressWithLabel from '../../widgets/CircularProgressWithLabel';
 
@@ -13,10 +13,6 @@ export interface BudgetInfoProps {
 }
 
 export function BudgetInfo(props: BudgetInfoProps) {
-    if (props.budget === null || props.budget === undefined) {
-        return <p>Budget data not available</p>;
-    }
-
     const cardHeaderStyle = {
         paddingTop: '0px',
         textAlign: 'center',

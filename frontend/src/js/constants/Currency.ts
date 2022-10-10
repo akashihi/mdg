@@ -3,4 +3,5 @@ export enum CurrencyActionType {
     StoreCurrencies = 'StoreCurrencies',
     CurrenciesLoadFail = 'CurrenciesLoadFail',
     CurrencyStatusUpdate = 'CurrencyStatusUpdate',
+    CurrencyUpdateFail = 'CurrencyUpdateFail',
 }

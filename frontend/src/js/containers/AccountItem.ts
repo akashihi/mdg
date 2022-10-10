@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 import AccountWidget from '../components/account/Account';
 import { setFavorite, setOperational, hideAccount, revealAccount } from '../actions/AccountActions';
-import { Account } from '../models/Account';
+import { Account } from '../api/models/Account';
 import { RootState } from '../reducers/rootReducer';
 
 export interface AccountItemProps {
@@ -21,7 +21,7 @@ const mapStateToProps = (state: RootState, ownProps: AccountItemProps): AccountI
     return {
         account: ownProps.account,
         edit: ownProps.edit,
-        previewMode: ownProps.previewMode,
+        previewMode: ownProps.previewMode ? ownProps.previewMode : false,
     };
 };
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { selectActiveCurrencies, selectInactiveCurrencies } from '../selectors/CurrencySelector';
 import ActiveCurrencyEditor from '../components/settings/ActiveCurrencyEditor';
 import { updateCurrency } from '../actions/CurrencyActions';
-import Currency from '../models/Currency';
+import { Currency } from '../api/model';
 import { RootState } from '../reducers/rootReducer';
 
 export interface CurrencyEditorState {

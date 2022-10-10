@@ -2,7 +2,7 @@ import React, { useState, Fragment, useMemo } from 'react';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import CircularProgressWithLabel from '../../widgets/CircularProgressWithLabel';
-import { BudgetEntry, BudgetEntryTreeNode } from '../../models/Budget';
+import { BudgetEntry, BudgetEntryTreeNode } from '../../api/model';
 import Divider from '@mui/material/Divider';
 import ReactThreeToggle, { ReactThreeToggleProps } from 'react-three-toggle';
 
@@ -28,7 +28,7 @@ function entryColor(progress: number, account_type: string): 'error' | 'warning'
 
 export function BudgetCategoryEntry(props: { entry: BudgetEntryTreeNode; indent: number }) {
     let accountType = 'EXPENSE';
-    if (props.entry.entries.length !== 0) {
+    if (props.entry.entries.length !== 0 && props.entry.entries[0].account) {
         accountType = props.entry.entries[0].account.account_type;
     }
 
@@ -100,7 +100,7 @@ export function BudgetEntry(props: BudgetEntryProps) {
     );
 
     let editors = <div />;
-    if (props.entry.account.account_type === 'EXPENSE') {
+    if (props.entry.account && props.entry.account.account_type === 'EXPENSE') {
         editors = (
             <Fragment>
                 <Grid item xs={5} sm={5} md={6} lg={1} />
@@ -115,16 +115,20 @@ export function BudgetEntry(props: BudgetEntryProps) {
         );
     }
 
+    const currency_name =
+        props.entry.account && props.entry.account.currency ? `(${props.entry.account.currency.name})` : '';
     return (
         <div style={{ paddingBottom: '8px', marginLeft: props.indent * 15 + 10 }}>
             <Grid container spacing={2}>
                 <Grid item xs={3} sm={3} md={4} lg={3}>
                     <div>
-                        {props.entry.account.name}&nbsp;({props.entry.account.currency.name})
+                        {props.entry.account ? props.entry.account.name : '???'}&nbsp;{currency_name})
                     </div>
                 </Grid>
                 <Grid item xs={3} sm={3} md={2} lg={1}>
-                    {props.entry.account.account_type === 'EXPENSE' && props.entry.allowed_spendings > 0
+                    {props.entry.account &&
+                    props.entry.account.account_type === 'EXPENSE' &&
+                    props.entry.allowed_spendings > 0
                         ? `${props.entry.allowed_spendings} allowed`
                         : ''}
                 </Grid>
@@ -133,7 +137,10 @@ export function BudgetEntry(props: BudgetEntryProps) {
                         <CircularProgressWithLabel
                             variant="determinate"
                             value={props.entry.spending_percent}
-                            color={entryColor(props.entry.spending_percent, props.entry.account.account_type)}
+                            color={entryColor(
+                                props.entry.spending_percent,
+                                props.entry.account ? props.entry.account.account_type : 'EXPENSE'
+                            )}
                         />
                     </div>
                 </Grid>

@@ -1,86 +1,56 @@
-import { processApiResponse } from '../util/ApiUtils';
 import { loadAccountList } from './AccountActions';
 
 import { CategoryActionType } from '../constants/Category';
 
 import { Action } from 'redux';
-import Category from '../models/Category';
+import { Category } from '../api/model';
+import { wrap } from './base';
+import * as API from '../api/api';
+import * as Model from '../api/model';
 import { produce } from 'immer';
-import { CategoryState } from '../reducers/CategoryReducer';
 
 export interface CategoryAction extends Action {
     payload: Category[];
 }
 
 export function loadCategoryList() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
-
-        const url = '/api/categories';
-
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (data) {
-                dispatch({
-                    type: CategoryActionType.CategoriesStore,
-                    payload: data.categories,
-                });
-            })
-            .then(() => dispatch(loadAccountList()))
-            .catch(function (response) {
-                dispatch({
-                    type: CategoryActionType.CategoriesStore,
-                    payload: response.json,
-                });
+        const result = await API.listCategories();
+        if (result.ok) {
+            dispatch({
+                type: CategoryActionType.CategoriesStore,
+                payload: result.val,
             });
-    };
+            await dispatch(loadAccountList());
+        } else {
+            dispatch({
+                type: CategoryActionType.CategoriesFailure,
+                payload: result.val,
+            });
+        }
+    });
 }
 
 export function updateCategory(category: Category) {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
 
-        let url = '/api/categories';
-        let method = 'POST';
-        if (category.id !== undefined) {
-            url = `/api/categories/${category.id}`;
-            method = 'PUT';
-        }
-
-        const updatedCategory: CategoryState = produce(draft => {
+        const updatedCategory: Model.Category = produce(draft => {
             if (category.parent_id === -1) {
-                draft.parent_id = null;
+                draft.parent_id = category.id;
             }
         })(category);
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-            body: JSON.stringify(updatedCategory),
-        })
-            .then(processApiResponse)
-            .then(() => dispatch(loadCategoryList()))
-            .catch(() => dispatch(loadCategoryList()));
-    };
+        await API.saveCategory(updatedCategory);
+        await dispatch(loadCategoryList());
+    });
 }
 
 export function deleteCategory(id: number) {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
 
-        const url = `/api/categories/${id}`;
-        const method = 'DELETE';
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-        })
-            .then(processApiResponse)
-            .then(() => dispatch(loadCategoryList()))
-            .catch(() => dispatch(loadCategoryList()));
-    };
+        await API.deleteCategory(id);
+        await dispatch(loadCategoryList());
+    });
 }

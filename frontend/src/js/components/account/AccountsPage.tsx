@@ -11,7 +11,7 @@ import Tab from '@mui/material/Tab';
 import AccountEditor from '../../containers/AccountEditor';
 import CategorizedAccountList from './CategorizedAccountList';
 import { AccountsPageProps } from '../../containers/AccountsViewer';
-import { Account } from '../../models/Account';
+import { Account } from '../../api/models/Account';
 
 function AccountsPage(props: AccountsPageProps) {
     const emptyAccount: Account = {

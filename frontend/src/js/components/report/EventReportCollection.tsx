@@ -6,9 +6,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import EventsReportByAccount from './EventsReportByAccount';
 import EventsReportByWeight from './EventsReportByWeight';
-import { ReportProps } from './ReportsPage';
+import { ReportParams } from '../../api/api';
 
-export interface EventReportProps extends ReportProps {
+export interface EventReportProps extends ReportParams {
     type: string;
 }
 

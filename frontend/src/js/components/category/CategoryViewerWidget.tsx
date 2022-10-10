@@ -7,7 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
-import Category from '../../models/Category';
+import { Category } from '../../api/model';
 import { CategoryViewerProps } from '../../containers/CategoryViewer';
 
 import CategoryDialog from './CategoryDialog';
@@ -56,7 +56,7 @@ export function CategoryViewerWidget(props: CategoryViewerProps) {
     const renderTree = (nodes: Category[]) => {
         return nodes.map(node => {
             return (
-                <TreeItem key={node.id} nodeId={node.id.toString()} label={renderCategoryLabel(node)}>
+                <TreeItem key={node.id} nodeId={node.id ? node.id.toString() : '-1'} label={renderCategoryLabel(node)}>
                     {Array.isArray(node.children) ? renderTree(node.children) : null}
                 </TreeItem>
             );

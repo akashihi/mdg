@@ -15,7 +15,7 @@ import moment from 'moment';
 
 import { accountMenu } from '../../util/AccountUtils';
 import { TransactionFilterProps } from '../../containers/TransactionsFilter';
-import { TransactionFilterParams } from './TransactionsPage';
+import { TransactionFilterParams } from './../../api/api';
 
 export function TransactionsPageFilter(props: TransactionFilterProps) {
     const [periodBeginning, setPeriodBeginning] = useState(moment().subtract(1, 'month'));

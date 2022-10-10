@@ -9,17 +9,23 @@ public class RestException extends RuntimeException {
     private final String title;
     private final Integer status;
     private final String instance;
-    public RestException(String t, Integer s, String i, Throwable cause) {
+    private final String code;
+    private final String detail;
+    public RestException(String c, Integer s, String i, Throwable cause) {
         super(cause);
-        this.title = t;
+        this.title = c;
+        this.code = c;
         this.status = s;
         this.instance = i;
+        this.detail = "";
     }
 
-    public RestException(String t, Integer s, String i) {
+    public RestException(String c, Integer s, String i) {
         super();
-        this.title = t;
+        this.title = c;
+        this.code = c;
         this.status = s;
         this.instance = i;
+        this.detail = "";
     }
 }

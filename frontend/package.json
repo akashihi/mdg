@@ -43,6 +43,7 @@
         "@emotion/styled": "^11.9.3",
         "@mui/icons-material": "^5.8.4",
         "@mui/material": "^5.8.4",
+        "ajv": "^8.11.0",
         "formik": "^2.2.9",
         "formik-mui": "^4.0.0-alpha.3",
         "formik-mui-lab": "^1.0.0-alpha.3",
@@ -68,6 +69,7 @@
         "redux-thunk": "^2.4.1",
         "reselect": "^4.1.6",
         "sprintf-js": "^1.1.1",
+        "ts-results": "^3.3.0",
         "whatwg-fetch": "^3.0.0",
         "yup": "^0.32.11"
     }

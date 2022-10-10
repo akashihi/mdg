@@ -1,13 +1,14 @@
 import { produce } from 'immer';
 import { Action } from 'redux';
-import { processApiResponse } from '../util/ApiUtils';
+import * as API from '../api/api';
 import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
 import { AccountActionType } from '../constants/Account';
-import { Account, AccountTreeNode } from '../models/Account';
-import { RootState } from '../reducers/rootReducer';
+import { Account, AccountTreeNode } from '../api/models/Account';
+import { GetStateFunc } from '../reducers/rootReducer';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
+import { wrap } from './base';
 
 export interface AccountAction extends Action {
     payload: {
@@ -19,50 +20,46 @@ export interface AccountAction extends Action {
 }
 
 export function loadAccountList() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
 
-        const url = '/api/accounts?embed=currency';
+        const result = await API.listAccounts();
 
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (data) {
-                dispatch({
-                    type: AccountActionType.AccountsStore,
-                    payload: { accounts: data.accounts },
-                });
-            })
-            .then(() => dispatch(loadAccountTree()))
-            .catch(function () {
-                dispatch({
-                    type: AccountActionType.AccountsFailure,
-                    payload: [],
-                });
+        if (result.ok) {
+            dispatch({
+                type: AccountActionType.AccountsStore,
+                payload: { accounts: result.val },
             });
-    };
+            await dispatch(loadAccountTree());
+        } else {
+            dispatch({
+                type: AccountActionType.AccountsFailure,
+                payload: result.val,
+            });
+        }
+    });
 }
 
 export function loadAccountTree() {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
-
-        const url = '/api/accounts/tree?embed=currency,category';
-
-        fetch(url)
-            .then(processApiResponse)
-            .then(function (data) {
-                dispatch({
-                    type: AccountActionType.AccountTreeStore,
-                    payload: { assetTree: data.asset, incomeTree: data.income, expenseTree: data.expense },
-                });
-            })
-            .catch(function () {
-                dispatch({
-                    type: AccountActionType.AccountsFailure,
-                    payload: [],
-                });
+        const result = await API.accountsTree();
+        if (result.ok) {
+            dispatch({
+                type: AccountActionType.AccountTreeStore,
+                payload: {
+                    assetTree: result.val.asset,
+                    incomeTree: result.val.income,
+                    expenseTree: result.val.expense,
+                },
             });
-    };
+        } else {
+            dispatch({
+                type: AccountActionType.AccountsFailure,
+                payload: result.val,
+            });
+        }
+    });
 }
 
 export function setFavorite(account: Account, favorite: boolean) {
@@ -99,55 +96,32 @@ export function hideAccount(account: Account) {
     return updateHidden(account, true);
 }
 
-export function updateAccount(account: Partial<Account>) {
-    return (dispatch, getState: () => RootState) => {
+export function updateAccount(account: Account) {
+    return wrap(async (dispatch, getState: GetStateFunc) => {
         dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
 
         const state = getState();
         const selectedBudgetId = selectSelectedBudgetId(state);
 
-        let url = '/api/accounts';
-        let method = 'POST';
-        if (account.id !== -1) {
-            url = `/api/accounts/${account.id}`;
-            method = 'PUT';
+        const result = await API.saveAccount(account);
+        if (result.ok) {
+            await dispatch(loadAccountList());
+            await dispatch(loadTotalsReport());
+            await dispatch(loadCurrentBudget());
+            if (selectedBudgetId) {
+                await dispatch(loadSelectedBudget(selectedBudgetId));
+            }
+        } else {
+            await dispatch(loadAccountList());
         }
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-            body: JSON.stringify(account),
-        })
-            .then(processApiResponse)
-            .then(() => dispatch(loadAccountList()))
-            .then(() => dispatch(loadTotalsReport()))
-            .then(() => dispatch(loadCurrentBudget()))
-            .then(() => {
-                if (selectedBudgetId) {
-                    dispatch(loadSelectedBudget(selectedBudgetId));
-                }
-            })
-            .catch(() => dispatch(loadAccountList()));
-    };
+    });
 }
 
 export function deleteAccount(account: Account) {
-    return dispatch => {
+    return wrap(async dispatch => {
         dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
 
-        const url = `/api/accounts/${account.id}`;
-        const method = 'DELETE';
-
-        fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/vnd.mdg+json;version=1',
-            },
-        })
-            .then(processApiResponse)
-            .then(() => dispatch(loadAccountList()))
-            .catch(() => dispatch(loadAccountList()));
-    };
+        await API.deleteAccount(account.id);
+        await dispatch(loadAccountList());
+    });
 }

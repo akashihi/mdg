@@ -5,7 +5,10 @@ HOST: https://localhost/api
 
 MDG is a self-hosted personal accounting web service.
 
-This API document is available at https://mdg1.docs.apiary.io/ and describes API v1
+This API document is available at https://mdg2.docs.apiary.io/ and describes API v1
+
+Previous API document is available at https://mdg1.docs.apiary.io/ and describes API v0, 
+which is going to be deprecated soon.
 
 # Group Settings
 
@@ -729,9 +732,11 @@ Provides assets overview information.
 # Data Structures
 
 ## Problem (object)
-+ title: CURRENCY_NOT_FOUND (string, required) - Human-friendly error code
-+ status: 404 (number, required) - HTTP Status code, must match response status code
-+ instance: /currency/1 (string, optional) - URL of errored object if applicable
++ title: 'Requested currency could not be found' (string, required) - Human-friendly error description
++ code: CURRENCY_NOT_FOUND (string, required) - Unique error code
++ status: 404 (number, required) - HTTP Status code, must match response status code.
++ instance: /currency/1 (string, optional) - URL of errored object if applicable.
++ detail: 'We can not find currency with specified code in the database, check its id please.' (string, optional) - More detailed error description.
 
 ## Operation (object)
 

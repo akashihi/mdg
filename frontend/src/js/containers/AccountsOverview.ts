@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 
 import AccountsOverviewPanel from '../components/account/AccountsOverviewPanel';
 import { RootState } from '../reducers/rootReducer';
-import { Account } from '../models/Account';
+import { Account } from '../api/models/Account';
 import { selectFavoriteAccounts } from '../selectors/AccountSelector';
 
 export interface AccountsOverviewProps {
