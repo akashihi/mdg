@@ -1,21 +1,15 @@
-import { Action } from 'redux';
-
-import { TagActionType } from '../constants/Tag';
 import { wrap } from './base';
 import * as API from '../api/api';
-
-export interface TagAction extends Action {
-    payload: string[];
-}
+import {TagStore} from "../reducers/TagReducer";
+import {NotifyError} from "../reducers/ErrorReducer";
 
 export function loadTagList() {
     return wrap(async dispatch => {
-        dispatch({ type: TagActionType.TagLoad, payload: [] });
         const result = await API.listTags();
         if (result.ok) {
-            dispatch({ type: TagActionType.TagStore, payload: result.val });
+            dispatch(TagStore(result.val));
         } else {
-            dispatch({ type: TagActionType.TagLoad, payload: [] });
+            dispatch(NotifyError(result.val));
         }
     });
 }
