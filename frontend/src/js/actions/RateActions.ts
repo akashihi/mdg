@@ -2,6 +2,7 @@ import moment from 'moment';
 import * as API from '../api/api';
 import { wrap } from './base';
 import {RatesLoad, RatesStore} from '../reducers/RateReducer';
+import {NotifyError} from "../reducers/ErrorReducer";
 
 export function loadRatesList() {
     return wrap(async dispatch => {
@@ -12,6 +13,7 @@ export function loadRatesList() {
             dispatch(RatesStore(result.val));
         } else {
             dispatch(RatesStore([]));
+            dispatch(NotifyError(result.val));
         }
     });
 }
