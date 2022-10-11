@@ -1,13 +1,15 @@
-import { produce } from 'immer';
-import { AccountActionType } from '../constants/Account';
-import { Account, AccountTreeNode } from '../api/models/Account';
-import { AccountAction } from '../actions/AccountActions';
+import {createAction, createReducer} from "@reduxjs/toolkit";
+import * as Model from '../api/model';
+
+export const AccountsLoad = createAction('AccountsLoad');
+export const AccountsStore = createAction<Model.Account[]>('AccountsStore');
+export const AccountTreeStore = createAction<Record<string, Model.AccountTreeNode>>('AccountTreeStore');
 
 export interface AccountState {
-    accountList: Account[];
-    assetTree: AccountTreeNode;
-    incomeTree: AccountTreeNode;
-    expenseTree: AccountTreeNode;
+    accountList: Model.Account[];
+    assetTree: Model.AccountTreeNode;
+    incomeTree: Model.AccountTreeNode;
+    expenseTree: Model.AccountTreeNode;
     available: boolean;
 }
 
@@ -19,34 +21,19 @@ const initialState: AccountState = {
     available: false,
 };
 
-export default function accountViewReducer(state: AccountState = initialState, action: AccountAction) {
-    switch (action.type) {
-        case AccountActionType.AccountsLoad:
-            return produce(state, draft => {
-                draft.available = false;
-            });
-        case AccountActionType.AccountsStore:
-            return produce(state, draft => {
-                if (action.payload.accounts) {
-                    draft.available = true;
-                    draft.accountList = action.payload.accounts;
-                }
-            });
-        case AccountActionType.AccountTreeStore:
-            return produce(state, draft => {
-                if (action.payload.assetTree && action.payload.incomeTree && action.payload.expenseTree) {
-                    draft.available = true;
-                    draft.assetTree = action.payload.assetTree;
-                    draft.incomeTree = action.payload.incomeTree;
-                    draft.expenseTree = action.payload.expenseTree;
-                }
-            });
-        case AccountActionType.AccountsFailure:
-            return produce(state, draft => {
-                draft.available = false;
-                draft.accountList = [];
-            });
-        default:
-            return state;
-    }
-}
+export default createReducer(initialState, builder => {
+    builder
+        .addCase(AccountsLoad, state => {
+            state.available = false;
+        })
+        .addCase(AccountsStore, (state, action) => {
+            state.available = true;
+            state.accountList = action.payload;
+        })
+        .addCase(AccountTreeStore, (state, action) => {
+            state.available = true;
+            state.assetTree = action.payload['assetTree'];
+            state.incomeTree = action.payload['incomeTree'];
+            state.expenseTree = action.payload['expenseTree'];
+        })
+})
