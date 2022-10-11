@@ -6,10 +6,10 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import { SettingsEditorProps } from '../../containers/SettingsEditor';
 import Backdrop from '@mui/material/Backdrop';
-import { ReindexUiState, SettingUiState } from '../../constants/Setting';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import {ReindexUiState} from "../../reducers/SettingReducer";
 
 export function SettingEditorWidget(props: SettingsEditorProps) {
     const currencies = props.activeCurrencies.map(v => {
@@ -22,7 +22,7 @@ export function SettingEditorWidget(props: SettingsEditorProps) {
 
     return (
         <Fragment>
-            <Backdrop open={props.setting.ui !== SettingUiState.Available}>
+            <Backdrop open={!props.setting.available}>
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Backdrop open={props.setting.indexingUi === ReindexUiState.InProgress}>

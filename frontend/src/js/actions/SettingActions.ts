@@ -1,6 +1,3 @@
-import { Action } from 'redux';
-
-import { SettingActionType } from '../constants/Setting';
 import { loadAccountList } from './AccountActions';
 import { loadTotalsReport } from './ReportActions';
 
@@ -8,33 +5,25 @@ import * as API from '../api/api';
 import * as Model from '../api/model';
 import { Setting } from '../api/model';
 import { wrap } from './base';
-
-export interface SettingApiObject {
-    'currency.primary': string;
-    'ui.transaction.closedialog': string;
-    'ui.language': string;
-}
-
-export interface SettingAction extends Action {
-    payload: SettingApiObject;
-}
+import {InitiateReindex, ReindexFail, SettingsLoad, SettingsStore} from "../reducers/SettingReducer";
+import {NotifyError} from "../reducers/ErrorReducer";
 
 export function loadSettingList() {
     return wrap(async dispatch => {
-        dispatch({ type: SettingActionType.SettingsLoad, payload: {} });
+        dispatch(SettingsLoad());
         const result = await API.listSettings();
         if (result.ok) {
             const parsedSettings = Object.fromEntries(result.val.map(item => [item.id, item.value]));
-            dispatch({ type: SettingActionType.StoreSettings, payload: parsedSettings });
+            dispatch(SettingsStore(parsedSettings));
         } else {
-            dispatch({ type: SettingActionType.SettingsLoadFail, payload: result.val });
+            dispatch(NotifyError(result.val));
         }
     });
 }
 
 function applySetting(id: Model.SettingKey, value: string) {
     return wrap(async dispatch => {
-        dispatch({ type: SettingActionType.SettingsLoad, payload: {} });
+        dispatch(SettingsLoad());
 
         const setting = { id: id, value: value };
         const result = await API.saveSetting(setting);
@@ -44,7 +33,7 @@ function applySetting(id: Model.SettingKey, value: string) {
             await dispatch(loadTotalsReport());
         } else {
             await dispatch(loadAccountList());
-            dispatch({ type: SettingActionType.SettingsLoadFail, payload: result.val });
+            dispatch(NotifyError(result.val));
         }
     });
 }
@@ -63,7 +52,7 @@ export function setLanguage(locale: string) {
 
 export function reindexTransactions() {
     return wrap(async dispatch => {
-        dispatch({ type: SettingActionType.InitiateReindex, payload: {} });
+        dispatch(InitiateReindex())
 
         const setting: Setting = { id: 'mnt.transaction.reindex', value: 'true' };
         const result = await API.saveSetting(setting);
@@ -71,7 +60,8 @@ export function reindexTransactions() {
             await dispatch(loadSettingList());
         } else {
             await dispatch(loadAccountList());
-            dispatch({ type: SettingActionType.ReindexFail, payload: result.val });
+            dispatch(ReindexFail());
+            dispatch(NotifyError(result.val));
         }
     });
 }

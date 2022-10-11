@@ -14,7 +14,7 @@ const initialState: RateState = {
     available: false,
 };
 
-export default createReducer(initialState, (builder) => {
+export default createReducer(initialState, builder => {
     builder
         .addCase(RatesLoad, (state) => {
             state.available = false;
