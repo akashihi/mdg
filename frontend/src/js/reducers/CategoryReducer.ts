@@ -1,7 +1,9 @@
-import { produce } from 'immer';
 import { Category } from '../api/model';
-import { CategoryAction } from '../actions/CategoryActions';
-import { CategoryActionType } from '../constants/Category';
+import {createAction, createReducer} from "@reduxjs/toolkit";
+import * as Model from '../api/model';
+
+export const CategoriesLoad = createAction('CategoriesLoad');
+export const CategoriesStore = createAction<Model.Category[]>('CategoriesStore');
 
 export interface CategoryState {
     categoryList: Category[];
@@ -13,22 +15,13 @@ const initialState: CategoryState = {
     available: false,
 };
 
-export default function categoryReducer(state: CategoryState = initialState, action: CategoryAction) {
-    switch (action.type) {
-        case CategoryActionType.CategoriesLoad:
-            return produce(state, draft => {
-                draft.available = false;
-            });
-        case CategoryActionType.CategoriesStore:
-            return produce(state, draft => {
-                draft.available = true;
-                draft.categoryList = action.payload;
-            });
-        case CategoryActionType.CategoriesFailure:
-            return produce(state, draft => {
-                draft.available = false;
-            });
-        default:
-            return state;
-    }
-}
+export default createReducer(initialState, builder =>  {
+    builder
+        .addCase(CategoriesLoad, state => {
+            state.available = false;
+        })
+        .addCase(CategoriesStore, (state, action) => {
+            state.available = true;
+            state.categoryList = action.payload;
+        })
+})

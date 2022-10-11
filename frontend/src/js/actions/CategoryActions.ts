@@ -1,40 +1,29 @@
 import { loadAccountList } from './AccountActions';
 
-import { CategoryActionType } from '../constants/Category';
-
-import { Action } from 'redux';
 import { Category } from '../api/model';
 import { wrap } from './base';
 import * as API from '../api/api';
 import * as Model from '../api/model';
 import { produce } from 'immer';
-
-export interface CategoryAction extends Action {
-    payload: Category[];
-}
+import {CategoriesLoad, CategoriesStore} from "../reducers/CategoryReducer";
+import {NotifyError} from "../reducers/ErrorReducer";
 
 export function loadCategoryList() {
     return wrap(async dispatch => {
-        dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
+        dispatch(CategoriesLoad());
         const result = await API.listCategories();
         if (result.ok) {
-            dispatch({
-                type: CategoryActionType.CategoriesStore,
-                payload: result.val,
-            });
+            dispatch(CategoriesStore(result.val));
             await dispatch(loadAccountList());
         } else {
-            dispatch({
-                type: CategoryActionType.CategoriesFailure,
-                payload: result.val,
-            });
+            dispatch(NotifyError(result.val));
         }
     });
 }
 
 export function updateCategory(category: Category) {
     return wrap(async dispatch => {
-        dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
+        dispatch(CategoriesLoad());
 
         const updatedCategory: Model.Category = produce(draft => {
             if (category.parent_id === -1) {
@@ -48,7 +37,7 @@ export function updateCategory(category: Category) {
 
 export function deleteCategory(id: number) {
     return wrap(async dispatch => {
-        dispatch({ type: CategoryActionType.CategoriesLoad, payload: {} });
+        dispatch(CategoriesLoad());
 
         await API.deleteCategory(id);
         await dispatch(loadCategoryList());
