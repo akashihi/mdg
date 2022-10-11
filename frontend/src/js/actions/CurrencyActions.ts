@@ -1,30 +1,23 @@
-import { Action } from 'redux';
 import { produce } from 'immer';
 
-import { CurrencyActionType } from '../constants/Currency';
 import { loadCategoryList } from './CategoryActions';
 import { loadTotalsReport } from './ReportActions';
 import { Currency } from '../api/model';
 import { wrap } from './base';
 import * as API from '../api/api';
-
-export interface CurrencyAction extends Action {
-    payload: Currency[];
-}
+import {CurrenciesLoad, CurrenciesStore, CurrencyStatusUpdate} from "../reducers/CurrencyReducer";
+import {NotifyError} from "../reducers/ErrorReducer";
 
 export function loadCurrencyList() {
     return wrap(async dispatch => {
-        dispatch({
-            type: CurrencyActionType.CurrenciesLoad,
-            payload: {},
-        });
+        dispatch(CurrenciesLoad());
         const result = await API.listCurrencies();
         if (result.ok) {
-            dispatch({ type: CurrencyActionType.StoreCurrencies, payload: result.val });
+            dispatch(CurrenciesStore(result.val));
             await dispatch(loadCategoryList());
             await dispatch(loadTotalsReport());
         } else {
-            dispatch({ type: CurrencyActionType.CurrenciesLoadFail, payload: result.val });
+            dispatch(NotifyError(result.val));
         }
     });
 }
@@ -34,16 +27,16 @@ export function updateCurrency(isActive: boolean, currency?: Currency) {
         if (currency === undefined) {
             return;
         }
-        dispatch({ type: CurrencyActionType.CurrenciesLoad, payload: {} });
+        dispatch(CurrenciesLoad());
 
         const updatedCurrency: Currency = produce(draft => {
             draft.active = isActive;
         })(currency);
         const result = await API.saveCurrency(updatedCurrency);
         if (result.ok) {
-            dispatch({ type: CurrencyActionType.CurrencyStatusUpdate, payload: [result.val] });
+            dispatch(CurrencyStatusUpdate(result.val));
         } else {
-            dispatch({ type: CurrencyActionType.CurrencyUpdateFail, payload: result.val });
+            dispatch(NotifyError(result.val));
         }
     });
 }

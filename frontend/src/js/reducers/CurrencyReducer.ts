@@ -1,7 +1,10 @@
-import produce from 'immer';
-import { CurrencyActionType } from '../constants/Currency';
 import { Currency } from '../api/model';
-import { CurrencyAction } from '../actions/CurrencyActions';
+import {createAction, createReducer} from "@reduxjs/toolkit";
+import * as Model from '../api/model';
+
+export const CurrenciesLoad = createAction('CurrenciesLoad');
+export const CurrenciesStore = createAction<Model.Currency[]>('CurrenciesStore');
+export const CurrencyStatusUpdate = createAction<Model.Currency>('CurrencyStatusUpdate');
 
 export interface CurrencyState {
     readonly currencies: Array<Currency>;
@@ -13,30 +16,20 @@ const initialState: CurrencyState = {
     available: false,
 };
 
-export default function currencyReducer(state: CurrencyState = initialState, action: CurrencyAction) {
-    switch (action.type) {
-        case CurrencyActionType.CurrenciesLoad:
-            return produce(state, draft => {
-                draft.available = false;
-            });
-        case CurrencyActionType.StoreCurrencies:
-            return produce(state, draft => {
-                draft.available = true;
-                draft.currencies = action.payload;
-            });
-        case CurrencyActionType.CurrenciesLoadFail:
-            return produce(state, draft => {
-                draft.available = false;
-            });
-        case CurrencyActionType.CurrencyStatusUpdate:
-            return produce(state, draft => {
-                draft.available = true;
-                const pos = draft.currencies.findIndex(c => c.id == action.payload[0].id);
-                if (pos !== undefined) {
-                    draft.currencies[pos].active = action.payload[0].active;
-                }
-            });
-        default:
-            return state;
-    }
-}
+export default createReducer(initialState, builder => {
+    builder
+        .addCase(CurrenciesLoad, state => {
+            state.available = false;
+        })
+        .addCase(CurrenciesStore, (state, action) => {
+            state.available = true;
+            state.currencies = action.payload;
+        })
+        .addCase(CurrencyStatusUpdate, (state, action) => {
+            state.available = true;
+            const pos = state.currencies.findIndex(c => c.id == action.payload.id);
+            if (pos !== undefined) {
+                state.currencies[pos].active = action.payload.active;
+            }
+        })
+})
