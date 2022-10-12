@@ -1,4 +1,4 @@
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 import * as Model from '../api/model';
 
 export const StoreCurrentBudget = createAction<Model.Budget | undefined>('StoreCurrentBudget');
@@ -21,5 +21,5 @@ export default createReducer(initialState, builder => {
         })
         .addCase(StoreSelectedBudget, (state, action) => {
             state.selectedBudget = action.payload;
-        })
+        });
 });

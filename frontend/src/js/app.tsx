@@ -7,7 +7,7 @@ import 'whatwg-fetch';
 
 import store from './reducers/rootReducer';
 import Main from './components/Main';
-import {SnackbarProvider} from "notistack";
+import { SnackbarProvider } from 'notistack';
 
 const App = () => (
     <Router>

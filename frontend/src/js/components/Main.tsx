@@ -13,7 +13,7 @@ import SettingsPage from './settings/SettingsPage';
 import RateViewer from '../containers/RateViewer';
 import TransactionEditor from '../containers/TransactionEditor';
 import ReportsViewer from '../containers/ReportsViewer';
-import {useNotifier} from "../useNotifier";
+import { useNotifier } from '../useNotifier';
 
 export function Main() {
     useNotifier();

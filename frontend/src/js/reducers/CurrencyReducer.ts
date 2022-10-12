@@ -1,5 +1,5 @@
 import { Currency } from '../api/model';
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 import * as Model from '../api/model';
 
 export const CurrenciesLoad = createAction('CurrenciesLoad');
@@ -31,5 +31,5 @@ export default createReducer(initialState, builder => {
             if (pos !== undefined) {
                 state.currencies[pos].active = action.payload.active;
             }
-        })
-})
+        });
+});

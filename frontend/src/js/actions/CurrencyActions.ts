@@ -5,8 +5,8 @@ import { loadTotalsReport } from './ReportActions';
 import { Currency } from '../api/model';
 import { wrap } from './base';
 import * as API from '../api/api';
-import {CurrenciesLoad, CurrenciesStore, CurrencyStatusUpdate} from "../reducers/CurrencyReducer";
-import {NotifyError} from "../reducers/ErrorReducer";
+import { CurrenciesLoad, CurrenciesStore, CurrencyStatusUpdate } from '../reducers/CurrencyReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadCurrencyList() {
     return wrap(async dispatch => {

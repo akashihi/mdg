@@ -1,5 +1,5 @@
 import { Rate } from '../api/model';
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 
 export const RatesLoad = createAction('RatesLoad');
 export const RatesStore = createAction<Rate[]>('RatesStore');
@@ -16,13 +16,11 @@ const initialState: RateState = {
 
 export default createReducer(initialState, builder => {
     builder
-        .addCase(RatesLoad, (state) => {
+        .addCase(RatesLoad, state => {
             state.available = false;
         })
         .addCase(RatesStore, (state, action) => {
             state.available = true;
             state.rateList = action.payload;
-        })
+        });
 });
-
-

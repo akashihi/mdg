@@ -2,8 +2,8 @@ import moment from 'moment';
 
 import { wrap } from './base';
 import * as API from '../api/api';
-import {StoreCurrentBudget, StoreSelectedBudget} from "../reducers/BudgetReducer";
-import {NotifyError} from "../reducers/ErrorReducer";
+import { StoreCurrentBudget, StoreSelectedBudget } from '../reducers/BudgetReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadCurrentBudget() {
     return wrap(async dispatch => {

@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
 import BudgetSelectorReducer from './BudgetReducer';
 import CategoryReducer from './CategoryReducer';
@@ -9,7 +9,7 @@ import TagReducer from './TagReducer';
 import SettingReducer from './SettingReducer';
 import RateReducer from './RateReducer';
 import ReportReducer from './ReportReducer';
-import ErrorReducer from "./ErrorReducer";
+import ErrorReducer from './ErrorReducer';
 
 const store = configureStore({
     reducer: {
@@ -22,8 +22,8 @@ const store = configureStore({
         setting: SettingReducer,
         rate: RateReducer,
         report: ReportReducer,
-        error: ErrorReducer
-    }
+        error: ErrorReducer,
+    },
 });
 
 export type GetStateFunc = typeof store.getState;

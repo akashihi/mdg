@@ -5,8 +5,8 @@ import * as API from '../api/api';
 import * as Model from '../api/model';
 import { Setting } from '../api/model';
 import { wrap } from './base';
-import {InitiateReindex, ReindexFail, SettingsLoad, SettingsStore} from "../reducers/SettingReducer";
-import {NotifyError} from "../reducers/ErrorReducer";
+import { InitiateReindex, ReindexFail, SettingsLoad, SettingsStore } from '../reducers/SettingReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadSettingList() {
     return wrap(async dispatch => {
@@ -52,7 +52,7 @@ export function setLanguage(locale: string) {
 
 export function reindexTransactions() {
     return wrap(async dispatch => {
-        dispatch(InitiateReindex())
+        dispatch(InitiateReindex());
 
         const setting: Setting = { id: 'mnt.transaction.reindex', value: 'true' };
         const result = await API.saveSetting(setting);

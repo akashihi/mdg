@@ -1,4 +1,4 @@
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 import * as Model from '../api/model';
 
 export const AccountsLoad = createAction('AccountsLoad');
@@ -35,5 +35,5 @@ export default createReducer(initialState, builder => {
             state.assetTree = action.payload['assetTree'];
             state.incomeTree = action.payload['incomeTree'];
             state.expenseTree = action.payload['expenseTree'];
-        })
-})
+        });
+});

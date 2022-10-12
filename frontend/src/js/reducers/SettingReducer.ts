@@ -1,4 +1,4 @@
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 
 export const SettingsLoad = createAction('SettingsLoad');
 export const SettingsStore = createAction<Record<string, string>>('SettingsStore');
@@ -40,12 +40,11 @@ export default createReducer(initialState, builder => {
             state.language = action.payload['ui.language'];
             state.indexingUi =
                 state.indexingUi == ReindexUiState.InProgress ? ReindexUiState.Complete : state.indexingUi;
-
         })
         .addCase(InitiateReindex, state => {
-            state.indexingUi = ReindexUiState.InProgress
+            state.indexingUi = ReindexUiState.InProgress;
         })
         .addCase(ReindexFail, state => {
-            state.indexingUi = ReindexUiState.Failed
-        })
+            state.indexingUi = ReindexUiState.Failed;
+        });
 });

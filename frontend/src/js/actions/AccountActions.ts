@@ -7,8 +7,8 @@ import { Account } from '../api/models/Account';
 import { GetStateFunc } from '../reducers/rootReducer';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 import { wrap } from './base';
-import {AccountsLoad, AccountsStore, AccountTreeStore} from "../reducers/AccountReducer";
-import {NotifyError} from "../reducers/ErrorReducer";
+import { AccountsLoad, AccountsStore, AccountTreeStore } from '../reducers/AccountReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadAccountList() {
     return wrap(async dispatch => {
@@ -30,11 +30,13 @@ export function loadAccountTree() {
         dispatch(AccountsLoad());
         const result = await API.accountsTree();
         if (result.ok) {
-            dispatch(AccountTreeStore({
-                assetTree: result.val.asset,
-                incomeTree: result.val.income,
-                expenseTree: result.val.expense,
-            }))
+            dispatch(
+                AccountTreeStore({
+                    assetTree: result.val.asset,
+                    incomeTree: result.val.income,
+                    expenseTree: result.val.expense,
+                })
+            );
         } else {
             dispatch(NotifyError(result.val));
         }

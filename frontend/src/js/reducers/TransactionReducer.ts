@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 import * as Model from '../api/model';
 import moment from 'moment';
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 
 export const TransactionShortListStore = createAction<Model.Transaction[]>('TransactionShortListStore');
 export const TransactionShortListLoad = createAction('TransactionShortListLoad');
@@ -60,13 +60,13 @@ const initialState: TransactionState = {
 
 export default createReducer(initialState, builder => {
     builder
-        .addCase(TransactionShortListLoad, (state) => {
+        .addCase(TransactionShortListLoad, state => {
             state.lastTransactionList = [];
         })
         .addCase(TransactionShortListStore, (state, action) => {
             state.lastTransactionList = action.payload;
         })
-        .addCase(TransactionCreate, (state) => {
+        .addCase(TransactionCreate, state => {
             state.transactionDialogVisible = true;
             state.editedTransaction = DefaultTransaction;
             state.editedTransaction = produce(state.editedTransaction, txDraft => {
@@ -87,5 +87,5 @@ export default createReducer(initialState, builder => {
         })
         .addCase(TransactionDialogClose, state => {
             state.transactionDialogVisible = false;
-        })
+        });
 });

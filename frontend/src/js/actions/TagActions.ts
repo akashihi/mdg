@@ -1,7 +1,7 @@
 import { wrap } from './base';
 import * as API from '../api/api';
-import {TagStore} from "../reducers/TagReducer";
-import {NotifyError} from "../reducers/ErrorReducer";
+import { TagStore } from '../reducers/TagReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadTagList() {
     return wrap(async dispatch => {

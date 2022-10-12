@@ -1,5 +1,5 @@
 import { Category } from '../api/model';
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 import * as Model from '../api/model';
 
 export const CategoriesLoad = createAction('CategoriesLoad');
@@ -15,7 +15,7 @@ const initialState: CategoryState = {
     available: false,
 };
 
-export default createReducer(initialState, builder =>  {
+export default createReducer(initialState, builder => {
     builder
         .addCase(CategoriesLoad, state => {
             state.available = false;
@@ -23,5 +23,5 @@ export default createReducer(initialState, builder =>  {
         .addCase(CategoriesStore, (state, action) => {
             state.available = true;
             state.categoryList = action.payload;
-        })
-})
+        });
+});

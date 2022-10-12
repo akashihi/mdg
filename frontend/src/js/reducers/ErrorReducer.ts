@@ -1,4 +1,4 @@
-import {createAction, createReducer} from "@reduxjs/toolkit";
+import { createAction, createReducer } from '@reduxjs/toolkit';
 import * as Model from '../api/model';
 
 export const NotifyError = createAction<Model.Problem>('NotifyError');
@@ -8,12 +8,11 @@ export interface ErrorState {
 }
 
 const initialState: ErrorState = {
-    error: undefined
-}
+    error: undefined,
+};
 
-export default createReducer(initialState, (builder) => {
-  builder
-      .addCase(NotifyError, (state, action) => {
-          state.error = action.payload;
-      })
-})
+export default createReducer(initialState, builder => {
+    builder.addCase(NotifyError, (state, action) => {
+        state.error = action.payload;
+    });
+});

@@ -9,12 +9,14 @@ import { GetStateFunc } from '../reducers/rootReducer';
 import { wrap } from './base';
 import * as API from '../api/api';
 import {
-    TransactionCreate, TransactionDialogClose,
-    TransactionEdit, TransactionSave,
+    TransactionCreate,
+    TransactionDialogClose,
+    TransactionEdit,
+    TransactionSave,
     TransactionShortListLoad,
-    TransactionShortListStore
-} from "../reducers/TransactionReducer";
-import {NotifyError} from "../reducers/ErrorReducer";
+    TransactionShortListStore,
+} from '../reducers/TransactionReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadLastTransactions() {
     return wrap(async dispatch => {
@@ -41,7 +43,7 @@ export function editTransaction(tx: Transaction) {
     return TransactionEdit(tx);
 }
 
-export function closeTransactionDialog(){
+export function closeTransactionDialog() {
     return TransactionDialogClose();
 }
 

@@ -4,7 +4,7 @@ import BudgetPage from '../components/budget/BudgetPage';
 import { getSelectedBudget } from '../selectors/BudgetSelector';
 import { Budget } from '../api/models/Budget';
 import { RootState } from '../reducers/rootReducer';
-import {reportError} from "../actions/ErrorActions";
+import { reportError } from '../actions/ErrorActions';
 
 export interface BudgetViewerState {
     budget?: Budget;

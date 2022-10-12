@@ -5,8 +5,8 @@ import { wrap } from './base';
 import * as API from '../api/api';
 import * as Model from '../api/model';
 import { produce } from 'immer';
-import {CategoriesLoad, CategoriesStore} from "../reducers/CategoryReducer";
-import {NotifyError} from "../reducers/ErrorReducer";
+import { CategoriesLoad, CategoriesStore } from '../reducers/CategoryReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadCategoryList() {
     return wrap(async dispatch => {

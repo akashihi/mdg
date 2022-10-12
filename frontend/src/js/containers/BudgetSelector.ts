@@ -6,7 +6,7 @@ import { getSelectedBudget } from '../selectors/BudgetSelector';
 import { RootState } from '../reducers/rootReducer';
 import { loadSelectedBudget, loadCurrentBudget } from '../actions/BudgetActions';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
-import {reportError} from "../actions/ErrorActions";
+import { reportError } from '../actions/ErrorActions';
 
 export interface BudgetSelectorState {
     budget?: Budget;
