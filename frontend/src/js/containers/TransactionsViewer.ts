@@ -8,6 +8,7 @@ import { editTransaction } from '../actions/TransactionActions';
 import { Transaction } from '../api/models/Transaction';
 import { loadCurrentBudget, loadSelectedBudget } from '../actions/BudgetActions';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
+import { reportError} from "../actions/ErrorActions";
 
 export interface TransactionViewerState {
     currentBudgetId: number;
@@ -27,6 +28,7 @@ const mapDispatchToProps = {
     loadCurrentBudget,
     loadTotalsReport,
     editTransaction,
+    reportError
 };
 
 export type TransactionViewerProps = TransactionViewerState & typeof mapDispatchToProps;

@@ -181,6 +181,8 @@ export function TransactionsPage(props: TransactionViewerProps) {
                 setLeft(result.val.left);
                 setCursorNext(result.val.next);
                 setTransactions(enrichTransaction(result.val.transactions));
+            } else {
+                props.reportError(result.val);
             }
         })();
     };
@@ -206,6 +208,8 @@ export function TransactionsPage(props: TransactionViewerProps) {
                     setLeft(result.val.left);
                     setCursorNext(result.val.next);
                     setTransactions(transactions.concat(enrichTransaction(result.val.transactions)));
+                } else {
+                    props.reportError(result.val);
                 }
             })();
         }

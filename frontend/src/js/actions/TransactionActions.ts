@@ -1,7 +1,5 @@
-import { Action } from 'redux';
 import moment from 'moment';
 
-import { TransactionActionType } from '../constants/Transaction';
 import { Transaction } from '../api/models/Transaction';
 import { loadAccountList } from './AccountActions';
 import { loadTotalsReport } from './ReportActions';
@@ -10,14 +8,17 @@ import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 import { GetStateFunc } from '../reducers/rootReducer';
 import { wrap } from './base';
 import * as API from '../api/api';
-
-export interface TransactionAction extends Action {
-    payload: Transaction[];
-}
+import {
+    TransactionCreate, TransactionDialogClose,
+    TransactionEdit, TransactionSave,
+    TransactionShortListLoad,
+    TransactionShortListStore
+} from "../reducers/TransactionReducer";
+import {NotifyError} from "../reducers/ErrorReducer";
 
 export function loadLastTransactions() {
     return wrap(async dispatch => {
-        dispatch({ type: TransactionActionType.TransactionsShortListLoad, payload: [] });
+        dispatch(TransactionShortListLoad);
 
         const periodParams = {
             notLater: moment(),
@@ -25,31 +26,25 @@ export function loadLastTransactions() {
 
         const result = await API.listTransactions(periodParams, 5);
         if (result.ok) {
-            dispatch({ type: TransactionActionType.TransactionsShortListStore, payload: result.val.transactions });
+            dispatch(TransactionShortListStore(result.val.transactions));
+        } else {
+            dispatch(NotifyError(result.val));
         }
     });
 }
 
-export function createTransaction(): TransactionAction {
-    return {
-        type: TransactionActionType.TransactionCreate,
-        payload: [],
-    };
+export function createTransaction() {
+    return TransactionCreate();
 }
 
-export function editTransaction(tx: Transaction): TransactionAction {
-    return {
-        type: TransactionActionType.TransactionEdit,
-        payload: [tx],
-    };
+export function editTransaction(tx: Transaction) {
+    return TransactionEdit(tx);
 }
 
-export function closeTransactionDialog(): TransactionAction {
-    return {
-        type: TransactionActionType.TransactionDialogClose,
-        payload: [],
-    };
+export function closeTransactionDialog(){
+    return TransactionDialogClose();
 }
+
 export function updateTransaction(tx: Transaction) {
     return wrap(async (dispatch, getState: GetStateFunc) => {
         const result = await API.saveTransaction(tx);
@@ -59,7 +54,7 @@ export function updateTransaction(tx: Transaction) {
             await dispatch(loadCurrentBudget());
             await dispatch(loadLastTransactions());
             await dispatch(loadSelectedBudget(selectSelectedBudgetId(getState())));
-            await dispatch({ type: TransactionActionType.TransactionSave, payload: [tx] });
+            dispatch(TransactionSave(tx));
             await dispatch(createTransaction());
         }
     });
