@@ -1,8 +1,8 @@
-import { produce } from 'immer';
-
-import { ReportActionType } from '../constants/Report';
 import { TotalsReport } from '../api/models/Report';
-import { ReportAction } from '../actions/ReportActions';
+import { createAction, createReducer } from '@reduxjs/toolkit';
+
+export const TotalsReportLoad = createAction('TotalsReportLoad');
+export const TotalsReportStore = createAction<TotalsReport[]>('TotalsReportStore');
 
 export interface ReportState {
     totals: TotalsReport[];
@@ -14,18 +14,13 @@ const initialState: ReportState = {
     totalsAvailable: false,
 };
 
-export default function reportReducer(state: ReportState = initialState, action: ReportAction) {
-    switch (action.type) {
-        case ReportActionType.TotalsReportLoad:
-            return produce(state, draft => {
-                draft.totalsAvailable = false;
-            });
-        case ReportActionType.TotalsReportStore:
-            return produce(state, draft => {
-                draft.totalsAvailable = true;
-                draft.totals = action.payload.totals;
-            });
-        default:
-            return state;
-    }
-}
+export default createReducer(initialState, builder => {
+    builder
+        .addCase(TotalsReportLoad, state => {
+            state.totalsAvailable = false;
+        })
+        .addCase(TotalsReportStore, (state, action) => {
+            state.totalsAvailable = true;
+            state.totals = action.payload;
+        });
+});

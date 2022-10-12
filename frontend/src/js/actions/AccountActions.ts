@@ -1,63 +1,44 @@
 import { produce } from 'immer';
-import { Action } from 'redux';
 import * as API from '../api/api';
 import { loadCurrentBudget, loadSelectedBudget } from './BudgetActions';
 import { loadTotalsReport } from './ReportActions';
 
-import { AccountActionType } from '../constants/Account';
-import { Account, AccountTreeNode } from '../api/models/Account';
+import { Account } from '../api/models/Account';
 import { GetStateFunc } from '../reducers/rootReducer';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 import { wrap } from './base';
-
-export interface AccountAction extends Action {
-    payload: {
-        accounts?: Account[];
-        assetTree?: AccountTreeNode;
-        incomeTree?: AccountTreeNode;
-        expenseTree?: AccountTreeNode;
-    };
-}
+import { AccountsLoad, AccountsStore, AccountTreeStore } from '../reducers/AccountReducer';
+import { NotifyError } from '../reducers/ErrorReducer';
 
 export function loadAccountList() {
     return wrap(async dispatch => {
-        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
+        dispatch(AccountsLoad());
 
         const result = await API.listAccounts();
 
         if (result.ok) {
-            dispatch({
-                type: AccountActionType.AccountsStore,
-                payload: { accounts: result.val },
-            });
+            dispatch(AccountsStore(result.val));
             await dispatch(loadAccountTree());
         } else {
-            dispatch({
-                type: AccountActionType.AccountsFailure,
-                payload: result.val,
-            });
+            dispatch(NotifyError(result.val));
         }
     });
 }
 
 export function loadAccountTree() {
     return wrap(async dispatch => {
-        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
+        dispatch(AccountsLoad());
         const result = await API.accountsTree();
         if (result.ok) {
-            dispatch({
-                type: AccountActionType.AccountTreeStore,
-                payload: {
+            dispatch(
+                AccountTreeStore({
                     assetTree: result.val.asset,
                     incomeTree: result.val.income,
                     expenseTree: result.val.expense,
-                },
-            });
+                })
+            );
         } else {
-            dispatch({
-                type: AccountActionType.AccountsFailure,
-                payload: result.val,
-            });
+            dispatch(NotifyError(result.val));
         }
     });
 }
@@ -98,7 +79,7 @@ export function hideAccount(account: Account) {
 
 export function updateAccount(account: Account) {
     return wrap(async (dispatch, getState: GetStateFunc) => {
-        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
+        dispatch(AccountsLoad());
 
         const state = getState();
         const selectedBudgetId = selectSelectedBudgetId(state);
@@ -112,6 +93,7 @@ export function updateAccount(account: Account) {
                 await dispatch(loadSelectedBudget(selectedBudgetId));
             }
         } else {
+            dispatch(NotifyError(result.val));
             await dispatch(loadAccountList());
         }
     });
@@ -119,7 +101,7 @@ export function updateAccount(account: Account) {
 
 export function deleteAccount(account: Account) {
     return wrap(async dispatch => {
-        dispatch({ type: AccountActionType.AccountsLoad, payload: [] });
+        dispatch(AccountsLoad());
 
         await API.deleteAccount(account.id);
         await dispatch(loadAccountList());

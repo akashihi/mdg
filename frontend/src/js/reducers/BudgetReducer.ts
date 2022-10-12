@@ -1,31 +1,25 @@
-import { produce } from 'immer';
+import { createAction, createReducer } from '@reduxjs/toolkit';
+import * as Model from '../api/model';
 
-import { Budget } from '../api/models/Budget';
-import { BudgetAction } from '../actions/BudgetActions';
-import { BudgetActionType } from '../constants/Budget';
+export const StoreCurrentBudget = createAction<Model.Budget | undefined>('StoreCurrentBudget');
+export const StoreSelectedBudget = createAction<Model.Budget>('StoreSelectedBudget');
 
 export interface BudgetState {
-    currentBudget?: Budget;
-    selectedBudget?: Budget;
+    currentBudget?: Model.Budget;
+    selectedBudget?: Model.Budget;
 }
 
 const initialState: BudgetState = {};
 
-export default function budgetSelector(state: BudgetState = initialState, action: BudgetAction) {
-    switch (action.type) {
-        case BudgetActionType.StoreCurrentBudget:
-            return produce(state, draft => {
-                draft.currentBudget = action.payload;
-                if (state.selectedBudget === null) {
-                    // Preselect current budget
-                    draft.selectedBudget = action.payload;
-                }
-            });
-        case BudgetActionType.StoreSelectedBudget:
-            return produce(state, draft => {
-                draft.selectedBudget = action.payload;
-            });
-        default:
-            return state;
-    }
-}
+export default createReducer(initialState, builder => {
+    builder
+        .addCase(StoreCurrentBudget, (state, action) => {
+            state.currentBudget = action.payload;
+            if (state.selectedBudget === undefined) {
+                state.selectedBudget = action.payload;
+            }
+        })
+        .addCase(StoreSelectedBudget, (state, action) => {
+            state.selectedBudget = action.payload;
+        });
+});

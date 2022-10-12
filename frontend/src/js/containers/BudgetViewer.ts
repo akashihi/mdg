@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 
 import BudgetPage from '../components/budget/BudgetPage';
-import { loadSelectedBudget } from '../actions/BudgetActions';
 import { getSelectedBudget } from '../selectors/BudgetSelector';
 import { Budget } from '../api/models/Budget';
 import { RootState } from '../reducers/rootReducer';
+import { reportError } from '../actions/ErrorActions';
 
 export interface BudgetViewerState {
     budget?: Budget;
@@ -16,7 +16,7 @@ const mapStateToProps = (state: RootState): BudgetViewerState => {
     };
 };
 
-const mapDispatchToProps = { loadSelectedBudget };
+const mapDispatchToProps = { reportError };
 
 export type BudgetViewerProps = BudgetViewerState & typeof mapDispatchToProps;
 

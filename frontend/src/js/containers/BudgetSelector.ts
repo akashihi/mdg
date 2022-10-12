@@ -6,6 +6,7 @@ import { getSelectedBudget } from '../selectors/BudgetSelector';
 import { RootState } from '../reducers/rootReducer';
 import { loadSelectedBudget, loadCurrentBudget } from '../actions/BudgetActions';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
+import { reportError } from '../actions/ErrorActions';
 
 export interface BudgetSelectorState {
     budget?: Budget;
@@ -19,7 +20,7 @@ const mapStateToProps = (state: RootState): BudgetSelectorState => {
     };
 };
 
-const mapDispatchToProps = { loadCurrentBudget, loadSelectedBudget };
+const mapDispatchToProps = { loadCurrentBudget, loadSelectedBudget, reportError };
 
 export type BudgetSelectorProps = BudgetSelectorState & typeof mapDispatchToProps;
 
