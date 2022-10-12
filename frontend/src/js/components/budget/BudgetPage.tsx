@@ -84,6 +84,8 @@ export function BudgetPage(props: BudgetViewerProps) {
                     setIncomeEntries(result.val.income);
                     setExpenseEntries(result.val.expense);
                     setLoading(false);
+                } else {
+                    props.reportError(result.val);
                 }
             })();
         }
@@ -100,6 +102,8 @@ export function BudgetPage(props: BudgetViewerProps) {
                 const result = await API.saveBudgetEntry(entry, budget.id);
                 if (result.ok) {
                     await loadEntries();
+                } else {
+                    props.reportError(result.val);
                 }
             })();
         }

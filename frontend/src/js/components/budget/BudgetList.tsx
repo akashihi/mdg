@@ -39,6 +39,8 @@ export function BudgetList(props: BudgetSelectorProps) {
             setLoading(false);
             if (result.ok) {
                 setBudgets(result.val);
+            } else {
+                props.reportError(result.val);
             }
         })();
     }, []);
@@ -69,6 +71,8 @@ export function BudgetList(props: BudgetSelectorProps) {
             if (result.ok) {
                 setBudgets([...budgets, result.val]);
                 props.loadSelectedBudget(result.val.id);
+            } else {
+                props.reportError(result.val);
             }
             setLoading(false);
         })();
