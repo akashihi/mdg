@@ -211,16 +211,27 @@ export async function listTransactions(
     }
     let stringAccountId: string | null = null;
     if (filter.account_id) {
-        const accountValues = filter.account_id.map(e => e.toString()).join(",");
+        const accountValues = filter.account_id.map(e => e.toString()).join(',');
         stringAccountId = `[${accountValues}]`;
     }
     let stringTags: string | null = null;
     if (filter.tag) {
-        const tagValues = filter.tag.join(",");
+        const tagValues = filter.tag.join(',');
         stringTags = `[${tagValues}]`;
     }
-    const stringifiedFilter = { ...filter, notLater: stringNotLater, notEarlier: stringNotEarlier, account_id: stringAccountId, tag: stringTags };
-    const params = Object.assign({}, { q: JSON.stringify(stringifiedFilter, (k, v) => v ?? undefined) }, { limit: limit }, { embed: 'account' });
+    const stringifiedFilter = {
+        ...filter,
+        notLater: stringNotLater,
+        notEarlier: stringNotEarlier,
+        account_id: stringAccountId,
+        tag: stringTags,
+    };
+    const params = Object.assign(
+        {},
+        { q: JSON.stringify(stringifiedFilter, (k, v) => v ?? undefined) },
+        { limit: limit },
+        { embed: 'account' }
+    );
     const queryParams = jQuery.param(params);
     return fetchTransactions(queryParams);
 }
