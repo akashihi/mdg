@@ -35,6 +35,14 @@ export function TransactionsPageFilter(props: TransactionFilterProps) {
         setComment(undefined);
         setAccounts([]);
         setTags([]);
+        const filter: TransactionFilterParams = {
+            notEarlier: periodBeginning,
+            notLater: periodEnd,
+            comment: undefined,
+            account_id: [],
+            tag: [],
+        };
+        props.applyFunc(filter, pageSize);
     };
 
     const applyFilter = () => {
