@@ -209,8 +209,29 @@ export async function listTransactions(
     if (filter.notLater !== undefined) {
         stringNotLater = filter.notLater.format('YYYY-MM-DDT23:59:59');
     }
-    const stringifiedFilter = { ...filter, notLater: stringNotLater, notEarlier: stringNotEarlier };
-    const params = Object.assign({}, { q: JSON.stringify(stringifiedFilter) }, { limit: limit }, { embed: 'account' });
+    let stringAccountId: string | null = null;
+    if (filter.account_id) {
+        const accountValues = filter.account_id.map(e => e.toString()).join(',');
+        stringAccountId = `[${accountValues}]`;
+    }
+    let stringTags: string | null = null;
+    if (filter.tag) {
+        const tagValues = filter.tag.join(',');
+        stringTags = `[${tagValues}]`;
+    }
+    const stringifiedFilter = {
+        ...filter,
+        notLater: stringNotLater,
+        notEarlier: stringNotEarlier,
+        account_id: stringAccountId,
+        tag: stringTags,
+    };
+    const params = Object.assign(
+        {},
+        { q: JSON.stringify(stringifiedFilter, (k, v) => v ?? undefined) },
+        { limit: limit },
+        { embed: 'account' }
+    );
     const queryParams = jQuery.param(params);
     return fetchTransactions(queryParams);
 }
