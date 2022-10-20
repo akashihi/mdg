@@ -41,7 +41,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Problem> handleGenericException(Exception ex, WebRequest request) {
-        log.warn(ex.getMessage(), ex);
+        if (log.isWarnEnabled()) {
+            log.warn(ex.getMessage(), ex);
+        }
         var error = new Error("UNHANDLED_EXCEPTION", 500, ex.getMessage(), "An unhandled exception happened");
         return processError(error, request);
     }
