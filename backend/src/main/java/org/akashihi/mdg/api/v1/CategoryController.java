@@ -32,13 +32,13 @@ public class CategoryController {
 
     @GetMapping(value = "/categories/{id}", produces = "application/vnd.mdg+json;version=1")
     Category get(@PathVariable("id") Long id) {
-        return categoryService.get(id).orElseThrow(() -> new MdgException("CATEGORY_NOT_FOUND", 404, "/categories/%d".formatted(id)));
+        return categoryService.get(id).orElseThrow(() -> new MdgException("CATEGORY_NOT_FOUND"));
     }
 
     @PutMapping(value = "/categories/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.ACCEPTED)
     Category update(@PathVariable("id") Long id, @RequestBody Category category) {
-        return categoryService.update(id, category).orElseThrow(() -> new MdgException("CATEGORY_NOT_FOUND", 404, "/categories/%d".formatted(id)));
+        return categoryService.update(id, category).orElseThrow(() -> new MdgException("CATEGORY_NOT_FOUND"));
     }
 
     @DeleteMapping("/categories/{id}")

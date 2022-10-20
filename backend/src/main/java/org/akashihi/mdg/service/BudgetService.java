@@ -37,13 +37,13 @@ public class BudgetService {
 
     protected Boolean validateBudget(Budget budget) {
         if (budget.getBeginning().isAfter(budget.getEnd())) {
-            throw new MdgException("BUDGET_INVALID_TERM", 412, "/budgets");
+            throw new MdgException("BUDGET_INVALID_TERM");
         }
         if (ChronoUnit.DAYS.between(budget.getBeginning(), budget.getEnd()) < 1) {
-            throw new MdgException("BUDGET_SHORT_RANGE", 412, "/budgets");
+            throw new MdgException("BUDGET_SHORT_RANGE");
         }
         if (budgetRepository.existsByEndGreaterThanEqualAndBeginningLessThanEqual(budget.getBeginning(), budget.getEnd())) {
-            throw new MdgException("BUDGET_OVERLAPPING", 412, "/budgets");
+            throw new MdgException("BUDGET_OVERLAPPING");
         }
 
         return true;
@@ -273,7 +273,7 @@ public class BudgetService {
         if (newEntry.getExpectedAmount().compareTo(BigDecimal.ZERO) >= 0) {
             entry.setExpectedAmount(newEntry.getExpectedAmount());
         } else {
-            throw new MdgException("BUDGETENTRY_IS_NEGATIVE", 422, "/budgets/%d/entry/%d".formatted(entry.getBudget().getId(), entryId));
+            throw new MdgException("BUDGETENTRY_IS_NEGATIVE");
         }
         entry.setDistribution(newEntry.getDistribution());
 

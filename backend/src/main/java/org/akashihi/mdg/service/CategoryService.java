@@ -21,16 +21,16 @@ public class CategoryService {
     @Transactional
     public Category create(Category category) {
         if (category.getAccountType().equals(AccountType.ASSET)) {
-            throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/categories");
+            throw new MdgException("CATEGORY_INVALID_TYPE");
         }
 
         if (category.getParentId() != null) {
             var parentCategory = categoryRepository.findById(category.getParentId());
             if (parentCategory.isEmpty()) {
-                throw new MdgException("CATEGORY_DATA_INVALID", 412, "/categories");
+                throw new MdgException("CATEGORY_DATA_INVALID");
             }
             if (!parentCategory.get().getAccountType().equals(category.getAccountType())) {
-                throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/categories");
+                throw new MdgException("CATEGORY_INVALID_TYPE");
             }
             categoryRepository.save(category);
             categoryRepository.addLeaf(parentCategory.get().getId(), category.getId());
@@ -97,16 +97,16 @@ public class CategoryService {
         if (newCategory.getParentId() != null) {
             var parentValue = categoryRepository.findById(newCategory.getParentId());
             if (parentValue.isEmpty() && !newCategory.getParentId().equals(id)) {
-                throw new MdgException("CATEGORY_DATA_INVALID", 412, "/categories/%d".formatted(id));
+                throw new MdgException("CATEGORY_DATA_INVALID");
             }
             if (parentValue.map(Category::getAccountType).map(c -> !c.equals(category.getAccountType())).orElse(false)) {
-                throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/categories/%d".formatted(id));
+                throw new MdgException("CATEGORY_INVALID_TYPE");
             }
             var nextParent = parentValue.map(Category::getId).orElse(newCategory.getParentId());
             if (!nextParent.equals(id)) {
                 //Check tree for cycle
                 if (!categoryRepository.findInvertedParent(category.getId(), nextParent).isEmpty()) {
-                    throw new MdgException("CATEGORY_TREE_CYCLED", 412, "/categories/%d".formatted(id));
+                    throw new MdgException("CATEGORY_TREE_CYCLED");
                 }
             } else {
                 nextParent = 0L; //Self parent means no parent

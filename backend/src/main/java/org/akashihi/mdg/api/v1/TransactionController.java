@@ -95,7 +95,7 @@ public class TransactionController {
 
     @GetMapping(value = "/transactions/{id}", produces = "application/vnd.mdg+json;version=1")
     Transaction get(@PathVariable("id") Long id, @RequestParam("embed") Optional<Collection<String>> embed) {
-        var tx = transactionService.get(id).orElseThrow(() -> new MdgException("TRANSACTION_NOT_FOUND", 404, "/transactions/%d".formatted(id)));
+        var tx = transactionService.get(id).orElseThrow(() -> new MdgException("TRANSACTION_NOT_FOUND"));
         var operationEmbedded = Embedding.embedOperationObjects(embed);
         tx.setOperations(tx.getOperations().stream().map(operationEmbedded).toList());
         return tx;
@@ -104,7 +104,7 @@ public class TransactionController {
     @PutMapping(value = "/transactions/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.ACCEPTED)
     Transaction update(@PathVariable("id") Long id, @RequestBody Transaction tx) {
-        var newTx = transactionService.update(id, tx).orElseThrow(() -> new MdgException("TRANSACTION_NOT_FOUND", 404, "/transactions/%d".formatted(id)));
+        var newTx = transactionService.update(id, tx).orElseThrow(() -> new MdgException("TRANSACTION_NOT_FOUND"));
         var operationEmbedded = Embedding.embedOperationObjects(Optional.empty());
         newTx.setOperations(newTx.getOperations().stream().map(operationEmbedded).toList());
         return newTx;
