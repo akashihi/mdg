@@ -54,7 +54,7 @@ public class SettingService {
             settingRepository.save(setting);
             return setting;
         } catch (NumberFormatException ex) {
-            throw new MdgException("SETTING_DATA_INVALID", 422, "/settings/currency.primary", ex);
+            throw new MdgException("SETTING_DATA_INVALID", ex);
         }
     }
 
