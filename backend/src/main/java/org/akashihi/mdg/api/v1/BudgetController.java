@@ -98,13 +98,13 @@ public class BudgetController {
 
     @GetMapping(value = "/budgets/{id}", produces = "application/vnd.mdg+json;version=1")
     Budget get(@PathVariable("id") Long id) {
-        return budgetService.get(id).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/%d".formatted(id)));
+        return budgetService.get(id).orElseThrow(() -> new MdgException("BUDGET_NOT_FOUND", 404, "/budgets/%d".formatted(id)));
     }
 
     @PutMapping(value = "/budgets/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.ACCEPTED)
     Budget update(@PathVariable("id") Long id, @RequestBody Budget budget) {
-        return budgetService.update(id, budget).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/%d".formatted(id)));
+        return budgetService.update(id, budget).orElseThrow(() -> new MdgException("BUDGET_NOT_FOUND", 404, "/budgets/%d".formatted(id)));
     }
 
     @DeleteMapping("/budgets/{id}")
@@ -120,7 +120,7 @@ public class BudgetController {
 
     @GetMapping(value = "/budgets/{budgetId}/entries/tree", produces = "application/vnd.mdg+json;version=1")
     BudgetEntryTree tree(@PathVariable("budgetId") Long budgetId, @RequestParam("embed") Optional<Collection<String>> embed, @RequestParam("filter") Optional<String> filter) {
-        budgetService.get(budgetId).orElseThrow(() -> new RestException("BUDGET_NOT_FOUND", 404, "/budgets/{%d}/entries/tree".formatted(budgetId)));
+        budgetService.get(budgetId).orElseThrow(() -> new MdgException("BUDGET_NOT_FOUND", 404, "/budgets/{%d}/entries/tree".formatted(budgetId)));
         var categories = categoryService.list();
         var entries = budgetService.listEntries(budgetId);
         var leaveEmtpy = filter.map("all"::equalsIgnoreCase).orElse(false);
@@ -135,12 +135,12 @@ public class BudgetController {
 
     @GetMapping(value = "/budgets/{budgetId}/entries/{entryId}", produces = "application/vnd.mdg+json;version=1")
     BudgetEntry getEntry(@PathVariable("budgetId") Long budgetId, @PathVariable("entryId") Long entryId, @RequestParam("embed") Optional<Collection<String>> embed) {
-        return budgetService.getBudgetEntry(entryId).map(Embedding.embedBudgetEntryObject(embed)).orElseThrow(() -> new RestException("BUDGETENTRY_NOT_FOUND", 404, "/budgets/%d/entries/%d".formatted(budgetId, entryId)));
+        return budgetService.getBudgetEntry(entryId).map(Embedding.embedBudgetEntryObject(embed)).orElseThrow(() -> new MdgException("BUDGETENTRY_NOT_FOUND", 404, "/budgets/%d/entries/%d".formatted(budgetId, entryId)));
     }
 
     @PutMapping(value = "/budgets/{budgetId}/entries/{entryId}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.ACCEPTED)
     BudgetEntry updateEntry(@PathVariable("budgetId") Long budgetId, @PathVariable("entryId") Long entryId, @RequestBody BudgetEntry entry) {
-        return budgetService.updateBudgetEntry(entryId, entry).map(Embedding.embedBudgetEntryObject(Optional.empty())).orElseThrow(() -> new RestException("BUDGETENTRY_NOT_FOUND", 404, "/budgets/%d/entries/%d".formatted(budgetId, entryId)));
+        return budgetService.updateBudgetEntry(entryId, entry).map(Embedding.embedBudgetEntryObject(Optional.empty())).orElseThrow(() -> new MdgException("BUDGETENTRY_NOT_FOUND", 404, "/budgets/%d/entries/%d".formatted(budgetId, entryId)));
     }
 }

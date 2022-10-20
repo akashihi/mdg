@@ -89,13 +89,13 @@ public class AccountController {
 
     @GetMapping(value = "/accounts/{id}", produces = "application/vnd.mdg+json;version=1")
     Account get(@PathVariable("id") Long id, @RequestParam("embed") Optional<Collection<String>> embed) {
-        return accountService.get(id).map(Embedding.embedAccountObjects(embed)).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+        return accountService.get(id).map(Embedding.embedAccountObjects(embed)).orElseThrow(() -> new MdgException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
     }
 
     @PutMapping(value = "/accounts/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
     @ResponseStatus(HttpStatus.ACCEPTED)
     Account update(@PathVariable("id") Long id, @RequestBody Account account) {
-        var newAccount = accountService.update(id, account).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+        var newAccount = accountService.update(id, account).orElseThrow(() -> new MdgException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
         newAccount.setCurrencyId(newAccount.getCurrency().getId());
         if (newAccount.getCategory() != null) {
             newAccount.setCategoryId(newAccount.getCategory().getId());

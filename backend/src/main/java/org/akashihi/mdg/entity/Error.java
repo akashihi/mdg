@@ -1,6 +1,8 @@
 package org.akashihi.mdg.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -11,10 +13,12 @@ import javax.persistence.Id;
 @Setter
 @ToString
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class Error {
     @Id
     private String code;
-    private Short status;
+    private Integer status;
     private String title;
     private String detail;
 }

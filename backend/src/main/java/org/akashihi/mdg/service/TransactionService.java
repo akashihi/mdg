@@ -1,7 +1,7 @@
 package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v1.RestException;
+import org.akashihi.mdg.api.v1.MdgException;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.OperationRepository;
 import org.akashihi.mdg.dao.TagRepository;
@@ -40,7 +40,7 @@ public class TransactionService {
 
         //Propagate accounts
         tx.getOperations().forEach(o -> {
-            var account = accountRepository.findById(o.getAccount_id()).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/transactions"));
+            var account = accountRepository.findById(o.getAccount_id()).orElseThrow(() -> new MdgException("ACCOUNT_NOT_FOUND", 404, "/transactions"));
             o.setAccount(account);
         });
 
@@ -54,19 +54,19 @@ public class TransactionService {
         //Validate transaction:
         // Check that operation list is not empty
         if (tx.getOperations().isEmpty()) {
-            throw new RestException("TRANSACTION_EMPTY", 412, "/transactions");
+            throw new MdgException("TRANSACTION_EMPTY", 412, "/transactions");
         }
         // Check that no operation has rate set to 0
         if (tx.getOperations().stream().anyMatch(o -> BigDecimal.ZERO.equals(o.getRate()))) {
-            throw new RestException("TRANSACTION_ZERO_RATE", 412, "/transactions");
+            throw new MdgException("TRANSACTION_ZERO_RATE", 412, "/transactions");
         }
         // Check that at least one operation has default rate (no rate set or rate set to 1)
         if (tx.getOperations().stream().noneMatch(o -> o.getRate().equals(BigDecimal.ONE))) {
-            throw new RestException("TRANSACTION_NO_DEFAULT_RATE", 412, "/transactions");
+            throw new MdgException("TRANSACTION_NO_DEFAULT_RATE", 412, "/transactions");
         }
         // Check that default rate is only used for one currency, even if it is set on multiple operations
         if (tx.getOperations().stream().filter(o -> BigDecimal.ONE.equals(o.getRate())).map(Operation::getAccount).map(Account::getCurrency).distinct().count()>1) {
-            throw new RestException("TRANSACTION_AMBIGUOUS_RATE", 412, "/transactions");
+            throw new MdgException("TRANSACTION_AMBIGUOUS_RATE", 412, "/transactions");
         }
 
         // Check that transaction is balanced. Single currency transactions should be perfectly balanced
@@ -74,7 +74,7 @@ public class TransactionService {
         var multicurrency = tx.getOperations().stream().anyMatch(o -> o.getRate() != null);
         var balance = tx.getOperations().stream().map(o -> o.getAmount().multiply(o.getRate())).reduce(BigDecimal.ZERO, BigDecimal::add);
         if (!balance.equals(BigDecimal.ZERO) && !multicurrency || !(balance.compareTo(BigDecimal.ONE.negate()) > 0 && balance.compareTo(BigDecimal.ONE) < 0)) {
-            throw new RestException("TRANSACTION_NOT_BALANCED", 412, "/transactions");
+            throw new MdgException("TRANSACTION_NOT_BALANCED", 412, "/transactions");
         }
         return tx;
     }

@@ -1,7 +1,7 @@
 package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v1.RestException;
+import org.akashihi.mdg.api.v1.MdgException;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.CategoryRepository;
 import org.akashihi.mdg.entity.AccountType;
@@ -21,16 +21,16 @@ public class CategoryService {
     @Transactional
     public Category create(Category category) {
         if (category.getAccountType().equals(AccountType.ASSET)) {
-            throw new RestException("CATEGORY_INVALID_TYPE", 412, "/categories");
+            throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/categories");
         }
 
         if (category.getParentId() != null) {
             var parentCategory = categoryRepository.findById(category.getParentId());
             if (parentCategory.isEmpty()) {
-                throw new RestException("CATEGORY_DATA_INVALID", 412, "/categories");
+                throw new MdgException("CATEGORY_DATA_INVALID", 412, "/categories");
             }
             if (!parentCategory.get().getAccountType().equals(category.getAccountType())) {
-                throw new RestException("CATEGORY_INVALID_TYPE", 412, "/categories");
+                throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/categories");
             }
             categoryRepository.save(category);
             categoryRepository.addLeaf(parentCategory.get().getId(), category.getId());
@@ -97,16 +97,16 @@ public class CategoryService {
         if (newCategory.getParentId() != null) {
             var parentValue = categoryRepository.findById(newCategory.getParentId());
             if (parentValue.isEmpty() && !newCategory.getParentId().equals(id)) {
-                throw new RestException("CATEGORY_DATA_INVALID", 412, "/categories/%d".formatted(id));
+                throw new MdgException("CATEGORY_DATA_INVALID", 412, "/categories/%d".formatted(id));
             }
             if (parentValue.map(Category::getAccountType).map(c -> !c.equals(category.getAccountType())).orElse(false)) {
-                throw new RestException("CATEGORY_INVALID_TYPE", 412, "/categories/%d".formatted(id));
+                throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/categories/%d".formatted(id));
             }
             var nextParent = parentValue.map(Category::getId).orElse(newCategory.getParentId());
             if (!nextParent.equals(id)) {
                 //Check tree for cycle
                 if (!categoryRepository.findInvertedParent(category.getId(), nextParent).isEmpty()) {
-                    throw new RestException("CATEGORY_TREE_CYCLED", 412, "/categories/%d".formatted(id));
+                    throw new MdgException("CATEGORY_TREE_CYCLED", 412, "/categories/%d".formatted(id));
                 }
             } else {
                 nextParent = 0L; //Self parent means no parent

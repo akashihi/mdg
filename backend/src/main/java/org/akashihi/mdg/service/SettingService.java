@@ -1,7 +1,7 @@
 package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v1.RestException;
+import org.akashihi.mdg.api.v1.MdgException;
 import org.akashihi.mdg.dao.CurrencyRepository;
 import org.akashihi.mdg.dao.SettingRepository;
 import org.akashihi.mdg.entity.Currency;
@@ -33,9 +33,9 @@ public class SettingService {
     @CacheEvict(value = "settingsCache", key="#result.id")
     public Setting updateUiTransactionCloseDialog(String newValue) {
         if (!"true".equalsIgnoreCase(newValue) && !"false".equalsIgnoreCase(newValue)) {
-            throw new RestException("SETTING_DATA_INVALID", 422, "/settings/ui.transaction.closedialog");
+            throw new MdgException("SETTING_DATA_INVALID", 422, "/settings/ui.transaction.closedialog");
         }
-        var setting = settingRepository.findById("ui.transaction.closedialog").orElseThrow(() -> new RestException("SETTING_NOT_FOUND", 404, "/settings/ui.transaction.closedialog"));
+        var setting = settingRepository.findById("ui.transaction.closedialog").orElseThrow(() -> new MdgException("SETTING_NOT_FOUND", 404, "/settings/ui.transaction.closedialog"));
         setting.setValue(newValue);
         settingRepository.save(setting);
         return setting;
@@ -46,21 +46,21 @@ public class SettingService {
         try {
             var currencyID = Long.parseLong(newValue);
             if (!currencyRepository.existsById(currencyID)) {
-                throw new RestException("SETTING_DATA_INVALID", 422, "/settings/currency.primary");
+                throw new MdgException("SETTING_DATA_INVALID", 422, "/settings/currency.primary");
             }
 
-            var setting = settingRepository.findById("currency.primary").orElseThrow(() -> new RestException("SETTING_NOT_FOUND", 404, "/settings/currency.primary"));
+            var setting = settingRepository.findById("currency.primary").orElseThrow(() -> new MdgException("SETTING_NOT_FOUND", 404, "/settings/currency.primary"));
             setting.setValue(newValue);
             settingRepository.save(setting);
             return setting;
         } catch (NumberFormatException ex) {
-            throw new RestException("SETTING_DATA_INVALID", 422, "/settings/currency.primary", ex);
+            throw new MdgException("SETTING_DATA_INVALID", 422, "/settings/currency.primary", ex);
         }
     }
 
     @CacheEvict(value = "settingsCache", key="#result.id")
     public Setting updateUiLanguage(String newValue) {
-        var setting = settingRepository.findById("ui.language").orElseThrow(() -> new RestException("SETTING_NOT_FOUND", 404, "/settings/ui.language"));
+        var setting = settingRepository.findById("ui.language").orElseThrow(() -> new MdgException("SETTING_NOT_FOUND", 404, "/settings/ui.language"));
         setting.setValue(newValue);
         settingRepository.save(setting);
         return setting;

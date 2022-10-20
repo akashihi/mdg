@@ -2,7 +2,7 @@ package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.akashihi.mdg.api.v1.RestException;
+import org.akashihi.mdg.api.v1.MdgException;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.CategoryRepository;
 import org.akashihi.mdg.dao.CurrencyRepository;
@@ -43,23 +43,23 @@ public class AccountService {
     public Account create(Account account) {
         if (!account.getAccountType().equals(AccountType.ASSET)) {
             if (account.getOperational() != null && account.getOperational()) {
-                throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts");
+                throw new MdgException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts");
             }
             if (account.getFavorite() != null && account.getFavorite()) {
-                throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts");
+                throw new MdgException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts");
             }
         }
         if (account.getAccountType().equals(AccountType.ASSET) && account.getCategoryId() == null) { //Default category for asset accounts
-                var defaultCategory = categoryRepository.findByNameAndAccountType("Current", AccountType.ASSET).orElseThrow(() ->new RestException("CATEGORY_NOT_FOUND", 404, "/accounts"));
+                var defaultCategory = categoryRepository.findByNameAndAccountType("Current", AccountType.ASSET).orElseThrow(() ->new MdgException("CATEGORY_NOT_FOUND", 404, "/accounts"));
                 account.setCategory(defaultCategory);
                 account.setCategoryId(defaultCategory.getId());
         }
-        var currency = currencyRepository.findById(account.getCurrencyId()).orElseThrow(() ->new RestException("CURRENCY_NOT_FOUND", 404, "/accounts"));
+        var currency = currencyRepository.findById(account.getCurrencyId()).orElseThrow(() ->new MdgException("CURRENCY_NOT_FOUND", 404, "/accounts"));
         account.setCurrency(currency);
         if (account.getCategoryId() != null) {
-            var category = categoryRepository.findById(account.getCategoryId()).orElseThrow(() ->new RestException("CATEGORY_NOT_FOUND", 404, "/accounts"));
+            var category = categoryRepository.findById(account.getCategoryId()).orElseThrow(() ->new MdgException("CATEGORY_NOT_FOUND", 404, "/accounts"));
             if (!category.getAccountType().equals(account.getAccountType())) {
-                throw new RestException("CATEGORY_INVALID_TYPE", 412, "/accounts");
+                throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/accounts");
             }
             account.setCategory(category);
         }
@@ -110,9 +110,9 @@ public class AccountService {
                 currentCategoryId = account.getCategory().getId();
             }
             if (!newAccount.getCategoryId().equals(currentCategoryId)) {
-                var newCategory = categoryRepository.findById(newAccount.getCategoryId()).orElseThrow(() ->new RestException("CATEGORY_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+                var newCategory = categoryRepository.findById(newAccount.getCategoryId()).orElseThrow(() ->new MdgException("CATEGORY_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
                 if (!newCategory.getAccountType().equals(account.getAccountType())) {
-                    throw new RestException("CATEGORY_INVALID_TYPE", 412, "/accounts/%d".formatted(id));
+                    throw new MdgException("CATEGORY_INVALID_TYPE", 412, "/accounts/%d".formatted(id));
                 }
                 account.setCategory(newCategory);
             }
@@ -122,7 +122,7 @@ public class AccountService {
             account.setFavorite(newAccount.getFavorite());
             account.setOperational(newAccount.getOperational());
             if (!account.getCurrency().getId().equals(newAccount.getCurrencyId())) {
-                throw new RestException("ACCOUNT_CURRENCY_ASSET", 422, "/accounts/%d".formatted(id));
+                throw new MdgException("ACCOUNT_CURRENCY_ASSET", 422, "/accounts/%d".formatted(id));
             }
         } else {
             if (!account.getCurrency().getId().equals(newAccount.getCurrencyId())) {
@@ -132,7 +132,7 @@ public class AccountService {
                 currencyValue.ifPresent(account::setCurrency);
             }
             if (newAccount.getFavorite() != null && newAccount.getFavorite() || newAccount.getOperational() != null && newAccount.getOperational()) {
-                throw new RestException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts/%d".formatted(id));
+                throw new MdgException("ACCOUNT_NONASSET_INVALIDFLAG", 412, "/accounts/%d".formatted(id));
             }
         }
         accountRepository.save(account);
@@ -141,15 +141,15 @@ public class AccountService {
 
     @Transactional
     public void delete(Long id) {
-        var account = accountRepository.findById(id).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
+        var account = accountRepository.findById(id).orElseThrow(() -> new MdgException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d".formatted(id)));
         if (!isDeletable(account.getId())) {
-            throw new RestException("ACCOUNT_IN_USE", 409, "/accounts/%d".formatted(id));
+            throw new MdgException("ACCOUNT_IN_USE", 409, "/accounts/%d".formatted(id));
         }
         accountRepository.delete(account);
     }
 
     @Transactional public Boolean isDeletable(Long id) {
-        var account = accountRepository.findById(id).orElseThrow(() -> new RestException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d/status".formatted(id)));
+        var account = accountRepository.findById(id).orElseThrow(() -> new MdgException("ACCOUNT_NOT_FOUND", 404, "/accounts/%d/status".formatted(id)));
         return !operationRepository.doOperationsExistForAccount(account.getId()).orElse(false);
     }
 }
