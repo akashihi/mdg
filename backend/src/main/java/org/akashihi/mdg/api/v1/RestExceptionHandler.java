@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.akashihi.mdg.entity.Error;
@@ -23,7 +24,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({MdgException.class})
     public ResponseEntity<Object> handleRestException(MdgException ex, WebRequest request) {
         var error = errorRepository.findById(ex.getCode()).orElseGet(() -> constructMissingProblem(ex));
-        var problem = new Problem(error.getTitle(), error.getStatus(), request.getContextPath(), error.getCode(), error.getDetail());
+        String url = null;
+        if (request instanceof ServletWebRequest swr) {
+            url = swr.getRequest().getRequestURI();
+        }
+        var problem = new Problem(error.getTitle(), error.getStatus(), url, error.getCode(), error.getDetail());
         var headers = new HttpHeaders();
         headers.set("Content-Type", "application/vnd.mdg+json;version=1");
         return new ResponseEntity<>(problem, headers, error.getStatus());
