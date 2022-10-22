@@ -112,7 +112,7 @@ it('Category can not be assigned to the incompatible account', async () => {
     const accountID = await pactum.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:V1' })
         .returns('id');
 
-    await pactum.spec('expect error', { statusCode: 412, title: 'CATEGORY_INVALID_TYPE' })
+    await pactum.spec('expect error', { statusCode: 412, code: 'CATEGORY_INVALID_TYPE' })
         .put('/accounts/{id}')
         .withPathParams('id', accountID)
         .withJson({

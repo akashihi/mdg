@@ -59,7 +59,7 @@ describe('Budget operations', () => {
 
   itParam('Budget with ${value.id} is invalid', INVALID_BUDGETS, async (params) => { // eslint-disable-line no-template-curly-in-string
     await e2e.step('Budget validity')
-      .spec('expect error', { statusCode: 412, title: params.msg })
+      .spec('expect error', { statusCode: 412, code: params.msg })
       .post('/budgets')
       .withJson({
         '@DATA:TEMPLATE@': 'Budget:Feb:V1',
