@@ -55,7 +55,7 @@ describe('Account flag management', () => {
 
     it('Currency change is no allowed for asset accounts', async () => {
         await e2e.step("Try to update currency in asset account")
-            .spec('expect error', { statusCode: 422, title: 'ACCOUNT_CURRENCY_ASSET' })
+            .spec('expect error', { statusCode: 422, code: 'ACCOUNT_CURRENCY_ASSET' })
             .put('/accounts/{id}')
             .withPathParams('id', '$S{AccountID}')
             .withJson({

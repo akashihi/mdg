@@ -28,7 +28,7 @@ public class SettingController {
 
     @GetMapping(value = "/settings/{id}", produces = "application/vnd.mdg+json;version=1")
     Setting get(@PathVariable("id") String id) {
-        return settingService.get(id).orElseThrow(() -> new RestException("SETTING_NOT_FOUND", 404, "/settings/%s".formatted(id)));
+        return settingService.get(id).orElseThrow(() -> new MdgException("SETTING_NOT_FOUND"));
     }
 
     @PutMapping(value = "/settings/ui.transaction.closedialog", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")

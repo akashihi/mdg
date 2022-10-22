@@ -35,7 +35,7 @@ it('Category re-parenting', async () => {
 it('Category cyclic reparenting is prevented', async () => {
     const categories = await makeTree();
 
-    await pactum.spec('expect error', {statusCode: 412, title: 'CATEGORY_TREE_CYCLED'})
+    await pactum.spec('expect error', {statusCode: 412, code: 'CATEGORY_TREE_CYCLED'})
         .put('/categories/{id}')
         .withPathParams('id', categories.outer)
         .withJson({
@@ -75,7 +75,7 @@ it('Category of one type can not be parented to category of different type', asy
     const outerCategoryID = await pactum.spec('Create Category', {'@DATA:TEMPLATE@': 'Category:Basic:V1'})
         .returns('id');
 
-    await pactum.spec('expect error', {statusCode: 412, title: 'CATEGORY_INVALID_TYPE'})
+    await pactum.spec('expect error', {statusCode: 412, code: 'CATEGORY_INVALID_TYPE'})
         .post('/categories')
         .withJson({
             '@DATA:TEMPLATE@': 'Category:Basic:V1',
@@ -100,7 +100,7 @@ it('Category of one type can not be re-parented to category of different type', 
     })
         .returns('id');
 
-    await pactum.spec('expect error', {statusCode: 412, title: 'CATEGORY_INVALID_TYPE'})
+    await pactum.spec('expect error', {statusCode: 412, code: 'CATEGORY_INVALID_TYPE'})
         .put('/categories/{id}')
         .withPathParams('id', incomeCategoryID)
         .withJson({

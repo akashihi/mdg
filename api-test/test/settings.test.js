@@ -47,7 +47,7 @@ itParam('Check ${value.id} value setting', SETTINGS_TRIGGERS, async (params) => 
 });
 
 it('Invalid primary currency is rejected', async () => {
-    await pactum.spec('expect error', { statusCode: 422, title: 'SETTING_DATA_INVALID' })
+    await pactum.spec('expect error', { statusCode: 422, code: 'SETTING_DATA_INVALID' })
         .put('/settings/{id}')
         .withPathParams('id', 'currency.primary')
         .withJson({
