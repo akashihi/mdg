@@ -71,8 +71,23 @@ export function BudgetExecutionReport(props: ReportParams) {
         },
         tooltip: {
             formatter: function () {
-                console.log(this);
-                return this.x;
+                const message = `${this.x} You've earned ${chartData.profit[this.point.index]} ${
+                    props.primaryCurrencyName
+                }`;
+                const income = `Your income was ${chartData.actual_income[this.point.index]} ${
+                    props.primaryCurrencyName
+                } of expected ${chartData.expected_income[this.point.index]} ${props.primaryCurrencyName}`;
+                const incomeDiff = `(${(
+                    chartData.actual_income[this.point.index] - chartData.expected_income[this.point.index]
+                ).toFixed(2)} ${props.primaryCurrencyName} difference)`;
+                const expense = `You spend ${-1 * chartData.actual_expense[this.point.index]} ${
+                    props.primaryCurrencyName
+                } of expected ${-1 * chartData.expected_expense[this.point.index]} ${props.primaryCurrencyName}`;
+                const expenseDiff = `(${(
+                    -1 * chartData.actual_expense[this.point.index] -
+                    -1 * chartData.expected_expense[this.point.index]
+                ).toFixed(2)} ${props.primaryCurrencyName} difference)`;
+                return `${message}<BR/>${income}<BR/>${incomeDiff}<BR/>${expense}<BR/>${expenseDiff}`;
             },
         },
         plotOptions: {
