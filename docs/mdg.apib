@@ -413,7 +413,7 @@ operation will be multiplied to its rate and only after that it will be summariz
   + q (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes. Timestmap filtering is supported with 'notEarlier' and 'notLater' keys
   + sort: timestamp (array[string], optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order. 
   + embed: account,currency,category (array[string], optional) - Objects to embed. accout_id and other _id fields are always provided.
-  + limit: 10 (number, optional) - Paginate list using specified page size. Setting limit will trigger pagionation and will put pagination related field to the reply.
+  + limit: 10 (number, optional) - Paginate list using specified page size. 
   + cursor: AAABBB (string, optional) - A pointer to the next page. Only valid if cursor value was previously set by the backend.
     The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit` 
     number of trasactions will be returned along side with additional cursor fields (see below). Each cursor is 
@@ -466,7 +466,13 @@ Resources related to budget management
 
 + Response 204
 
-## Budget collection [/budget]
+## Budget collection [/budget?limit={limit}&cursor={cursor}]
+
+  + limit: 10 (number, optional) - Paginate list using specified page size.
+  + cursor: AAABBB (string, optional) - A pointer to the next page. Only valid if cursor value was previously set by the backend.
+    The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit` 
+    number of budgets will be returned along side with additional cursor fields (see below). Each cursor is 
+    self-contained and can be used without repeating other parameters.
 
 Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reading specific budget object.
 
@@ -733,10 +739,9 @@ Provides assets overview information.
 
 ## Problem (object)
 + title: 'Requested currency could not be found' (string, required) - Human-friendly error description
-+ code: CURRENCY_NOT_FOUND (string, required) - Unique error code
-+ status: 404 (number, required) - HTTP Status code, must match response status code.
-+ instance: /currency/1 (string, optional) - URL of errored object if applicable.
-+ detail: 'We can not find currency with specified code in the database, check its id please.' (string, optional) - More detailed error description.
++ status: 404 (number, required) - HTTP Status code, must match response status code
++ instance: /currency/1 (string, optional) - URL of errored object if applicable
++ detail: 'We can not find currency with specified code in the database, check its id please.' (string, optional) - More 
 
 ## Operation (object)
 
