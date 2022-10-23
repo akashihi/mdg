@@ -2,6 +2,7 @@ package org.akashihi.mdg.service;
 
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.v1.MdgException;
+import org.akashihi.mdg.api.v1.dto.ListResult;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.OperationRepository;
 import org.akashihi.mdg.dao.TagRepository;
@@ -112,10 +113,8 @@ public class TransactionService {
         return tx;
     }
 
-    public record ListResult(List<Transaction> transactions, Long left) {}
-
     @Transactional
-    public ListResult list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
+    public ListResult<Transaction> list(Map<String, String> filter, Collection<String> sort, Integer limit, Long pointer) {
         var spec = TransactionSpecification.filteredTransactions(indexingService, filter, pointer);
         var sorting = Sort.by("ts").descending().and(Sort.by("id").descending()); //Sort by timestamp amd then id by default
         if (sort.contains("-timestamp")) {
@@ -123,7 +122,7 @@ public class TransactionService {
             sorting = Sort.by("ts").ascending().and(Sort.by("id").descending());
         }
         if (limit == null) {
-            return new ListResult(transactionRepository.findAll(spec, sorting), 0L);
+            return new ListResult<>(transactionRepository.findAll(spec, sorting), 0L);
         } else {
             var pageLimit = PageRequest.of(0, limit, sorting);
             var page =  transactionRepository.findAll(spec, pageLimit);
@@ -131,7 +130,7 @@ public class TransactionService {
             if (left < 0) {
                 left = 0; //Clamp value in case last page is shorter than limit
             }
-            return new ListResult(page.getContent(), left);
+            return new ListResult<>(page.getContent(), left);
         }
     }
 
