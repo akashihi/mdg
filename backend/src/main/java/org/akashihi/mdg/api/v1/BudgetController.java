@@ -1,6 +1,8 @@
 package org.akashihi.mdg.api.v1;
 
 import lombok.RequiredArgsConstructor;
+import org.akashihi.mdg.api.util.CursorHelper;
+import org.akashihi.mdg.api.v1.dto.BudgetCursor;
 import org.akashihi.mdg.api.v1.dto.BudgetEntries;
 import org.akashihi.mdg.api.v1.dto.BudgetEntryTree;
 import org.akashihi.mdg.api.v1.dto.BudgetEntryTreeEntry;
@@ -39,6 +41,7 @@ public class BudgetController {
     private final CategoryService categoryService;
     private final RateService rateService;
     private final SettingService settingService;
+    private final CursorHelper cursorHelper;
 
     protected static BigDecimal getCategoryTotals(Function<BudgetEntryTreeEntry,BigDecimal> f, Collection<BudgetEntryTreeEntry> entries) {
         return entries.stream().map(f).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -92,8 +95,24 @@ public class BudgetController {
     }
 
     @GetMapping(value = "/budgets", produces = "application/vnd.mdg+json;version=1")
-    Budgets list() { // TODO Implement paging
-        return new Budgets(budgetService.list());
+    Budgets list(@RequestParam("limit") Optional<Integer> limit, @RequestParam("cursor") Optional<String> cursor) {
+        BudgetCursor budgetCursor = cursor.flatMap(o -> cursorHelper.cursorFromString(o, BudgetCursor.class)).orElse(new BudgetCursor(limit.orElse(null), null));
+        var budgets = budgetService.list(budgetCursor.limit(), budgetCursor.pointer());
+
+        String self = cursorHelper.cursorToString(budgetCursor).orElse("");
+        String first = "";
+        String next = "";
+        if (limit.isPresent() || cursor.isPresent()) { //In both cases we are in paging mode, either for the first page or for the subsequent pages
+            var firstCursor = new BudgetCursor(budgetCursor.limit(), 0L);
+            first = cursorHelper.cursorToString(firstCursor).orElse("");
+            if (budgets.items().isEmpty() || budgets.left() == 0 ) {
+                next = ""; //We may have no items at all or no items left, so no need to find next cursor
+            } else {
+                var nextCursor = new BudgetCursor(budgetCursor.limit(), budgets.items().get(budgets.items().size()-1).getId());
+                next = cursorHelper.cursorToString(nextCursor).orElse("");
+            }
+        }
+        return new Budgets(budgets.items(), self, first, next, budgets.left());
     }
 
     @GetMapping(value = "/budgets/{id}", produces = "application/vnd.mdg+json;version=1")

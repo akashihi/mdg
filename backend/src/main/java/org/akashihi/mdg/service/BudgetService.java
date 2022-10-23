@@ -3,15 +3,19 @@ package org.akashihi.mdg.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.akashihi.mdg.api.v1.MdgException;
+import org.akashihi.mdg.api.v1.dto.ListResult;
 import org.akashihi.mdg.dao.AccountRepository;
 import org.akashihi.mdg.dao.BudgetEntryRepository;
 import org.akashihi.mdg.dao.BudgetRepository;
+import org.akashihi.mdg.dao.BudgetSpecification;
 import org.akashihi.mdg.entity.Account;
 import org.akashihi.mdg.entity.AccountType;
 import org.akashihi.mdg.entity.Budget;
 import org.akashihi.mdg.entity.BudgetEntry;
 import org.akashihi.mdg.entity.BudgetEntryMode;
 import org.akashihi.mdg.entity.Currency;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -72,8 +76,24 @@ public class BudgetService {
     }
 
     @Transactional
-    public Collection<Budget> list() {
-        return budgetRepository.findAll(Sort.by("beginning").descending());
+    public ListResult<Budget> list(Integer limit, Long pointer) {
+        var sorting = Sort.by("beginning").descending();
+        if (limit == null) {
+            return new ListResult<>(budgetRepository.findAll(sorting), 0L);
+        }
+        var pageLimit = PageRequest.of(0, limit, sorting);
+        Page<Budget> page;
+        if (pointer == null) {
+            page = budgetRepository.findAll(pageLimit);
+        } else {
+            var spec = BudgetSpecification.followingBudgets(pointer);
+            page = budgetRepository.findAll(spec, pageLimit);
+        }
+        var left = page.getTotalElements()-limit;
+        if (left < 0) {
+            left = 0; //Clamp value in case last page is shorter than limit
+        }
+        return new ListResult<>(page.getContent(), left);
     }
 
     @Transactional

@@ -1,6 +1,5 @@
 package org.akashihi.mdg.api.v1;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.akashihi.mdg.api.util.CursorHelper;
@@ -9,7 +8,6 @@ import org.akashihi.mdg.api.v1.dto.Transactions;
 import org.akashihi.mdg.api.v1.filtering.Embedding;
 import org.akashihi.mdg.api.util.FilterConverter;
 import org.akashihi.mdg.entity.Transaction;
-import org.akashihi.mdg.service.AccountService;
 import org.akashihi.mdg.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,8 +21,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -53,7 +49,7 @@ public class TransactionController {
     Transactions list(@RequestParam("q") Optional<String> query, @RequestParam("sort") Optional<Collection<String>> sort, @RequestParam("embed") Optional<Collection<String>> embed, @RequestParam("limit") Optional<Integer> limit, @RequestParam("cursor") Optional<String> cursor) {
         TransactionCursor txCursor = cursor.flatMap(o -> cursorHelper.cursorFromString(o, TransactionCursor.class)).orElse(buildCursor(query, sort, embed, limit, Optional.empty()));
         var listResult = transactionService.list(txCursor.filter(), txCursor.sort(), txCursor.limit(), txCursor.pointer());
-        var transactions = listResult.transactions();
+        var transactions = listResult.items();
         var left = listResult.left();
         var operationEmbedded = Embedding.embedOperationObjects(Optional.of(txCursor.embed()));
         transactions.forEach(tx -> tx.setOperations(tx.getOperations().stream().peek(o -> {o.getAccount().setBalance(BigDecimal.ZERO); o.getAccount().setPrimaryBalance(BigDecimal.ZERO);}).map(operationEmbedded).toList()));
@@ -65,7 +61,7 @@ public class TransactionController {
             var firstCursor = new TransactionCursor(txCursor.filter(), txCursor.sort(), txCursor.embed(), txCursor.limit(), 0L);
             first = cursorHelper.cursorToString(firstCursor).orElse("");
             if (transactions.isEmpty() || left == 0 ) {
-                next = ""; //We may have no transactions at all or no transactions left, so no need to find next cursor
+                next = ""; //We may have no items at all or no items left, so no need to find next cursor
             } else {
                 var nextCursor = new TransactionCursor(txCursor.filter(), txCursor.sort(), txCursor.embed(), txCursor.limit(), transactions.get(transactions.size()-1).getId());
                 next = cursorHelper.cursorToString(nextCursor).orElse("");

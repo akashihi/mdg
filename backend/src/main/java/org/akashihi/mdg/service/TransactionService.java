@@ -70,8 +70,8 @@ public class TransactionService {
             throw new MdgException("TRANSACTION_AMBIGUOUS_RATE");
         }
 
-        // Check that transaction is balanced. Single currency transactions should be perfectly balanced
-        // For multi currency transactions relatively small disbalance is allowed
+        // Check that transaction is balanced. Single currency items should be perfectly balanced
+        // For multi currency items relatively small disbalance is allowed
         var multicurrency = tx.getOperations().stream().anyMatch(o -> o.getRate() != null);
         var balance = tx.getOperations().stream().map(o -> o.getAmount().multiply(o.getRate())).reduce(BigDecimal.ZERO, BigDecimal::add);
         if (!balance.equals(BigDecimal.ZERO) && !multicurrency || !(balance.compareTo(BigDecimal.ONE.negate()) > 0 && balance.compareTo(BigDecimal.ONE) < 0)) {
@@ -123,15 +123,14 @@ public class TransactionService {
         }
         if (limit == null) {
             return new ListResult<>(transactionRepository.findAll(spec, sorting), 0L);
-        } else {
-            var pageLimit = PageRequest.of(0, limit, sorting);
-            var page =  transactionRepository.findAll(spec, pageLimit);
-            var left = page.getTotalElements()-limit;
-            if (left < 0) {
-                left = 0; //Clamp value in case last page is shorter than limit
-            }
-            return new ListResult<>(page.getContent(), left);
         }
+        var pageLimit = PageRequest.of(0, limit, sorting);
+        var page =  transactionRepository.findAll(spec, pageLimit);
+        var left = page.getTotalElements()-limit;
+        if (left < 0) {
+            left = 0; //Clamp value in case last page is shorter than limit
+        }
+        return new ListResult<>(page.getContent(), left);
     }
 
     @Transactional
