@@ -102,9 +102,8 @@ export async function loadEventsReport(
             const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
 
             const data = responseJson.series.map(item => {
-                return { name: item.name, y: item.data[0] };
+                return { name: item.name, y: item.data[0].y };
             });
-            console.log(dates);
             return new Ok({ dates: dates, data: data });
         } catch (e) {
             return new Err(Errors.InvalidObject(e as string));
