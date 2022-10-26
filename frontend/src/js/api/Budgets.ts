@@ -5,6 +5,7 @@ import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import { categoryDefinition } from './Categories';
 import { currencyDefinition } from './Currency';
 import { accountDefinition } from './Accounts';
+import jQuery from "jquery";
 
 const ajv = new Ajv();
 
@@ -295,8 +296,15 @@ const shortBudgetParse = ajv.compileParser<Model.Budget>(shortBudgetSchema);
 const shortBudgetListParse = ajv.compileParser<Model.BudgetList>(shortBudgetListSchema);
 const budgetEntryTreeParse = ajv.compileParser<Model.BudgetEntryTree>(budgetEntryTreeSchema);
 
-export async function listBudgets(): Promise<Result<Model.BudgetList, Model.Problem>> {
-    const response = await fetch('/api/budgets');
+export async function listBudgets(limit: number): Promise<Result<Model.BudgetList, Model.Problem>> {
+    const queryParams = jQuery.param({ limit: limit });
+    const response = await fetch(`/api/budgets?${queryParams}`);
+    return parsePageableResponse(response, shortBudgetListParse);
+}
+
+export async function loadBudgets(cursor: string): Promise<Result<Model.BudgetList, Model.Problem>> {
+    const queryParams = jQuery.param({ cursor: cursor });
+    const response = await fetch(`/api/budgets?${queryParams}`);
     return parsePageableResponse(response, shortBudgetListParse);
 }
 
