@@ -83,8 +83,8 @@ export function BudgetList(props: BudgetSelectorProps) {
         form.resetForm();
     };
 
-    const onBudgetSelect = (id: string|number) => {
-        if (id === "next" && cursorNext !== undefined && left !== undefined && left > 0) {
+    const onBudgetSelect = (id: string | number) => {
+        if (id === 'next' && cursorNext !== undefined && left !== undefined && left > 0) {
             (async () => {
                 setLoading(true);
                 const newBudgets = await API.loadBudgets(cursorNext);
@@ -98,7 +98,7 @@ export function BudgetList(props: BudgetSelectorProps) {
         } else {
             props.loadSelectedBudget(id as number);
         }
-    }
+    };
     const newBudgetValidate = values => {
         const errors = {};
         if (!values.begin || !values.end) {
@@ -128,11 +128,15 @@ export function BudgetList(props: BudgetSelectorProps) {
         return errors;
     };
 
-    let budgetList = budgets.map((b: ShortBudget, index: number) => (
+    const budgetList = budgets.map((b: ShortBudget, index: number) => (
         <MenuItem key={index} value={b.id}>{`${b.term_beginning} - ${b.term_end}`}</MenuItem>
     ));
-    if (left && left>0) {
-        budgetList.push(<MenuItem key="next" value="next">Load more budgets</MenuItem>)
+    if (left && left > 0) {
+        budgetList.push(
+            <MenuItem key="next" value="next">
+                Load more budgets
+            </MenuItem>
+        );
     }
 
     const initialValues = {

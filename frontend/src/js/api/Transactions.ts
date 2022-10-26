@@ -1,6 +1,6 @@
-import { Result, Option, Some, None, Err, Ok } from 'ts-results';
+import { Result, Option, Some, None } from 'ts-results';
 import * as Model from './model';
-import {parseError, parsePageableResponse, parseResponse, updateRequestParameters} from './base';
+import { parseError, parsePageableResponse, parseResponse, updateRequestParameters } from './base';
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import { categoryDefinition } from './Categories';
 import { currencyDefinition } from './Currency';
@@ -8,7 +8,6 @@ import { accountDefinition } from './Accounts';
 import { Moment } from 'moment/moment';
 import jQuery from 'jquery';
 import { TransactionList } from './model';
-import * as Errors from './errors';
 
 const ajv = new Ajv();
 const operationDefinition = {

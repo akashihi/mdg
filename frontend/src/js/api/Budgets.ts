@@ -1,11 +1,11 @@
 import { Result, Option, Some, None } from 'ts-results';
 import * as Model from './model';
-import {parseError, parseListResponse, parsePageableResponse, parseResponse, updateRequestParameters} from './base';
+import { parseError, parsePageableResponse, parseResponse, updateRequestParameters } from './base';
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import { categoryDefinition } from './Categories';
 import { currencyDefinition } from './Currency';
 import { accountDefinition } from './Accounts';
-import jQuery from "jquery";
+import jQuery from 'jquery';
 
 const ajv = new Ajv();
 
@@ -202,19 +202,19 @@ const budgetEntrySchema: JTDSchemaType<
     ref: 'budgetEntry',
 };
 
-const shortBudgetSchema: JTDSchemaType<Model.ShortBudget, {budget: Model.ShortBudget}> = {
+const shortBudgetSchema: JTDSchemaType<Model.ShortBudget, { budget: Model.ShortBudget }> = {
     definitions: {
-        budget: shortBudgetDefinition as JTDSchemaType<Model.ShortBudget, {budget: Model.ShortBudget}>
+        budget: shortBudgetDefinition as JTDSchemaType<Model.ShortBudget, { budget: Model.ShortBudget }>,
     },
-    ref: "budget"
+    ref: 'budget',
 };
 
-const shortBudgetListSchema: JTDSchemaType<Model.BudgetList, {budget: Model.ShortBudget}> = {
+const shortBudgetListSchema: JTDSchemaType<Model.BudgetList, { budget: Model.ShortBudget }> = {
     definitions: {
-        budget: shortBudgetDefinition as JTDSchemaType<Model.ShortBudget, {budget: Model.ShortBudget}>
+        budget: shortBudgetDefinition as JTDSchemaType<Model.ShortBudget, { budget: Model.ShortBudget }>,
     },
     properties: {
-        budgets: { elements: { ref: "budget"} },
+        budgets: { elements: { ref: 'budget' } },
         self: { type: 'string' },
         first: { type: 'string' },
         next: { type: 'string' },

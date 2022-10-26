@@ -2,7 +2,7 @@ import * as Model from './model';
 import { Err, Ok, Result } from 'ts-results';
 import Ajv, { JTDParser, JTDSchemaType } from 'ajv/dist/jtd';
 import * as Errors from './errors';
-import {Pageable} from "./models/Pageable";
+import { Pageable } from './models/Pageable';
 
 const ajv = new Ajv();
 const problemSchema: JTDSchemaType<Model.Problem> = {
