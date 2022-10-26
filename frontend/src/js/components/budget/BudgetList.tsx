@@ -38,7 +38,7 @@ export function BudgetList(props: BudgetSelectorProps) {
             const result = await API.listBudgets();
             setLoading(false);
             if (result.ok) {
-                setBudgets(result.val);
+                setBudgets(result.val.budgets);
             } else {
                 props.reportError(result.val);
             }

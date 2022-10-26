@@ -1,5 +1,6 @@
 import { Account } from './Account';
 import { Category } from './Category';
+import {Pageable} from "./Pageable";
 
 export interface BudgetPair {
     readonly actual: number;
@@ -16,6 +17,10 @@ export interface ShortBudget {
     readonly id: number;
     readonly term_beginning: string;
     readonly term_end: string;
+}
+
+export interface BudgetList extends Pageable{
+    readonly budgets: ShortBudget[];
 }
 
 export interface Budget extends ShortBudget {

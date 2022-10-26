@@ -1,4 +1,5 @@
 import { Account } from './Account';
+import {Pageable} from "./Pageable";
 
 export interface Operation {
     readonly rate?: number;
@@ -40,10 +41,6 @@ export interface EditedTransaction extends Transaction {
     editedOperations: EditedOperation[];
 }
 
-export interface TransactionList {
+export interface TransactionList extends Pageable{
     readonly transactions: Transaction[];
-    readonly self: string;
-    readonly first: string;
-    readonly next: string;
-    readonly left: number;
 }

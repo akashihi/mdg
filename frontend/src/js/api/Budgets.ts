@@ -1,6 +1,6 @@
 import { Result, Option, Some, None } from 'ts-results';
 import * as Model from './model';
-import { parseError, parseListResponse, parseResponse, updateRequestParameters } from './base';
+import {parseError, parseListResponse, parsePageableResponse, parseResponse, updateRequestParameters} from './base';
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import { categoryDefinition } from './Categories';
 import { currencyDefinition } from './Currency';
@@ -66,13 +66,14 @@ const budgetEntryTreeNodeDefinition = {
     },
 };
 
-const shortBudgetSchema: JTDSchemaType<Model.ShortBudget> = {
+const shortBudgetDefinition = {
     properties: {
         id: { type: 'uint32' },
         term_beginning: { type: 'string' },
         term_end: { type: 'string' },
     },
 };
+
 const budgetSchema: JTDSchemaType<
     Model.Budget,
     {
@@ -200,9 +201,23 @@ const budgetEntrySchema: JTDSchemaType<
     ref: 'budgetEntry',
 };
 
-const shortBudgetListSchema: JTDSchemaType<{ budgets: Model.ShortBudget[] }> = {
+const shortBudgetSchema: JTDSchemaType<Model.ShortBudget, {budget: Model.ShortBudget}> = {
+    definitions: {
+        budget: shortBudgetDefinition as JTDSchemaType<Model.ShortBudget, {budget: Model.ShortBudget}>
+    },
+    ref: "budget"
+};
+
+const shortBudgetListSchema: JTDSchemaType<Model.BudgetList, {budget: Model.ShortBudget}> = {
+    definitions: {
+        budget: shortBudgetDefinition as JTDSchemaType<Model.ShortBudget, {budget: Model.ShortBudget}>
+    },
     properties: {
-        budgets: { elements: shortBudgetSchema },
+        budgets: { elements: { ref: "budget"} },
+        self: { type: 'string' },
+        first: { type: 'string' },
+        next: { type: 'string' },
+        left: { type: 'uint32' },
     },
 };
 
@@ -277,12 +292,12 @@ const budgetEntryTreeSchema: JTDSchemaType<
 const budgetParse = ajv.compileParser<Model.Budget>(budgetSchema);
 const budgetEntryParse = ajv.compileParser<Model.BudgetEntry>(budgetEntrySchema);
 const shortBudgetParse = ajv.compileParser<Model.Budget>(shortBudgetSchema);
-const shortBudgetListParse = ajv.compileParser<Record<string, Model.ShortBudget[]>>(shortBudgetListSchema);
+const shortBudgetListParse = ajv.compileParser<Model.BudgetList>(shortBudgetListSchema);
 const budgetEntryTreeParse = ajv.compileParser<Model.BudgetEntryTree>(budgetEntryTreeSchema);
 
-export async function listBudgets(): Promise<Result<Model.ShortBudget[], Model.Problem>> {
+export async function listBudgets(): Promise<Result<Model.BudgetList, Model.Problem>> {
     const response = await fetch('/api/budgets');
-    return parseListResponse(response, shortBudgetListParse, 'budgets');
+    return parsePageableResponse(response, shortBudgetListParse);
 }
 
 export async function loadBudget(id: number): Promise<Result<Model.Budget, Model.Problem>> {
