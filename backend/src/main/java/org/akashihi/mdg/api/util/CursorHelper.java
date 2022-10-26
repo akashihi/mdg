@@ -3,7 +3,6 @@ package org.akashihi.mdg.api.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v1.dto.TransactionCursor;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
