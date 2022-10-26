@@ -2,6 +2,7 @@ import * as Model from './model';
 import { Err, Ok, Result } from 'ts-results';
 import Ajv, { JTDParser, JTDSchemaType } from 'ajv/dist/jtd';
 import * as Errors from './errors';
+import { Pageable } from './models/Pageable';
 
 const ajv = new Ajv();
 const problemSchema: JTDSchemaType<Model.Problem> = {
@@ -41,6 +42,24 @@ export async function parseListResponse<T>(
             return new Err(Errors.InvalidObject(parser.message as string));
         } else {
             return new Ok(data[root]);
+        }
+    }
+}
+
+export async function parsePageableResponse<T extends Pageable>(
+    response: Response,
+    parser: JTDParser<T>
+): Promise<Result<T, Model.Problem>> {
+    const responseJson = await response.text();
+    if (response.status >= 400) {
+        return new Err(parseError(response, responseJson));
+    } else {
+        // Should be fine, try to convert
+        const data = parser(responseJson);
+        if (data === undefined) {
+            return new Err(Errors.InvalidObject(parser.message as string));
+        } else {
+            return new Ok(data);
         }
     }
 }

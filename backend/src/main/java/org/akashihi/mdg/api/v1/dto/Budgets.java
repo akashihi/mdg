@@ -4,4 +4,4 @@ import org.akashihi.mdg.entity.Budget;
 
 import java.util.Collection;
 
-public record Budgets(Collection<Budget> budgets) { }
+public record Budgets(Collection<Budget> budgets, String self, String first, String next, Long left) { }

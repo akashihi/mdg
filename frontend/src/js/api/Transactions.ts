@@ -1,6 +1,6 @@
-import { Result, Option, Some, None, Err, Ok } from 'ts-results';
+import { Result, Option, Some, None } from 'ts-results';
 import * as Model from './model';
-import { parseError, parseResponse, updateRequestParameters } from './base';
+import { parseError, parsePageableResponse, parseResponse, updateRequestParameters } from './base';
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import { categoryDefinition } from './Categories';
 import { currencyDefinition } from './Currency';
@@ -8,7 +8,6 @@ import { accountDefinition } from './Accounts';
 import { Moment } from 'moment/moment';
 import jQuery from 'jquery';
 import { TransactionList } from './model';
-import * as Errors from './errors';
 
 const ajv = new Ajv();
 const operationDefinition = {
@@ -183,18 +182,7 @@ export interface TransactionFilterParams {
 async function fetchTransactions(queryParams: string): Promise<Result<TransactionList, Model.Problem>> {
     const url = '/api/transactions' + '?' + queryParams;
     const response = await fetch(url);
-    const responseJson = await response.text();
-    if (response.status >= 400) {
-        return new Err(parseError(response, responseJson));
-    } else {
-        // Should be fine, try to convert
-        const data = transactionListParse(responseJson);
-        if (data === undefined) {
-            return new Err(Errors.InvalidObject(transactionListParse.message as string));
-        } else {
-            return new Ok(data);
-        }
-    }
+    return parsePageableResponse(response, transactionListParse);
 }
 
 export async function listTransactions(

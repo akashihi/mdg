@@ -30,15 +30,19 @@ export function FormikDatePicker(props: FieldAttributes<any>) {
 
 export function BudgetList(props: BudgetSelectorProps) {
     const [budgets, setBudgets] = useState<ShortBudget[]>([]);
+    const [cursorNext, setCursorNext] = useState<string | undefined>(undefined);
+    const [left, setLeft] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         setLoading(true);
         (async () => {
-            const result = await API.listBudgets();
+            const result = await API.listBudgets(6); //Half a year
             setLoading(false);
             if (result.ok) {
-                setBudgets(result.val);
+                setBudgets(result.val.budgets);
+                setCursorNext(result.val.next);
+                setLeft(result.val.left);
             } else {
                 props.reportError(result.val);
             }
@@ -79,6 +83,22 @@ export function BudgetList(props: BudgetSelectorProps) {
         form.resetForm();
     };
 
+    const onBudgetSelect = (id: string | number) => {
+        if (id === 'next' && cursorNext !== undefined && left !== undefined && left > 0) {
+            (async () => {
+                setLoading(true);
+                const newBudgets = await API.loadBudgets(cursorNext);
+                setLoading(false);
+                if (newBudgets.ok) {
+                    setLeft(newBudgets.val.left);
+                    setCursorNext(newBudgets.val.next);
+                    setBudgets(budgets.concat(newBudgets.val.budgets));
+                }
+            })();
+        } else {
+            props.loadSelectedBudget(id as number);
+        }
+    };
     const newBudgetValidate = values => {
         const errors = {};
         if (!values.begin || !values.end) {
@@ -111,6 +131,13 @@ export function BudgetList(props: BudgetSelectorProps) {
     const budgetList = budgets.map((b: ShortBudget, index: number) => (
         <MenuItem key={index} value={b.id}>{`${b.term_beginning} - ${b.term_end}`}</MenuItem>
     ));
+    if (left && left > 0) {
+        budgetList.push(
+            <MenuItem key="next" value="next">
+                Load more budgets
+            </MenuItem>
+        );
+    }
 
     const initialValues = {
         begin: moment().set({ date: 1 }).toDate(),
@@ -126,7 +153,7 @@ export function BudgetList(props: BudgetSelectorProps) {
             <Select
                 disabled={budgets.length === 0}
                 value={props.selectedBudgetId}
-                onChange={ev => props.loadSelectedBudget(ev.target.value as number)}>
+                onChange={ev => onBudgetSelect(ev.target.value)}>
                 {budgetList}
             </Select>
             <Button color="primary" onClick={onDeleteBudget}>
