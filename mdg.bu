@@ -173,7 +173,7 @@ systemd:
         ExecStartPre=-/usr/bin/docker rm -v -f duplicati
         ExecStartPre=/bin/bash -c 'chcon -Rt svirt_sandbox_file_t /srv/duplicati && chcon -Rt svirt_sandbox_file_t /srv/mdgbackup'
   
-        ExecStart=/usr/bin/docker run --name=duplicati -v /srv/duplicati:/config -v /srv/mdgbackup:/source -p 8200:8200 -e PGID=0 -e PUID=0 linuxserver/duplicati:2.0.6
+        ExecStart=/usr/bin/docker run --name=duplicati -v /srv/duplicati:/config -v /srv/mdgbackup:/source -p 8200:8200 -e PGID=0 -e PUID=0 linuxserver/duplicati:2.0.6-development
   
         [Install]
         WantedBy=multi-user.target
