@@ -5,7 +5,7 @@ import ListSubheader from '@mui/material/ListSubheader';
 import React from 'react';
 import { AccountTreeNode } from '../api/models/Account';
 
-let keyIndex = 0
+let keyIndex = 0;
 
 function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: number): JSX.Element[] {
     const subCategories = tree.categories.flatMap(c => accountList(c, indent + 1, currencyFilter));
@@ -17,7 +17,7 @@ function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: num
         .filter(a => !a.hidden)
         .map(a => {
             const currency_name = a.currency ? `(${a.currency.name})` : '';
-            keyIndex = keyIndex+1;
+            keyIndex = keyIndex + 1;
             return (
                 <MenuItem
                     key={keyIndex}
