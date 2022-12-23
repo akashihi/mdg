@@ -12,5 +12,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @EnableElasticsearchRepositories(basePackages = ["org.akashihi.mdg.indexing"])
 open class Application
 fun main(args: Array<String>) {
+    @Suppress("SpreadOperator")
     runApplication<Application>(*args)
 }
