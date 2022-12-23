@@ -1,20 +1,16 @@
-package org.akashihi.mdg;
+package org.akashihi.mdg
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.transaction.annotation.EnableTransactionManagement
 
 @SpringBootApplication
 @EnableTransactionManagement
 @EnableScheduling
-@EnableElasticsearchRepositories(basePackages = "org.akashihi.mdg.indexing")
-@SuppressWarnings("PMD")
-public class Application {
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-
+@EnableElasticsearchRepositories(basePackages = ["org.akashihi.mdg.indexing"])
+open class Application
+fun main(args: Array<String>) {
+    runApplication<Application>(*args)
 }
