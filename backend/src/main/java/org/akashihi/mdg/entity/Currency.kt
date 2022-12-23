@@ -1,40 +1,34 @@
-package org.akashihi.mdg.entity;
+package org.akashihi.mdg.entity
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.Hibernate;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import lombok.Getter
+import lombok.Setter
+import lombok.ToString
+import org.hibernate.Hibernate
+import javax.persistence.Entity
+import javax.persistence.Id
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-@Getter
-@Setter
-@ToString
 @Entity
-public class Currency {
+class Currency (
+    var code: String? = null,
+    var name: String? = null,
+    var active: Boolean? = null,
     @Id
-    private Long id;
-    private String code;
-    private String name;
-    private Boolean active;
-
-    @Override
-    @SuppressFBWarnings(value = "BC_EQUALS_METHOD_SHOULD_WORK_FOR_ALL_OBJECTS", justification = "Checked with Hibernate.getClass()")
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    val id: Long? = null,
+) {
+    @SuppressFBWarnings(value = ["BC_EQUALS_METHOD_SHOULD_WORK_FOR_ALL_OBJECTS"], justification = "Checked with Hibernate.getClass()")
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
-            return false;
+        if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) {
+            return false
         }
-        Currency currency = (Currency) o;
-        return id != null && id.equals(currency.id);
+        val currency = other as Currency
+        return id != null && id == currency.id
     }
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
     }
 }

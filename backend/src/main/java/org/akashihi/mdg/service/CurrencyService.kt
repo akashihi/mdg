@@ -1,40 +1,28 @@
-package org.akashihi.mdg.service;
+package org.akashihi.mdg.service
 
-import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.dao.CurrencyRepository;
-import org.akashihi.mdg.entity.Currency;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
-import java.util.Collection;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor
+import org.akashihi.mdg.dao.CurrencyRepository
+import org.akashihi.mdg.entity.Currency
+import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Service
+import java.util.*
+import javax.transaction.Transactional
 
 @Service
-@RequiredArgsConstructor
-public class CurrencyService {
-    private final CurrencyRepository currencyRepository;
+open class CurrencyService(private val currencyRepository: CurrencyRepository) {
+    open fun list(): Collection<Currency> = currencyRepository.findAll(Sort.by("active").descending().and(Sort.by("name").ascending()))
 
-    public Collection<Currency> list() {
-        return currencyRepository.findAll(Sort.by("active").descending().and(Sort.by("name").ascending()));
-    }
+    open fun listActive(): Collection<Currency> = currencyRepository.findAllByActiveTrueOrderByNameAsc()
 
-    public Collection<Currency> listActive() {
-        return currencyRepository.findAllByActiveTrueOrderByNameAsc();
-    }
-
-    public Optional<Currency> get(Long id) {
-        return currencyRepository.findById(id);
-    }
+    open operator fun get(id: Long): Currency? = currencyRepository.findByIdOrNull(id)
 
     @Transactional
-    public Optional<Currency> update(Long id, Currency currency) {
-        var existingCurrency = currencyRepository.findById(id);
-        if (existingCurrency.isPresent()) {
-            var updatedCurrency = existingCurrency.get();
-            updatedCurrency.setActive(currency.getActive());
-            currencyRepository.save(updatedCurrency);
-            return Optional.of(updatedCurrency);
+    open fun update(id: Long, currency: Currency): Currency? {
+        return currencyRepository.findByIdOrNull(id)?.let {
+            it.active = currency.active
+            currencyRepository.save(it)
+            return it
         }
-        return Optional.empty();
-    }}
+    }
+}
