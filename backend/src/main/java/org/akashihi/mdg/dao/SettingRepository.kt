@@ -1,6 +1,10 @@
-package org.akashihi.mdg.dao;
+package org.akashihi.mdg.dao
 
-import org.akashihi.mdg.entity.Setting;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.akashihi.mdg.entity.Setting
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Component
+import org.springframework.stereotype.Repository
 
-public interface SettingRepository extends JpaRepository<Setting, String> { }
+@Repository
+@Component
+interface SettingRepository : JpaRepository<Setting?, String?>

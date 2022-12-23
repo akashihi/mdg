@@ -1,25 +1,13 @@
-package org.akashihi.mdg.entity;
+package org.akashihi.mdg.entity
 
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-@Getter
-@Setter
-@ToString
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-public class Setting {
+class Setting(
+    var value: String,
     @Id
     @Column(name = "name")
-    private String id;
-    private String value;
-}
+    val id: String? = null
+)

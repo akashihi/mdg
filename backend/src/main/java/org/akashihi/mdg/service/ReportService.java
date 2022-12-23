@@ -49,7 +49,7 @@ public class ReportService {
     }
 
     public TotalsReport totalsReport() {
-        var primaryCurrency = settingService.getCurrentCurrencyPrimary();
+        var primaryCurrency = settingService.currentCurrencyPrimary();
         Comparator<Amount> primaryCurrencyComparator = (l, r) -> {
             if (l.name().equals(primaryCurrency.map(Currency::getCode).orElse(""))) {
                 return -1;

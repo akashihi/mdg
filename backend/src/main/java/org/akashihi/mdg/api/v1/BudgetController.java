@@ -50,8 +50,8 @@ public class BudgetController {
     protected BigDecimal getEntryTotals(Function<BudgetEntry,BigDecimal> f, Collection<BudgetEntry> entries) {
         return entries.stream().map(e -> {
             var amount = f.apply(e);
-            if (!settingService.getCurrentCurrencyPrimary().map(c -> c.equals(e.getAccount().getCurrency())).orElse(true)) {
-                var rate = rateService.getCurrentRateForPair(e.getAccount().getCurrency(), settingService.getCurrentCurrencyPrimary().get());
+            if (!settingService.currentCurrencyPrimary().map(c -> c.equals(e.getAccount().getCurrency())).orElse(true)) {
+                var rate = rateService.getCurrentRateForPair(e.getAccount().getCurrency(), settingService.currentCurrencyPrimary().get());
                 amount = amount.multiply(rate.getRate());
             }
             return amount;

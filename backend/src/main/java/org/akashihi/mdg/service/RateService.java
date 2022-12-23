@@ -50,7 +50,7 @@ public class RateService {
     }
 
     public BigDecimal toCurrentDefaultCurrency(Currency from, BigDecimal amount) {
-        var primaryCurrencyVal = settingService.getCurrentCurrencyPrimary();
+        var primaryCurrencyVal = settingService.currentCurrencyPrimary();
         if (primaryCurrencyVal.isEmpty()) {
             return amount;
         }
