@@ -5,10 +5,7 @@ HOST: https://localhost/api
 
 MDG is a self-hosted personal accounting web service.
 
-This API document is available at https://mdg2.docs.apiary.io/ and describes API v1
-
-Previous API document is available at https://mdg1.docs.apiary.io/ and describes API v0, 
-which is going to be deprecated soon.
+This API document is available at https://mdg1.docs.apiary.io/ and describes API v1
 
 # Group Settings
 
@@ -604,6 +601,14 @@ If there are no one-show entries, but at least one non-prorated entry, all of th
                     }
             ]    
         }
+
+## BudgetEntry duplication ops [/budgets/{budget_id}/entries/copy/{mode}/{source_budget_id}]
+
++ Parameters
+    + budget_id: YYYYMMDD (required, string) - ID of owning budget in form of integer
+    + mode: preserve (enum[string], required) - Copying mode, could be `preserve` or `overwrite`. In the `preserve` mode existing entries are preserved, otherwise they will be overwritten. Entries which are set in the target budget, but have zero value in the source budget are untouched.
+    + source_budget_id: YYYYMMDD (required, string) - ID of source budget for the operations.
+
 
 # Group Report
 
