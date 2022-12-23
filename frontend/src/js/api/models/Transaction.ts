@@ -2,9 +2,12 @@ import { Account } from './Account';
 import { Pageable } from './Pageable';
 
 export interface Operation {
-    readonly rate?: number;
-    readonly amount: number;
-    readonly account_id: number;
+    // Work around over immer non-propagating draft deep enough. Should be `readonly` too
+    rate?: number;
+    // Work around over immer non-propagating draft deep enough. Should be `readonly` too
+    amount: number;
+    // Work around over immer non-propagating draft deep enough. Should be `readonly` too
+    account_id: number;
     readonly account?: Account;
 }
 

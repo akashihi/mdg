@@ -164,7 +164,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
     const applyAccount = (index: number, account_id: number) => {
         props.setOperationsFunc(
             produce((draft: EditedOperation[]) => {
-                draft[index] = produce(d => (d.account_id = account_id))(draft[index]);
+                draft[index].account_id = account_id;
             })(props.operations)
         );
     };
@@ -177,7 +177,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
         if (validateRate(rate) === null) {
             const parsed = parseFloat(evaluated);
             updatedOps = produce((draft: EditedOperation[]) => {
-                draft[index] = produce(d => (d.rate = parsed))(draft[index]);
+                draft[index].rate = parsed;
             })(updatedOps);
         }
         props.setOperationsFunc(updatedOps);
@@ -191,7 +191,7 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
         if (validateOperationAmount(amount) === null) {
             const parsed = parseFloat(evaluated);
             updatedOps = produce((draft: EditedOperation[]) => {
-                draft[index] = produce(d => (d.amount = parsed))(draft[index]);
+                draft[index].amount = parsed;
             })(updatedOps);
         }
         props.setOperationsFunc(updatedOps);
