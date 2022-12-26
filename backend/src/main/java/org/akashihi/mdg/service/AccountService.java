@@ -50,7 +50,10 @@ public class AccountService {
             }
         }
         if (account.getAccountType().equals(AccountType.ASSET) && account.getCategoryId() == null) { //Default category for asset accounts
-                var defaultCategory = categoryRepository.findByNameAndAccountType("Current", AccountType.ASSET).orElseThrow(() ->new MdgException("CATEGORY_NOT_FOUND"));
+            var defaultCategory = categoryRepository.findByNameAndAccountType("Current", AccountType.ASSET);
+            if (defaultCategory == null) {
+                throw new MdgException("CATEGORY_NOT_FOUND");
+            }
                 account.setCategory(defaultCategory);
                 account.setCategoryId(defaultCategory.getId());
         }

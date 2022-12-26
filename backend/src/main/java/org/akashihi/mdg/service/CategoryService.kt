@@ -1,133 +1,109 @@
-package org.akashihi.mdg.service;
+package org.akashihi.mdg.service
 
-import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v1.MdgException;
-import org.akashihi.mdg.dao.AccountRepository;
-import org.akashihi.mdg.dao.CategoryRepository;
-import org.akashihi.mdg.entity.AccountType;
-import org.akashihi.mdg.entity.Category;
-import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
-import java.util.Collection;
-import java.util.Optional;
+import org.akashihi.mdg.api.v1.MdgException
+import org.akashihi.mdg.dao.AccountRepository
+import org.akashihi.mdg.dao.CategoryRepository
+import org.akashihi.mdg.entity.AccountType
+import org.akashihi.mdg.entity.Category
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Service
+import java.util.*
+import java.util.function.Consumer
+import javax.transaction.Transactional
 
 @Service
-@RequiredArgsConstructor
-public class CategoryService {
-    private final CategoryRepository categoryRepository;
-    private final AccountRepository accountRepository;
-
+open class CategoryService(private val categoryRepository: CategoryRepository, private val accountRepository: AccountRepository) {
     @Transactional
-    public Category create(Category category) {
-        if (category.getAccountType().equals(AccountType.ASSET)) {
-            throw new MdgException("CATEGORY_INVALID_TYPE");
+    open fun create(category: Category): Category {
+        if (category.accountType == AccountType.ASSET) {
+            throw MdgException("CATEGORY_INVALID_TYPE")
         }
-
-        if (category.getParentId() != null) {
-            var parentCategory = categoryRepository.findById(category.getParentId());
-            if (parentCategory.isEmpty()) {
-                throw new MdgException("CATEGORY_DATA_INVALID");
+        if (category.parentId != null) {
+            val parentCategory = categoryRepository.findByIdOrNull(category.parentId) ?: throw MdgException("CATEGORY_DATA_INVALID")
+            if (parentCategory.accountType != category.accountType) {
+                throw MdgException("CATEGORY_INVALID_TYPE")
             }
-            if (!parentCategory.get().getAccountType().equals(category.getAccountType())) {
-                throw new MdgException("CATEGORY_INVALID_TYPE");
-            }
-            categoryRepository.save(category);
-            categoryRepository.addLeaf(parentCategory.get().getId(), category.getId());
+            categoryRepository.save(category)
+            categoryRepository.addLeaf(parentCategory.id!!, category.id!!)
         } else {
-            categoryRepository.save(category);
-            categoryRepository.addRoot(category.getId());
+            categoryRepository.save(category)
+            categoryRepository.addRoot(category.id!!)
         }
-
-        return category;
+        return category
     }
 
     @Transactional
-    public Collection<Category> list() {
-        var roots = categoryRepository.findTopCategories();
-        roots.forEach(this::enrichWithChildren);
-        roots.sort((l, r) -> {
-                    if (l.getAccountType().equals(r.getAccountType())) {
-                        return 0;
-                    }
-                    if (l.getAccountType().equals(AccountType.ASSET)) {
-                        return -1;
-                    } else if (r.getAccountType().equals(AccountType.ASSET)) {
-                        return 1;
-                    } else if (l.getAccountType().equals(AccountType.INCOME)) {
-                        return -1;
-                    } else {
-                        return 1;
-                    }
-                }
-        );
-        return roots;
-    }
-
-    @Transactional
-    public Optional<Category> get(Long id) {
-        var categoryValue = categoryRepository.findById(id);
-        if (categoryValue.isEmpty()) {
-            return categoryValue;
-        }
-        var category = categoryValue.get();
-        var parent = categoryRepository.findCategoryParent(category.getId());
-        parent.ifPresent(category::setParentId);
-
-        return Optional.of(this.enrichWithChildren(category));
-    }
-
-    protected Category enrichWithChildren(Category category) {
-        var children = categoryRepository.findDirectChildren(category.getId()).stream().map(this::enrichWithChildren).toList();
-        children.forEach(c -> c.setParentId(category.getId()));
-        category.setChildren(children);
-        return category;
-    }
-
-    @Transactional
-    public Optional<Category> update(Long id, Category newCategory) {
-        var categoryValue = categoryRepository.findById(id);
-        if (categoryValue.isEmpty()) {
-            return categoryValue;
-        }
-        var category = categoryValue.get();
-        category.setName(newCategory.getName());
-        category.setPriority(newCategory.getPriority());
-
-        if (newCategory.getParentId() != null) {
-            var parentValue = categoryRepository.findById(newCategory.getParentId());
-            if (parentValue.isEmpty() && !newCategory.getParentId().equals(id)) {
-                throw new MdgException("CATEGORY_DATA_INVALID");
+    open fun list(): Collection<Category> {
+        val roots = categoryRepository.findTopCategories()
+        roots.forEach { enrichWithChildren(it) }
+        roots.sortedWith { l: Category, r: Category ->
+            if (l.accountType == r.accountType) {
+                return@sortedWith 0
             }
-            if (parentValue.map(Category::getAccountType).map(c -> !c.equals(category.getAccountType())).orElse(false)) {
-                throw new MdgException("CATEGORY_INVALID_TYPE");
+            if (l.accountType == AccountType.ASSET) {
+                return@sortedWith -1
+            } else if (r.accountType == AccountType.ASSET) {
+                return@sortedWith 1
+            } else if (l.accountType == AccountType.INCOME) {
+                return@sortedWith -1
+            } else {
+                return@sortedWith 1
             }
-            var nextParent = parentValue.map(Category::getId).orElse(newCategory.getParentId());
-            if (!nextParent.equals(id)) {
+        }
+        return roots
+    }
+
+    @Transactional
+    open operator fun get(id: Long): Category? {
+        val category = categoryRepository.findByIdOrNull(id) ?: return null
+        val parent = categoryRepository.findCategoryParent(category.id!!)
+        parent?.also { category.parentId = it }
+        return enrichWithChildren(category)
+    }
+
+    protected open fun enrichWithChildren(category: Category): Category {
+        val children = categoryRepository.findDirectChildren(category.id!!).map { enrichWithChildren(it) }
+        children.forEach { it.parentId = category.id }
+        category.children = children
+        return category
+    }
+
+    @Transactional
+    open fun update(id: Long, newCategory: Category): Category? {
+        val category = categoryRepository.findByIdOrNull(id) ?: return null
+        category.name = newCategory.name
+        category.priority = newCategory.priority
+        if (newCategory.parentId != null) {
+            val parentValue = categoryRepository.findByIdOrNull(newCategory.parentId)
+            if (parentValue == null && newCategory.parentId != id) {
+                throw MdgException("CATEGORY_DATA_INVALID")
+            }
+            if (parentValue?.let(Category::accountType)?.let { it != category.accountType } == true) {
+                throw MdgException("CATEGORY_INVALID_TYPE")
+            }
+            var nextParent = parentValue?.let(Category::id) ?: newCategory.parentId!!
+            if (nextParent != id) {
                 //Check tree for cycle
-                if (!categoryRepository.findInvertedParent(category.getId(), nextParent).isEmpty()) {
-                    throw new MdgException("CATEGORY_TREE_CYCLED");
+                if (!categoryRepository.findInvertedParent(category.id, nextParent).isEmpty()) {
+                    throw MdgException("CATEGORY_TREE_CYCLED")
                 }
             } else {
-                nextParent = 0L; //Self parent means no parent
+                nextParent = 0L //Self parent means no parent
             }
-            categoryRepository.removeParent(id);
-            categoryRepository.adopt(id, nextParent);
-            category.setParentId(nextParent);
+            categoryRepository.removeParent(id)
+            categoryRepository.adopt(id, nextParent)
+            category.parentId = nextParent
         }
-        categoryRepository.save(category);
-        return Optional.of(category);
+        categoryRepository.save(category)
+        return category
     }
 
     @Transactional
-    public void delete(Long id) {
-        var categoryValue = categoryRepository.findById(id);
-        if (categoryValue.isPresent()) {
-            var category = categoryValue.get();
-            if (!category.getAccountType().equals(AccountType.ASSET)) { // Silently ignore deletion request for ASSET categories
-                accountRepository.dropCategory(id);
-                categoryRepository.deleteById(id);
-            }
+    open fun delete(id: Long) {
+        val category = categoryRepository.findByIdOrNull(id) ?: return
+        if (category.accountType != AccountType.ASSET) { // Silently ignore deletion request for ASSET categories
+            accountRepository.dropCategory(id)
+            categoryRepository.deleteById(id)
         }
     }
 }
