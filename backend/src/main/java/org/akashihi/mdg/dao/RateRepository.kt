@@ -1,16 +1,11 @@
-package org.akashihi.mdg.dao;
+package org.akashihi.mdg.dao
 
-import org.akashihi.mdg.entity.Rate;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.akashihi.mdg.entity.Rate
+import org.springframework.data.jpa.repository.JpaRepository
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Optional;
-
-public interface RateRepository extends JpaRepository<Rate, Long> {
-    Collection<Rate> findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(LocalDateTime rateBeginning, LocalDateTime rateEnd);
-
-    Optional<Rate> findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(LocalDateTime rateBeginning, LocalDateTime rateEnd, Long fromId, Long toId);
-
-    Optional<Rate> findByBeginningGreaterThanEqualAndFromEqualsAndToEquals(LocalDateTime rateBeginning, Long fromId, Long toId);
+interface RateRepository : JpaRepository<Rate?, Long?> {
+    fun findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(rateBeginning: LocalDateTime?, rateEnd: LocalDateTime?): Collection<Rate>
+    fun findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(rateBeginning: LocalDateTime?, rateEnd: LocalDateTime?, fromId: Long?, toId: Long?): Rate?
+    fun findByBeginningGreaterThanEqualAndFromEqualsAndToEquals(rateBeginning: LocalDateTime?, fromId: Long?, toId: Long?): Rate?
 }

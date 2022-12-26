@@ -27,7 +27,7 @@ public class Budget {
     public record BudgetState(BudgetPair income, BudgetPair expense, BudgetPair allowed) {}
 
     @Id
-    private Long id;
+    public Long id;
 
     @Column(name = "term_beginning")
     @JsonProperty("term_beginning")

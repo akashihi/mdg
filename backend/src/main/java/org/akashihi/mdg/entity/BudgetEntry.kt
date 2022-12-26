@@ -1,80 +1,67 @@
-package org.akashihi.mdg.entity;
+package org.akashihi.mdg.entity
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.akashihi.mdg.dao.BudgetEntryModeConverter;
-
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
+import org.akashihi.mdg.dao.BudgetEntryModeConverter
+import java.math.BigDecimal
+import javax.persistence.Convert
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.Table
+import javax.persistence.Transient
 
 @Entity
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "budgetentry")
-public class BudgetEntry {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+class BudgetEntry (
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="budget_id", nullable = false)
-    private Budget budget;
+    @JoinColumn(name = "budget_id", nullable = false)
+    val budget: Budget,
+
     @JsonProperty("account_id")
     @Transient
-    private Long accountId;
+    var accountId: Long,
+
     @ManyToOne
-    @JoinColumn(name="account_id", nullable = false)
+    @JoinColumn(name = "account_id", nullable = false)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Account account;
+    var account: Account? = null,
+
     @JsonProperty("category_id")
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long categoryId;
+    var categoryId: Long? = null,
+
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Category category;
-    @Convert(converter = BudgetEntryModeConverter.class)
-    private BudgetEntryMode distribution;
+    var category: Category? = null,
+
+    @Convert(converter = BudgetEntryModeConverter::class)
+    var distribution: BudgetEntryMode,
+
     @JsonProperty("expected_amount")
-    private BigDecimal expectedAmount;
+    var expectedAmount: BigDecimal,
+
     @JsonProperty("actual_amount")
     @Transient
-    private BigDecimal actualAmount;
+    var actualAmount: BigDecimal,
+
     @JsonProperty("allowed_spendings")
     @Transient
-    private BigDecimal allowedSpendings;
+    var allowedSpendings: BigDecimal,
+
     @JsonProperty("spending_percent")
     @Transient
-    private BigDecimal spendingPercent;
+    var spendingPercent: BigDecimal,
 
-    public BudgetEntry(BudgetEntry entry) {
-        this.id = entry.id;
-        this.budget = entry.budget;
-        this.accountId = entry.accountId;
-        this.account = entry.account;
-        this.categoryId = entry.categoryId;
-        this.category = entry.category;
-        this.distribution = entry.distribution;
-        this.expectedAmount = entry.expectedAmount;
-        this.actualAmount = entry.actualAmount;
-        this.allowedSpendings = entry.allowedSpendings;
-        this.spendingPercent = entry.spendingPercent;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null
+) {
+    constructor(other: BudgetEntry) : this(other.budget, other.accountId, other.account, other.categoryId, other.category, other.distribution, other.expectedAmount, other.actualAmount, other.allowedSpendings, other.spendingPercent, other.id)
 }

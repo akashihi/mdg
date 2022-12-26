@@ -1,17 +1,16 @@
-package org.akashihi.mdg.entity;
+package org.akashihi.mdg.entity
 
-import java.util.Locale;
+enum class AccountType {
+    INCOME, ASSET, EXPENSE;
 
-public enum AccountType {
-    INCOME,
-    ASSET,
-    EXPENSE;
-
-    public String toDbValue() {
-        return this.name().toLowerCase(Locale.US);
+    fun toDbValue(): String {
+        return name.lowercase()
     }
 
-    public static AccountType from(String status) {
-        return AccountType.valueOf(status.toUpperCase(Locale.US));
+    companion object {
+        @JvmStatic
+        fun from(status: String): AccountType {
+            return valueOf(status.uppercase())
+        }
     }
 }

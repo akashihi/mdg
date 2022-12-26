@@ -50,8 +50,14 @@ public class ReportService {
 
     public TotalsReport totalsReport() {
         var primaryCurrency = settingService.currentCurrencyPrimary();
+        String primaryCurrencyCode;
+        if (primaryCurrency != null) {
+            primaryCurrencyCode = primaryCurrency.getCode();
+        } else {
+            primaryCurrencyCode = "";
+        }
         Comparator<Amount> primaryCurrencyComparator = (l, r) -> {
-            if (l.name().equals(primaryCurrency.map(Currency::getCode).orElse(""))) {
+            if (l.name().equals(primaryCurrencyCode)) {
                 return -1;
             } else {
                 return l.name().compareTo(r.name());
@@ -74,7 +80,7 @@ public class ReportService {
                 }
             }
             currencyTotals.sort(primaryCurrencyComparator);
-            if (currencyTotals.size() == 1 && primaryCurrency.map(p -> p.getCode().equals(currencyTotals.get(0).name())).orElse(false)) {
+            if (currencyTotals.size() == 1 && primaryCurrencyCode.equals(currencyTotals.get(0).name())) {
                 currencyTotals.clear(); // Drop totals if only primary currency is filled
             }
 

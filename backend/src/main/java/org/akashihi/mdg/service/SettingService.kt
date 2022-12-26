@@ -54,7 +54,7 @@ open class SettingService(@Autowired private val currencyRepository: CurrencyRep
 
     @Cacheable(value = ["settingsCache"], key = "#result.id", condition = "#result != null")
     @Transactional
-    open fun currentCurrencyPrimary(): Optional<Currency> {
-        return this["currency.primary"]?.let { it.value.toLongOrNull() }?.let { currencyRepository.findById(it) } ?: Optional.empty()
+    open fun currentCurrencyPrimary(): Currency? {
+        return this["currency.primary"]?.let { it.value.toLongOrNull() }?.let { currencyRepository.findByIdOrNull(it) }
     }
 }

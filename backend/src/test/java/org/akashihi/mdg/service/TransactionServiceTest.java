@@ -48,8 +48,7 @@ class TransactionServiceTest {
     }
 
     private Account makeAccount(Long currencyId){
-        var currency = new Currency();
-        currency.setId(currencyId);
+        var currency = new Currency("", "", true, currencyId);
         var account = new Account();
         account.setCurrency(currency);
         return account;
@@ -95,7 +94,7 @@ class TransactionServiceTest {
         var tx = new Transaction();
         tx.setOperations(ops);
 
-        when(rateService.getPair(any(), eq(eurOp.getAccount().getCurrency()), eq(usdOp.getAccount().getCurrency()))).thenReturn(new Rate(1L, LocalDateTime.MIN, LocalDateTime.MAX, eurOp.getAccount().getCurrency().getId(), usdOp.getAccount().getCurrency().getId(), new BigDecimal("0.84")));
+        when(rateService.getPair(any(), eq(eurOp.getAccount().getCurrency()), eq(usdOp.getAccount().getCurrency()))).thenReturn(new Rate(LocalDateTime.MIN, LocalDateTime.MAX, eurOp.getAccount().getCurrency().getId(), usdOp.getAccount().getCurrency().getId(), new BigDecimal("0.84"), 1L));
         var newTx = transactionService.replaceCurrency(tx, czkOp1.getAccount(), usdOp.getAccount().getCurrency());
 
         var replaced = newTx.getOperations().stream().filter(o -> o.getAccount().equals(czkOp1.getAccount())).findFirst().get();
@@ -116,7 +115,7 @@ class TransactionServiceTest {
         var tx = new Transaction();
         tx.setOperations(ops);
 
-        when(rateService.getPair(any(), eq(usdOp.getAccount().getCurrency()), eq(czkOp1.getAccount().getCurrency()))).thenReturn(new Rate(1L, LocalDateTime.MIN, LocalDateTime.MAX, usdOp.getAccount().getCurrency().getId(), usdOp.getAccount().getCurrency().getId(), new BigDecimal("21.00")));
+        when(rateService.getPair(any(), eq(usdOp.getAccount().getCurrency()), eq(czkOp1.getAccount().getCurrency()))).thenReturn(new Rate(LocalDateTime.MIN, LocalDateTime.MAX, usdOp.getAccount().getCurrency().getId(), usdOp.getAccount().getCurrency().getId(), new BigDecimal("21.00"), 1L));
         var newTx = transactionService.replaceCurrency(tx, eurOp.getAccount(), czkOp1.getAccount().getCurrency());
 
         var replaced = newTx.getOperations().stream().filter(o -> o.getAccount().equals(eurOp.getAccount())).findFirst().get();

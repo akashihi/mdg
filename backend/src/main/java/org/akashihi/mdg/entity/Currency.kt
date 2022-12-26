@@ -10,9 +10,9 @@ import javax.persistence.Id
 
 @Entity
 class Currency (
-    var code: String? = null,
-    var name: String? = null,
-    var active: Boolean? = null,
+    var code: String,
+    var name: String,
+    var active: Boolean,
     @Id
     val id: Long? = null,
 ) {
