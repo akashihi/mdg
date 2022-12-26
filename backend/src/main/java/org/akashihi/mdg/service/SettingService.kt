@@ -35,7 +35,7 @@ open class SettingService(@Autowired private val currencyRepository: CurrencyRep
     @CacheEvict(value = ["settingsCache"], key = "#result.id")
     open fun updateCurrencyPrimary(newValue: String): Setting {
         val exists = newValue.toLongOrNull()?.let { currencyRepository.existsById(it) }
-        if (exists == null || !exists) {
+        if (exists != true) {
             throw MdgException("SETTING_DATA_INVALID")
         }
         val setting = settingRepository.findByIdOrNull("currency.primary") ?: throw MdgException("SETTING_NOT_FOUND")
