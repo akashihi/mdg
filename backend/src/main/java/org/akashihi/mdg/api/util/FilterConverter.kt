@@ -1,28 +1,23 @@
-package org.akashihi.mdg.api.util;
+package org.akashihi.mdg.api.util
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.ObjectMapper
+import java.util.Collections
+import kotlin.collections.HashMap
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-public final class FilterConverter {
-    private FilterConverter() {}
-
-    public static Optional<Map<String, String>> buildFilter(Optional<String> query, ObjectMapper objectMapper) {
-        return query.map(s -> {
+object FilterConverter {
+    fun buildFilter(query: String?, objectMapper: ObjectMapper): Map<String, String> {
+        return query?.let { s: String ->
             try {
-                var queryMap = new HashMap<String,String>();
-                var parsedQuery = objectMapper.readValue(s, Map.class);
+                val queryMap = HashMap<String, String>()
+                val parsedQuery = objectMapper.readValue(s, Map::class.java)
                 parsedQuery
-                        .keySet().stream().filter(k -> k instanceof String && parsedQuery.get(k) instanceof String)
-                        .forEach(k -> queryMap.put((String) k, (String) parsedQuery.get(k)));
-                return queryMap;
-            } catch (JsonProcessingException e) {
-                return Collections.EMPTY_MAP;
+                    .keys.filter { it is String && parsedQuery[it] is String }
+                    .forEach { queryMap[it as String] = parsedQuery[it] as String }
+                return@let queryMap
+            } catch (e: JsonProcessingException) {
+                return@let Collections.emptyMap()
             }
-        });
+        } ?: Collections.emptyMap()
     }
 }

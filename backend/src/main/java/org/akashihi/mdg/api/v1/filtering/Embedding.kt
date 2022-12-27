@@ -1,34 +1,28 @@
-package org.akashihi.mdg.api.v1.filtering;
+package org.akashihi.mdg.api.v1.filtering
 
-import org.akashihi.mdg.entity.Account;
-import org.akashihi.mdg.entity.BudgetEntry;
-import org.akashihi.mdg.entity.Operation;
+import org.akashihi.mdg.entity.Account
+import org.akashihi.mdg.entity.BudgetEntry
+import org.akashihi.mdg.entity.Operation
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-
-public final class Embedding {
-    private Embedding() {}
-
-    public static Function<Operation, Operation> embedOperationObjects(Optional<Collection<String>> embed) {
-        var accounts = embed.map(e-> e.contains("account")).orElse(false);
-        return (operation) -> {
-            operation.setAccount_id(operation.getAccount().getId());
+object Embedding {
+    @JvmStatic
+    fun embedOperationObjects(embed: Collection<String>?): (o: Operation) -> Operation {
+        val accounts = embed?.contains("account") ?: false
+        return { operation: Operation ->
+            operation.account_id = operation.account?.id
             if (!accounts) {
-                operation.setAccount(null);
+                operation.account = null
             } else {
-                operation.setAccount(embedAccountObjects(embed).apply(operation.getAccount()));
+                operation.account = embedAccountObjects(embed).invoke(operation.account!!)
             }
-            return operation;
-        };
+            operation
+        }
     }
-    public static Function<Account, Account> embedAccountObjects(Optional<Collection<String>> embed) {
-        var categories = embed.map(e -> e.contains("category")).orElse(false);
-        var currencies = embed.map(e -> e.contains("currency")).orElse(false);
 
-        return (account) -> {
+    fun embedAccountObjects(embed: Collection<String>?): (a: Account) -> Account {
+        val categories = embed?.contains("category") ?: false
+        val currencies = embed?.contains("currency") ?: false
+        return { account: Account ->
             // In case a list of accounts is processed, blindly setting a currency id may cause an issue,
             // when same account is on the list for more than one time. As instance of the same account
             // is referenced multiple times, first visit to that reference will set categoryId and
@@ -36,41 +30,40 @@ public final class Embedding {
             // and it will cause NPE. To avoid such situations a simple check was added:
             // if currency id is set, we know, that accounts was already visited and there is no need
             // to reprocess.
-            if (account.getCurrencyId() == null) {
-                account.setCurrencyId(account.getCurrency().getId());
+            if (account.currencyId == null) {
+                account.currencyId = account.currency?.id
             }
             if (!currencies) {
-                account.setCurrency(null);
+                account.currency = null
             }
-            if (account.getCategory() != null) {
-                account.setCategoryId(account.getCategory().getId());
+            if (account.category != null) {
+                account.categoryId = account.category!!.id
                 if (!categories) {
-                    account.setCategory(null);
+                    account.category = null
                 }
             }
-            return account;
-        };
+            account
+        }
     }
 
-    public static Function<BudgetEntry, BudgetEntry> embedBudgetEntryObject(Optional<Collection<String>> embed) {
-        var accounts = embed.map(e-> e.contains("account")).orElse(false);
-        var categories = embed.map(e -> e.contains("category")).orElse(false);
-
-        return (entry) -> {
-            var embeddedEntry = new BudgetEntry(entry);
-            embeddedEntry.setAccountId(embeddedEntry.getAccount().getId());
-            if (Objects.nonNull(embeddedEntry.getAccount().getCategory())) {
-                embeddedEntry.setCategoryId(embeddedEntry.getAccount().getCategory().getId());
+    fun embedBudgetEntryObject(embed: Collection<String>?): (be: BudgetEntry) -> BudgetEntry {
+        val accounts = embed?.contains("account") ?: false
+        val categories = embed?.contains("category") ?: false
+        return { entry: BudgetEntry ->
+            val embeddedEntry = BudgetEntry(entry)
+            embeddedEntry.accountId = embeddedEntry.account?.id!!
+            if (embeddedEntry.account?.category != null) {
+                embeddedEntry.categoryId = embeddedEntry.account!!.category!!.id
                 if (categories) {
-                    embeddedEntry.setCategory(embeddedEntry.getAccount().getCategory());
+                    embeddedEntry.category = embeddedEntry.account!!.category
                 }
             }
             if (!accounts) {
-                embeddedEntry.setAccount(null);
+                embeddedEntry.account = null
             } else {
-                embeddedEntry.setAccount(embedAccountObjects(embed).apply(embeddedEntry.getAccount()));
+                embeddedEntry.account = embeddedEntry.account?.let { embedAccountObjects(embed).invoke(it) }
             }
-            return embeddedEntry;
-        };
+            embeddedEntry
+        }
     }
 }

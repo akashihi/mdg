@@ -45,7 +45,7 @@ open class BudgetController(private val budgetService: BudgetService, private va
         }.reduce(BigDecimal.ZERO) { acc: BigDecimal, v: BigDecimal? -> acc.add(v) }
     }
 
-    private fun convertTopCategory(accountType: AccountType, categories: Collection<Category>, entries: Collection<BudgetEntry>, embed: Optional<Collection<String?>?>?): BudgetEntryTreeEntry {
+    private fun convertTopCategory(accountType: AccountType, categories: Collection<Category>, entries: Collection<BudgetEntry>, embed: Collection<String>?): BudgetEntryTreeEntry {
         val enrichedEntries = entries.stream().peek { e: BudgetEntry ->
             e.account!!.balance = BigDecimal.ZERO
             e.account!!.primaryBalance = BigDecimal.ZERO
@@ -64,7 +64,7 @@ open class BudgetController(private val budgetService: BudgetService, private va
         return BudgetEntryTreeEntry(null, null, actualSpendingsCategories, expectedSpendingsCategories, percent, allowedSpendingsCategories, topEntries, topCategories)
     }
 
-    private fun convertCategory(category: Category, entries: Collection<BudgetEntry>, embed: Optional<Collection<String?>?>?): Optional<BudgetEntryTreeEntry> {
+    private fun convertCategory(category: Category, entries: Collection<BudgetEntry>, embed: Collection<String>?): Optional<BudgetEntryTreeEntry> {
         val categoryEntries = entries.stream().filter { e: BudgetEntry -> e.account!!.category != null }.filter { e: BudgetEntry -> e.account!!.category == category }.map(Embedding.embedBudgetEntryObject(embed)).toList()
         val subCategories = category.children.stream().map { c: Category -> convertCategory(c, entries, embed) }
             .filter { obj: Optional<BudgetEntryTreeEntry> -> obj.isPresent }.map { obj: Optional<BudgetEntryTreeEntry> -> obj.get() }.toList()
@@ -122,12 +122,12 @@ open class BudgetController(private val budgetService: BudgetService, private va
     }
 
     @GetMapping(value = ["/budgets/{budgetId}/entries"], produces = ["application/vnd.mdg+json;version=1"])
-    fun listEntries(@PathVariable("budgetId") budgetId: Long?, @RequestParam("embed") embed: Optional<Collection<String?>?>?): BudgetEntries {
+    fun listEntries(@PathVariable("budgetId") budgetId: Long?, @RequestParam("embed") embed: Collection<String>?): BudgetEntries {
         return BudgetEntries(budgetService!!.listEntries(budgetId).stream().map(Embedding.embedBudgetEntryObject(embed)).toList())
     }
 
     @GetMapping(value = ["/budgets/{budgetId}/entries/tree"], produces = ["application/vnd.mdg+json;version=1"])
-    fun tree(@PathVariable("budgetId") budgetId: Long?, @RequestParam("embed") embed: Optional<Collection<String?>?>?, @RequestParam("filter") filter: Optional<String?>): BudgetEntryTree {
+    fun tree(@PathVariable("budgetId") budgetId: Long?, @RequestParam("embed") embed: Collection<String>?, @RequestParam("filter") filter: Optional<String?>): BudgetEntryTree {
         budgetService!![budgetId].orElseThrow { MdgException("BUDGET_NOT_FOUND") }
         val categories = categoryService!!.list()
         var entries = budgetService.listEntries(budgetId)
@@ -141,14 +141,14 @@ open class BudgetController(private val budgetService: BudgetService, private va
     }
 
     @GetMapping(value = ["/budgets/{budgetId}/entries/{entryId}"], produces = ["application/vnd.mdg+json;version=1"])
-    fun getEntry(@PathVariable("budgetId") budgetId: Long?, @PathVariable("entryId") entryId: Long?, @RequestParam("embed") embed: Optional<Collection<String?>?>?): BudgetEntry {
+    fun getEntry(@PathVariable("budgetId") budgetId: Long?, @PathVariable("entryId") entryId: Long?, @RequestParam("embed") embed: Collection<String>?): BudgetEntry {
         return budgetService!!.getBudgetEntry(entryId).map(Embedding.embedBudgetEntryObject(embed)).orElseThrow { MdgException("BUDGETENTRY_NOT_FOUND") }
     }
 
     @PutMapping(value = ["/budgets/{budgetId}/entries/{entryId}"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun updateEntry(@PathVariable("budgetId") budgetId: Long?, @PathVariable("entryId") entryId: Long?, @RequestBody entry: BudgetEntry?): BudgetEntry {
-        return budgetService!!.updateBudgetEntry(entryId, entry).map(Embedding.embedBudgetEntryObject(Optional.empty())).orElseThrow { MdgException("BUDGETENTRY_NOT_FOUND") }
+        return budgetService!!.updateBudgetEntry(entryId, entry).map(Embedding.embedBudgetEntryObject(null)).orElseThrow { MdgException("BUDGETENTRY_NOT_FOUND") }
     }
 
     companion object {

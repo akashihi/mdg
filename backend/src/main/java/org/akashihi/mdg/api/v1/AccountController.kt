@@ -1,116 +1,101 @@
-package org.akashihi.mdg.api.v1;
+package org.akashihi.mdg.api.v1
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import org.akashihi.mdg.api.v1.dto.AccountStatus;
-import org.akashihi.mdg.api.v1.dto.Accounts;
-import org.akashihi.mdg.api.v1.dto.CategoryTree;
-import org.akashihi.mdg.api.v1.dto.CategoryTreeEntry;
-import org.akashihi.mdg.api.v1.filtering.Embedding;
-import org.akashihi.mdg.api.util.FilterConverter;
-import org.akashihi.mdg.entity.Account;
-import org.akashihi.mdg.entity.AccountType;
-import org.akashihi.mdg.entity.Category;
-import org.akashihi.mdg.service.AccountService;
-import org.akashihi.mdg.service.CategoryService;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.akashihi.mdg.api.util.FilterConverter
+import org.akashihi.mdg.api.v1.filtering.Embedding
+import org.akashihi.mdg.entity.Account
+import org.akashihi.mdg.entity.AccountType
+import org.akashihi.mdg.entity.Category
+import org.akashihi.mdg.service.AccountService
+import org.akashihi.mdg.service.CategoryService
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
+data class CategoryTreeEntry(
+    @field:JsonInclude(JsonInclude.Include.NON_NULL) val id: Long?,
+    @field:JsonInclude(JsonInclude.Include.NON_NULL) val name: String?,
+    val accounts: Collection<Account>,
+    val categories: Collection<CategoryTreeEntry>
+)
+
+data class CategoryTree(val asset: CategoryTreeEntry, val expense: CategoryTreeEntry, val income: CategoryTreeEntry)
+
+data class Accounts(val accounts: Collection<Account>)
+
+data class AccountStatus(val id: Long, val deletable: Boolean)
 
 @RestController
-@RequiredArgsConstructor
-public class AccountController {
-    private final AccountService accountService;
-    private final CategoryService categoryService;
-    private final ObjectMapper objectMapper;
-
-    protected CategoryTreeEntry convertTopCategory(AccountType accountType, Collection<Category> categories, Collection<Account> accounts) {
-        var topAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(a -> a.getCategoryId() == null).toList();
-
-        var topCategories = new ArrayList<CategoryTreeEntry>();
-        var favoriteAccounts = accounts.stream().filter(a -> a.getAccountType().equals(accountType)).filter(a -> Objects.nonNull(a.getFavorite()) && a.getFavorite()).toList();
-        if (!favoriteAccounts.isEmpty()) {
-            var favoriteCategory = new CategoryTreeEntry(-1L, "Favorite", favoriteAccounts, Collections.emptyList());
-            topCategories.add(0, favoriteCategory);
+class AccountController(private val accountService: AccountService, private val categoryService: CategoryService, private val objectMapper: ObjectMapper) {
+    private fun convertTopCategory(accountType: AccountType, categories: Collection<Category>, accounts: Collection<Account>): CategoryTreeEntry {
+        val topAccounts = accounts.filter { it.accountType == accountType }.filter { it.categoryId == null }
+        val topCategories = ArrayList<CategoryTreeEntry>()
+        val favoriteAccounts = accounts.filter { it.accountType == accountType }.filter { it.favorite == true }
+        if (favoriteAccounts.isNotEmpty()) {
+            val favoriteCategory = CategoryTreeEntry(-1L, "Favorite", favoriteAccounts, emptyList())
+            topCategories.add(0, favoriteCategory)
         }
-
-        topCategories.addAll(categories.stream().filter(a -> a.getAccountType().equals(accountType)).map(c -> convertCategory(c, accounts)).filter(Optional::isPresent).map(Optional::get).toList());
-
-        return new CategoryTreeEntry(null, null, topAccounts, topCategories);
+        topCategories.addAll(categories.filter { a: Category -> a.accountType == accountType }.mapNotNull { c: Category -> convertCategory(c, accounts) })
+        return CategoryTreeEntry(null, null, topAccounts, topCategories)
     }
 
-    protected Optional<CategoryTreeEntry> convertCategory(Category category, Collection<Account> accounts) {
-        var categoryAccounts = accounts.stream().filter(a -> a.getCategoryId() != null).filter(a -> a.getCategoryId().equals(category.getId())).toList();
-        var subCategories = category.getChildren().stream().map(c -> convertCategory(c, accounts)).filter(Optional::isPresent).map(Optional::get).toList();
-        if (categoryAccounts.isEmpty() && subCategories.isEmpty()) {
-            return Optional.empty();
+    private fun convertCategory(category: Category, accounts: Collection<Account>): CategoryTreeEntry? {
+        val categoryAccounts = accounts.filter { a: Account -> a.categoryId != null }.filter { a: Account -> a.categoryId == category.id }
+        val subCategories = category.children.mapNotNull { convertCategory(it, accounts) }
+        return if (categoryAccounts.isEmpty() && subCategories.isEmpty()) {
+            null
         } else {
-            return Optional.of(new CategoryTreeEntry(category.getId(), category.getName(), categoryAccounts, subCategories));
+            CategoryTreeEntry(category.id, category.name, categoryAccounts, subCategories)
         }
     }
 
-    @PostMapping(value = "/accounts", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @PostMapping(value = ["/accounts"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.CREATED)
-    Account create(@RequestBody Account account) {
-        var newAccount = accountService.create(account);
-        newAccount.setCategory(null); //Do not embed on creation
-        newAccount.setCurrency(null);
-        return newAccount;
+    fun create(@RequestBody account: Account): Account {
+        val newAccount = accountService.create(account)
+        newAccount.category = null //Do not embed on creation
+        newAccount.currency = null
+        return newAccount
     }
 
-    @GetMapping(value = "/accounts", produces = "application/vnd.mdg+json;version=1")
-    Accounts list(@RequestParam("q") Optional<String> query, @RequestParam("embed") Optional<Collection<String>> embed) {
-        var accounts = accountService.list(FilterConverter.buildFilter(query, objectMapper)).stream().map(Embedding.embedAccountObjects(embed)).toList();
-        return new Accounts(accounts);
+    @GetMapping(value = ["/accounts"], produces = ["application/vnd.mdg+json;version=1"])
+    fun list(@RequestParam("q") query: String?, @RequestParam("embed") embed: Collection<String>?): Accounts = Accounts(accountService.list(FilterConverter.buildFilter(query, objectMapper)).map {Embedding.embedAccountObjects(embed).invoke(it)})
+
+    @GetMapping(value = ["/accounts/tree"], produces = ["application/vnd.mdg+json;version=1"])
+    fun tree(@RequestParam("q") query: String?, @RequestParam("embed") embed: Collection<String>?): CategoryTree {
+        val categories = categoryService.list()
+        val accounts = accountService.list(FilterConverter.buildFilter(query, objectMapper)).stream().map(Embedding.embedAccountObjects(embed)).toList()
+        val assetEntry = convertTopCategory(AccountType.ASSET, categories, accounts)
+        val expenseEntry = convertTopCategory(AccountType.EXPENSE, categories, accounts)
+        val incomeEntry = convertTopCategory(AccountType.INCOME, categories, accounts)
+        return CategoryTree(assetEntry, expenseEntry, incomeEntry)
     }
 
-    @GetMapping(value = "/accounts/tree", produces = "application/vnd.mdg+json;version=1")
-    CategoryTree tree(@RequestParam("q") Optional<String> query, @RequestParam("embed") Optional<Collection<String>> embed) {
-        var categories = categoryService.list();
-        var accounts = accountService.list(FilterConverter.buildFilter(query, objectMapper)).stream().map(Embedding.embedAccountObjects(embed)).toList();
-        var assetEntry = convertTopCategory(AccountType.ASSET, categories, accounts);
-        var expenseEntry = convertTopCategory(AccountType.EXPENSE, categories, accounts);
-        var incomeEntry = convertTopCategory(AccountType.INCOME, categories, accounts);
-        return new CategoryTree(assetEntry, expenseEntry, incomeEntry);
-    }
+    @GetMapping(value = ["/accounts/{id}"], produces = ["application/vnd.mdg+json;version=1"])
+    operator fun get(@PathVariable("id") id: Long, @RequestParam("embed") embed: Collection<String>?): Account = accountService[id]?.let {Embedding.embedAccountObjects(embed).invoke(it)} ?: throw MdgException("ACCOUNT_NOT_FOUND")
 
-    @GetMapping(value = "/accounts/{id}", produces = "application/vnd.mdg+json;version=1")
-    Account get(@PathVariable("id") Long id, @RequestParam("embed") Optional<Collection<String>> embed) {
-        return accountService.get(id).map(Embedding.embedAccountObjects(embed)).orElseThrow(() -> new MdgException("ACCOUNT_NOT_FOUND"));
-    }
-
-    @PutMapping(value = "/accounts/{id}", consumes = "application/vnd.mdg+json;version=1", produces = "application/vnd.mdg+json;version=1")
+    @PutMapping(value = ["/accounts/{id}"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
-    Account update(@PathVariable("id") Long id, @RequestBody Account account) {
-        var newAccount = accountService.update(id, account).orElseThrow(() -> new MdgException("ACCOUNT_NOT_FOUND"));
-        newAccount.setCurrencyId(newAccount.getCurrency().getId());
-        if (newAccount.getCategory() != null) {
-            newAccount.setCategoryId(newAccount.getCategory().getId());
-        }
-        return newAccount;
+    fun update(@PathVariable("id") id: Long, @RequestBody account: Account): Account {
+        val newAccount = accountService.update(id, account) ?: throw MdgException("ACCOUNT_NOT_FOUND")
+        newAccount.currencyId = newAccount.currency!!.id
+        newAccount.categoryId = newAccount.category?.id
+        return newAccount
     }
 
     @DeleteMapping("/accounts/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void delete(@PathVariable("id") Long id) {
-        accountService.delete(id);
-    }
+    fun delete(@PathVariable("id") id: Long) = accountService.delete(id)
 
-    @GetMapping(value = "/accounts/{id}/status", produces = "application/vnd.mdg+json;version=1")
-    AccountStatus getStatus(@PathVariable("id") Long id) {
-        return new AccountStatus(id, accountService.isDeletable(id));
-    }
+    @GetMapping(value = ["/accounts/{id}/status"], produces = ["application/vnd.mdg+json;version=1"])
+    fun getStatus(@PathVariable("id") id: Long): AccountStatus = AccountStatus(id, accountService.isDeletable(id))
 }
