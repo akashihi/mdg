@@ -6,21 +6,22 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.TestInstance
+import java.util.Collections
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FilterConverterTest {
 
-    val objectMapper : ObjectMapper = ObjectMapper()
+    private val objectMapper : ObjectMapper = ObjectMapper()
     @Test
     fun buildFilterMissing() {
         val actual = FilterConverter.buildFilter(null, objectMapper)
-        actual shouldBe null
+        actual shouldBe Collections.emptyMap()
     }
 
     @Test
     fun buildFilterInvalidJson() {
         val actual = FilterConverter.buildFilter("fail", objectMapper)
-        actual shouldBe null
+        actual shouldBe Collections.emptyMap()
     }
 
     @Test

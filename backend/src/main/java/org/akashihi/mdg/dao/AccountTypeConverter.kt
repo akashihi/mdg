@@ -1,19 +1,17 @@
-package org.akashihi.mdg.dao;
+package org.akashihi.mdg.dao
 
-import org.akashihi.mdg.entity.AccountType;
-
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import org.akashihi.mdg.entity.AccountType
+import org.akashihi.mdg.entity.AccountType.Companion.from
+import javax.persistence.AttributeConverter
+import javax.persistence.Converter
 
 @Converter
-public class AccountTypeConverter implements AttributeConverter<AccountType, String> {
-    @Override
-    public String convertToDatabaseColumn(AccountType accountType) {
-        return accountType.toDbValue();
+class AccountTypeConverter : AttributeConverter<AccountType, String> {
+    override fun convertToDatabaseColumn(accountType: AccountType): String {
+        return accountType.toDbValue()
     }
 
-    @Override
-    public AccountType convertToEntityAttribute(String s) {
-        return AccountType.from(s);
+    override fun convertToEntityAttribute(s: String): AccountType {
+        return from(s)
     }
 }

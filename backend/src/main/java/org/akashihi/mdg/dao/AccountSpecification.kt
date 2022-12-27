@@ -1,35 +1,25 @@
-package org.akashihi.mdg.dao;
+package org.akashihi.mdg.dao
 
-import org.akashihi.mdg.entity.Account;
-import org.akashihi.mdg.entity.AccountType;
-import org.springframework.data.jpa.domain.Specification;
+import org.akashihi.mdg.entity.Account
+import org.akashihi.mdg.entity.AccountType.Companion.from
+import org.springframework.data.jpa.domain.Specification
+import java.lang.Boolean
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
+import kotlin.Any
+import kotlin.String
 
-import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.Map;
-
-public final class AccountSpecification {
-    private AccountSpecification() {}
-
-    public static Specification<Account> filteredAccount(Map<String, String> filter) {
-        return (root, query, criteriaBuilder) -> {
-            Collection<Predicate> predicates = new ArrayList<>();
-            if (filter.containsKey("account_type")) {
-                var at = AccountType.from(filter.get("account_type").toUpperCase(Locale.US));
-                predicates.add(criteriaBuilder.equal(root.get("accountType"), at));
-            }
-            if (filter.containsKey("currency_id")) {
-                predicates.add(criteriaBuilder.equal(root.get("currency.id"), Long.parseLong(filter.get("currency_id"))));
-            }
-            if (filter.containsKey("name")) {
-                predicates.add(criteriaBuilder.equal(root.get("name"), filter.get("name")));
-            }
-            if (filter.containsKey("hidden")) {
-                predicates.add(criteriaBuilder.equal(root.get("hidden"), Boolean.parseBoolean(filter.get("hidden"))));
-            }
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        };
+object AccountSpecification {
+    fun filteredAccount(filter: Map<String, String>): Specification<Account> {
+        return Specification { root: Root<Account>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder ->
+            val predicates: MutableCollection<Predicate> = ArrayList()
+            filter["account_type"]?.also { predicates.add(criteriaBuilder.equal(root.get<Any>("accountType"), from(it.uppercase()))) }
+            filter["currency_id"]?.also { predicates.add(criteriaBuilder.equal(root.get<Any>("currency.id"), it.toLong())) }
+            filter["name"]?.also { predicates.add(criteriaBuilder.equal(root.get<Any>("name"), it)) }
+            filter["hidden"]?.also {predicates.add(criteriaBuilder.equal(root.get<Any>("hidden"), Boolean.parseBoolean(it)))}
+            criteriaBuilder.and(*predicates.toTypedArray())
+        }
     }
 }
