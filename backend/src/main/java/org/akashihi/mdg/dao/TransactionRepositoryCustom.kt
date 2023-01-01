@@ -1,10 +1,9 @@
-package org.akashihi.mdg.dao;
+package org.akashihi.mdg.dao
 
-import org.akashihi.mdg.entity.Transaction;
-import org.springframework.data.jpa.domain.Specification;
+import org.akashihi.mdg.entity.Transaction
+import org.springframework.data.jpa.domain.Specification
+import java.util.stream.Stream
 
-import java.util.stream.Stream;
-
-public interface TransactionRepositoryCustom {
-    Stream<Transaction> streamByAccount(Specification<Transaction> spec);
+interface TransactionRepositoryCustom {
+    fun streamByAccount(spec: Specification<Transaction>): Stream<Transaction>
 }

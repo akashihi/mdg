@@ -22,7 +22,7 @@ class Operation (
     @JoinColumn(name = "tx_id", nullable = false)
     @JsonIgnore
     var transaction: Transaction,
-    var rate: BigDecimal,
+    var rate: BigDecimal?,
     var amount: BigDecimal,
 
     @ManyToOne

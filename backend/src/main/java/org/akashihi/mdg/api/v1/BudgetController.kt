@@ -35,14 +35,14 @@ import java.util.function.Function
 open class BudgetController(private val budgetService: BudgetService, private val categoryService: CategoryService, private val rateService: RateService, private val settingService: SettingService, private val cursorHelper: CursorHelper) {
     private fun getEntryTotals(f: Function<BudgetEntry, BigDecimal>, entries: Collection<BudgetEntry>): BigDecimal {
         val currentPrimaryCurrency = settingService.currentCurrencyPrimary()
-        return entries.stream().map { e: BudgetEntry ->
+        return entries.map { e: BudgetEntry ->
             var amount = f.apply(e)
             if (currentPrimaryCurrency?.let { it == e.account!!.currency } == false) {
                 val rate = rateService.getCurrentRateForPair(e.account!!.currency!!, currentPrimaryCurrency)
                 amount = amount.multiply(rate.rate)
             }
             amount
-        }.reduce(BigDecimal.ZERO) { acc: BigDecimal, v: BigDecimal? -> acc.add(v) }
+        }.fold(BigDecimal.ZERO) { acc: BigDecimal, v: BigDecimal? -> acc.add(v) }
     }
 
     private fun convertTopCategory(accountType: AccountType, categories: Collection<Category>, entries: Collection<BudgetEntry>, embed: Collection<String>?): BudgetEntryTreeEntry {
@@ -85,20 +85,20 @@ open class BudgetController(private val budgetService: BudgetService, private va
     }
 
     @GetMapping(value = ["/budgets"], produces = ["application/vnd.mdg+json;version=1"])
-    fun list(@RequestParam("limit") limit: Optional<Int?>, @RequestParam("cursor") cursor: Optional<String?>): Budgets {
-        val budgetCursor = cursor.flatMap { o: String? -> cursorHelper!!.cursorFromString(o, BudgetCursor::class.java) }.orElse(BudgetCursor(limit.orElse(null), null))
+    fun list(@RequestParam("limit") limit: Optional<Int?>, @RequestParam("cursor") cursor: String?): Budgets {
+        val budgetCursor = cursor?.let { cursorHelper.cursorFromString(it, BudgetCursor::class.java) } ?: BudgetCursor(limit.orElse(null), null)
         val budgets = budgetService!!.list(budgetCursor.limit, budgetCursor.pointer)
-        val self = cursorHelper!!.cursorToString(budgetCursor).orElse("")
+        val self = cursorHelper!!.cursorToString(budgetCursor) ?: ""
         var first: String? = ""
         var next: String? = ""
-        if (limit.isPresent || cursor.isPresent) { //In both cases we are in paging mode, either for the first page or for the subsequent pages
+        if (limit.isPresent || cursor != null) { //In both cases we are in paging mode, either for the first page or for the subsequent pages
             val firstCursor = BudgetCursor(budgetCursor.limit, 0L)
-            first = cursorHelper.cursorToString(firstCursor).orElse("")
+            first = cursorHelper.cursorToString(firstCursor) ?: ""
             next = if (budgets.items.isEmpty() || budgets.left == 0L) {
                 "" //We may have no items at all or no items left, so no need to find next cursor
             } else {
                 val nextCursor = BudgetCursor(budgetCursor.limit, budgets.items[budgets.items.size - 1].id)
-                cursorHelper.cursorToString(nextCursor).orElse("")
+                cursorHelper.cursorToString(nextCursor) ?: ""
             }
         }
         return Budgets(budgets.items, self, first, next, budgets.left)
@@ -152,8 +152,8 @@ open class BudgetController(private val budgetService: BudgetService, private va
     }
 
     companion object {
-        protected fun getCategoryTotals(f: Function<BudgetEntryTreeEntry, BigDecimal>?, entries: Collection<BudgetEntryTreeEntry>): BigDecimal {
-            return entries.stream().map(f).reduce(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
+        protected fun getCategoryTotals(f: Function<BudgetEntryTreeEntry, BigDecimal>, entries: Collection<BudgetEntryTreeEntry>): BigDecimal {
+            return entries.map{f.apply(it)}.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         }
     }
 }

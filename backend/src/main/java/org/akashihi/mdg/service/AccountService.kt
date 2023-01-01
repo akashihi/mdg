@@ -126,7 +126,7 @@ open class AccountService(private val accountRepository: AccountRepository, priv
     @Transactional
     open fun isDeletable(id: Long?): Boolean {
         val account = accountRepository.findByIdOrNull(id) ?: throw MdgException("ACCOUNT_NOT_FOUND")
-        return !operationRepository.doOperationsExistForAccount(account.id).orElse(false)
+        return !(operationRepository.doOperationsExistForAccount(account.id!!) ?: false)
     }
 
     companion object {

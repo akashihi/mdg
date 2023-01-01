@@ -5,7 +5,6 @@ import org.akashihi.mdg.entity.BudgetEntry
 import org.akashihi.mdg.entity.Operation
 
 object Embedding {
-    @JvmStatic
     fun embedOperationObjects(embed: Collection<String>?): (o: Operation) -> Operation {
         val accounts = embed?.contains("account") ?: false
         return { operation: Operation ->

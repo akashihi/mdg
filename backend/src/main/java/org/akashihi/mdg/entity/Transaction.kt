@@ -32,7 +32,7 @@ class Transaction (
 
     @OneToMany(mappedBy = "transaction")
     @OrderBy("id")
-    var operations: Collection<Operation>,
+    var operations: MutableCollection<Operation>,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,10 +1,8 @@
-package org.akashihi.mdg.dao;
+package org.akashihi.mdg.dao
 
-import org.akashihi.mdg.entity.Tag;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.akashihi.mdg.entity.Tag
+import org.springframework.data.jpa.repository.JpaRepository
 
-import java.util.Optional;
-
-public interface TagRepository extends JpaRepository<Tag, Long> {
-    Optional<Tag> findByTag(String tag);
+interface TagRepository : JpaRepository<Tag, Long> {
+    fun findByTag(tag: String): Tag?
 }
