@@ -1,18 +1,15 @@
-package org.akashihi.mdg.dao;
+package org.akashihi.mdg.dao
 
-import org.akashihi.mdg.entity.Budget;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.stereotype.Repository;
-
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Optional;
+import org.akashihi.mdg.entity.Budget
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.stereotype.Repository
+import java.time.LocalDate
+import java.util.*
 
 @Repository
-public interface BudgetRepository extends JpaRepository<Budget, Long>, JpaSpecificationExecutor<Budget> {
-    Boolean existsByEndGreaterThanEqualAndBeginningLessThanEqual(LocalDate otherBeginning, LocalDate otherEnd);
-    Optional<Budget> findFirstByIdLessThanEqualOrderByIdDesc(Long id);
-
-    Collection<Budget> findByBeginningGreaterThanEqualAndEndIsLessThanEqualOrderByBeginningAsc(LocalDate from, LocalDate to);
+interface BudgetRepository : JpaRepository<Budget, Long>, JpaSpecificationExecutor<Budget> {
+    fun existsByEndGreaterThanEqualAndBeginningLessThanEqual(otherBeginning: LocalDate, otherEnd: LocalDate): Boolean
+    fun findFirstByIdLessThanEqualOrderByIdDesc(id: Long): Budget?
+    fun findByBeginningGreaterThanEqualAndEndIsLessThanEqualOrderByBeginningAsc(from: LocalDate, to: LocalDate): Collection<Budget>
 }

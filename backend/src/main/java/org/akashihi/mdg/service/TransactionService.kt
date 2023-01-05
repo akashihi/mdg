@@ -1,8 +1,6 @@
 package org.akashihi.mdg.service
 
-import lombok.RequiredArgsConstructor
 import org.akashihi.mdg.api.v1.MdgException
-import org.akashihi.mdg.api.v1.dto.ListResult
 import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.OperationRepository
 import org.akashihi.mdg.dao.TagRepository
@@ -21,8 +19,6 @@ import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
-import java.util.*
-import java.util.function.Consumer
 import java.util.stream.Collectors
 import javax.transaction.Transactional
 
@@ -95,8 +91,8 @@ open class TransactionService(private val accountRepository: AccountRepository, 
     }
 
     @Transactional
-    open fun create(tx: Transaction): Transaction {
-        var tx = tx
+    open fun create(newTx: Transaction): Transaction {
+        var tx = newTx
         tx = enrichOperations(tx)
         tx = validateTransaction(tx)
         tx = loadTags(tx)
