@@ -1,128 +1,107 @@
-package org.akashihi.mdg.service;
+package org.akashihi.mdg.service
 
-import org.akashihi.mdg.dao.AccountRepository;
-import org.akashihi.mdg.dao.OperationRepository;
-import org.akashihi.mdg.dao.TagRepository;
-import org.akashihi.mdg.dao.TransactionRepository;
-import org.akashihi.mdg.entity.*;
-import org.akashihi.mdg.indexing.IndexingService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.akashihi.mdg.dao.AccountRepository
+import org.akashihi.mdg.dao.OperationRepository
+import org.akashihi.mdg.dao.TagRepository
+import org.akashihi.mdg.dao.TransactionRepository
+import org.akashihi.mdg.entity.Account
+import org.akashihi.mdg.entity.AccountType
+import org.akashihi.mdg.entity.Currency
+import org.akashihi.mdg.entity.Operation
+import org.akashihi.mdg.entity.Rate
+import org.akashihi.mdg.entity.Tag
+import org.akashihi.mdg.entity.Transaction
+import org.akashihi.mdg.indexing.IndexingService
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.LocalDateTime
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension::class)
+internal class TransactionServiceTest(@Mock private val accountRepository: AccountRepository,
+                                      @Mock private val transactionRepository: TransactionRepository,
+                                      @Mock private val tagRepository: TagRepository,
+                                      @Mock private val operationRepository: OperationRepository,
+                                      @Mock private val indexingService: IndexingService,
+                                      @Mock private val rateService: RateService) {
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+    private val transactionService: TransactionService = TransactionService(accountRepository, transactionRepository, tagRepository, operationRepository, indexingService, rateService)
 
-@ExtendWith(MockitoExtension.class)
-class TransactionServiceTest {
-    @Mock
-    private AccountRepository accountRepository;
-    @Mock
-    private TransactionRepository transactionRepository;
-    @Mock
-    private TagRepository tagRepository;
-    @Mock
-    private OperationRepository operationRepository;
-    @Mock
-    private IndexingService indexingService;
-    @Mock
-    private RateService rateService;
-
-    private TransactionService transactionService;
-
-    @BeforeEach
-    void setUp() {
-        transactionService = new TransactionService(accountRepository, transactionRepository, tagRepository, operationRepository, indexingService, rateService);
+    private fun makeAccount(currencyId: Long): Account {
+        val currency = Currency(code="", name="", active = true, id = currencyId)
+        return Account(accountType = AccountType.ASSET, balance = BigDecimal.ZERO, primaryBalance = BigDecimal.ZERO, name = "TEST", currency = currency)
     }
 
-    private Account makeAccount(Long currencyId){
-        var currency = new Currency("", "", true, currencyId);
-        var account = new Account();
-        account.setCurrency(currency);
-        return account;
-    }
-
-    private Operation makeOperation(Long currencyId, String rate, String amount) {
-        var account = makeAccount(currencyId);
-        var op = new Operation();
-        op.setRate(new BigDecimal(rate));
-        op.setAmount(new BigDecimal(amount));
-        op.setAccount(account);
-        return op;
+    private fun makeOperation(currencyId: Long, rate: String, amount: String, tx: Transaction): Operation {
+        val account = makeAccount(currencyId)
+        return Operation(rate = BigDecimal(rate), amount = BigDecimal(amount), account = account, transaction = tx)
     }
 
     @Test
-    void replaceCurrencyKeepingDefault() {
-        var usdOp = makeOperation(840L, "0.84", "-119");
-        var eurOp = makeOperation(978L, "1", "200");
-        var czkOp1 = makeOperation(203L, "0.04", "-1250");
-        var czkOp2 = makeOperation(203L, "0.04", "-1250");
-        List<Operation> ops = new ArrayList<>(List.of(usdOp, eurOp, czkOp1, czkOp2));
-
-        var tx = new Transaction();
-        tx.setOperations(ops);
-
-        var newTx = transactionService.replaceCurrency(tx, czkOp1.getAccount(), eurOp.getAccount().getCurrency());
-
-        var replaced = newTx.getOperations().stream().filter(o -> o.getAccount().equals(czkOp1.getAccount())).findFirst().get();
-        assertEquals(BigDecimal.ONE, replaced.getRate());
-        assertEquals(new BigDecimal("-50.04"), replaced.getAmount());
-        var eurSum = newTx.getOperations().stream().map(o-> o.getAmount().multiply(o.getRate())).reduce(BigDecimal.ZERO, BigDecimal::add);
-        assertEquals(BigDecimal.ZERO, eurSum.stripTrailingZeros());
+    fun replaceCurrencyKeepingDefault() {
+        val tx = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        val usdOp = makeOperation(840L, "0.84", "-119", tx)
+        val eurOp = makeOperation(978L, "1", "200", tx)
+        val czkOp1 = makeOperation(203L, "0.04", "-1250", tx)
+        val czkOp2 = makeOperation(203L, "0.04", "-1250", tx)
+        val ops = mutableListOf(usdOp, eurOp, czkOp1, czkOp2)
+        tx.operations = ops
+        val newTx = transactionService.replaceCurrency(tx, czkOp1.account!!, eurOp.account!!.currency!!)
+        val replaced = newTx.operations.stream().filter { o: Operation -> o.account == czkOp1.account }.findFirst().get()
+        Assertions.assertEquals(BigDecimal.ONE, replaced.rate)
+        Assertions.assertEquals(BigDecimal("-50.04"), replaced.amount)
+        val eurSum = newTx.operations.stream().map { o: Operation -> o.amount.multiply(o.rate) }.reduce(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
+        Assertions.assertEquals(BigDecimal.ZERO, eurSum.stripTrailingZeros())
     }
 
     @Test
-    void replaceCurrencySkippingDefault() {
-        var usdOp = makeOperation(840L, "0.84", "-119");
-        var eurOp = makeOperation(978L, "1", "200");
-        var czkOp1 = makeOperation(203L, "0.04", "-1250");
-        var czkOp2 = makeOperation(203L, "0.04", "-1250");
-        List<Operation> ops = new ArrayList<>(List.of(usdOp, eurOp, czkOp1, czkOp2));
-
-        var tx = new Transaction();
-        tx.setOperations(ops);
-
-        when(rateService.getPair(any(), eq(eurOp.getAccount().getCurrency()), eq(usdOp.getAccount().getCurrency()))).thenReturn(new Rate(LocalDateTime.MIN, LocalDateTime.MAX, eurOp.getAccount().getCurrency().getId(), usdOp.getAccount().getCurrency().getId(), new BigDecimal("0.84"), 1L));
-        var newTx = transactionService.replaceCurrency(tx, czkOp1.getAccount(), usdOp.getAccount().getCurrency());
-
-        var replaced = newTx.getOperations().stream().filter(o -> o.getAccount().equals(czkOp1.getAccount())).findFirst().get();
-        assertEquals(new BigDecimal("0.84"), replaced.getRate());
-        assertEquals(new BigDecimal("-59.57"), replaced.getAmount());
-        var eurSum = newTx.getOperations().stream().map(o-> o.getAmount().multiply(o.getRate())).reduce(BigDecimal.ZERO, BigDecimal::add);
-        assertEquals(BigDecimal.ZERO, eurSum.setScale(2, RoundingMode.DOWN).stripTrailingZeros());
+    fun replaceCurrencySkippingDefault() {
+        val tx = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        val usdOp = makeOperation(840L, "0.84", "-119", tx)
+        val eurOp = makeOperation(978L, "1", "200", tx)
+        val czkOp1 = makeOperation(203L, "0.04", "-1250", tx)
+        val czkOp2 = makeOperation(203L, "0.04", "-1250", tx)
+        val ops = mutableListOf(usdOp, eurOp, czkOp1, czkOp2)
+        tx.operations = ops
+        Mockito.`when`(
+            rateService.getPair(any(), eq(eurOp.account!!.currency!!), eq(usdOp.account!!.currency!!))
+        ).thenReturn(Rate(LocalDateTime.MIN, LocalDateTime.MAX, eurOp.account!!.currency!!.id!!, usdOp.account!!.currency!!.id!!, BigDecimal("0.84"), 1L))
+        val newTx = transactionService.replaceCurrency(tx, czkOp1.account!!, usdOp.account!!.currency!!)
+        val replaced = newTx.operations.stream().filter { o: Operation -> o.account == czkOp1.account }.findFirst().get()
+        Assertions.assertEquals(BigDecimal("0.84"), replaced.rate)
+        Assertions.assertEquals(BigDecimal("-59.57"), replaced.amount)
+        val eurSum = newTx.operations.stream().map { o: Operation -> o.amount.multiply(o.rate) }.reduce(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
+        Assertions.assertEquals(BigDecimal.ZERO, eurSum.setScale(2, RoundingMode.DOWN).stripTrailingZeros())
     }
 
     @Test
-    void replaceDefault() {
-        var usdOp = makeOperation(840L, "0.84", "-119");
-        var eurOp = makeOperation(978L, "1", "200");
-        var czkOp1 = makeOperation(203L, "0.04", "-1250");
-        var czkOp2 = makeOperation(203L, "0.04", "-1250");
-        List<Operation> ops = new ArrayList<>(List.of(usdOp, eurOp, czkOp1, czkOp2));
-
-        var tx = new Transaction();
-        tx.setOperations(ops);
-
-        when(rateService.getPair(any(), eq(usdOp.getAccount().getCurrency()), eq(czkOp1.getAccount().getCurrency()))).thenReturn(new Rate(LocalDateTime.MIN, LocalDateTime.MAX, usdOp.getAccount().getCurrency().getId(), usdOp.getAccount().getCurrency().getId(), new BigDecimal("21.00"), 1L));
-        var newTx = transactionService.replaceCurrency(tx, eurOp.getAccount(), czkOp1.getAccount().getCurrency());
-
-        var replaced = newTx.getOperations().stream().filter(o -> o.getAccount().equals(eurOp.getAccount())).findFirst().get();
-
-        assertEquals(BigDecimal.ONE, replaced.getRate());
-        assertEquals(new BigDecimal("4999"), replaced.getAmount().stripTrailingZeros());
-        var eurSum = newTx.getOperations().stream().map(o-> o.getAmount().multiply(o.getRate())).reduce(BigDecimal.ZERO, BigDecimal::add);
-        assertEquals(BigDecimal.ZERO, eurSum.setScale(2, RoundingMode.DOWN).stripTrailingZeros());
+    fun replaceDefault() {
+        val tx = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        val usdOp = makeOperation(840L, "0.84", "-119", tx)
+        val eurOp = makeOperation(978L, "1", "200", tx)
+        val czkOp1 = makeOperation(203L, "0.04", "-1250", tx)
+        val czkOp2 = makeOperation(203L, "0.04", "-1250", tx)
+        val ops = mutableListOf(usdOp, eurOp, czkOp1, czkOp2)
+        tx.operations = ops
+        Mockito.`when`(
+            rateService.getPair(any(), eq(usdOp.account!!.currency!!), eq(czkOp1.account!!.currency!!))
+        ).thenReturn(Rate(LocalDateTime.MIN, LocalDateTime.MAX, usdOp.account!!.currency!!.id!!, usdOp.account!!.currency!!.id!!, BigDecimal("21.00"), 1L))
+        val newTx = transactionService.replaceCurrency(tx, eurOp.account!!, czkOp1.account!!.currency!!)
+        val replaced = newTx.operations.stream().filter { o: Operation -> o.account == eurOp.account }.findFirst().get()
+        Assertions.assertEquals(BigDecimal.ONE, replaced.rate)
+        Assertions.assertEquals(BigDecimal("4999"), replaced.amount.stripTrailingZeros())
+        val eurSum = newTx.operations.stream().map { o: Operation -> o.amount.multiply(o.rate) }.reduce(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
+        Assertions.assertEquals(BigDecimal.ZERO, eurSum.setScale(2, RoundingMode.DOWN).stripTrailingZeros())
     }
 }
