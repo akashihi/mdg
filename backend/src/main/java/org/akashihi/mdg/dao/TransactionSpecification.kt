@@ -30,12 +30,8 @@ object TransactionSpecification {
         return Specification { root: Root<Transaction>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
             val predicates: MutableCollection<Predicate> = ArrayList()
             val fulltextIds: MutableCollection<Long?> = ArrayList()
-            if (filter.containsKey("comment")) {
-                fulltextIds.addAll(indexingService.lookupByComment(filter["comment"]))
-            }
-            if (filter.containsKey("tag")) {
-                fulltextIds.addAll(indexingService.lookupByTag(filter["tag"]))
-            }
+            filter["comment"]?.also { fulltextIds.addAll(indexingService.lookupByComment(it)) }
+            filter["tag"]?.also { fulltextIds.addAll(indexingService.lookupByTag(it)) }
             if (!fulltextIds.isEmpty()) {
                 predicates.add(root.get<Any>("id").`in`(fulltextIds))
             } else {

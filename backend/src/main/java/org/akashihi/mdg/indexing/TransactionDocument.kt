@@ -1,36 +1,31 @@
-package org.akashihi.mdg.indexing;
+package org.akashihi.mdg.indexing
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.akashihi.mdg.entity.Tag;
-import org.akashihi.mdg.entity.Transaction;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
-
-import java.util.stream.Collectors;
+import lombok.Getter
+import lombok.NoArgsConstructor
+import lombok.Setter
+import lombok.ToString
+import org.akashihi.mdg.entity.Tag
+import org.akashihi.mdg.entity.Transaction
+import org.springframework.data.annotation.Id
+import org.springframework.data.elasticsearch.annotations.Document
+import org.springframework.data.elasticsearch.annotations.Field
+import org.springframework.data.elasticsearch.annotations.FieldType
+import java.util.stream.Collectors
 
 @Document(indexName = "mdg")
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-public class TransactionDocument {
+class TransactionDocument(tx: Transaction) {
     @Id
-    private Long id;
+    private val id: Long
 
     @Field(name = "comment", type = FieldType.Text, analyzer = "comments")
-    private String comment;
+    private val comment: String
 
     @Field(name = "tags", type = FieldType.Text, analyzer = "tags")
-    private String tags;
+    private val tags: String
 
-    public TransactionDocument(Transaction tx) {
-        this.id = tx.getId();
-        this.tags = tx.getTags().stream().map(Tag::getTag).collect(Collectors.joining(" "));
-        this.comment = tx.getComment();
+    init {
+        id = tx.id!!
+        tags = tx.tags.map(Tag::tag).joinToString(" ")
+        comment = tx.comment ?: ""
     }
 }
