@@ -31,7 +31,7 @@ internal class BudgetEntryModeTest {
 
     @ParameterizedTest
     @CsvSource("false,false,single", "false,true,single", "true,false,even", "true,true,prorated")
-    fun testFromEntry(even: Boolean?, prorated: Boolean?, mode: String?) {
+    fun testFromEntry(even: Boolean, prorated: Boolean, mode: String) {
         Assertions.assertEquals(BudgetEntryMode.from(mode), BudgetEntryMode.from(even, prorated))
     }
 

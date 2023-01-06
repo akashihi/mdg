@@ -13,11 +13,11 @@ import javax.persistence.criteria.Root
 
 object TransactionSpecification {
     fun transactionsForAccount(account: Account): Specification<Transaction> {
-        return Specification { root: Root<Transaction>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder -> criteriaBuilder.equal(root.join<Any, Any>("operations").get<String>("account"), account) }
+        return Specification { root: Root<Transaction>, _: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder -> criteriaBuilder.equal(root.join<Any, Any>("operations").get<String>("account"), account) }
     }
 
     fun filteredTransactions(notEarlier: LocalDateTime?, notLater: LocalDateTime?, account: Account?): Specification<Transaction> {
-        return Specification { root: Root<Transaction>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
+        return Specification { root: Root<Transaction>, _: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
             val predicates: MutableCollection<Predicate> = ArrayList()
             notEarlier?.also { predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("ts"), notEarlier)) }
             notLater?.also { predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("ts"), notLater)) }
@@ -27,7 +27,7 @@ object TransactionSpecification {
     }
 
     fun filteredTransactions(indexingService: IndexingService, filter: Map<String, String>, pointer: Long?): Specification<Transaction> {
-        return Specification { root: Root<Transaction>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
+        return Specification { root: Root<Transaction>, _: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
             val predicates: MutableCollection<Predicate> = ArrayList()
             val fulltextIds: MutableCollection<Long?> = ArrayList()
             filter["comment"]?.also { fulltextIds.addAll(indexingService.lookupByComment(it)) }
