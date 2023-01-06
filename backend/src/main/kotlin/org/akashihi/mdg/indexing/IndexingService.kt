@@ -2,7 +2,6 @@ package org.akashihi.mdg.indexing
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import lombok.RequiredArgsConstructor
 import lombok.SneakyThrows
 import org.akashihi.mdg.dao.TransactionRepository
 import org.akashihi.mdg.entity.Transaction
@@ -19,7 +18,7 @@ open class IndexingService(private val elasticsearchOperations: ElasticsearchOpe
     @Transactional(readOnly = true)
     open fun reIndex(language: String) {
         elasticsearchOperations.indexOps(TransactionDocument::class.java).delete()
-        val settingsStream = IndexingService::class.java.classLoader.getResourceAsStream("elasticsearch/settings.${language}.json")
+        val settingsStream = IndexingService::class.java.classLoader.getResourceAsStream("elasticsearch/settings.$language.json")
         val typeRef = object : TypeReference<HashMap<String, Any>>() {}
         val settings: Map<String, Any> = objectMapper.readValue(settingsStream, typeRef)
         elasticsearchOperations.indexOps(TransactionDocument::class.java).create(settings)

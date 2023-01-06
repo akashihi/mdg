@@ -23,18 +23,25 @@ import java.util.stream.Collectors
 import javax.transaction.Transactional
 
 @Service
-open class TransactionService(private val accountRepository: AccountRepository, private val transactionRepository: TransactionRepository, private val tagRepository: TagRepository, private val operationRepository: OperationRepository, private val indexingService: IndexingService, private val rateService: RateService) {
+open class TransactionService(
+    private val accountRepository: AccountRepository,
+    private val transactionRepository: TransactionRepository,
+    private val tagRepository: TagRepository,
+    private val operationRepository: OperationRepository,
+    private val indexingService: IndexingService,
+    private val rateService: RateService
+) {
     private fun enrichOperations(tx: Transaction): Transaction {
-        //Drop empty operations
-        tx.operations = tx.operations.filter {it.amount != BigDecimal.ZERO }.toMutableList()
+        // Drop empty operations
+        tx.operations = tx.operations.filter { it.amount != BigDecimal.ZERO }.toMutableList()
 
-        //Propagate accounts
-        tx.operations.forEach{
+        // Propagate accounts
+        tx.operations.forEach {
             val account = accountRepository.findByIdOrNull(it.account_id) ?: throw MdgException("ACCOUNT_NOT_FOUND")
             it.account = account
         }
 
-        //Set default rate if not specified
+        // Set default rate if not specified
         tx.operations.forEach {
             if (it.rate == null) {
                 it.rate = BigDecimal.ONE
@@ -44,7 +51,7 @@ open class TransactionService(private val accountRepository: AccountRepository, 
     }
 
     private fun validateTransaction(tx: Transaction): Transaction {
-        //Validate transaction:
+        // Validate transaction:
         // Check that operation list is not empty
         if (tx.operations.isEmpty()) {
             throw MdgException("TRANSACTION_EMPTY")
@@ -58,7 +65,7 @@ open class TransactionService(private val accountRepository: AccountRepository, 
             throw MdgException("TRANSACTION_NO_DEFAULT_RATE")
         }
         // Check that default rate is only used for one currency, even if it is set on multiple operations
-        if (tx.operations.filter { BigDecimal.ONE == it.rate }.map{it.account?.currency}.distinct().count() > 1) {
+        if (tx.operations.filter { BigDecimal.ONE == it.rate }.map { it.account?.currency }.distinct().count() > 1) {
             throw MdgException("TRANSACTION_AMBIGUOUS_RATE")
         }
 
@@ -109,9 +116,9 @@ open class TransactionService(private val accountRepository: AccountRepository, 
     @Transactional
     open fun list(filter: Map<String, String>, sort: Collection<String>, limit: Int?, pointer: Long?): ListResult<Transaction> {
         val spec = TransactionSpecification.filteredTransactions(indexingService, filter, pointer)
-        var sorting = Sort.by("ts").descending().and(Sort.by("id").descending()) //Sort by timestamp amd then id by default
+        var sorting = Sort.by("ts").descending().and(Sort.by("id").descending()) // Sort by timestamp amd then id by default
         if (sort.contains("-timestamp")) {
-            //Reverse sort requested
+            // Reverse sort requested
             sorting = Sort.by("ts").ascending().and(Sort.by("id").descending())
         }
         if (limit == null) {
@@ -121,7 +128,7 @@ open class TransactionService(private val accountRepository: AccountRepository, 
         val page = transactionRepository.findAll(spec, pageLimit)
         var left = page.totalElements - limit
         if (left < 0) {
-            left = 0 //Clamp value in case last page is shorter than limit
+            left = 0 // Clamp value in case last page is shorter than limit
         }
         return ListResult(page.content, left)
     }
@@ -193,7 +200,7 @@ open class TransactionService(private val accountRepository: AccountRepository, 
         operationRepository.deleteAll(tx.operations)
         val defaultCurrency = untouchedOps
             .filter { o: Operation -> o.rate == null || o.rate == BigDecimal.ONE }
-            .map { o: Operation -> o.account!!.currency }.firstOrNull () ?: newCurrency
+            .map { o: Operation -> o.account!!.currency }.firstOrNull() ?: newCurrency
         val rebalanceEverything = untouchedOps
             .none { o: Operation -> o.rate == null || o.rate == BigDecimal.ONE }
         if (rebalanceEverything) {

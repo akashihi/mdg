@@ -25,5 +25,4 @@ class CategoryTree(
         private val descendant: Long? = null
         private val depth: Int? = null
     }
-
 }

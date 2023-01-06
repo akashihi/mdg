@@ -42,7 +42,7 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody tx: Transaction): Transaction {
         val newTransaction = transactionService.create(tx)
-        newTransaction.operations.forEach { it.account = null } //No embedding on creation
+        newTransaction.operations.forEach { it.account = null } // No embedding on creation
         return newTransaction
     }
 
@@ -59,7 +59,8 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
         val transactions = listResult.items
         val left = listResult.left
         val operationEmbedded = embedOperationObjects(txCursor.embed)
-        transactions.forEach { it.operations = it.operations.map{o: Operation ->
+        transactions.forEach {
+            it.operations = it.operations.map { o: Operation ->
                 o.account!!.balance = BigDecimal.ZERO
                 o.account!!.primaryBalance = BigDecimal.ZERO
                 operationEmbedded(o)
@@ -68,11 +69,11 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
         val self = cursorHelper.cursorToString(txCursor) ?: ""
         var first: String = ""
         var next: String = ""
-        if (limit != null || cursor !=null) { //In both cases we are in paging mode, either for the first page or for the subsequent pages
+        if (limit != null || cursor != null) { // In both cases we are in paging mode, either for the first page or for the subsequent pages
             val firstCursor = TransactionCursor(txCursor.filter, txCursor.sort, txCursor.embed, txCursor.limit, 0L)
             first = cursorHelper.cursorToString(firstCursor) ?: ""
             next = if (transactions.isEmpty() || left == 0L) {
-                "" //We may have no items at all or no items left, so no need to find next cursor
+                "" // We may have no items at all or no items left, so no need to find next cursor
             } else {
                 val nextCursor = TransactionCursor(txCursor.filter, txCursor.sort, txCursor.embed, txCursor.limit, transactions[transactions.size - 1].id)
                 cursorHelper.cursorToString(nextCursor) ?: ""
@@ -94,7 +95,7 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
     fun update(@PathVariable("id") id: Long, @RequestBody tx: Transaction): Transaction {
         val newTx = transactionService.update(id, tx) ?: throw MdgException("TRANSACTION_NOT_FOUND")
         val operationEmbedded = embedOperationObjects(null)
-        newTx.operations = newTx.operations.map{operationEmbedded(it)}.toMutableList()
+        newTx.operations = newTx.operations.map { operationEmbedded(it) }.toMutableList()
         return newTx
     }
 

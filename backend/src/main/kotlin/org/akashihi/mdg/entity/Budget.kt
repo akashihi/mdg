@@ -2,11 +2,6 @@ package org.akashihi.mdg.entity
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import lombok.AllArgsConstructor
-import lombok.Getter
-import lombok.NoArgsConstructor
-import lombok.Setter
-import lombok.ToString
 import java.math.BigDecimal
 import java.time.LocalDate
 import javax.persistence.Column
@@ -27,7 +22,6 @@ class Budget(
     @Column(name = "term_end")
     var end: LocalDate,
 
-
     @Transient
     @JsonProperty("incoming_amount")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -43,6 +37,6 @@ class Budget(
     var state: BudgetState? = null,
 
     @Id
-    var id: Long? = null,
+    var id: Long? = null
 
 )

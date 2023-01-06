@@ -4,7 +4,7 @@ import javax.persistence.Entity
 import javax.persistence.Id
 
 @Entity
-class Error (
+class Error(
     val status: Int,
     val title: String,
     val detail: String,

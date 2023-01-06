@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 data class Currencies(val currencies: Collection<Currency>)
+
 @RestController
 class CurrencyController(private val currencyService: CurrencyService) {
     @GetMapping(value = ["/currencies"], produces = ["application/vnd.mdg+json;version=1"])

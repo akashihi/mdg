@@ -8,7 +8,6 @@ import org.akashihi.mdg.entity.Category
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.function.Consumer
 import javax.transaction.Transactional
 
 @Service
@@ -83,12 +82,12 @@ open class CategoryService(private val categoryRepository: CategoryRepository, p
             }
             var nextParent = parentValue?.let(Category::id) ?: newCategory.parentId!!
             if (nextParent != id) {
-                //Check tree for cycle
+                // Check tree for cycle
                 if (!categoryRepository.findInvertedParent(category.id, nextParent).isEmpty()) {
                     throw MdgException("CATEGORY_TREE_CYCLED")
                 }
             } else {
-                nextParent = 0L //Self parent means no parent
+                nextParent = 0L // Self parent means no parent
             }
             categoryRepository.removeParent(id)
             categoryRepository.adopt(id, nextParent)

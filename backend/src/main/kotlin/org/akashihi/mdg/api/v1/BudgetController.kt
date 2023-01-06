@@ -27,7 +27,7 @@ import java.util.*
 
 data class BudgetCursor(
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val limit: Int?,
-    @field:JsonInclude(JsonInclude.Include.NON_NULL)  val pointer: Long?
+    @field:JsonInclude(JsonInclude.Include.NON_NULL) val pointer: Long?
 )
 data class BudgetEntryTreeEntry(
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val id: Long?,
@@ -35,7 +35,7 @@ data class BudgetEntryTreeEntry(
     @field:JsonProperty("actual_amount") val actualAmount: BigDecimal,
     @field:JsonProperty("expected_amount") val expectedAmount: BigDecimal,
     @field:JsonProperty("allowed_spendings") val allowedSpendings: BigDecimal,
-    @field:JsonProperty("spending_percent")  val spendingPercent: BigDecimal,
+    @field:JsonProperty("spending_percent") val spendingPercent: BigDecimal,
     val entries: Collection<BudgetEntry>,
     val categories: Collection<BudgetEntryTreeEntry>
 )
@@ -61,10 +61,11 @@ open class BudgetController(private val budgetService: BudgetService, private va
     }
 
     private fun convertTopCategory(accountType: AccountType, categories: Collection<Category>, entries: Collection<BudgetEntry>, embed: Collection<String>?): BudgetEntryTreeEntry {
-        val enrichedEntries = entries.map { it.account?.apply {
-            this.balance=BigDecimal.ZERO
-            this.primaryBalance=BigDecimal.ZERO
-        }
+        val enrichedEntries = entries.map {
+            it.account?.apply {
+                this.balance = BigDecimal.ZERO
+                this.primaryBalance = BigDecimal.ZERO
+            }
             it
         }.toList()
         val topEntries = enrichedEntries.filter { it.account?.accountType == accountType }
@@ -105,11 +106,11 @@ open class BudgetController(private val budgetService: BudgetService, private va
         val self = cursorHelper.cursorToString(budgetCursor) ?: ""
         var first: String = ""
         var next: String = ""
-        if (limit != null || cursor != null) { //In both cases we are in paging mode, either for the first page or for the subsequent pages
+        if (limit != null || cursor != null) { // In both cases we are in paging mode, either for the first page or for the subsequent pages
             val firstCursor = BudgetCursor(budgetCursor.limit, 0L)
             first = cursorHelper.cursorToString(firstCursor) ?: ""
             next = if (budgets.items.isEmpty() || budgets.left == 0L) {
-                "" //We may have no items at all or no items left, so no need to find next cursor
+                "" // We may have no items at all or no items left, so no need to find next cursor
             } else {
                 val nextCursor = BudgetCursor(budgetCursor.limit, budgets.items[budgets.items.size - 1].id)
                 cursorHelper.cursorToString(nextCursor) ?: ""
@@ -147,15 +148,27 @@ open class BudgetController(private val budgetService: BudgetService, private va
     }
 
     @GetMapping(value = ["/budgets/{budgetId}/entries/{entryId}"], produces = ["application/vnd.mdg+json;version=1"])
-    fun getEntry(@Suppress("UNUSED_PARAMETER") @PathVariable("budgetId") budgetId: Long, @PathVariable("entryId") entryId: Long, @RequestParam("embed") embed: Collection<String>?): BudgetEntry = budgetService.getBudgetEntry(entryId)?.let(Embedding.embedBudgetEntryObject(embed)) ?: throw MdgException("BUDGETENTRY_NOT_FOUND")
+    fun getEntry(
+        @Suppress("UNUSED_PARAMETER")
+        @PathVariable("budgetId")
+        budgetId: Long,
+        @PathVariable("entryId") entryId: Long,
+        @RequestParam("embed") embed: Collection<String>?
+    ): BudgetEntry = budgetService.getBudgetEntry(entryId)?.let(Embedding.embedBudgetEntryObject(embed)) ?: throw MdgException("BUDGETENTRY_NOT_FOUND")
 
     @PutMapping(value = ["/budgets/{budgetId}/entries/{entryId}"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun updateEntry(@Suppress("UNUSED_PARAMETER") @PathVariable("budgetId") budgetId: Long, @PathVariable("entryId") entryId: Long, @RequestBody entry: BudgetEntry): BudgetEntry = budgetService.updateBudgetEntry(entryId, entry)?.let(Embedding.embedBudgetEntryObject(null)) ?: throw MdgException("BUDGETENTRY_NOT_FOUND")
+    fun updateEntry(
+        @Suppress("UNUSED_PARAMETER")
+        @PathVariable("budgetId")
+        budgetId: Long,
+        @PathVariable("entryId") entryId: Long,
+        @RequestBody entry: BudgetEntry
+    ): BudgetEntry = budgetService.updateBudgetEntry(entryId, entry)?.let(Embedding.embedBudgetEntryObject(null)) ?: throw MdgException("BUDGETENTRY_NOT_FOUND")
 
     companion object {
         protected fun getCategoryTotals(f: (BudgetEntryTreeEntry) -> BigDecimal, entries: Collection<BudgetEntryTreeEntry>): BigDecimal {
-            return entries.map{f(it)}.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
+            return entries.map { f(it) }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         }
     }
 }

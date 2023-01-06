@@ -3,9 +3,6 @@ package org.akashihi.mdg.entity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import lombok.Getter
-import lombok.Setter
-import lombok.ToString
 import org.hibernate.Hibernate
 import java.math.BigDecimal
 import javax.persistence.Entity
@@ -17,7 +14,7 @@ import javax.persistence.ManyToOne
 import javax.persistence.Transient
 
 @Entity
-class Operation (
+class Operation(
     @ManyToOne
     @JoinColumn(name = "tx_id", nullable = false)
     @JsonIgnore
@@ -53,5 +50,4 @@ class Operation (
     override fun hashCode(): Int {
         return id?.hashCode() ?: 0
     }
-
 }

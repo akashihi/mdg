@@ -1,16 +1,11 @@
 package org.akashihi.mdg.indexing
 
-import lombok.Getter
-import lombok.NoArgsConstructor
-import lombok.Setter
-import lombok.ToString
 import org.akashihi.mdg.entity.Tag
 import org.akashihi.mdg.entity.Transaction
 import org.springframework.data.annotation.Id
 import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.elasticsearch.annotations.Field
 import org.springframework.data.elasticsearch.annotations.FieldType
-import java.util.stream.Collectors
 
 @Document(indexName = "mdg")
 class TransactionDocument(tx: Transaction) {

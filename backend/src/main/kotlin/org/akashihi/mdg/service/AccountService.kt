@@ -1,7 +1,5 @@
 package org.akashihi.mdg.service
 
-import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import org.akashihi.mdg.api.v1.MdgException
 import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.AccountSpecification
@@ -10,7 +8,6 @@ import org.akashihi.mdg.dao.CurrencyRepository
 import org.akashihi.mdg.dao.OperationRepository
 import org.akashihi.mdg.entity.Account
 import org.akashihi.mdg.entity.AccountType
-import org.akashihi.mdg.entity.Currency
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
@@ -22,7 +19,7 @@ import javax.transaction.Transactional
 @Service
 open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val rateService: RateService, private val operationRepository: OperationRepository) {
     private fun applyBalance(a: Account): Account {
-        val balance = a.id?.let {accountRepository.getBalance(it) } ?: BigDecimal.ZERO
+        val balance = a.id?.let { accountRepository.getBalance(it) } ?: BigDecimal.ZERO
         a.balance = balance
         a.primaryBalance = a.currency?.let { rateService.toCurrentDefaultCurrency(it, a.balance) } ?: a.balance
         return a
@@ -34,11 +31,11 @@ open class AccountService(private val accountRepository: AccountRepository, priv
             if (account.operational == true) {
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
             }
-            if (account.favorite == true ) {
+            if (account.favorite == true) {
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
             }
         }
-        if (account.accountType == AccountType.ASSET && account.categoryId == null) { //Default category for asset accounts
+        if (account.accountType == AccountType.ASSET && account.categoryId == null) { // Default category for asset accounts
             val defaultCategory = categoryRepository.findByNameAndAccountType("Current", AccountType.ASSET) ?: throw MdgException("CATEGORY_NOT_FOUND")
             account.category = defaultCategory
             account.categoryId = defaultCategory.id
@@ -46,7 +43,7 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         val currency = currencyRepository.findByIdOrNull(account.currencyId) ?: throw MdgException("CURRENCY_NOT_FOUND")
         account.currency = currency
         account.categoryId?.also {
-            val category = categoryRepository.findByIdOrNull(account.categoryId) ?:  throw MdgException("CATEGORY_NOT_FOUND")
+            val category = categoryRepository.findByIdOrNull(account.categoryId) ?: throw MdgException("CATEGORY_NOT_FOUND")
             if (category.accountType != account.accountType) {
                 throw MdgException("CATEGORY_INVALID_TYPE")
             }
@@ -63,7 +60,9 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         val sort = Sort.by("accountType").ascending().and(Sort.by("name").ascending())
         return if (query.isEmpty()) {
             accountRepository.findAll(sort).map { applyBalance(it) }
-        } else accountRepository.findAll(AccountSpecification.filteredAccount(query), sort).map {applyBalance(it) }
+        } else {
+            accountRepository.findAll(AccountSpecification.filteredAccount(query), sort).map { applyBalance(it) }
+        }
     }
 
     @Transactional

@@ -36,7 +36,7 @@ object TransactionSpecification {
                 predicates.add(root.get<Any>("id").`in`(fulltextIds))
             } else {
                 if (filter.containsKey("comment") || filter.containsKey("tag")) {
-                    predicates.add(criteriaBuilder.equal(root.get<Any>("id"), -1)) //Prevent any results pickup
+                    predicates.add(criteriaBuilder.equal(root.get<Any>("id"), -1)) // Prevent any results pickup
                 }
             }
             if (filter.containsKey("notEarlier")) {

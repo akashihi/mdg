@@ -17,7 +17,7 @@ import javax.persistence.Transient
 
 @Entity
 @Table(name = "budgetentry")
-class BudgetEntry (
+class BudgetEntry(
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "budget_id", nullable = false)

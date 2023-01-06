@@ -1,11 +1,6 @@
 package org.akashihi.mdg.entity
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import lombok.AllArgsConstructor
-import lombok.Getter
-import lombok.NoArgsConstructor
-import lombok.Setter
-import lombok.ToString
 import org.akashihi.mdg.api.v1.json.TsSerializer
 import java.math.BigDecimal
 import java.time.LocalDateTime

@@ -1,6 +1,5 @@
 package org.akashihi.mdg.api.v1
 
-import org.akashihi.mdg.api.v1.MdgException
 import org.akashihi.mdg.dao.ErrorRepository
 import org.akashihi.mdg.entity.Error
 import org.slf4j.LoggerFactory
@@ -14,6 +13,7 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
 data class Problem(val title: String, val status: Int, val instance: String?, val code: String, val detail: String)
+
 @ControllerAdvice
 open class RestExceptionHandler(private val errorRepository: ErrorRepository) : ResponseEntityExceptionHandler() {
     private fun constructMissingProblem(ex: MdgException): Error {
@@ -42,7 +42,7 @@ open class RestExceptionHandler(private val errorRepository: ErrorRepository) : 
         if (log.isWarnEnabled) {
             log.warn(ex.message, ex)
         }
-        val error = Error( 500, ex.message ?: "No message provided", "An unhandled exception happened", "UNHANDLED_EXCEPTION")
+        val error = Error(500, ex.message ?: "No message provided", "An unhandled exception happened", "UNHANDLED_EXCEPTION")
         return processError(error, request)
     }
 

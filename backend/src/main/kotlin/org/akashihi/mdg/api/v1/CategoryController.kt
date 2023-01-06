@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 data class Categories(val categories: Collection<Category>)
+
 @RestController
 open class CategoryController(private val categoryService: CategoryService) {
     @PostMapping(value = ["/categories"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])

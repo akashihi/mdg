@@ -20,9 +20,10 @@ import javax.persistence.Id
 @NoArgsConstructor
 @JsonSerialize(using = TagSerializer::class)
 @JsonDeserialize(using = TagDeserializer::class)
-class Tag(val tag: String,
-          @Id
-          @GeneratedValue(strategy = GenerationType.IDENTITY)
-          val id: Long? = null
+class Tag(
+    val tag: String,
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null
 
-    )
+)

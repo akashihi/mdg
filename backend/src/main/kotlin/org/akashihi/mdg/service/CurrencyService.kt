@@ -1,6 +1,5 @@
 package org.akashihi.mdg.service
 
-import lombok.RequiredArgsConstructor
 import org.akashihi.mdg.dao.CurrencyRepository
 import org.akashihi.mdg.entity.Currency
 import org.springframework.data.domain.Sort

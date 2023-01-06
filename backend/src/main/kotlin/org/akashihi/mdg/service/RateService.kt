@@ -23,7 +23,7 @@ import javax.transaction.Transactional
 @Service
 @Slf4j
 open class RateService(private val currencyService: CurrencyService, private val rateRepository: RateRepository, private val settingService: SettingService) {
-    open fun listForTs(dt: LocalDateTime): Collection<Rate> =  rateRepository.findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(dt, dt)
+    open fun listForTs(dt: LocalDateTime): Collection<Rate> = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(dt, dt)
 
     open fun getPair(dt: LocalDateTime, from: Long, to: Long): Rate = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(dt, dt, from, to) ?: Rate(dt, dt, from, to, BigDecimal.ONE, -1L)
 
@@ -60,7 +60,7 @@ open class RateService(private val currencyService: CurrencyService, private val
     }
 
     private fun queryYf(from: String, to: String): BigDecimal? {
-        val symbols = "${from}${to}=X"
+        val symbols = "${from}$to=X"
         val uriTemplate = UriTemplate(YF_URL)
         val uri = uriTemplate.expand(symbols)
         val client = WebClient.create()
@@ -83,30 +83,35 @@ open class RateService(private val currencyService: CurrencyService, private val
         }
         var rate = queryYf(currencyPair.first.code, currencyPair.second.code)
         if (rate == null) {
-            //Try to find an exchange rate via base currency USD
+            // Try to find an exchange rate via base currency USD
             val toUsd = queryYf(currencyPair.first.code, "USD")
             val fromUsd = queryYf("USD", currencyPair.second.code)
-            rate = toUsd?.let {fromUsd?.let { multiplicand: BigDecimal? -> it.multiply(multiplicand) } }
+            rate = toUsd?.let { fromUsd?.let { multiplicand: BigDecimal? -> it.multiply(multiplicand) } }
         }
         if (rate != null) {
             val firstCurrencyId = currencyPair.first.id ?: return
             val secondCurrencyId = currencyPair.second.id ?: return
-            val rateEntry = Rate(LocalDateTime.now(), LocalDateTime.now().plusHours(12), firstCurrencyId, secondCurrencyId, rate);
+
+            @Suppress("MagicNumber")
+            val rateEntry = Rate(LocalDateTime.now(), LocalDateTime.now().plusHours(12), firstCurrencyId, secondCurrencyId, rate)
             val exterior = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(rateEntry.beginning, rateEntry.end, rateEntry.from, rateEntry.to)
             if (exterior == null) {
                 if (log.isWarnEnabled) {
                     log.warn("Creating first ever rate for: {}/{}", currencyPair.first.code, currencyPair.second.code)
                 }
+                @Suppress("MagicNumber")
                 rateEntry.beginning = LocalDateTime.of(1, 1, 1, 0, 0, 0)
+                @Suppress("MagicNumber")
                 rateEntry.end = LocalDateTime.of(9999, 12, 31, 23, 59, 59)
                 rateRepository.save(rateEntry)
                 return
             }
-            //Need to update validity period of exterior
+            // Need to update validity period of exterior
             val next = rateRepository.findByBeginningGreaterThanEqualAndFromEqualsAndToEquals(rateEntry.end, rateEntry.from, rateEntry.to)
             exterior.end = rateEntry.beginning
             rateRepository.save(exterior)
             if (next == null) {
+                @Suppress("MagicNumber")
                 rateEntry.end = LocalDateTime.of(9999, 12, 31, 23, 59, 59)
                 rateRepository.save(rateEntry)
                 return

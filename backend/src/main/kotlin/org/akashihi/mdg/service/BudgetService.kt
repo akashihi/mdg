@@ -24,7 +24,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.function.Consumer
 import javax.transaction.Transactional
 
 data class ListResult<T>(val items: List<T>, val left: Long)
@@ -49,7 +48,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val to = entry.budget.end
 
         // Find actual spendings
-        entry.actualAmount = entry.account?.let {transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
+        entry.actualAmount = entry.account?.let { transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
         if (entry.account?.accountType === AccountType.INCOME) {
             entry.actualAmount = entry.actualAmount.negate()
         }
@@ -81,7 +80,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         }
         var left = page.totalElements - limit
         if (left < 0) {
-            left = 0 //Clamp value in case last page is shorter than limit
+            left = 0 // Clamp value in case last page is shorter than limit
         }
         return ListResult(page.content, left)
     }
@@ -99,7 +98,8 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val actual = entries
             .filter { it.account?.accountType == type }
             .map { entry ->
-                val amount = entry.account?.let{transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
+                @Suppress("MagicNumber")
+                val amount = entry.account?.let { transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
                 applyRateForEntry(amount, entry)
             }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal -> obj.add(augend) }
         val expected = entries
@@ -113,7 +113,8 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val actual = entries
             .filter { it.account?.accountType == AccountType.EXPENSE }
             .map { e: BudgetEntry ->
-                val amount = e.account?.let{ transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
+                @Suppress("MagicNumber")
+                val amount = e.account?.let { transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
                 applyRateForEntry(amount, e)
             }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         val expected = entries
@@ -157,7 +158,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val expenseTotals = getActualExpectedForBudget(budget, entries, AccountType.EXPENSE)
         var allowedSpendingsTotals = BudgetPair(BigDecimal.ZERO, BigDecimal.ZERO)
         if (budget.beginning <= LocalDate.now() && budget.end >= LocalDate.now()) {
-            //We are outside of budget's period, no spendings allowed
+            // We are outside of budget's period, no spendings allowed
             allowedSpendingsTotals = getActualAndAllowedForDate(LocalDate.now(), LocalDate.now(), entries)
         }
         val state = BudgetState(incomeTotals, expenseTotals, allowedSpendingsTotals)
@@ -182,9 +183,9 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         // Detect the rate between old and new currencies for that date
         // And apply that rate to the respective budget entry
         for (budget in budgetRepository.findAll()) {
-            val rate = account.currency?.let {rateService.getPair(budget.beginning.atTime(0, 0), it, newCurrency) }
+            val rate = account.currency?.let { rateService.getPair(budget.beginning.atTime(0, 0), it, newCurrency) }
             if (rate != null) {
-                val entry = budgetEntryRepository.findByBudget(budget).firstOrNull { it.account == account } //Should be always one entry per account
+                val entry = budgetEntryRepository.findByBudget(budget).firstOrNull { it.account == account } // Should be always one entry per account
                 if (entry != null) {
                     entry.expectedAmount = entry.expectedAmount.multiply(rate.rate)
                     budgetEntryRepository.save(entry)
@@ -249,9 +250,9 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
                 // We are out of that budget, no spendings are allowed
                 return BigDecimal.ZERO
             }
-            val budgetLength = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), to)) //Including first day
-            val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(forDay.minusDays(1), to)) //Including today
-            val daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), forDay)) //Including first day and today
+            val budgetLength = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), to)) // Including first day
+            val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(forDay.minusDays(1), to)) // Including today
+            val daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), forDay)) // Including first day and today
             var allowed = BigDecimal.ZERO
             if (mode == BudgetEntryMode.PRORATED) {
                 allowed = expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN).multiply(daysPassed).subtract(actualAmount)
@@ -264,7 +265,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
                 allowed = expectedAmount.subtract(actualAmount)
             }
             if (allowed < BigDecimal.ZERO) {
-                //Nothing to spend
+                // Nothing to spend
                 allowed = BigDecimal.ZERO
             }
             return allowed.setScale(0, RoundingMode.HALF_DOWN)

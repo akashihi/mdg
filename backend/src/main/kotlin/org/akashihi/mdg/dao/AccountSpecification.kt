@@ -17,7 +17,7 @@ object AccountSpecification {
             filter["account_type"]?.also { predicates.add(criteriaBuilder.equal(root.get<Any>("accountType"), from(it.uppercase()))) }
             filter["currency_id"]?.also { predicates.add(criteriaBuilder.equal(root.get<Any>("currency.id"), it.toLong())) }
             filter["name"]?.also { predicates.add(criteriaBuilder.equal(root.get<Any>("name"), it)) }
-            filter["hidden"]?.also {predicates.add(criteriaBuilder.equal(root.get<Any>("hidden"), it.toBoolean()))}
+            filter["hidden"]?.also { predicates.add(criteriaBuilder.equal(root.get<Any>("hidden"), it.toBoolean())) }
             criteriaBuilder.and(*predicates.toTypedArray())
         }
     }
