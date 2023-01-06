@@ -17,7 +17,7 @@ data class Problem(val title: String, val status: Int, val instance: String?, va
 @ControllerAdvice
 open class RestExceptionHandler(private val errorRepository: ErrorRepository) : ResponseEntityExceptionHandler() {
     private fun constructMissingProblem(ex: MdgException): Error {
-        return Error(ex.code, 500, "Undocumented error", "An error was emitted, which is not yet documented")
+        return Error(500, "Undocumented error", "An error was emitted, which is not yet documented", ex.code)
     }
 
     private fun processError(error: Error, request: WebRequest): ResponseEntity<Problem> {
@@ -42,7 +42,7 @@ open class RestExceptionHandler(private val errorRepository: ErrorRepository) : 
         if (log.isWarnEnabled) {
             log.warn(ex.message, ex)
         }
-        val error = Error("UNHANDLED_EXCEPTION", 500, ex.message, "An unhandled exception happened")
+        val error = Error( 500, ex.message ?: "No message provided", "An unhandled exception happened", "UNHANDLED_EXCEPTION")
         return processError(error, request)
     }
 

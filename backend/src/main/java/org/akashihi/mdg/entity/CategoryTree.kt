@@ -1,39 +1,29 @@
-package org.akashihi.mdg.entity;
+package org.akashihi.mdg.entity
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-import java.io.Serializable;
+import org.akashihi.mdg.entity.CategoryTree.CategoryTreePK
+import java.io.Serializable
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.IdClass
+import javax.persistence.Table
 
 @Entity
-@Getter
-@Setter
-@ToString
 @Table(name = "category_tree")
-@IdClass(CategoryTree.CategoryTreePK.class)
-public class CategoryTree {
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Getter
-    @Setter
-    @EqualsAndHashCode
-    static public class CategoryTreePK implements Serializable {
-        private Long ancestor;
-        private Long descendant;
-        private Integer depth;
+@IdClass(CategoryTreePK::class)
+class CategoryTree(
+    @Id
+    private val ancestor: Long? = null,
+
+    @Id
+    private val descendant: Long? = null,
+
+    @Id
+    private val depth: Int? = null
+) {
+    class CategoryTreePK : Serializable {
+        private val ancestor: Long? = null
+        private val descendant: Long? = null
+        private val depth: Int? = null
     }
-    @Id
-    private Long ancestor;
-    @Id
-    private Long descendant;
-    @Id
-    private Integer depth;
+
 }

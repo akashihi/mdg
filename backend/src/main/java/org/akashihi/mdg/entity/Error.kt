@@ -1,24 +1,13 @@
-package org.akashihi.mdg.entity;
+package org.akashihi.mdg.entity
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import javax.persistence.Entity
+import javax.persistence.Id
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-@Getter
-@Setter
-@ToString
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-public class Error {
+class Error (
+    val status: Int,
+    val title: String,
+    val detail: String,
     @Id
-    private String code;
-    private Integer status;
-    private String title;
-    private String detail;
-}
+    val code: String
+)

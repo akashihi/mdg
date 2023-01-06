@@ -1,40 +1,36 @@
-package org.akashihi.mdg.entity;
+package org.akashihi.mdg.entity
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Locale;
+enum class BudgetEntryMode {
+    SINGLE, EVEN, PRORATED;
 
-public enum BudgetEntryMode {
-    SINGLE,
-    EVEN,
-    PRORATED;
-
-    public String toDbValue() {
-        return this.name().toLowerCase(Locale.US);
+    fun toDbValue(): String {
+        return name.lowercase()
     }
 
-    public static BudgetEntryMode from(String status) {
-        return BudgetEntryMode.valueOf(status.toUpperCase(Locale.US));
-    }
-
-    public static BudgetEntryMode from(Boolean even, Boolean prorated) {
-        if (even && prorated) {
-            return PRORATED;
-        } else if (even) {
-            return EVEN;
-        } else {
-            return SINGLE;
+    companion object {
+        fun from(status: String): BudgetEntryMode {
+            return valueOf(status.uppercase())
         }
-    }
 
-    public static BudgetEntryMode flatten(Collection<BudgetEntryMode> modes) {
-        var presence = new HashSet<>(modes);
-        if (!presence.contains(EVEN) && !presence.contains(SINGLE)) {
-            return PRORATED;
-        } else if (!presence.contains(SINGLE)) {
-            return EVEN;
-        } else {
-            return SINGLE;
+        fun from(even: Boolean, prorated: Boolean): BudgetEntryMode {
+            return if (even && prorated) {
+                PRORATED
+            } else if (even) {
+                EVEN
+            } else {
+                SINGLE
+            }
+        }
+
+        fun flatten(modes: Collection<BudgetEntryMode>?): BudgetEntryMode {
+            val presence = HashSet(modes)
+            return if (!presence.contains(EVEN) && !presence.contains(SINGLE)) {
+                PRORATED
+            } else if (!presence.contains(SINGLE)) {
+                EVEN
+            } else {
+                SINGLE
+            }
         }
     }
 }
