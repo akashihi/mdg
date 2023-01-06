@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.akashihi.mdg.api.util.CursorHelper
 import org.akashihi.mdg.api.util.FilterConverter.buildFilter
-import org.akashihi.mdg.api.v1.dto.Transactions
 import org.akashihi.mdg.api.v1.filtering.Embedding.embedOperationObjects
 import org.akashihi.mdg.entity.Operation
 import org.akashihi.mdg.entity.Transaction
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.util.*
-import java.util.function.Consumer
 
 data class TransactionCursor(
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val filter: Map<String, String>?,
@@ -30,6 +28,8 @@ data class TransactionCursor(
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val limit: Int?,
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val pointer: Long?
 )
+
+data class Transactions(val transactions: Collection<Transaction>, val self: String, val first: String, val next: String, val left: Long)
 
 @RestController
 open class TransactionController(private val objectMapper: ObjectMapper, private val transactionService: TransactionService, private val cursorHelper: CursorHelper) {
