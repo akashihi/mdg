@@ -54,7 +54,7 @@ open class ReportService(private val accountService: AccountService, private val
 
     fun simpleAssetReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport {
         val dates = expandPeriod(from, to, granularity)
-        val amounts = dates.map { accountRepository.getTotalAssetsForDate(it) }.map { it.setScale(2, RoundingMode.DOWN) }.map { ReportSeriesEntry(it, it) }
+        val amounts = dates.map { accountRepository.getTotalAssetsForDate(it) ?: BigDecimal.ZERO }.map { it.setScale(2, RoundingMode.DOWN) }.map { ReportSeriesEntry(it, it) }
         val series = ReportSeries("Total assets", amounts, "area")
         return SimpleReport(dates, listOf(series))
     }
