@@ -72,11 +72,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -104,12 +99,6 @@
             <groupId>net.jcip</groupId>
             <artifactId>jcip-annotations</artifactId>
             <version>1.0</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-            <version>4.7.2</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -245,32 +234,11 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.7.2.0</version>
-                <configuration>
-                    <excludeFilterFile>spotbugs.xml</excludeFilterFile>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>1.9.5</version>
-                <configuration>
-                    <targetClasses>
-                        <param>org.akashihi.mdg*</param>
-                    </targetClasses>
-                    <targetTests>
-                        <param>org.akashihi.mdg*</param>
-                    </targetTests>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>com.github.gantsign.maven</groupId>
                 <artifactId>ktlint-maven-plugin</artifactId>
                 <version>1.15.2</version>
             </plugin>
-            <plugin>
+            <!--<plugin>
                 <groupId>com.github.ozsie</groupId>
                 <artifactId>detekt-maven-plugin</artifactId>
                 <version>1.22.0</version>
@@ -286,7 +254,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
     <repositories>

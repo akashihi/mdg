@@ -68,7 +68,8 @@ class AccountController(private val accountService: AccountService, private val 
     }
 
     @GetMapping(value = ["/accounts"], produces = ["application/vnd.mdg+json;version=1"])
-    fun list(@RequestParam("q") query: String?, @RequestParam("embed") embed: Collection<String>?): Accounts = Accounts(accountService.list(FilterConverter.buildFilter(query, objectMapper)).map { Embedding.embedAccountObjects(embed).invoke(it) })
+    fun list(@RequestParam("q") query: String?, @RequestParam("embed") embed: Collection<String>?): Accounts =
+        Accounts(accountService.list(FilterConverter.buildFilter(query, objectMapper)).map { Embedding.embedAccountObjects(embed).invoke(it) })
 
     @GetMapping(value = ["/accounts/tree"], produces = ["application/vnd.mdg+json;version=1"])
     fun tree(@RequestParam("q") query: String?, @RequestParam("embed") embed: Collection<String>?): CategoryTree {

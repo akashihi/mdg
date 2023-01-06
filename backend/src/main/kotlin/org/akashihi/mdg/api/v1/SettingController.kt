@@ -1,6 +1,5 @@
 package org.akashihi.mdg.api.v1
 
-import lombok.RequiredArgsConstructor
 import org.akashihi.mdg.entity.Setting
 import org.akashihi.mdg.indexing.IndexingService
 import org.akashihi.mdg.service.SettingService
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController
 data class Settings(val settings: Collection<Setting>)
 
 @RestController
-@RequiredArgsConstructor
 class SettingController(private val settingService: SettingService, private val indexingService: IndexingService) {
     @GetMapping(value = ["/settings"], produces = ["application/vnd.mdg+json;version=1"])
     fun list(): Settings = Settings(settingService.list())

@@ -1,7 +1,6 @@
 package org.akashihi.mdg.service
 
 import com.jayway.jsonpath.JsonPath
-import lombok.extern.slf4j.Slf4j
 import org.akashihi.mdg.dao.RateRepository
 import org.akashihi.mdg.entity.Currency
 import org.akashihi.mdg.entity.Rate
@@ -21,7 +20,6 @@ import java.util.concurrent.TimeUnit
 import javax.transaction.Transactional
 
 @Service
-@Slf4j
 open class RateService(private val currencyService: CurrencyService, private val rateRepository: RateRepository, private val settingService: SettingService) {
     open fun listForTs(dt: LocalDateTime): Collection<Rate> = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(dt, dt)
 
