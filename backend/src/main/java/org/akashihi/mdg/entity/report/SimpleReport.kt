@@ -1,6 +1,5 @@
-package org.akashihi.mdg.entity.report;
+package org.akashihi.mdg.entity.report
 
-import java.time.LocalDate;
-import java.util.Collection;
+import java.time.LocalDate
 
-public record SimpleReport(Collection<LocalDate> dates, Collection<ReportSeries> series) { }
+data class SimpleReport(val dates: Collection<LocalDate>, val series: Collection<ReportSeries>)

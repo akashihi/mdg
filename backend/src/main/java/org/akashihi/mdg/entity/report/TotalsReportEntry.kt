@@ -1,8 +1,10 @@
-package org.akashihi.mdg.entity.report;
+package org.akashihi.mdg.entity.report
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
+import java.math.BigDecimal
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
-public record TotalsReportEntry(@JsonProperty("category_name") String categoryName,@JsonProperty("primary_balance")  BigDecimal primaryBalance, Collection<Amount> amounts) { }
+data class TotalsReportEntry(
+    @field:JsonProperty("category_name") val categoryName: String,
+    @field:JsonProperty("primary_balance") val primaryBalance: BigDecimal,
+    val amounts: Collection<Amount>
+)

@@ -1,5 +1,3 @@
-package org.akashihi.mdg.entity.report;
+package org.akashihi.mdg.entity.report
 
-import java.util.Collection;
-
-public record TotalsReport(Collection<TotalsReportEntry> report) { }
+data class TotalsReport(val report: Collection<TotalsReportEntry>)

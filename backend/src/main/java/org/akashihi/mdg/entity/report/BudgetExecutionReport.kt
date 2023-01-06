@@ -1,15 +1,14 @@
-package org.akashihi.mdg.entity.report;
+package org.akashihi.mdg.entity.report
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
+import java.math.BigDecimal
+import java.time.LocalDate
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-
-public record BudgetExecutionReport(Collection<LocalDate> dates,
-                                    @JsonProperty("actual_income") Collection<BigDecimal> actualIncome,
-                                    @JsonProperty("actual_expense") Collection<BigDecimal> actualExpense,
-                                    @JsonProperty("expected_income") Collection<BigDecimal> expectedIncome,
-                                    @JsonProperty("expected_expense") Collection<BigDecimal> expectedExpense,
-                                    Collection<BigDecimal> profit) {
-}
+data class BudgetExecutionReport(
+    val dates: Collection<LocalDate>,
+    @field:JsonProperty("actual_income") val actualIncome: Collection<BigDecimal>,
+    @field:JsonProperty("actual_expense") val actualExpense: Collection<BigDecimal>,
+    @field:JsonProperty("expected_income") val expectedIncome: Collection<BigDecimal>,
+    @field:JsonProperty("expected_expense") val expectedExpense: Collection<BigDecimal>,
+    val profit: Collection<BigDecimal>
+)

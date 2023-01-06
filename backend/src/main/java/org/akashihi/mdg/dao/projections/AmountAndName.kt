@@ -1,9 +1,9 @@
-package org.akashihi.mdg.dao.projections;
+package org.akashihi.mdg.dao.projections
 
-import java.math.BigDecimal;
+import java.math.BigDecimal
 
-public interface AmountAndName {
-    BigDecimal getAmount();
-    BigDecimal getPrimaryAmount();
-    String getName();
+interface AmountAndName {
+    val amount: BigDecimal
+    val primaryAmount: BigDecimal
+    val name: String
 }

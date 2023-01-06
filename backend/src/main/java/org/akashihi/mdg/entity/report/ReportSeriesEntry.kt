@@ -1,5 +1,5 @@
-package org.akashihi.mdg.entity.report;
+package org.akashihi.mdg.entity.report
 
-import java.math.BigDecimal;
+import java.math.BigDecimal
 
-public record ReportSeriesEntry(BigDecimal y, BigDecimal custom) { }
+data class ReportSeriesEntry(val y: BigDecimal, val custom: BigDecimal)
