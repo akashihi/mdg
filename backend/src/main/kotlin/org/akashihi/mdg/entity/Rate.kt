@@ -15,11 +15,11 @@ import javax.persistence.Table
 @Table(name = "rates")
 class Rate(
     @Column(name = "rate_beginning")
-    @JsonSerialize(using = TsSerializer::class)
+    @field:JsonSerialize(using = TsSerializer::class)
     var beginning: LocalDateTime,
 
     @Column(name = "rate_end")
-    @JsonSerialize(using = TsSerializer::class)
+    @field:JsonSerialize(using = TsSerializer::class)
     var end: LocalDateTime,
 
     @Column(name = "from_id")

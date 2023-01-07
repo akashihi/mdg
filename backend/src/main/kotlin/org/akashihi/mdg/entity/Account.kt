@@ -23,7 +23,7 @@ class Account(
 
     @ManyToOne
     @JoinColumn(name = "currency_id", nullable = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var currency: Currency? = null,
 
     @Transient
@@ -32,12 +32,12 @@ class Account(
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var category: Category? = null,
 
     @Transient
     @JsonProperty("category_id")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var categoryId: Long? = null,
 
     @Transient

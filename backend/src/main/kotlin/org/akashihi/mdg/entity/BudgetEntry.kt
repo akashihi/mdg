@@ -29,16 +29,16 @@ class BudgetEntry(
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var account: Account? = null,
 
     @JsonProperty("category_id")
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var categoryId: Long? = null,
 
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var category: Category? = null,
 
     @Convert(converter = BudgetEntryModeConverter::class)

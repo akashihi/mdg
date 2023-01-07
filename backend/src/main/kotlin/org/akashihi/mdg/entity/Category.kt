@@ -20,7 +20,7 @@ class Category(
 
     @Transient
     @JsonProperty("parent_id")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var parentId: Long? = null,
 
     @Transient

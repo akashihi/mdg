@@ -23,7 +23,7 @@ class Operation(
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var account: Account? = null,
 
     @Transient

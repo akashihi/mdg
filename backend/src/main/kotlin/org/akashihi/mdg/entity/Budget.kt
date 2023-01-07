@@ -24,16 +24,16 @@ class Budget(
 
     @Transient
     @JsonProperty("incoming_amount")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var incomingAmount: BigDecimal? = null,
 
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("outgoing_amount")
     var outgoingAmount: BudgetPair? = null,
 
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var state: BudgetState? = null,
 
     @Id
