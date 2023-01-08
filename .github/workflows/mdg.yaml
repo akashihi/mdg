@@ -29,25 +29,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
-      - uses: pmd/pmd-github-action@v1
-        id: pmd
-        with:
-          version: '6.46.0'
-          sourcePath: 'backend/src/main/java'
-          analyzeModifiedFilesOnly: 'false'
-          rulesets: 'rulesets/java/quickstart.xml,ruleset.xml'
-      - name: Fail build if there a PMD violations
-        if: steps.pmd.outputs.violations != 0
-        run: exit 1
-      - name: Run code duplicates detection
+      - name: Run ktlint
         working-directory: ./backend
-        run: mvn --batch-mode --update-snapshots clean pmd:cpd-check
-      - name: Run spotbugs checks
-        working-directory: ./backend
-        run: mvn --batch-mode --update-snapshots clean compile spotbugs:check
+        run: mvn --batch-mode --update-snapshots clean compile ktlint:check
       - name: Unit tests
         working-directory: ./backend
-        run: mvn --batch-mode --update-snapshots clean test-compile test org.pitest:pitest-maven:mutationCoverage
+        run: mvn --batch-mode --update-snapshots clean test-compile test
 
   api-test:
     runs-on: ubuntu-latest
