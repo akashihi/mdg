@@ -131,7 +131,7 @@ open class BudgetController(private val budgetService: BudgetService, private va
     fun delete(@PathVariable("id") id: Long) = budgetService.delete(id)
 
     @GetMapping(value = ["/budgets/{budgetId}/entries"], produces = ["application/vnd.mdg+json;version=1"])
-    fun listEntries(@PathVariable("budgetId") budgetId: Long, @RequestParam("embed") embed: Collection<String>?): BudgetEntries = BudgetEntries(budgetService.listEntries(budgetId).stream().map(Embedding.embedBudgetEntryObject(embed)).toList())
+    fun listEntries(@PathVariable("budgetId") budgetId: Long, @RequestParam("embed") embed: Collection<String>?): BudgetEntries = BudgetEntries(budgetService.listEntries(budgetId).map(Embedding.embedBudgetEntryObject(embed)))
 
     @GetMapping(value = ["/budgets/{budgetId}/entries/tree"], produces = ["application/vnd.mdg+json;version=1"])
     fun tree(@PathVariable("budgetId") budgetId: Long, @RequestParam("embed") embed: Collection<String>?, @RequestParam("filter") filter: String?): BudgetEntryTree {
@@ -165,6 +165,16 @@ open class BudgetController(private val budgetService: BudgetService, private va
         @PathVariable("entryId") entryId: Long,
         @RequestBody entry: BudgetEntry
     ): BudgetEntry = budgetService.updateBudgetEntry(entryId, entry)?.let(Embedding.embedBudgetEntryObject(null)) ?: throw MdgException("BUDGETENTRY_NOT_FOUND")
+
+    @PutMapping(value = ["/budgets/{budgetId}/entries/copy/{mode}/{sourceBudgetId}"])
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun copyEntries(
+        @PathVariable("budgetId")
+        budgetId: Long,
+        @PathVariable("mode") mode: String,
+        @PathVariable("sourceBudgetId")
+        sourceBudgetId: Long
+    ) = budgetService.copyEntries(sourceBudgetId, budgetId, mode.lowercase() == "overwrite") ?: throw MdgException("BUDGET_NOT_FOUND")
 
     companion object {
         protected fun getCategoryTotals(f: (BudgetEntryTreeEntry) -> BigDecimal, entries: Collection<BudgetEntryTreeEntry>): BigDecimal {

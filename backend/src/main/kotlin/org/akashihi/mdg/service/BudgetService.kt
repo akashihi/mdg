@@ -232,6 +232,32 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     @Transactional
     open fun delete(id: Long) = budgetRepository.deleteById(id)
 
+    @Transactional
+    open fun copyEntries(sourceBudgetId: Long, targetBudgetId: Long, overwrite: Boolean): Collection<BudgetEntry>? {
+        val sourceBudget = budgetRepository.findByIdOrNull(sourceBudgetId) ?: return null
+        val targetBudget = budgetRepository.findByIdOrNull(targetBudgetId) ?: return null
+
+        val sourceEntries = budgetEntryRepository.findByBudget(sourceBudget)
+        val targetEntries = budgetEntryRepository.findByBudget(targetBudget)
+
+        // Pick entries to copy
+        val source = sourceEntries
+            .map { applyActualAmount(it) }
+            .filter { it.expectedAmount.compareTo(BigDecimal.ZERO) != 0 || it.actualAmount.compareTo(BigDecimal.ZERO) != 0 }
+            .map { if (it.expectedAmount.compareTo(BigDecimal.ZERO) == 0) { it.expectedAmount = it.actualAmount }; it }
+            .associate { Pair(it.account?.id, Pair(it.expectedAmount, it.distribution)) }
+
+        targetEntries.filter { overwrite || it.expectedAmount.compareTo(BigDecimal.ZERO) == 0 }
+            .forEach {
+                val value = source[it.account?.id]
+                if (value != null) {
+                    it.expectedAmount = value.first
+                    it.distribution = value.second
+                    budgetEntryRepository.save(it)
+                }
+            }
+        return targetEntries
+    }
     companion object {
         fun getSpendingPercent(actualAmount: BigDecimal, expectedAmount: BigDecimal): BigDecimal {
             if (expectedAmount.compareTo(BigDecimal.ZERO) == 0) {
