@@ -104,8 +104,8 @@ open class BudgetController(private val budgetService: BudgetService, private va
         val budgetCursor = cursor?.let { cursorHelper.cursorFromString(it, BudgetCursor::class.java) } ?: BudgetCursor(limit, null)
         val budgets = budgetService.list(budgetCursor.limit, budgetCursor.pointer)
         val self = cursorHelper.cursorToString(budgetCursor) ?: ""
-        var first: String = ""
-        var next: String = ""
+        var first = ""
+        var next = ""
         if (limit != null || cursor != null) { // In both cases we are in paging mode, either for the first page or for the subsequent pages
             val firstCursor = BudgetCursor(budgetCursor.limit, 0L)
             first = cursorHelper.cursorToString(firstCursor) ?: ""
@@ -166,7 +166,7 @@ open class BudgetController(private val budgetService: BudgetService, private va
         @RequestBody entry: BudgetEntry
     ): BudgetEntry = budgetService.updateBudgetEntry(entryId, entry)?.let(Embedding.embedBudgetEntryObject(null)) ?: throw MdgException("BUDGETENTRY_NOT_FOUND")
 
-    @PutMapping(value = ["/budgets/{budgetId}/entries/copy/{mode}/{sourceBudgetId}"])
+    @PutMapping(value = ["/budgets/{budgetId}/entries/copy/{mode}/{sourceBudgetId}"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun copyEntries(
         @PathVariable("budgetId")
