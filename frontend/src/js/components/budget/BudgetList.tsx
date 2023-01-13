@@ -16,6 +16,12 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Paper from '@mui/material/Paper';
+import MenuList from '@mui/material/MenuList';
+import Popper from '@mui/material/Popper';
 import * as API from '../../api/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,6 +44,9 @@ export function BudgetList(props: BudgetSelectorProps) {
     const [left, setLeft] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
     const [currentlySelectedBudget, setCurrentlySelectedBudget] = useState<number | undefined>(-1);
+    const anchorRef = React.useRef<HTMLDivElement>(null);
+    const [copyActionsMenuOpen, setCopyActionsMenuOpen] = React.useState<boolean>(false);
+    const [copyActionSelected, setCopyActionSelected] = React.useState<number>(0);
 
     useEffect(() => {
         setLoading(true);
@@ -159,6 +168,25 @@ export function BudgetList(props: BudgetSelectorProps) {
         end: moment().set({ date: 1 }).add(1, 'month').subtract(1, 'day').toDate(),
     };
 
+    const copyActions = ['Copy to current budget', 'Copy to current budget (overwrite values)'];
+
+    const handleCopyActionsClose = (event: Event) => {
+        if (anchorRef.current && anchorRef.current.contains(event.target as HTMLElement)) {
+            return;
+        }
+
+        setCopyActionsMenuOpen(false);
+    };
+
+    const handleCopyActionsToggle = () => {
+        setCopyActionsMenuOpen(prevOpen => !prevOpen);
+    };
+
+    const handleCopyActionSelect = (event: React.MouseEvent<HTMLLIElement, MouseEvent>, index: number) => {
+        setCopyActionSelected(index);
+        setCopyActionsMenuOpen(false);
+    };
+
     return (
         <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
@@ -181,9 +209,44 @@ export function BudgetList(props: BudgetSelectorProps) {
                     <Backdrop open={loading}>
                         <CircularProgress color="inherit" />
                     </Backdrop>
-                    <Button color="primary" onClick={onDeleteBudget}>
-                        Delete selected budget
-                    </Button>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6} md={8}></Grid>
+                        <Grid item xs={6} md={4}>
+                            <ButtonGroup variant="contained" ref={anchorRef}>
+                                <Button>{copyActions[copyActionSelected]}</Button>
+                                <Button size="small" onClick={handleCopyActionsToggle}>
+                                    <ArrowDropDownIcon />
+                                </Button>
+                            </ButtonGroup>
+                            <Popper
+                                sx={{
+                                    zIndex: 1,
+                                }}
+                                open={copyActionsMenuOpen}
+                                anchorEl={anchorRef.current}
+                                role={undefined}
+                                disablePortal>
+                                <Paper>
+                                    <ClickAwayListener onClickAway={handleCopyActionsClose}>
+                                        <MenuList id="split-button-menu" autoFocusItem>
+                                            {copyActions.map((option, index) => (
+                                                <MenuItem
+                                                    key={option}
+                                                    disabled={index === 2}
+                                                    selected={index === copyActionSelected}
+                                                    onClick={event => handleCopyActionSelect(event, index)}>
+                                                    {option}
+                                                </MenuItem>
+                                            ))}
+                                        </MenuList>
+                                    </ClickAwayListener>
+                                </Paper>
+                            </Popper>
+                            <Button color="error" variant="outlined" onClick={onDeleteBudget}>
+                                Delete selected budget
+                            </Button>
+                        </Grid>
+                    </Grid>
                     <Formik initialValues={initialValues} validate={newBudgetValidate} onSubmit={onCreateBudget}>
                         {({ submitForm, isSubmitting, values }) => (
                             <Form>
