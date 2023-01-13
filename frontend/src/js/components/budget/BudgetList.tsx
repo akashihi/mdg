@@ -47,6 +47,7 @@ export function BudgetList(props: BudgetSelectorProps) {
     const anchorRef = React.useRef<HTMLDivElement>(null);
     const [copyActionsMenuOpen, setCopyActionsMenuOpen] = React.useState<boolean>(false);
     const [copyActionSelected, setCopyActionSelected] = React.useState<number>(0);
+    const [budgetOpsOpen, setBudgetOpsOpen] = React.useState<boolean>(false);
 
     useEffect(() => {
         setLoading(true);
@@ -187,9 +188,13 @@ export function BudgetList(props: BudgetSelectorProps) {
         setCopyActionsMenuOpen(false);
     };
 
+    const handleBudgetOpsToggle = () => {
+        setBudgetOpsOpen(prevOpen => !prevOpen);
+    };
+
     return (
-        <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+        <Accordion expanded={budgetOpsOpen}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon onClick={handleBudgetOpsToggle} />}>
                 <Select
                     disabled={budgets.length === 0}
                     value={currentlySelectedBudget}
@@ -211,7 +216,10 @@ export function BudgetList(props: BudgetSelectorProps) {
                     </Backdrop>
                     <Grid container spacing={2}>
                         <Grid item xs={6} md={8}>
-                            <Formik initialValues={initialValues} validate={newBudgetValidate} onSubmit={onCreateBudget}>
+                            <Formik
+                                initialValues={initialValues}
+                                validate={newBudgetValidate}
+                                onSubmit={onCreateBudget}>
                                 {({ submitForm, isSubmitting, values }) => (
                                     <Form>
                                         <Grid container spacing={2}>
@@ -236,7 +244,11 @@ export function BudgetList(props: BudgetSelectorProps) {
                                                 <ErrorMessage name="end" component="div" />
                                             </Grid>
                                             <Grid item xs={4} lg={2}>
-                                                <Button color="primary" variant="outlined" disabled={isSubmitting} onClick={submitForm}>
+                                                <Button
+                                                    color="primary"
+                                                    variant="outlined"
+                                                    disabled={isSubmitting}
+                                                    onClick={submitForm}>
                                                     Create budget
                                                 </Button>
                                             </Grid>
