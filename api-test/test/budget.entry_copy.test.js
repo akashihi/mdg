@@ -27,27 +27,27 @@ describe('Budget entries copying', () => {
             .spec('read')
             .get('/budgets/{id}/entries')
             .withPathParams('id', '$S{BudgetSourceID}')
-            .stores("SourceEntries", "budget_entries")
+            .stores("SourceEntries", "budget_entries");
 
         await e2e.step('List budget entries')
             .spec('read')
             .get('/budgets/{id}/entries')
             .withPathParams('id', '$S{BudgetTargetID}')
-            .stores("TargetEntries", "budget_entries")
+            .stores("TargetEntries", "budget_entries");
 
-        const incomeAccountId = stash.getDataStore()["IncomeAccountID"]
-        const expenseAccountId = stash.getDataStore()["ExpenseAccountID"]
+        const incomeAccountId = stash.getDataStore().IncomeAccountID;
+        const expenseAccountId = stash.getDataStore().ExpenseAccountID;
 
-        const sourceIncomeEntryId = stash.getDataStore()["SourceEntries"].filter(item => item.account_id === incomeAccountId).map(item => item.id)[0]
-        const sourceExpenseEntryId = stash.getDataStore()["SourceEntries"].filter(item => item.account_id === expenseAccountId).map(item => item.id)[0]
+        const sourceIncomeEntryId = stash.getDataStore().SourceEntries.filter(item => item.account_id === incomeAccountId).map(item => item.id)[0];
+        const sourceExpenseEntryId = stash.getDataStore().SourceEntries.filter(item => item.account_id === expenseAccountId).map(item => item.id)[0];
 
-        const targetIncomeEntryId = stash.getDataStore()["TargetEntries"].filter(item => item.account_id === incomeAccountId).map(item => item.id)[0]
-        const targetExpenseEntryId = stash.getDataStore()["TargetEntries"].filter(item => item.account_id === expenseAccountId).map(item => item.id)[0]
+        const targetIncomeEntryId = stash.getDataStore().TargetEntries.filter(item => item.account_id === incomeAccountId).map(item => item.id)[0];
+        const targetExpenseEntryId = stash.getDataStore().TargetEntries.filter(item => item.account_id === expenseAccountId).map(item => item.id)[0];
 
-        stash.getDataStore()["SourceIncomeEntryId"] = sourceIncomeEntryId
-        stash.getDataStore()["SourceExpenseEntryId"] = sourceExpenseEntryId
-        stash.getDataStore()["TargetIncomeEntryId"] = targetIncomeEntryId
-        stash.getDataStore()["TargetExpenseEntryId"] = targetExpenseEntryId
+        stash.getDataStore().SourceIncomeEntryId = sourceIncomeEntryId;
+        stash.getDataStore().SourceExpenseEntryId = sourceExpenseEntryId;
+        stash.getDataStore().TargetIncomeEntryId = targetIncomeEntryId;
+        stash.getDataStore().TargetExpenseEntryId = targetExpenseEntryId;
     });
 
     it('Update budget entries before copying', async () => {
@@ -96,7 +96,7 @@ describe('Budget entries copying', () => {
             .spec('update')
             .put('/budgets/{id}/entries/copy/preserve/{source}')
             .withPathParams({id: '$S{BudgetTargetID}', source: '$S{BudgetSourceID}'})
-            .expectStatus(204)
+            .expectStatus(204);
 
         await e2e.step('Read budget entry')
             .spec('read')
@@ -116,7 +116,7 @@ describe('Budget entries copying', () => {
             .spec('update')
             .put('/budgets/{id}/entries/copy/overwrite/{source}')
             .withPathParams({id: '$S{BudgetTargetID}', source: '$S{BudgetSourceID}'})
-            .expectStatus(204)
+            .expectStatus(204);
 
         await e2e.step('Read budget entry')
             .spec('read')
