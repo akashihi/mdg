@@ -210,7 +210,41 @@ export function BudgetList(props: BudgetSelectorProps) {
                         <CircularProgress color="inherit" />
                     </Backdrop>
                     <Grid container spacing={2}>
-                        <Grid item xs={6} md={8}></Grid>
+                        <Grid item xs={6} md={8}>
+                            <Formik initialValues={initialValues} validate={newBudgetValidate} onSubmit={onCreateBudget}>
+                                {({ submitForm, isSubmitting, values }) => (
+                                    <Form>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={4} lg={3}>
+                                                <Field
+                                                    type="text"
+                                                    name="begin"
+                                                    label="First budget day"
+                                                    value={values.begin}
+                                                    component={FormikDatePicker}
+                                                />
+                                                <ErrorMessage name="begin" component="div" />
+                                            </Grid>
+                                            <Grid item xs={4} lg={2}>
+                                                <Field
+                                                    type="text"
+                                                    name="end"
+                                                    label="Last budget day"
+                                                    value={values.end}
+                                                    component={FormikDatePicker}
+                                                />
+                                                <ErrorMessage name="end" component="div" />
+                                            </Grid>
+                                            <Grid item xs={4} lg={2}>
+                                                <Button color="primary" variant="outlined" disabled={isSubmitting} onClick={submitForm}>
+                                                    Create budget
+                                                </Button>
+                                            </Grid>
+                                        </Grid>
+                                    </Form>
+                                )}
+                            </Formik>
+                        </Grid>
                         <Grid item xs={6} md={4}>
                             <ButtonGroup variant="contained" ref={anchorRef}>
                                 <Button>{copyActions[copyActionSelected]}</Button>
@@ -247,39 +281,6 @@ export function BudgetList(props: BudgetSelectorProps) {
                             </Button>
                         </Grid>
                     </Grid>
-                    <Formik initialValues={initialValues} validate={newBudgetValidate} onSubmit={onCreateBudget}>
-                        {({ submitForm, isSubmitting, values }) => (
-                            <Form>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={4} lg={3}>
-                                        <Field
-                                            type="text"
-                                            name="begin"
-                                            label="First budget day"
-                                            value={values.begin}
-                                            component={FormikDatePicker}
-                                        />
-                                        <ErrorMessage name="begin" component="div" />
-                                    </Grid>
-                                    <Grid item xs={4} lg={2}>
-                                        <Field
-                                            type="text"
-                                            name="end"
-                                            label="Last budget day"
-                                            value={values.end}
-                                            component={FormikDatePicker}
-                                        />
-                                        <ErrorMessage name="end" component="div" />
-                                    </Grid>
-                                    <Grid item xs={4} lg={2}>
-                                        <Button color="primary" disabled={isSubmitting} onClick={submitForm}>
-                                            Create budget
-                                        </Button>
-                                    </Grid>
-                                </Grid>
-                            </Form>
-                        )}
-                    </Formik>
                 </Fragment>
             </AccordionDetails>
         </Accordion>
