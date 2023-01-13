@@ -5,6 +5,7 @@ import { getSelectedBudget } from '../selectors/BudgetSelector';
 import { Budget } from '../api/models/Budget';
 import { RootState } from '../reducers/rootReducer';
 import { reportError } from '../actions/ErrorActions';
+import { loadCurrentBudget, loadSelectedBudget } from '../actions/BudgetActions';
 
 export interface BudgetViewerState {
     budget?: Budget;
@@ -16,7 +17,7 @@ const mapStateToProps = (state: RootState): BudgetViewerState => {
     };
 };
 
-const mapDispatchToProps = { reportError };
+const mapDispatchToProps = { reportError, loadCurrentBudget, loadSelectedBudget };
 
 export type BudgetViewerProps = BudgetViewerState & typeof mapDispatchToProps;
 

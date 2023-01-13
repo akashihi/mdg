@@ -69,6 +69,12 @@ export function BudgetPage(props: BudgetViewerProps) {
     const [expenseEntries, setExpenseEntries] = useState<BudgetEntryTreeNode | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
+    useEffect(() => {
+        if (props.budget == undefined) {
+            props.loadCurrentBudget();
+        }
+    }, []);
+
     const loadEntries = () => {
         const budget = props.budget;
         if (budget !== null && budget !== undefined) {
@@ -102,6 +108,7 @@ export function BudgetPage(props: BudgetViewerProps) {
                 const result = await API.saveBudgetEntry(entry, budget.id);
                 if (result.ok) {
                     await loadEntries();
+                    await props.loadSelectedBudget(budget.id);
                 } else {
                     props.reportError(result.val);
                 }
