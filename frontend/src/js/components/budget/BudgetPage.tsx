@@ -69,6 +69,10 @@ export function BudgetPage(props: BudgetViewerProps) {
     const [expenseEntries, setExpenseEntries] = useState<BudgetEntryTreeNode | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
+    useEffect(() => {
+        props.loadCurrentBudget();
+    }, []);
+
     const loadEntries = () => {
         const budget = props.budget;
         if (budget !== null && budget !== undefined) {

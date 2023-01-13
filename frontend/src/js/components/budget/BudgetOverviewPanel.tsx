@@ -4,7 +4,7 @@ import BudgetInfo from './BudgetInfo';
 
 export function BudgetOverviewPanel(props: BudgetOverviewProps) {
     useEffect(() => {
-        props.getCurrentBudget();
+        props.loadCurrentBudget();
     }, []);
 
     if (props.budget) {

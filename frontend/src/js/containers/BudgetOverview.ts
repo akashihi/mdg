@@ -14,7 +14,7 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = { getCurrentBudget: loadCurrentBudget };
+const mapDispatchToProps = { loadCurrentBudget };
 
 export type BudgetOverviewProps = BudgetOverviewState & typeof mapDispatchToProps;
 
