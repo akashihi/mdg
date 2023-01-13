@@ -68,6 +68,23 @@ export function BudgetList(props: BudgetSelectorProps) {
         setCurrentlySelectedBudget(props.selectedBudgetId);
     }, [props.selectedBudgetId]);
 
+    const onCopyBudget = () => {
+        if (currentlySelectedBudget != undefined) {
+            setLoading(true);
+            (async () => {
+                const result = await API.copyBudget(
+                    currentlySelectedBudget,
+                    props.selectedBudgetId,
+                    copyActionSelected == 1
+                );
+                setLoading(false);
+                if (result.some) {
+                    await props.loadSelectedBudget(props.selectedBudgetId);
+                }
+            })();
+        }
+    };
+
     const onDeleteBudget = () => {
         setLoading(true);
         (async () => {
@@ -259,7 +276,7 @@ export function BudgetList(props: BudgetSelectorProps) {
                         </Grid>
                         <Grid item xs={6} md={4}>
                             <ButtonGroup variant="contained" ref={anchorRef}>
-                                <Button>{copyActions[copyActionSelected]}</Button>
+                                <Button onClick={onCopyBudget}>{copyActions[copyActionSelected]}</Button>
                                 <Button size="small" onClick={handleCopyActionsToggle}>
                                     <ArrowDropDownIcon />
                                 </Button>

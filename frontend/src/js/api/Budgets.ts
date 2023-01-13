@@ -336,6 +336,22 @@ export async function saveBudgetEntry(
     return parseResponse(response, budgetEntryParse);
 }
 
+export async function copyBudget(
+    sourceBudget: number,
+    targetBudget: number,
+    overwrite: boolean
+): Promise<Option<Model.Problem>> {
+    const copyMode = overwrite ? 'overwrite' : 'preserve';
+    const url = `/api/budgets/${targetBudget}/entries/copy/${copyMode}/${sourceBudget}`;
+    const method = 'PUT';
+    const response = await fetch(url, updateRequestParameters(method));
+    if (response.status < 400) {
+        const responseJson = await response.text();
+        return new Some(parseError(response, responseJson));
+    }
+    return None;
+}
+
 export async function deleteBudget(id: number): Promise<Option<Model.Problem>> {
     const url = `/api/budgets/${id}`;
     const method = 'DELETE';
