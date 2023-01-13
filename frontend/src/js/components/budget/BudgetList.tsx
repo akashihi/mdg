@@ -12,6 +12,10 @@ import { ShortBudget } from '../../api/model';
 import { FieldAttributes, useFormikContext } from 'formik';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import * as API from '../../api/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,6 +37,7 @@ export function BudgetList(props: BudgetSelectorProps) {
     const [cursorNext, setCursorNext] = useState<string | undefined>(undefined);
     const [left, setLeft] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
+    const [currentlySelectedBudget, setCurrentlySelectedBudget] = useState<number | undefined>(-1);
 
     useEffect(() => {
         setLoading(true);
@@ -48,6 +53,10 @@ export function BudgetList(props: BudgetSelectorProps) {
             }
         })();
     }, []);
+
+    useEffect(() => {
+        setCurrentlySelectedBudget(props.selectedBudgetId);
+    }, [props.selectedBudgetId]);
 
     const onDeleteBudget = () => {
         setLoading(true);
@@ -96,7 +105,13 @@ export function BudgetList(props: BudgetSelectorProps) {
                 }
             })();
         } else {
-            props.loadSelectedBudget(id as number);
+            setCurrentlySelectedBudget(id as number);
+        }
+    };
+
+    const applySelectedBudget = () => {
+        if (currentlySelectedBudget != undefined) {
+            props.loadSelectedBudget(currentlySelectedBudget);
         }
     };
     const newBudgetValidate = values => {
@@ -145,54 +160,66 @@ export function BudgetList(props: BudgetSelectorProps) {
     };
 
     return (
-        <Fragment>
-            <Backdrop open={loading}>
-                <CircularProgress color="inherit" />
-            </Backdrop>
-            Select budget:
-            <Select
-                disabled={budgets.length === 0}
-                value={props.selectedBudgetId}
-                onChange={ev => onBudgetSelect(ev.target.value)}>
-                {budgetList}
-            </Select>
-            <Button color="primary" onClick={onDeleteBudget}>
-                Delete selected budget
-            </Button>
-            <Formik initialValues={initialValues} validate={newBudgetValidate} onSubmit={onCreateBudget}>
-                {({ submitForm, isSubmitting, values }) => (
-                    <Form>
-                        <Grid container spacing={2}>
-                            <Grid item xs={4} lg={3}>
-                                <Field
-                                    type="text"
-                                    name="begin"
-                                    label="First budget day"
-                                    value={values.begin}
-                                    component={FormikDatePicker}
-                                />
-                                <ErrorMessage name="begin" component="div" />
-                            </Grid>
-                            <Grid item xs={4} lg={2}>
-                                <Field
-                                    type="text"
-                                    name="end"
-                                    label="Last budget day"
-                                    value={values.end}
-                                    component={FormikDatePicker}
-                                />
-                                <ErrorMessage name="end" component="div" />
-                            </Grid>
-                            <Grid item xs={4} lg={2}>
-                                <Button color="primary" disabled={isSubmitting} onClick={submitForm}>
-                                    Create budget
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Form>
-                )}
-            </Formik>
-        </Fragment>
+        <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+                <Select
+                    disabled={budgets.length === 0}
+                    value={currentlySelectedBudget}
+                    onChange={ev => onBudgetSelect(ev.target.value)}>
+                    {budgetList}
+                </Select>
+                <Button
+                    color="primary"
+                    variant="outlined"
+                    onClick={applySelectedBudget}
+                    disabled={currentlySelectedBudget == undefined}>
+                    Select budget
+                </Button>
+            </AccordionSummary>
+            <AccordionDetails>
+                <Fragment>
+                    <Backdrop open={loading}>
+                        <CircularProgress color="inherit" />
+                    </Backdrop>
+                    <Button color="primary" onClick={onDeleteBudget}>
+                        Delete selected budget
+                    </Button>
+                    <Formik initialValues={initialValues} validate={newBudgetValidate} onSubmit={onCreateBudget}>
+                        {({ submitForm, isSubmitting, values }) => (
+                            <Form>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={4} lg={3}>
+                                        <Field
+                                            type="text"
+                                            name="begin"
+                                            label="First budget day"
+                                            value={values.begin}
+                                            component={FormikDatePicker}
+                                        />
+                                        <ErrorMessage name="begin" component="div" />
+                                    </Grid>
+                                    <Grid item xs={4} lg={2}>
+                                        <Field
+                                            type="text"
+                                            name="end"
+                                            label="Last budget day"
+                                            value={values.end}
+                                            component={FormikDatePicker}
+                                        />
+                                        <ErrorMessage name="end" component="div" />
+                                    </Grid>
+                                    <Grid item xs={4} lg={2}>
+                                        <Button color="primary" disabled={isSubmitting} onClick={submitForm}>
+                                            Create budget
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </Form>
+                        )}
+                    </Formik>
+                </Fragment>
+            </AccordionDetails>
+        </Accordion>
     );
 }
 
