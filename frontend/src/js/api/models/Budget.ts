@@ -36,6 +36,7 @@ export interface BudgetEntry {
     readonly account?: Account;
     readonly category_id?: number;
     readonly category?: Category;
+    readonly dt?: string;
     readonly distribution: BudgetEntryMode;
     readonly expected_amount: number;
     readonly actual_amount: number;
