@@ -5,11 +5,15 @@ import CircularProgressWithLabel from '../../widgets/CircularProgressWithLabel';
 import { BudgetEntry, BudgetEntryTreeNode } from '../../api/model';
 import Divider from '@mui/material/Divider';
 import ReactThreeToggle, { ReactThreeToggleProps } from 'react-three-toggle';
+import DatePicker from 'react-date-picker';
+import moment from "moment/moment";
 
 export interface BudgetEntryProps {
     entry: BudgetEntry;
     indent: number;
     save: (BudgetEntry) => void;
+    budget_start?: string;
+    budget_end?: string;
 }
 
 function entryColor(progress: number, account_type: string): 'error' | 'warning' | 'success' {
@@ -117,6 +121,8 @@ export function BudgetEntry(props: BudgetEntryProps) {
 
     const currency_name =
         props.entry.account && props.entry.account.currency ? `(${props.entry.account.currency.name})` : '';
+
+    const dt = props.entry.dt == null ? null : moment(props.entry.dt).toDate();
     return (
         <div style={{ paddingBottom: '8px', marginLeft: props.indent * 15 + 10 }}>
             <Grid container spacing={2}>
@@ -155,6 +161,9 @@ export function BudgetEntry(props: BudgetEntryProps) {
                 </Grid>
                 <Grid item xs={2} sm={2} md={2} lg={1}>
                     <div>{props.entry.actual_amount}</div>
+                </Grid>
+                <Grid item xs={3} sm={3} md={3} lg={1}>
+                    <DatePicker format="d/M/yyyy" value={dt} disabled={props.entry.distribution != "SINGLE"} minDate={moment(props.budget_start).toDate()} maxDate={moment(props.budget_end).toDate()}/>
                 </Grid>
                 {editors}
             </Grid>

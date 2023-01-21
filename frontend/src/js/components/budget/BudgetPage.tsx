@@ -23,12 +23,12 @@ const cardStyle = {
     paddingBottom: '16px',
 };
 
-const mapEntries = (tree: BudgetEntryTreeNode, indent: number, saveFunc: (BudgetEntryType) => void) => {
-    const subCategories = tree.categories.flatMap(c => mapEntries(c, indent + 1, saveFunc));
+const mapEntries = (tree: BudgetEntryTreeNode, indent: number, saveFunc: (BudgetEntryType) => void, budget_start?: string, budget_end?: string) => {
+    const subCategories = tree.categories.flatMap(c => mapEntries(c, indent + 1, saveFunc, budget_start, budget_end));
 
     const entries = tree.entries.map(e => (
         <ListItemText key={e.id}>
-            <BudgetEntry entry={e} indent={indent} save={saveFunc} />
+            <BudgetEntry entry={e} indent={indent} save={saveFunc} budget_start={budget_start} budget_end={budget_end}/>
         </ListItemText>
     ));
     if (tree.name !== undefined) {
@@ -47,6 +47,8 @@ function BudgetEntries(props: {
     entries: BudgetEntryTreeNode;
     title: string;
     saveFunc: (entry: BudgetEntryType) => void;
+    budget_start?: string;
+    budget_end?: string;
 }) {
     return (
         <Card style={cardStyle}>
@@ -56,7 +58,7 @@ function BudgetEntries(props: {
             />
             <CardContent>
                 <List component="div" disablePadding>
-                    {mapEntries(props.entries, 0, props.saveFunc)}
+                    {mapEntries(props.entries, 0, props.saveFunc, props.budget_start, props.budget_end)}
                 </List>
             </CardContent>
         </Card>
@@ -141,10 +143,10 @@ export function BudgetPage(props: BudgetViewerProps) {
             <Divider />
             <Fragment>
                 {incomeEntries != null && (
-                    <BudgetEntries title={'income'} entries={incomeEntries} saveFunc={saveEntry} />
+                    <BudgetEntries title={'income'} entries={incomeEntries} saveFunc={saveEntry} budget_start={props.budget?.term_beginning} budget_end={props.budget?.term_end}/>
                 )}
                 {expenseEntries != null && (
-                    <BudgetEntries title={'expense'} entries={expenseEntries} saveFunc={saveEntry} />
+                    <BudgetEntries title={'expense'} entries={expenseEntries} saveFunc={saveEntry} budget_start={props.budget?.term_beginning} budget_end={props.budget?.term_end}/>
                 )}
             </Fragment>
         </Fragment>
