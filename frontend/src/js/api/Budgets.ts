@@ -46,6 +46,7 @@ const budgetEntryDefinition = {
         spending_percent: { type: 'float32' },
     },
     optionalProperties: {
+        dt: { type: 'string' },
         account: { ref: 'account' },
         category_id: { type: 'uint32' },
         category: { ref: 'category' },

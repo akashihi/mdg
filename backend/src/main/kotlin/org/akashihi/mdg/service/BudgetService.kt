@@ -211,6 +211,16 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             throw MdgException("BUDGETENTRY_IS_NEGATIVE")
         }
         entry.distribution = newEntry.distribution
+        if (entry.distribution == BudgetEntryMode.SINGLE) {
+            if (newEntry.dt != null) {
+                if (entry.budget.beginning > newEntry.dt || entry.budget.end < newEntry.dt) {
+                    throw MdgException("BUDGETENTRY_DT_OUT_OF_BUDGET")
+                }
+            }
+            entry.dt = newEntry.dt
+        } else {
+            entry.dt = null // Payment dates are only valid for non-distributed entries
+        }
         applyActualAmount(entry)
         analyzeSpendings(entry, LocalDate.now())
         budgetEntryRepository.save(entry)
@@ -245,7 +255,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             .map { applyActualAmount(it) }
             .filter { it.expectedAmount.compareTo(BigDecimal.ZERO) != 0 || it.actualAmount.compareTo(BigDecimal.ZERO) != 0 }
             .map { if (it.expectedAmount.compareTo(BigDecimal.ZERO) == 0) { it.expectedAmount = it.actualAmount }; it }
-            .associate { Pair(it.account?.id, Pair(it.expectedAmount, it.distribution)) }
+            .associate { Pair(it.account?.id, Triple(it.expectedAmount, it.distribution, it.dt?.let { dt -> ChronoUnit.DAYS.between(it.budget.beginning, dt) })) }
 
         targetEntries.filter { overwrite || it.expectedAmount.compareTo(BigDecimal.ZERO) == 0 }
             .forEach {
@@ -253,6 +263,15 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
                 if (value != null) {
                     it.expectedAmount = value.first
                     it.distribution = value.second
+                    if (it.distribution == BudgetEntryMode.SINGLE) {
+                        it.dt = value.third?.let { dt ->
+                            val adjustedDate = it.budget.beginning.plusDays(dt)
+                            if (adjustedDate > it.budget.end) {
+                                return@let it.budget.end
+                            }
+                            return@let adjustedDate
+                        }
+                    }
                     budgetEntryRepository.save(it)
                 }
             }
