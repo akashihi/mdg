@@ -211,6 +211,11 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             throw MdgException("BUDGETENTRY_IS_NEGATIVE")
         }
         entry.distribution = newEntry.distribution
+        if (entry.distribution == BudgetEntryMode.SINGLE) {
+            entry.dt = newEntry.dt
+        } else {
+            entry.dt = null // Payment dates are only valid for non-distributed entries
+        }
         applyActualAmount(entry)
         analyzeSpendings(entry, LocalDate.now())
         budgetEntryRepository.save(entry)

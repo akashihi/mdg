@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.akashihi.mdg.dao.BudgetEntryModeConverter
 import java.math.BigDecimal
+import java.time.LocalDate
+import javax.persistence.Column
 import javax.persistence.Convert
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -41,6 +43,10 @@ class BudgetEntry(
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var category: Category? = null,
 
+    @Column(name="dt")
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    var dt: LocalDate? = null,
+
     @Convert(converter = BudgetEntryModeConverter::class)
     var distribution: BudgetEntryMode,
 
@@ -63,5 +69,5 @@ class BudgetEntry(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
 ) {
-    constructor(other: BudgetEntry) : this(other.budget, other.accountId, other.account, other.categoryId, other.category, other.distribution, other.expectedAmount, other.actualAmount, other.allowedSpendings, other.spendingPercent, other.id)
+    constructor(other: BudgetEntry) : this(other.budget, other.accountId, other.account, other.categoryId, other.category, other.dt, other.distribution, other.expectedAmount, other.actualAmount, other.allowedSpendings, other.spendingPercent, other.id)
 }
