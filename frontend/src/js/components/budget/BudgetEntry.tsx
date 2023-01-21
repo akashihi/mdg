@@ -6,7 +6,7 @@ import { BudgetEntry, BudgetEntryTreeNode } from '../../api/model';
 import Divider from '@mui/material/Divider';
 import ReactThreeToggle, { ReactThreeToggleProps } from 'react-three-toggle';
 import DatePicker from 'react-date-picker';
-import moment from "moment/moment";
+import moment from 'moment/moment';
 
 export interface BudgetEntryProps {
     entry: BudgetEntry;
@@ -95,7 +95,7 @@ export function BudgetEntry(props: BudgetEntryProps) {
     };
 
     const setDt = (value?: Date) => {
-        let dt : String | null = null;
+        let dt: string | null = null;
         if (value) {
             dt = moment(value).format('YYYY-MM-DD');
         }
@@ -172,7 +172,16 @@ export function BudgetEntry(props: BudgetEntryProps) {
                     <div>{props.entry.actual_amount}</div>
                 </Grid>
                 <Grid item xs={3} sm={3} md={3} lg={1}>
-                    <DatePicker format="d/M/yyyy" value={dt} disabled={props.entry.distribution != "SINGLE" && props.entry.account?.account_type == 'EXPENSE'} minDate={moment(props.budget_start).toDate()} maxDate={moment(props.budget_end).toDate()} onChange={setDt}/>
+                    <DatePicker
+                        format="d/M/yyyy"
+                        value={dt}
+                        disabled={
+                            props.entry.distribution != 'SINGLE' && props.entry.account?.account_type == 'EXPENSE'
+                        }
+                        minDate={moment(props.budget_start).toDate()}
+                        maxDate={moment(props.budget_end).toDate()}
+                        onChange={setDt}
+                    />
                 </Grid>
                 {editors}
             </Grid>

@@ -23,12 +23,24 @@ const cardStyle = {
     paddingBottom: '16px',
 };
 
-const mapEntries = (tree: BudgetEntryTreeNode, indent: number, saveFunc: (BudgetEntryType) => void, budget_start?: string, budget_end?: string) => {
+const mapEntries = (
+    tree: BudgetEntryTreeNode,
+    indent: number,
+    saveFunc: (BudgetEntryType) => void,
+    budget_start?: string,
+    budget_end?: string
+) => {
     const subCategories = tree.categories.flatMap(c => mapEntries(c, indent + 1, saveFunc, budget_start, budget_end));
 
     const entries = tree.entries.map(e => (
         <ListItemText key={e.id}>
-            <BudgetEntry entry={e} indent={indent} save={saveFunc} budget_start={budget_start} budget_end={budget_end}/>
+            <BudgetEntry
+                entry={e}
+                indent={indent}
+                save={saveFunc}
+                budget_start={budget_start}
+                budget_end={budget_end}
+            />
         </ListItemText>
     ));
     if (tree.name !== undefined) {
@@ -143,10 +155,22 @@ export function BudgetPage(props: BudgetViewerProps) {
             <Divider />
             <Fragment>
                 {incomeEntries != null && (
-                    <BudgetEntries title={'income'} entries={incomeEntries} saveFunc={saveEntry} budget_start={props.budget?.term_beginning} budget_end={props.budget?.term_end}/>
+                    <BudgetEntries
+                        title={'income'}
+                        entries={incomeEntries}
+                        saveFunc={saveEntry}
+                        budget_start={props.budget?.term_beginning}
+                        budget_end={props.budget?.term_end}
+                    />
                 )}
                 {expenseEntries != null && (
-                    <BudgetEntries title={'expense'} entries={expenseEntries} saveFunc={saveEntry} budget_start={props.budget?.term_beginning} budget_end={props.budget?.term_end}/>
+                    <BudgetEntries
+                        title={'expense'}
+                        entries={expenseEntries}
+                        saveFunc={saveEntry}
+                        budget_start={props.budget?.term_beginning}
+                        budget_end={props.budget?.term_end}
+                    />
                 )}
             </Fragment>
         </Fragment>
