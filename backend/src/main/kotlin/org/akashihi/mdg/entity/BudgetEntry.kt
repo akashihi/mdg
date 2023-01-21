@@ -43,7 +43,7 @@ class BudgetEntry(
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var category: Category? = null,
 
-    @Column(name="dt")
+    @Column(name = "dt")
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var dt: LocalDate? = null,
 
