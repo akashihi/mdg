@@ -212,6 +212,11 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         }
         entry.distribution = newEntry.distribution
         if (entry.distribution == BudgetEntryMode.SINGLE) {
+            if (newEntry.dt != null) {
+                if (entry.budget.beginning > newEntry.dt || entry.budget.end < newEntry.dt) {
+                    throw MdgException("BUDGETENTRY_DT_OUT_OF_BUDGET")
+                }
+            }
             entry.dt = newEntry.dt
         } else {
             entry.dt = null // Payment dates are only valid for non-distributed entries
