@@ -94,6 +94,15 @@ export function BudgetEntry(props: BudgetEntryProps) {
         }
     };
 
+    const setDt = (value?: Date) => {
+        let dt : String | null = null;
+        if (value) {
+            dt = moment(value).format('YYYY-MM-DD');
+        }
+        const newEntry = { ...props.entry, dt: dt };
+        props.save(newEntry);
+    };
+
     const distributionModes = useMemo(
         () => [
             { label: 'Single', value: 'SINGLE' },
@@ -163,7 +172,7 @@ export function BudgetEntry(props: BudgetEntryProps) {
                     <div>{props.entry.actual_amount}</div>
                 </Grid>
                 <Grid item xs={3} sm={3} md={3} lg={1}>
-                    <DatePicker format="d/M/yyyy" value={dt} disabled={props.entry.distribution != "SINGLE"} minDate={moment(props.budget_start).toDate()} maxDate={moment(props.budget_end).toDate()}/>
+                    <DatePicker format="d/M/yyyy" value={dt} disabled={props.entry.distribution != "SINGLE" && props.entry.account?.account_type == 'EXPENSE'} minDate={moment(props.budget_start).toDate()} maxDate={moment(props.budget_end).toDate()} onChange={setDt}/>
                 </Grid>
                 {editors}
             </Grid>
