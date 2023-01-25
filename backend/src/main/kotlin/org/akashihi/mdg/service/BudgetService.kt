@@ -290,7 +290,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         }
 
         @JvmStatic
-        fun getAllowedSpendings(actualAmount: BigDecimal, expectedAmount: BigDecimal, from: LocalDate, to: LocalDate, forDay: LocalDate, mode: BudgetEntryMode): BigDecimal {
+        fun getAllowedSpendings(entry: BudgetEntry, from: LocalDate, to: LocalDate, forDay: LocalDate): BigDecimal {
             if (forDay.isBefore(from.minusDays(1)) || forDay.isAfter(to)) {
                 // We are out of that budget, no spendings are allowed
                 return BigDecimal.ZERO
@@ -299,15 +299,15 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(forDay.minusDays(1), to)) // Including today
             val daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), forDay)) // Including first day and today
             var allowed = BigDecimal.ZERO
-            if (mode == BudgetEntryMode.PRORATED) {
-                allowed = expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN).multiply(daysPassed).subtract(actualAmount)
+            if (entry.distribution == BudgetEntryMode.PRORATED) {
+                allowed = entry.expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN).multiply(daysPassed).subtract(entry.actualAmount)
             }
-            if (mode == BudgetEntryMode.EVEN || allowed < BigDecimal.ZERO) { // Negative prorations are re-calculated in the even mode
-                allowed = expectedAmount.subtract(actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
+            if (entry.distribution == BudgetEntryMode.EVEN || allowed < BigDecimal.ZERO) { // Negative prorations are re-calculated in the even mode
+                allowed = entry.expectedAmount.subtract(entry.actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
             }
-            if (mode == BudgetEntryMode.SINGLE) {
+            if (entry.distribution == BudgetEntryMode.SINGLE) {
                 // Not evenly distributed, spend everything left
-                allowed = expectedAmount.subtract(actualAmount)
+                allowed = entry.expectedAmount.subtract(entry.actualAmount)
             }
             if (allowed < BigDecimal.ZERO) {
                 // Nothing to spend
@@ -320,7 +320,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             entry.spendingPercent = getSpendingPercent(entry.actualAmount, entry.expectedAmount)
             val from = entry.budget.beginning
             val to = entry.budget.end
-            entry.allowedSpendings = getAllowedSpendings(entry.actualAmount, entry.expectedAmount, from, to, forDay, entry.distribution)
+            entry.allowedSpendings = getAllowedSpendings(entry, from, to, forDay)
             return entry
         }
 

@@ -1,5 +1,7 @@
 package org.akashihi.mdg.service
 
+import org.akashihi.mdg.entity.Budget
+import org.akashihi.mdg.entity.BudgetEntry
 import org.akashihi.mdg.entity.BudgetEntryMode
 import org.akashihi.mdg.service.BudgetService.Companion.getAllowedSpendings
 import org.junit.jupiter.api.Assertions
@@ -19,8 +21,10 @@ internal class BudgetServiceTest {
     @ParameterizedTest
     @CsvSource("5,false,false,25,100,75", "4,false,false,25,100,0", "5,true,false,25,100,3", "5,true,true,25,100,3", "5,true,true,3,100,12", "5,true,true,130,100,0", "5,true,false,130,100,0", "5,false,false,130,100,0")
     fun analyzeRecommendedSpendings(month: Int, even: Boolean, proration: Boolean, actualAmount: Long, expectedAmount: Long, expectedSpendings: Long) {
+        val budget = Budget(LocalDate.now(), LocalDate.now())
+        val entry = BudgetEntry(budget, 1L, null, null, null, null, BudgetEntryMode.from(even, proration), BigDecimal.valueOf(expectedAmount), BigDecimal.valueOf(actualAmount), BigDecimal.ZERO, BigDecimal.ZERO )
         val actualAllowed =
-            getAllowedSpendings(BigDecimal.valueOf(actualAmount), BigDecimal.valueOf(expectedAmount), LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, month, 5), BudgetEntryMode.from(even, proration))
+            getAllowedSpendings(entry, LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, month, 5))
         Assertions.assertEquals(BigDecimal.valueOf(expectedSpendings), actualAllowed)
     }
 }
