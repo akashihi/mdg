@@ -1,26 +1,34 @@
 import { connect } from 'react-redux';
 
 import BudgetList from '../components/budget/BudgetList';
-import { Budget } from '../api/model';
-import { getSelectedBudget } from '../selectors/BudgetSelector';
+import * as Model from '../api/model';
+import {getSelectedBudget, selectIsNextBudgetPageAvailable} from '../selectors/BudgetSelector';
 import { RootState } from '../reducers/rootReducer';
-import { loadSelectedBudget, loadCurrentBudget } from '../actions/BudgetActions';
+import {
+    loadSelectedBudget,
+    loadInitialBudgets,
+    deleteBudget,
+    createBudget, loadNextBudgetPage
+} from '../actions/BudgetActions';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
-import { reportError } from '../actions/ErrorActions';
 
 export interface BudgetSelectorState {
-    budget?: Budget;
+    budget?: Model.Budget;
     selectedBudgetId: number;
+    budgets: Model.ShortBudget[],
+    nextAvailable: boolean
 }
 
 const mapStateToProps = (state: RootState): BudgetSelectorState => {
     return {
         budget: getSelectedBudget(state),
         selectedBudgetId: selectSelectedBudgetId(state),
+        budgets: state.budget.budgets,
+        nextAvailable: selectIsNextBudgetPageAvailable(state)
     };
 };
 
-const mapDispatchToProps = { loadCurrentBudget, loadSelectedBudget, reportError };
+const mapDispatchToProps = { loadSelectedBudget, loadInitialBudgets, deleteBudget, createBudget, loadNextBudgetPage };
 
 export type BudgetSelectorProps = BudgetSelectorState & typeof mapDispatchToProps;
 

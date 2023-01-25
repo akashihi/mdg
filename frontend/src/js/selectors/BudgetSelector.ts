@@ -1,8 +1,8 @@
-import { createSelector } from 'reselect';
+import {createSelector} from 'reselect';
 import moment from 'moment';
-import { getBudgets } from './StateGetters';
-import { BudgetState } from '../reducers/BudgetReducer';
-import { Budget } from '../api/model';
+import {getBudgets} from './StateGetters';
+import {BudgetState} from '../reducers/BudgetReducer';
+import {Budget} from '../api/model';
 
 export const getSelectedBudget = createSelector(
     [getBudgets],
@@ -20,3 +20,7 @@ export const selectSelectedBudgetId = createSelector([getBudgets], (budgetState:
         return budgetState.selectedBudget.id;
     }
 });
+
+export const selectIsNextBudgetPageAvailable = createSelector([getBudgets], (budgetState: BudgetState): boolean => {
+    return budgetState.budgetCursorNext !== undefined && budgetState.remainingBudgets !== undefined && budgetState.remainingBudgets > 0
+})
