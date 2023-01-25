@@ -8,28 +8,28 @@ import {
     loadSelectedBudget,
     loadInitialBudgets,
     deleteBudget,
-    createBudget, loadNextBudgetPage
+    createBudget
 } from '../actions/BudgetActions';
 import { selectSelectedBudgetId } from '../selectors/BudgetSelector';
 
-export interface BudgetSelectorState {
+export interface BudgetOpState {
     budget?: Model.Budget;
-    selectedBudgetId: number;
+    activeBudgetId: number;
     budgets: Model.ShortBudget[],
     nextAvailable: boolean
 }
 
-const mapStateToProps = (state: RootState): BudgetSelectorState => {
+const mapStateToProps = (state: RootState): BudgetOpState => {
     return {
         budget: getSelectedBudget(state),
-        selectedBudgetId: selectSelectedBudgetId(state),
+        activeBudgetId: selectSelectedBudgetId(state),
         budgets: state.budget.budgets,
         nextAvailable: selectIsNextBudgetPageAvailable(state)
     };
 };
 
-const mapDispatchToProps = { loadSelectedBudget, loadInitialBudgets, deleteBudget, createBudget, loadNextBudgetPage };
+const mapDispatchToProps = { loadSelectedBudget, loadInitialBudgets, deleteBudget, createBudget };
 
-export type BudgetSelectorProps = BudgetSelectorState & typeof mapDispatchToProps;
+export type BudgetOpsProps = BudgetOpState & typeof mapDispatchToProps;
 
 export default connect(mapStateToProps, mapDispatchToProps)(BudgetList);

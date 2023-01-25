@@ -9,7 +9,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 
 import { BudgetCategoryEntry, BudgetEntry } from './BudgetEntry';
-import BudgetSelector from '../../containers/BudgetSelector';
+import BudgetSelector from '../../containers/BudgetOps';
 import BudgetInfo from './BudgetInfo';
 import { BudgetViewerProps } from '../../containers/BudgetViewer';
 import { BudgetEntryTreeNode } from '../../api/models/Budget';
