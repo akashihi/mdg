@@ -307,7 +307,10 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             }
             if (entry.distribution == BudgetEntryMode.SINGLE) {
                 // Not evenly distributed, spend everything left
-                allowed = entry.expectedAmount.subtract(entry.actualAmount)
+                val opDate = entry.dt ?: forDay
+                if (opDate.isBefore(forDay) || opDate.isEqual(forDay)) {
+                    allowed = entry.expectedAmount.subtract(entry.actualAmount)
+                }
             }
             if (allowed < BigDecimal.ZERO) {
                 // Nothing to spend

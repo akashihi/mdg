@@ -27,4 +27,15 @@ internal class BudgetServiceTest {
             getAllowedSpendings(entry, LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, month, 5))
         Assertions.assertEquals(BigDecimal.valueOf(expectedSpendings), actualAllowed)
     }
+
+    @ParameterizedTest
+    @CsvSource("-2,25,100,75", "0,25,100,75", "2,25,100,0")
+    fun analyzeScheduledSpendings(dayShift: Long, actualAmount: Long, expectedAmount: Long, expectedSpendings: Long) {
+        val budget = Budget(LocalDate.now(), LocalDate.now())
+        val spendingDate = LocalDate.of(2022, 5, 5).plusDays(dayShift)
+        val entry = BudgetEntry(budget, 1L, null, null, null, spendingDate, BudgetEntryMode.SINGLE, BigDecimal.valueOf(expectedAmount), BigDecimal.valueOf(actualAmount), BigDecimal.ZERO, BigDecimal.ZERO )
+        val actualAllowed =
+            getAllowedSpendings(entry, LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, 5, 5))
+        Assertions.assertEquals(BigDecimal.valueOf(expectedSpendings), actualAllowed)
+    }
 }
