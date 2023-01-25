@@ -130,7 +130,26 @@ open class ReportService(private val accountService: AccountService, private val
         val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
-        return BudgetCashflowReport(dates, actual, ReportSeries("actual", emptyList(), "line"))
+        val entries = budgetService.listEntries(budgetId) // TODO THis calls pre-calculates actual/spendings that we are going to re-calculate. Better to call repository here
+        val expectedSpendings = dates.map { dt ->
+            entries.forEach {
+                budgetService.applyActualAmountForPeriod(it, budget.beginning, dt)
+                BudgetService.analyzeSpendings(it, dt)
+                if (it.account?.accountType == AccountType.EXPENSE) {
+                    it.allowedSpendings = it.allowedSpendings.negate() //Expenses will be deducted from the totals
+                }
+            }
+            entries.fold(BigDecimal.ZERO) {acc, e ->  acc.add(e.allowedSpendings)}
+        }
+        var incomingAmount = budget.incomingAmount ?: BigDecimal.ZERO
+        val expectedBalances = expectedSpendings.map {
+            incomingAmount += it
+            incomingAmount
+        }
+        val expectedSeries = expectedBalances.map { ReportSeriesEntry(it, it) }
+        val expected = ReportSeries("Expected operational assets", expectedSeries, "line")
+
+        return BudgetCashflowReport(dates, actual, expected)
     }
 
     companion object {
