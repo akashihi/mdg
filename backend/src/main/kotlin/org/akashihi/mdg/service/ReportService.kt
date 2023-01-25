@@ -5,6 +5,7 @@ import org.akashihi.mdg.dao.projections.AmountAndName
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.Budget
 import org.akashihi.mdg.entity.report.Amount
+import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
 import org.akashihi.mdg.entity.report.ReportSeries
 import org.akashihi.mdg.entity.report.ReportSeriesEntry
@@ -16,6 +17,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.Collections
 
 @Service
 open class ReportService(private val accountService: AccountService, private val settingService: SettingService, private val accountRepository: AccountRepository, private val budgetService: BudgetService) {
@@ -118,6 +120,17 @@ open class ReportService(private val accountService: AccountService, private val
         val expectedExpenses: List<BigDecimal> = budgets.mapNotNull { b: Budget -> b.state?.expense?.expected?.negate() }
         val profits = budgets.mapNotNull { b: Budget -> b.outgoingAmount?.actual?.subtract(b.incomingAmount)?.setScale(2, RoundingMode.DOWN) }
         return BudgetExecutionReport(dates, actualIncomes, actualExpenses, expectedIncomes, expectedExpenses, profits)
+    }
+
+    fun budgetCashflowReport(budgetId: Long): BudgetCashflowReport {
+        val budget = budgetService[budgetId] ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
+
+        val actualBalances = accountRepository.getOperationalAssetsForDateRange(budget.beginning, budget.end.plusDays(1))
+        val dates = actualBalances.map { it.dt }
+        val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
+        val actual = ReportSeries("Actual operational assets", actualSeries, "area")
+
+        return BudgetCashflowReport(dates, actual, ReportSeries("actual", emptyList(), "line"))
     }
 
     companion object {
