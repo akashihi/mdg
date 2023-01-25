@@ -509,7 +509,7 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
     + category_id: 1 (number, optional) - Related account's category id, may be missing in case account doesn't belongs to the any category.
     + category (Category, optional) - Related account's associated category object.
     + dt: `YYYY-MM-DD` (string, optional) - Estimated payment date. Only valid for entries with mode 'SINGLE'. For missing values in 'SINGLE' mode entries the first day of budget is assumed as a payment date.
-    + distribution: 'SINGLE' (BudgetEntryMode, required) - Cashflow/Spending estimation mode for the budget entry.
+    + distribution: 'SINGLE' (BudgetEntryMode, required) - Cashflow/Spending estimation mode for the buget
     + expected_amount: 1000 (number, required) - your expected change on account_id amount during Budget effective period.
     + actual_amount: 50 (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
     + allowed_spendings: 5 (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
@@ -564,7 +564,7 @@ If there are no one-show entries, but at least one non-prorated entry, all of th
                         "proration": false,
                         "account_id": 2065,
                         "category_id": null,
-                        "distribution": "EVEN",
+                        "even_distribution": true,
                         "expected_amount": 100500.00,
                         "actual_amount": 0,
                         "allowed_spendings": 0,
@@ -587,7 +587,7 @@ If there are no one-show entries, but at least one non-prorated entry, all of th
                                 "proration": false,
                                 "account_id": 2065,
                                 "category_id": null,
-                                "distribution": "EVEN"",
+                                "even_distribution": true,
                                 "expected_amount": 100500.00,
                                 "actual_amount": 0,
                                 "allowed_spendings": 0,
@@ -744,6 +744,19 @@ Provides assets overview information.
         + expected_income (array[number], required) - Array of expected income values for each date
         + expected_expense (array[number], required) - Array of expected expense values for each date
         + profit (array[number], required) - Array of profit values for each date
+
+## BudgetCashflowReport [/report/budget/cashflow/{budgetid}]
+
++ Parameters
+  + budgetid: `YYYYMMDD` (string, required) - Budget id to use as a report data source.
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
+        + actual (array[ReportSeries], required) - Array of actual cumulative balances per day on all operational accounts
+        + expected (array[ReportSeries], required) - Array of expected cumulative balances per day on all operational accounts. Expected transactions are calculated with respected to scheduled budget entries and budget daily allowed spendings.
 
 # Data Structures
 
