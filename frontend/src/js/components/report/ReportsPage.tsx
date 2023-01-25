@@ -10,7 +10,7 @@ import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
 
 import AssetReportCollection from './AssetReportCollection';
-import BudgetExecutionReport from './BudgetExecutionReport';
+import BudgetReportCollection from './BudgetReportCollection';
 import EventReportCollection from './EventReportCollection';
 import { ReportsViewerProps } from '../../containers/ReportsViewer';
 
@@ -75,7 +75,7 @@ export function ReportsPage(props: ReportsViewerProps) {
                 />
             )}
             {tabValue == 'budget' && (
-                <BudgetExecutionReport
+                <BudgetReportCollection
                     startDate={startDate}
                     endDate={endDate}
                     granularity={granularity}
