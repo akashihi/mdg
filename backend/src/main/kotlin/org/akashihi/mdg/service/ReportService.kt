@@ -130,7 +130,7 @@ open class ReportService(private val accountService: AccountService, private val
         val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
-        val entries = budgetService.listEntries(budgetId) // TODO THis calls pre-calculates actual/spendings that we are going to re-calculate. Better to call repository here
+        val entries = budgetService.listEntries(budgetId) // TODO THis call pre-calculates actual spendings that we are going to re-calculate. Better to call repository here
         val expectedSpendings = dates.map { dt ->
             entries.forEach {
                 budgetService.applyActualAmountForPeriod(it, budget.beginning, dt)
@@ -141,7 +141,7 @@ open class ReportService(private val accountService: AccountService, private val
             }
             entries.fold(BigDecimal.ZERO) {acc, e ->  acc.add(e.allowedSpendings)}
         }
-        var incomingAmount = budget.incomingAmount ?: BigDecimal.ZERO
+        var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning) ?: BigDecimal.ZERO
         val expectedBalances = expectedSpendings.map {
             incomingAmount += it
             incomingAmount
