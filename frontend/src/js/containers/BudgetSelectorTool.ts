@@ -6,7 +6,7 @@ import {connect} from "react-redux";
 import BudgetSelector from "../components/budget/BudgetSelector";
 
 export interface BudgetSelectorToolProps {
-    apply(number): void,
+    apply?(number): void,
     onChange?(number): void
 }
 
@@ -14,7 +14,7 @@ export interface BudgetSelectorState {
     budgets: Model.ShortBudget[],
     nextAvailable: boolean,
     activeBudgetId: number;
-    apply(number): void,
+    apply?(number): void,
     onChange?(number): void
 }
 

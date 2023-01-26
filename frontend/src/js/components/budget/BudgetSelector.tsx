@@ -24,7 +24,7 @@ function BudgetSelector(props: BudgetSelectorProps) {
     };
 
     const applySelectedBudget = () => {
-        if (currentlySelectedBudget != undefined) {
+        if (currentlySelectedBudget != undefined && props.apply != undefined) {
             props.apply(currentlySelectedBudget);
         }
     };
@@ -47,13 +47,13 @@ function BudgetSelector(props: BudgetSelectorProps) {
                 onChange={ev => onBudgetSelect(ev.target.value)}>
                 {budgetList}
             </Select>
-            <Button
+            {props.apply && <Button
                 color="primary"
                 variant="outlined"
                 onClick={applySelectedBudget}
                 disabled={currentlySelectedBudget == undefined}>
                 Select budget
-            </Button>
+            </Button>}
         </Fragment>
     )
 }
