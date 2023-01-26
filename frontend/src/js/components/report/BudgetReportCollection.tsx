@@ -1,4 +1,4 @@
-import React, {Fragment, ReactElement, useEffect, useState} from 'react';
+import React, {Fragment, ReactElement} from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -6,17 +6,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { ReportParams } from '../../api/api';
 import BudgetExecutionReport from "./BudgetExecutionReport";
-import BudgetSelectorTool from "../../containers/BudgetSelectorTool";
+import BudgetCashflowReport from "./BudgetCashflowReport";
 
 export function BudgetReportCollection(props: ReportParams): ReactElement {
-    const [selectedBudget, setsSelectedBudget] = useState<number | undefined>(-1);
     return (
         <Fragment>
             <Accordion defaultExpanded>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>Assets by time</AccordionSummary>
                 <AccordionDetails>
-                    <BudgetSelectorTool onChange={setsSelectedBudget}/>
-                    {selectedBudget}
+                    <BudgetCashflowReport primaryCurrencyName={props.primaryCurrencyName}/>
                 </AccordionDetails>
             </Accordion>
             <Accordion>

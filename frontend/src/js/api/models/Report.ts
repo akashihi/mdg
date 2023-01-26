@@ -33,6 +33,12 @@ export interface BudgetExecutionReport {
     profit: number[];
 }
 
+export interface BudgetCashflowReport {
+    dates: string[];
+    actual: ReportSeries;
+    expected: ReportSeries;
+}
+
 export interface PieData {
     readonly dates: string[];
     readonly data: PointOptionsObject[];

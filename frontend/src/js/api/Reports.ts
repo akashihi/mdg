@@ -5,6 +5,7 @@ import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import moment, { Moment } from 'moment/moment';
 import jQuery from 'jquery';
 import * as Errors from './errors';
+import {BudgetCashflowReport} from "./model";
 
 export interface ReportParams {
     startDate: Moment;
@@ -131,6 +132,30 @@ export async function loadBudgetReport(
                 expected_income: responseJson.expected_income,
                 expected_expense: responseJson.expected_expense,
                 profit: responseJson.profit,
+            });
+        } catch (e) {
+            return new Err(Errors.InvalidObject(e as string));
+        }
+    }
+}
+
+export async function loadBudgetCashflowReport(
+    id: number
+): Promise<Result<Model.BudgetCashflowReport, Model.Problem>> {
+    const url = `/api/reports/budget/cashflow/${id}`;
+    const response = await fetch(url);
+    const responseJson = JSON.parse(await response.text());
+    if (response.status >= 400) {
+        return new Err(parseError(response, responseJson));
+    } else {
+        // Should be fine, try to convert
+        try {
+            const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
+
+            return new Ok({
+                dates: dates,
+                actual: responseJson.actual,
+                expected: responseJson.expected,
             });
         } catch (e) {
             return new Err(Errors.InvalidObject(e as string));
