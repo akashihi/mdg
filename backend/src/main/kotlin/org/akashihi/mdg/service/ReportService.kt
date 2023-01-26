@@ -19,7 +19,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.util.Collections
 
 @Service
 open class ReportService(private val accountService: AccountService, private val settingService: SettingService, private val accountRepository: AccountRepository, private val budgetService: BudgetService) {
@@ -151,15 +150,15 @@ open class ReportService(private val accountService: AccountService, private val
                     // Non-Single spendings are always calculated in the EVEN mode as we can't propagate unspent money during planning (expending spending will constantly grow otherwise)
                     it.allowedSpendings = it.expectedAmount.subtract(it.actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
                     if (it.allowedSpendings < BigDecimal.ZERO) {
-                        it.allowedSpendings = BigDecimal.ZERO //Clamp to zero in case we are running out of money
+                        it.allowedSpendings = BigDecimal.ZERO // Clamp to zero in case we are running out of money
                     }
                 }
                 if (it.account?.accountType == AccountType.EXPENSE) {
-                    it.allowedSpendings = it.allowedSpendings.negate() //Expenses will be deducted from the totals
+                    it.allowedSpendings = it.allowedSpendings.negate() // Expenses will be deducted from the totals
                 }
                 log.debug("dt: {}, distribution: {}, name: {}, expected: {}, actual: {}, allowed: {}", dt, it.distribution, it.account?.name, it.expectedAmount, it.actualAmount, it.allowedSpendings)
             }
-            entries.fold(BigDecimal.ZERO) {acc, e ->  acc.add(e.allowedSpendings)}
+            entries.fold(BigDecimal.ZERO) { acc, e -> acc.add(e.allowedSpendings) }
         }
         var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning) ?: BigDecimal.ZERO
         val expectedBalances = expectedSpendings.map {

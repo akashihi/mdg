@@ -106,5 +106,6 @@ class ReportController(private val reportService: ReportService) {
     @GetMapping(value = ["/reports/budget/cashflow/{budget_id}"], produces = ["application/vnd.mdg+json;version=1"])
     fun budgetExecutionReport(
         @PathVariable("budget_id")
-        budgetId: Long): BudgetCashflowReport = reportService.budgetCashflowReport(budgetId)
+        budgetId: Long
+    ): BudgetCashflowReport = reportService.budgetCashflowReport(budgetId)
 }
