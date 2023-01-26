@@ -1,7 +1,7 @@
 import * as Model from "../api/model";
 import {RootState} from "../reducers/rootReducer";
 import {selectIsNextBudgetPageAvailable, selectSelectedBudgetId} from "../selectors/BudgetSelector";
-import {loadNextBudgetPage} from "../actions/BudgetActions";
+import {loadInitialBudgets, loadNextBudgetPage} from "../actions/BudgetActions";
 import {connect} from "react-redux";
 import BudgetSelector from "../components/budget/BudgetSelector";
 
@@ -28,7 +28,7 @@ const mapStateToProps = (state: RootState, ownProps: BudgetSelectorToolProps): B
     }
 }
 
-const mapDispatchToProps = {loadNextBudgetPage}
+const mapDispatchToProps = {loadNextBudgetPage, loadInitialBudgets}
 
 export type BudgetSelectorProps = BudgetSelectorState & typeof mapDispatchToProps;
 

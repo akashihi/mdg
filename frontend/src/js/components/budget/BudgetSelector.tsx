@@ -4,9 +4,20 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import {BudgetSelectorProps} from "../../containers/BudgetSelectorTool";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function BudgetSelector(props: BudgetSelectorProps) {
     const [currentlySelectedBudget, setCurrentlySelectedBudget] = useState<number | undefined>(-1);
+    const [loading, setLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (props.budgets.length == 0) {
+            setLoading(true);
+            props.loadInitialBudgets();
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
         setCurrentlySelectedBudget(props.activeBudgetId);
@@ -41,6 +52,9 @@ function BudgetSelector(props: BudgetSelectorProps) {
     }
     return (
         <Fragment>
+            <Backdrop open={loading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Select
                 disabled={props.budgets.length === 0}
                 value={currentlySelectedBudget}

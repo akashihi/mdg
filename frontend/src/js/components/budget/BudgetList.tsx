@@ -1,6 +1,5 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import moment from 'moment';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import DatePicker from 'react-date-picker';
 import { ErrorMessage } from 'formik';
@@ -45,12 +44,6 @@ export function BudgetList(props: BudgetOpsProps) {
     const [copyActionsMenuOpen, setCopyActionsMenuOpen] = React.useState<boolean>(false);
     const [copyActionSelected, setCopyActionSelected] = React.useState<number>(0);
     const [budgetOpsOpen, setBudgetOpsOpen] = React.useState<boolean>(false);
-
-    useEffect(() => {
-        setLoading(true);
-        props.loadInitialBudgets();
-        setLoading(false);
-    }, []);
 
     const onCopyBudget = () => {
         if (currentlySelectedBudget != undefined) {

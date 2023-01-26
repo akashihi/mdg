@@ -28,7 +28,7 @@ const mapStateToProps = (state: RootState): BudgetOpState => {
     };
 };
 
-const mapDispatchToProps = { loadSelectedBudget, loadInitialBudgets, deleteBudget, createBudget };
+const mapDispatchToProps = { loadSelectedBudget, deleteBudget, createBudget };
 
 export type BudgetOpsProps = BudgetOpState & typeof mapDispatchToProps;
 
