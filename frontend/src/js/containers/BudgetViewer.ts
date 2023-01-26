@@ -17,7 +17,7 @@ const mapStateToProps = (state: RootState): BudgetViewerState => {
     };
 };
 
-const mapDispatchToProps = { reportError, loadCurrentBudget, loadSelectedBudget };
+const mapDispatchToProps = { reportError, loadSelectedBudget };
 
 export type BudgetViewerProps = BudgetViewerState & typeof mapDispatchToProps;
 

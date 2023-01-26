@@ -20,7 +20,16 @@ function BudgetSelector(props: BudgetSelectorProps) {
     }, []);
 
     useEffect(() => {
+        if (props.budget == undefined) {
+            props.loadCurrentBudget();
+        }
+    }, []);
+
+    useEffect(() => {
         setCurrentlySelectedBudget(props.activeBudgetId);
+        if (props.onChange) {
+            props.onChange(props.activeBudgetId);
+        }
     }, [props.activeBudgetId]);
 
     const onBudgetSelect = (id: string | number) => {
