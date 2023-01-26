@@ -1,16 +1,15 @@
-import React, {Fragment, useEffect, useRef, useState} from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import * as API from '../../api/api';
 import * as Model from '../../api/model';
-import BudgetSelectorTool from "../../containers/BudgetSelectorTool";
+import BudgetSelectorTool from '../../containers/BudgetSelectorTool';
 
-export function BudgetCashflowReport(props: {primaryCurrencyName: string}) {
-
+export function BudgetCashflowReport(props: { primaryCurrencyName: string }) {
     const [chartData, setChartData] = useState<Model.BudgetCashflowReport>({
         dates: [],
-        actual: {name: "", data:[], custom:[], type:""},
-        expected: {name: "", data:[], custom:[], type:""},
+        actual: { name: '', data: [], custom: [], type: '' },
+        expected: { name: '', data: [], custom: [], type: '' },
     });
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
@@ -48,16 +47,15 @@ export function BudgetCashflowReport(props: {primaryCurrencyName: string}) {
         // eslint-disable-next-line
         // @ts-ignore
         chartComponentRef.current.chart.reflow();
-        if (id!= undefined  && id != -1) {
+        if (id != undefined && id != -1) {
             (async () => {
                 const result = await API.loadBudgetCashflowReport(id);
                 if (result.ok) {
-                    setChartData(result.val)
+                    setChartData(result.val);
                 }
             })();
         }
-
-    }
+    };
 
     const options = {
         title: {
@@ -93,10 +91,10 @@ export function BudgetCashflowReport(props: {primaryCurrencyName: string}) {
 
     return (
         <Fragment>
-            <BudgetSelectorTool onChange={onBudgetSelect}/>
+            <BudgetSelectorTool onChange={onBudgetSelect} />
             <HighchartsReact highcharts={Highcharts} options={options} ref={chartComponentRef} />
         </Fragment>
-    )
+    );
 }
 
 export default BudgetCashflowReport;

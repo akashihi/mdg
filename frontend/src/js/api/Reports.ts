@@ -5,7 +5,6 @@ import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import moment, { Moment } from 'moment/moment';
 import jQuery from 'jquery';
 import * as Errors from './errors';
-import {BudgetCashflowReport} from "./model";
 
 export interface ReportParams {
     startDate: Moment;
@@ -139,9 +138,7 @@ export async function loadBudgetReport(
     }
 }
 
-export async function loadBudgetCashflowReport(
-    id: number
-): Promise<Result<Model.BudgetCashflowReport, Model.Problem>> {
+export async function loadBudgetCashflowReport(id: number): Promise<Result<Model.BudgetCashflowReport, Model.Problem>> {
     const url = `/api/reports/budget/cashflow/${id}`;
     const response = await fetch(url);
     const responseJson = JSON.parse(await response.text());

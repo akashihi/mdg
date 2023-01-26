@@ -4,13 +4,14 @@ import { wrap } from './base';
 import * as API from '../api/api';
 import {
     AddNewBudget,
-    RemoveBudget, StoreAdditionalBudgets,
+    RemoveBudget,
+    StoreAdditionalBudgets,
     StoreCurrentBudget,
     StoreLoadedBudgets,
-    StoreSelectedBudget
+    StoreSelectedBudget,
 } from '../reducers/BudgetReducer';
 import { NotifyError } from '../reducers/ErrorReducer';
-import {ShortBudget} from "../api/models/Budget";
+import { ShortBudget } from '../api/models/Budget';
 
 export function loadCurrentBudget() {
     return wrap(async dispatch => {
@@ -39,15 +40,15 @@ export function loadInitialBudgets() {
     return wrap(async dispatch => {
         const result = await API.listBudgets(6); //Half a year
         if (result.ok) {
-            dispatch(StoreLoadedBudgets({data: result.val.budgets, next: result.val.next, left: result.val.left}));
+            dispatch(StoreLoadedBudgets({ data: result.val.budgets, next: result.val.next, left: result.val.left }));
         } else {
             dispatch(NotifyError(result.val));
         }
-    })
+    });
 }
 
 export function deleteBudget(id: number) {
-    return wrap(async (dispatch,getState) => {
+    return wrap(async (dispatch, getState) => {
         const result = await API.deleteBudget(id);
         if (result.some) {
             dispatch(RemoveBudget(id));
@@ -57,7 +58,7 @@ export function deleteBudget(id: number) {
                 dispatch(loadSelectedBudget(getState().budget.budgets[0].id));
             }
         }
-    })
+    });
 }
 
 export function createBudget(budget: ShortBudget) {
@@ -69,14 +70,16 @@ export function createBudget(budget: ShortBudget) {
         } else {
             dispatch(NotifyError(result.val));
         }
-    })
+    });
 }
 
 export function loadNextBudgetPage() {
-    return wrap(async (dispatch,getState) => {
+    return wrap(async (dispatch, getState) => {
         const result = await API.loadBudgets(getState().budget.budgetCursorNext);
         if (result.ok) {
-            dispatch(StoreAdditionalBudgets({data: result.val.budgets, next: result.val.next, left: result.val.left}));
+            dispatch(
+                StoreAdditionalBudgets({ data: result.val.budgets, next: result.val.next, left: result.val.left })
+            );
         }
-    })
+    });
 }

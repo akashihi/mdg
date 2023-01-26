@@ -1,23 +1,22 @@
 import { createAction, createReducer } from '@reduxjs/toolkit';
 import * as Model from '../api/model';
-import {loadSelectedBudget} from "../actions/BudgetActions";
 
 export interface BudgetListDTO {
-    data: Model.ShortBudget[],
-    next: string|undefined,
-    left: number|undefined
+    data: Model.ShortBudget[];
+    next: string | undefined;
+    left: number | undefined;
 }
 
 export const StoreCurrentBudget = createAction<Model.Budget | undefined>('StoreCurrentBudget');
 export const StoreSelectedBudget = createAction<Model.Budget>('StoreSelectedBudget');
 
-export const StoreLoadedBudgets = createAction<BudgetListDTO>("StoreLoadedBudgets")
+export const StoreLoadedBudgets = createAction<BudgetListDTO>('StoreLoadedBudgets');
 
-export const StoreAdditionalBudgets = createAction<BudgetListDTO>("StoreAdditionalBudgets")
+export const StoreAdditionalBudgets = createAction<BudgetListDTO>('StoreAdditionalBudgets');
 
-export const AddNewBudget = createAction<Model.ShortBudget>("AddNewBudget")
+export const AddNewBudget = createAction<Model.ShortBudget>('AddNewBudget');
 
-export const RemoveBudget = createAction<number>("RemoveBudget")
+export const RemoveBudget = createAction<number>('RemoveBudget');
 
 export interface BudgetState {
     currentBudget?: Model.Budget;
@@ -27,7 +26,7 @@ export interface BudgetState {
     remainingBudgets: number | undefined;
 }
 
-const initialState: BudgetState = {budgetCursorNext: undefined, budgets: [], remainingBudgets: undefined};
+const initialState: BudgetState = { budgetCursorNext: undefined, budgets: [], remainingBudgets: undefined };
 
 export default createReducer(initialState, builder => {
     builder
@@ -50,10 +49,10 @@ export default createReducer(initialState, builder => {
             state.budgetCursorNext = action.payload.next;
             state.remainingBudgets = action.payload.left;
         })
-        .addCase(AddNewBudget, (state, action) =>{
-            state.budgets = [action.payload, ...state.budgets]
+        .addCase(AddNewBudget, (state, action) => {
+            state.budgets = [action.payload, ...state.budgets];
         })
         .addCase(RemoveBudget, (state, action) => {
-            state.budgets = state.budgets.filter(item => item.id != action.payload)
+            state.budgets = state.budgets.filter(item => item.id != action.payload);
         });
 });

@@ -1,11 +1,11 @@
-import React, {Fragment, useEffect, useState} from "react";
-import {ShortBudget} from "../../api/model";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import Button from "@mui/material/Button";
-import {BudgetSelectorProps} from "../../containers/BudgetSelectorTool";
-import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
+import React, { Fragment, useEffect, useState } from 'react';
+import { ShortBudget } from '../../api/model';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Button from '@mui/material/Button';
+import { BudgetSelectorProps } from '../../containers/BudgetSelectorTool';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function BudgetSelector(props: BudgetSelectorProps) {
     const [currentlySelectedBudget, setCurrentlySelectedBudget] = useState<number | undefined>(-1);
@@ -70,15 +70,17 @@ function BudgetSelector(props: BudgetSelectorProps) {
                 onChange={ev => onBudgetSelect(ev.target.value)}>
                 {budgetList}
             </Select>
-            {props.apply && <Button
-                color="primary"
-                variant="outlined"
-                onClick={applySelectedBudget}
-                disabled={currentlySelectedBudget == undefined}>
-                Select budget
-            </Button>}
+            {props.apply && (
+                <Button
+                    color="primary"
+                    variant="outlined"
+                    onClick={applySelectedBudget}
+                    disabled={currentlySelectedBudget == undefined}>
+                    Select budget
+                </Button>
+            )}
         </Fragment>
-    )
+    );
 }
 
 export default BudgetSelector;

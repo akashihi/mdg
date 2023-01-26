@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState } from 'react';
 import moment from 'moment';
 import MenuItem from '@mui/material/MenuItem';
 import DatePicker from 'react-date-picker';
@@ -21,7 +21,7 @@ import Paper from '@mui/material/Paper';
 import MenuList from '@mui/material/MenuList';
 import Popper from '@mui/material/Popper';
 import * as API from '../../api/api';
-import BudgetSelectorTool from "../../containers/BudgetSelectorTool";
+import BudgetSelectorTool from '../../containers/BudgetSelectorTool';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function FormikDatePicker(props: FieldAttributes<any>) {
@@ -139,7 +139,7 @@ export function BudgetList(props: BudgetOpsProps) {
     return (
         <Accordion expanded={budgetOpsOpen}>
             <AccordionSummary expandIcon={<ExpandMoreIcon onClick={handleBudgetOpsToggle} />}>
-                <BudgetSelectorTool apply={props.loadSelectedBudget} onChange={setCurrentlySelectedBudget}/>
+                <BudgetSelectorTool apply={props.loadSelectedBudget} onChange={setCurrentlySelectedBudget} />
             </AccordionSummary>
             <AccordionDetails>
                 <Fragment>
