@@ -1,14 +1,12 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState } from 'react';
 import moment from 'moment';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import DatePicker from 'react-date-picker';
 import { ErrorMessage } from 'formik';
 import { Formik, Form, Field } from 'formik';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import { BudgetSelectorProps } from '../../containers/BudgetSelector';
-import { ShortBudget } from '../../api/model';
+import { BudgetOpsProps } from '../../containers/BudgetOps';
 import { FieldAttributes, useFormikContext } from 'formik';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -23,6 +21,7 @@ import Paper from '@mui/material/Paper';
 import MenuList from '@mui/material/MenuList';
 import Popper from '@mui/material/Popper';
 import * as API from '../../api/api';
+import BudgetSelectorTool from '../../containers/BudgetSelectorTool';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function FormikDatePicker(props: FieldAttributes<any>) {
@@ -38,35 +37,13 @@ export function FormikDatePicker(props: FieldAttributes<any>) {
     );
 }
 
-export function BudgetList(props: BudgetSelectorProps) {
-    const [budgets, setBudgets] = useState<ShortBudget[]>([]);
-    const [cursorNext, setCursorNext] = useState<string | undefined>(undefined);
-    const [left, setLeft] = useState<number | undefined>(undefined);
+export function BudgetList(props: BudgetOpsProps) {
+    const [currentlySelectedBudget, setCurrentlySelectedBudget] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
-    const [currentlySelectedBudget, setCurrentlySelectedBudget] = useState<number | undefined>(-1);
     const anchorRef = React.useRef<HTMLDivElement>(null);
     const [copyActionsMenuOpen, setCopyActionsMenuOpen] = React.useState<boolean>(false);
     const [copyActionSelected, setCopyActionSelected] = React.useState<number>(0);
     const [budgetOpsOpen, setBudgetOpsOpen] = React.useState<boolean>(false);
-
-    useEffect(() => {
-        setLoading(true);
-        (async () => {
-            const result = await API.listBudgets(6); //Half a year
-            setLoading(false);
-            if (result.ok) {
-                setBudgets(result.val.budgets);
-                setCursorNext(result.val.next);
-                setLeft(result.val.left);
-            } else {
-                props.reportError(result.val);
-            }
-        })();
-    }, []);
-
-    useEffect(() => {
-        setCurrentlySelectedBudget(props.selectedBudgetId);
-    }, [props.selectedBudgetId]);
 
     const onCopyBudget = () => {
         if (currentlySelectedBudget != undefined) {
@@ -74,12 +51,12 @@ export function BudgetList(props: BudgetSelectorProps) {
             (async () => {
                 const result = await API.copyBudget(
                     currentlySelectedBudget,
-                    props.selectedBudgetId,
+                    props.activeBudgetId,
                     copyActionSelected == 1
                 );
                 setLoading(false);
                 if (result.some) {
-                    await props.loadSelectedBudget(props.selectedBudgetId);
+                    await props.loadSelectedBudget(props.activeBudgetId);
                 }
             })();
         }
@@ -87,17 +64,8 @@ export function BudgetList(props: BudgetSelectorProps) {
 
     const onDeleteBudget = () => {
         setLoading(true);
-        (async () => {
-            const result = await API.deleteBudget(props.selectedBudgetId);
-            setLoading(false);
-            if (result.some) {
-                setBudgets(budgets.filter(b => b.id !== props.selectedBudgetId));
-                await props.loadCurrentBudget();
-                if (budgets.length !== 0) {
-                    await props.loadSelectedBudget(budgets[0].id);
-                }
-            }
-        })();
+        props.deleteBudget(props.activeBudgetId);
+        setLoading(false);
     };
     const onCreateBudget = (values, form) => {
         setLoading(true);
@@ -106,41 +74,11 @@ export function BudgetList(props: BudgetSelectorProps) {
             term_beginning: moment(values.begin).format('YYYY-MM-DD'),
             term_end: moment(values.end).format('YYYY-MM-DD'),
         };
-        (async () => {
-            const result = await API.saveBudget(newBudget);
-            if (result.ok) {
-                setBudgets([...budgets, result.val]);
-                props.loadSelectedBudget(result.val.id);
-            } else {
-                props.reportError(result.val);
-            }
-            setLoading(false);
-        })();
+        props.createBudget(newBudget);
+        setLoading(false);
         form.resetForm();
     };
 
-    const onBudgetSelect = (id: string | number) => {
-        if (id === 'next' && cursorNext !== undefined && left !== undefined && left > 0) {
-            (async () => {
-                setLoading(true);
-                const newBudgets = await API.loadBudgets(cursorNext);
-                setLoading(false);
-                if (newBudgets.ok) {
-                    setLeft(newBudgets.val.left);
-                    setCursorNext(newBudgets.val.next);
-                    setBudgets(budgets.concat(newBudgets.val.budgets));
-                }
-            })();
-        } else {
-            setCurrentlySelectedBudget(id as number);
-        }
-    };
-
-    const applySelectedBudget = () => {
-        if (currentlySelectedBudget != undefined) {
-            props.loadSelectedBudget(currentlySelectedBudget);
-        }
-    };
     const newBudgetValidate = values => {
         const errors = {};
         if (!values.begin || !values.end) {
@@ -160,7 +98,7 @@ export function BudgetList(props: BudgetSelectorProps) {
             }
         }
 
-        budgets.forEach(budget => {
+        props.budgets.forEach(budget => {
             const tb = new Date(budget.term_beginning);
             const te = new Date(budget.term_end);
             if (tb <= e && te >= b) {
@@ -169,17 +107,6 @@ export function BudgetList(props: BudgetSelectorProps) {
         });
         return errors;
     };
-
-    const budgetList = budgets.map((b: ShortBudget, index: number) => (
-        <MenuItem key={index} value={b.id}>{`${b.term_beginning} - ${b.term_end}`}</MenuItem>
-    ));
-    if (left && left > 0) {
-        budgetList.push(
-            <MenuItem key="next" value="next">
-                Load more budgets
-            </MenuItem>
-        );
-    }
 
     const initialValues = {
         begin: moment().set({ date: 1 }).toDate(),
@@ -212,19 +139,7 @@ export function BudgetList(props: BudgetSelectorProps) {
     return (
         <Accordion expanded={budgetOpsOpen}>
             <AccordionSummary expandIcon={<ExpandMoreIcon onClick={handleBudgetOpsToggle} />}>
-                <Select
-                    disabled={budgets.length === 0}
-                    value={currentlySelectedBudget}
-                    onChange={ev => onBudgetSelect(ev.target.value)}>
-                    {budgetList}
-                </Select>
-                <Button
-                    color="primary"
-                    variant="outlined"
-                    onClick={applySelectedBudget}
-                    disabled={currentlySelectedBudget == undefined}>
-                    Select budget
-                </Button>
+                <BudgetSelectorTool apply={props.loadSelectedBudget} onChange={setCurrentlySelectedBudget} />
             </AccordionSummary>
             <AccordionDetails>
                 <Fragment>

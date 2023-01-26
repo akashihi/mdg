@@ -4,13 +4,16 @@ import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.projections.AmountAndName
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.Budget
+import org.akashihi.mdg.entity.BudgetEntryMode
 import org.akashihi.mdg.entity.report.Amount
+import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
 import org.akashihi.mdg.entity.report.ReportSeries
 import org.akashihi.mdg.entity.report.ReportSeriesEntry
 import org.akashihi.mdg.entity.report.SimpleReport
 import org.akashihi.mdg.entity.report.TotalsReport
 import org.akashihi.mdg.entity.report.TotalsReportEntry
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -120,6 +123,54 @@ open class ReportService(private val accountService: AccountService, private val
         return BudgetExecutionReport(dates, actualIncomes, actualExpenses, expectedIncomes, expectedExpenses, profits)
     }
 
+    fun budgetCashflowReport(budgetId: Long): BudgetCashflowReport {
+        val budget = budgetService[budgetId] ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
+
+        val actualBalances = accountRepository.getOperationalAssetsForDateRange(budget.beginning, budget.end)
+        val dates = actualBalances.map { it.dt }
+        val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
+        val actual = ReportSeries("Actual operational assets", actualSeries, "area")
+
+        val entries = budgetService.listEntries(budgetId) // TODO THis call pre-calculates actual spendings that we are going to re-calculate. Better to call repository here
+        val budgetLength = BigDecimal.valueOf(ChronoUnit.DAYS.between(budget.beginning.minusDays(1), budget.end)) // Including first day
+        val expectedSpendings = dates.map { dt ->
+            val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(dt.minusDays(1), budget.end)) // Including today
+            val daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(budget.beginning.minusDays(1), dt)) // Including first day and today
+
+            entries.forEach {
+                budgetService.applyActualAmountForPeriod(it, budget.beginning, dt)
+                it.allowedSpendings = BigDecimal.ZERO
+                if (it.distribution == BudgetEntryMode.SINGLE || it.account?.accountType == AccountType.INCOME) {
+                    // Not evenly distributed, spend everything left
+                    val opDate = it.dt ?: budget.beginning
+                    if (opDate.isEqual(dt)) {
+                        it.allowedSpendings = it.expectedAmount
+                    }
+                } else {
+                    // Non-Single spendings are always calculated in the EVEN mode as we can't propagate unspent money during planning (expending spending will constantly grow otherwise)
+                    it.allowedSpendings = it.expectedAmount.subtract(it.actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
+                    if (it.allowedSpendings < BigDecimal.ZERO) {
+                        it.allowedSpendings = BigDecimal.ZERO // Clamp to zero in case we are running out of money
+                    }
+                }
+                if (it.account?.accountType == AccountType.EXPENSE) {
+                    it.allowedSpendings = it.allowedSpendings.negate() // Expenses will be deducted from the totals
+                }
+                log.debug("dt: {}, distribution: {}, name: {}, expected: {}, actual: {}, allowed: {}", dt, it.distribution, it.account?.name, it.expectedAmount, it.actualAmount, it.allowedSpendings)
+            }
+            entries.fold(BigDecimal.ZERO) { acc, e -> acc.add(e.allowedSpendings) }
+        }
+        var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning) ?: BigDecimal.ZERO
+        val expectedBalances = expectedSpendings.map {
+            incomingAmount += it
+            incomingAmount
+        }
+        val expectedSeries = expectedBalances.map { ReportSeriesEntry(it, it) }
+        val expected = ReportSeries("Expected operational assets", expectedSeries, "line")
+
+        return BudgetCashflowReport(dates, actual, expected)
+    }
+
     companion object {
         fun expandPeriod(from: LocalDate, to: LocalDate, granularity: Int): List<LocalDate> {
             if (granularity == 0) {
@@ -129,5 +180,9 @@ open class ReportService(private val accountService: AccountService, private val
             val days = (0 until numberOfDays).map { from.plusDays(it * granularity) }
             return days + to
         }
+
+        @Suppress("JAVA_CLASS_ON_COMPANION")
+        @JvmStatic
+        private val log = LoggerFactory.getLogger(javaClass.enclosingClass)
     }
 }

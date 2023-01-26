@@ -9,7 +9,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 
 import { BudgetCategoryEntry, BudgetEntry } from './BudgetEntry';
-import BudgetSelector from '../../containers/BudgetSelector';
+import BudgetSelector from '../../containers/BudgetOps';
 import BudgetInfo from './BudgetInfo';
 import { BudgetViewerProps } from '../../containers/BudgetViewer';
 import { BudgetEntryTreeNode } from '../../api/models/Budget';
@@ -83,15 +83,9 @@ export function BudgetPage(props: BudgetViewerProps) {
     const [expenseEntries, setExpenseEntries] = useState<BudgetEntryTreeNode | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    useEffect(() => {
-        if (props.budget == undefined) {
-            props.loadCurrentBudget();
-        }
-    }, []);
-
     const loadEntries = () => {
         const budget = props.budget;
-        if (budget !== null && budget !== undefined) {
+        if (budget) {
             setLoading(true);
 
             let filter = 'nonzero';

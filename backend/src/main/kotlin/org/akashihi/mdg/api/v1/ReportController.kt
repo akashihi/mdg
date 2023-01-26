@@ -1,12 +1,14 @@
 package org.akashihi.mdg.api.v1
 
 import org.akashihi.mdg.entity.AccountType
+import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
 import org.akashihi.mdg.entity.report.SimpleReport
 import org.akashihi.mdg.entity.report.TotalsReport
 import org.akashihi.mdg.service.ReportService
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
@@ -100,4 +102,10 @@ class ReportController(private val reportService: ReportService) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate
     ): BudgetExecutionReport = reportService.budgetExecutionReport(startDate, endDate)
+
+    @GetMapping(value = ["/reports/budget/cashflow/{budget_id}"], produces = ["application/vnd.mdg+json;version=1"])
+    fun budgetExecutionReport(
+        @PathVariable("budget_id")
+        budgetId: Long
+    ): BudgetCashflowReport = reportService.budgetCashflowReport(budgetId)
 }

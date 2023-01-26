@@ -43,10 +43,14 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         return true
     }
 
-    private fun applyActualAmount(entry: BudgetEntry): BudgetEntry {
+    private fun applyBudgetActualAmount(entry: BudgetEntry): BudgetEntry {
         val from = entry.budget.beginning
         val to = entry.budget.end
 
+        return applyActualAmountForPeriod(entry, from, to)
+    }
+
+    open fun applyActualAmountForPeriod(entry: BudgetEntry, from: LocalDate, to: LocalDate): BudgetEntry {
         // Find actual spendings
         entry.actualAmount = entry.account?.let { transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
         if (entry.account?.accountType === AccountType.INCOME) {
@@ -139,7 +143,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         budget.incomingAmount = incomingAmount
         val outgoingActual = accountRepository.getTotalAssetsForDate(budget.end.plusDays(1)) ?: BigDecimal.ZERO
         val entries = budgetEntryRepository.findByBudget(budget)
-            .map { applyActualAmount(it) }
+            .map { applyBudgetActualAmount(it) }
             .map { analyzeSpendings(it, LocalDate.now()) }
             .toList()
         val outgoingExpected = entries
@@ -197,7 +201,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     @Transactional
     open fun getBudgetEntry(entryId: Long): BudgetEntry? {
         val entry = budgetEntryRepository.findByIdOrNull(entryId) ?: return null
-        applyActualAmount(entry)
+        applyBudgetActualAmount(entry)
         // Apply spendings analysis
         return analyzeSpendings(entry, LocalDate.now())
     }
@@ -221,7 +225,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         } else {
             entry.dt = null // Payment dates are only valid for non-distributed entries
         }
-        applyActualAmount(entry)
+        applyBudgetActualAmount(entry)
         analyzeSpendings(entry, LocalDate.now())
         budgetEntryRepository.save(entry)
         return entry
@@ -233,7 +237,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val today = LocalDate.now()
         val entries = budgetEntryRepository.findByBudget(budget)
         entries.forEach {
-            applyActualAmount(it)
+            applyBudgetActualAmount(it)
             analyzeSpendings(it, today)
         }
         return entries
@@ -252,7 +256,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
         // Pick entries to copy
         val source = sourceEntries
-            .map { applyActualAmount(it) }
+            .map { applyBudgetActualAmount(it) }
             .filter { it.expectedAmount.compareTo(BigDecimal.ZERO) != 0 || it.actualAmount.compareTo(BigDecimal.ZERO) != 0 }
             .map { if (it.expectedAmount.compareTo(BigDecimal.ZERO) == 0) { it.expectedAmount = it.actualAmount }; it }
             .associate { Pair(it.account?.id, Triple(it.expectedAmount, it.distribution, it.dt?.let { dt -> ChronoUnit.DAYS.between(it.budget.beginning, dt) })) }
@@ -290,7 +294,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         }
 
         @JvmStatic
-        fun getAllowedSpendings(actualAmount: BigDecimal, expectedAmount: BigDecimal, from: LocalDate, to: LocalDate, forDay: LocalDate, mode: BudgetEntryMode): BigDecimal {
+        fun getAllowedSpendings(entry: BudgetEntry, from: LocalDate, to: LocalDate, forDay: LocalDate): BigDecimal {
             if (forDay.isBefore(from.minusDays(1)) || forDay.isAfter(to)) {
                 // We are out of that budget, no spendings are allowed
                 return BigDecimal.ZERO
@@ -299,15 +303,18 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(forDay.minusDays(1), to)) // Including today
             val daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(from.minusDays(1), forDay)) // Including first day and today
             var allowed = BigDecimal.ZERO
-            if (mode == BudgetEntryMode.PRORATED) {
-                allowed = expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN).multiply(daysPassed).subtract(actualAmount)
+            if (entry.distribution == BudgetEntryMode.PRORATED) {
+                allowed = entry.expectedAmount.divide(budgetLength, RoundingMode.HALF_DOWN).multiply(daysPassed).subtract(entry.actualAmount)
             }
-            if (mode == BudgetEntryMode.EVEN || allowed < BigDecimal.ZERO) { // Negative prorations are re-calculated in the even mode
-                allowed = expectedAmount.subtract(actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
+            if (entry.distribution == BudgetEntryMode.EVEN || allowed < BigDecimal.ZERO) { // Negative prorations are re-calculated in the even mode
+                allowed = entry.expectedAmount.subtract(entry.actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
             }
-            if (mode == BudgetEntryMode.SINGLE) {
+            if (entry.distribution == BudgetEntryMode.SINGLE) {
                 // Not evenly distributed, spend everything left
-                allowed = expectedAmount.subtract(actualAmount)
+                val opDate = entry.dt ?: forDay
+                if (opDate.isBefore(forDay) || opDate.isEqual(forDay)) {
+                    allowed = entry.expectedAmount.subtract(entry.actualAmount)
+                }
             }
             if (allowed < BigDecimal.ZERO) {
                 // Nothing to spend
@@ -320,7 +327,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             entry.spendingPercent = getSpendingPercent(entry.actualAmount, entry.expectedAmount)
             val from = entry.budget.beginning
             val to = entry.budget.end
-            entry.allowedSpendings = getAllowedSpendings(entry.actualAmount, entry.expectedAmount, from, to, forDay, entry.distribution)
+            entry.allowedSpendings = getAllowedSpendings(entry, from, to, forDay)
             return entry
         }
 

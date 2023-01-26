@@ -137,3 +137,25 @@ export async function loadBudgetReport(
         }
     }
 }
+
+export async function loadBudgetCashflowReport(id: number): Promise<Result<Model.BudgetCashflowReport, Model.Problem>> {
+    const url = `/api/reports/budget/cashflow/${id}`;
+    const response = await fetch(url);
+    const responseJson = JSON.parse(await response.text());
+    if (response.status >= 400) {
+        return new Err(parseError(response, responseJson));
+    } else {
+        // Should be fine, try to convert
+        try {
+            const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
+
+            return new Ok({
+                dates: dates,
+                actual: responseJson.actual,
+                expected: responseJson.expected,
+            });
+        } catch (e) {
+            return new Err(Errors.InvalidObject(e as string));
+        }
+    }
+}

@@ -20,3 +20,11 @@ export const selectSelectedBudgetId = createSelector([getBudgets], (budgetState:
         return budgetState.selectedBudget.id;
     }
 });
+
+export const selectIsNextBudgetPageAvailable = createSelector([getBudgets], (budgetState: BudgetState): boolean => {
+    return (
+        budgetState.budgetCursorNext !== undefined &&
+        budgetState.remainingBudgets !== undefined &&
+        budgetState.remainingBudgets > 0
+    );
+});
