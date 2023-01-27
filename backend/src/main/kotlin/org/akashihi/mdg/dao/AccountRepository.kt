@@ -2,6 +2,7 @@ package org.akashihi.mdg.dao
 
 import org.akashihi.mdg.dao.projections.AmountAndDate
 import org.akashihi.mdg.dao.projections.AmountAndName
+import org.akashihi.mdg.dao.projections.AmountNameCategory
 import org.akashihi.mdg.entity.Account
 import org.akashihi.mdg.entity.AccountType
 import org.springframework.data.jpa.repository.JpaRepository
@@ -46,9 +47,9 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
 
     @Query(
         nativeQuery = true,
-        value = "select sum(o.amount) as amount, sum(o.amount*coalesce(r.rate,1)) as primaryAmount, a.name as name from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type=?1 and tx.ts between ?2 and ?3 group by a.name order by a.name"
+        value = "select sum(o.amount) as amount, sum(o.amount*coalesce(r.rate,1)) as primaryAmount, a.name as name, a.category_id as categoryId from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type=?1 and tx.ts between ?2 and ?3 group by a.category_id,a.name order by a.name"
     )
-    fun getTotalByAccountTypeForRange(type: String, from: LocalDate, to: LocalDate): List<AmountAndName>
+    fun getTotalByAccountTypeForRange(type: String, from: LocalDate, to: LocalDate): List<AmountNameCategory>
     fun findAllByAccountType(type: AccountType): Collection<Account>
 
     @Query(

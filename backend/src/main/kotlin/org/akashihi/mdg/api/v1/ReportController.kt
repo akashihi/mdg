@@ -3,6 +3,8 @@ package org.akashihi.mdg.api.v1
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
+import org.akashihi.mdg.entity.report.HierarchicalSeriesEntry
+import org.akashihi.mdg.entity.report.ReportSeries
 import org.akashihi.mdg.entity.report.SimpleReport
 import org.akashihi.mdg.entity.report.TotalsReport
 import org.akashihi.mdg.service.ReportService
@@ -27,7 +29,7 @@ class ReportController(private val reportService: ReportService) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate,
         @RequestParam("granularity") granularity: Int
-    ): SimpleReport = reportService.simpleAssetReport(startDate, endDate, granularity)
+    ): SimpleReport<ReportSeries> = reportService.simpleAssetReport(startDate, endDate, granularity)
 
     @GetMapping(value = ["/reports/assets/currency"], produces = ["application/vnd.mdg+json;version=1"])
     fun byCurrencyAssetsReport(
@@ -38,7 +40,7 @@ class ReportController(private val reportService: ReportService) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate,
         @RequestParam("granularity") granularity: Int
-    ): SimpleReport = reportService.assetByCurrencyReport(startDate, endDate, granularity)
+    ): SimpleReport<ReportSeries> = reportService.assetByCurrencyReport(startDate, endDate, granularity)
 
     @GetMapping(value = ["/reports/assets/type"], produces = ["application/vnd.mdg+json;version=1"])
     fun byTypeAssetsReport(
@@ -49,7 +51,7 @@ class ReportController(private val reportService: ReportService) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate,
         @RequestParam("granularity") granularity: Int
-    ): SimpleReport = reportService.assetByTypeReport(startDate, endDate, granularity)
+    ): SimpleReport<ReportSeries> = reportService.assetByTypeReport(startDate, endDate, granularity)
 
     @GetMapping(value = ["/reports/income/events"], produces = ["application/vnd.mdg+json;version=1"])
     fun incomeEventsReport(
@@ -60,7 +62,7 @@ class ReportController(private val reportService: ReportService) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate,
         @RequestParam("granularity") granularity: Int
-    ): SimpleReport = reportService.eventsByAccountReport(startDate, endDate, granularity, AccountType.INCOME)
+    ): SimpleReport<ReportSeries> = reportService.eventsByAccountReport(startDate, endDate, granularity, AccountType.INCOME)
 
     @GetMapping(value = ["/reports/expense/events"], produces = ["application/vnd.mdg+json;version=1"])
     fun expenseEventsReport(
@@ -71,7 +73,7 @@ class ReportController(private val reportService: ReportService) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate,
         @RequestParam("granularity") granularity: Int
-    ): SimpleReport = reportService.eventsByAccountReport(startDate, endDate, granularity, AccountType.EXPENSE)
+    ): SimpleReport<ReportSeries> = reportService.eventsByAccountReport(startDate, endDate, granularity, AccountType.EXPENSE)
 
     @GetMapping(value = ["/reports/income/accounts"], produces = ["application/vnd.mdg+json;version=1"])
     fun incomeStructureReport(
@@ -81,7 +83,7 @@ class ReportController(private val reportService: ReportService) {
         @RequestParam("endDate")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate
-    ): SimpleReport = reportService.structureReport(startDate, endDate, AccountType.INCOME)
+    ): SimpleReport<HierarchicalSeriesEntry> = reportService.structureReport(startDate, endDate, AccountType.INCOME)
 
     @GetMapping(value = ["/reports/expense/accounts"], produces = ["application/vnd.mdg+json;version=1"])
     fun expenseStructureReport(
@@ -91,7 +93,7 @@ class ReportController(private val reportService: ReportService) {
         @RequestParam("endDate")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate
-    ): SimpleReport = reportService.structureReport(startDate, endDate, AccountType.EXPENSE)
+    ): SimpleReport<HierarchicalSeriesEntry> = reportService.structureReport(startDate, endDate, AccountType.EXPENSE)
 
     @GetMapping(value = ["/reports/budget/execution"], produces = ["application/vnd.mdg+json;version=1"])
     fun budgetExecutionReport(

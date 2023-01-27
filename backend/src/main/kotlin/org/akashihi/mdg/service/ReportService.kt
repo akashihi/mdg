@@ -2,12 +2,14 @@ package org.akashihi.mdg.service
 
 import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.projections.AmountAndName
+import org.akashihi.mdg.dao.projections.AmountNameCategory
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.Budget
 import org.akashihi.mdg.entity.BudgetEntryMode
 import org.akashihi.mdg.entity.report.Amount
 import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
+import org.akashihi.mdg.entity.report.HierarchicalSeriesEntry
 import org.akashihi.mdg.entity.report.ReportSeries
 import org.akashihi.mdg.entity.report.ReportSeriesEntry
 import org.akashihi.mdg.entity.report.SimpleReport
@@ -21,7 +23,13 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 @Service
-open class ReportService(private val accountService: AccountService, private val settingService: SettingService, private val accountRepository: AccountRepository, private val budgetService: BudgetService) {
+open class ReportService(
+    private val accountService: AccountService,
+    private val settingService: SettingService,
+    private val accountRepository: AccountRepository,
+    private val budgetService: BudgetService,
+    private val categoryService: CategoryService
+) {
     fun totalsReport(): TotalsReport {
         val primaryCurrency = settingService.currentCurrencyPrimary()
         val primaryCurrencyCode: String = primaryCurrency?.code ?: ""
@@ -55,7 +63,7 @@ open class ReportService(private val accountService: AccountService, private val
         return TotalsReport(totals)
     }
 
-    fun simpleAssetReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport {
+    fun simpleAssetReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> {
         val dates = expandPeriod(from, to, granularity)
         val amounts = dates.map { accountRepository.getTotalAssetsForDate(it) ?: BigDecimal.ZERO }.map { it.setScale(2, RoundingMode.DOWN) }.map { ReportSeriesEntry(it, it) }
         val series = ReportSeries("Total assets", amounts, "area")
@@ -87,17 +95,17 @@ open class ReportService(private val accountService: AccountService, private val
             .filter { s: ReportSeries -> !s.data.map { it.y }.all { it.compareTo(BigDecimal.ZERO) == 0 } }
     }
 
-    private fun typedAssetReportReport(from: LocalDate, to: LocalDate, granularity: Int, query: (LocalDate) -> List<AmountAndName>): SimpleReport {
+    private fun typedAssetReportReport(from: LocalDate, to: LocalDate, granularity: Int, query: (LocalDate) -> List<AmountAndName>): SimpleReport<ReportSeries> {
         val dates = expandPeriod(from, to, granularity)
         val amounts = dates.flatMap(query)
         return SimpleReport(dates, amountToSeries(amounts, "area"))
     }
 
-    fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency)
+    fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency)
 
-    fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType)
+    fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType)
 
-    fun eventsByAccountReport(from: LocalDate, to: LocalDate, granularity: Int, type: AccountType): SimpleReport {
+    fun eventsByAccountReport(from: LocalDate, to: LocalDate, granularity: Int, type: AccountType): SimpleReport<ReportSeries> {
         val dates = expandPeriod(from, to, granularity)
         val amounts = (0..dates.size - 2)
             .map { dates.subList(it, it + 2) }
@@ -106,10 +114,41 @@ open class ReportService(private val accountService: AccountService, private val
         return SimpleReport(dates, amountToSeries(amounts, "column"))
     }
 
-    fun structureReport(from: LocalDate, to: LocalDate, type: AccountType): SimpleReport {
-        val totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to)
-            .map { amountInvertForIncome(it, type) }
-        return SimpleReport(listOf(from), amountToSeries(totals, "pie"))
+    fun structureReport(from: LocalDate, to: LocalDate, type: AccountType): SimpleReport<HierarchicalSeriesEntry> {
+        val totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to).map {
+            if (type === AccountType.INCOME) {
+                object : AmountNameCategory {
+                    override val amount: BigDecimal
+                        get() = it.amount.negate()
+                    override val primaryAmount: BigDecimal
+                        get() = it.primaryAmount.negate()
+                    override val name: String
+                        get() = it.name
+                    override val categoryId: Long?
+                        get() = it.categoryId
+                }
+            } else {
+                it
+            }
+        }
+        val entries: MutableMap<String, HierarchicalSeriesEntry> = mutableMapOf("root" to HierarchicalSeriesEntry("root", null, type.toString(), null))
+        totals.forEach {
+            if (it.categoryId == null) {
+                entries[it.name] = HierarchicalSeriesEntry(it.name, "root", it.name, it.primaryAmount)
+            } else {
+                entries[it.name] = HierarchicalSeriesEntry(it.name, it.categoryId.toString(), it.name, it.primaryAmount)
+                if (!entries.containsKey(it.categoryId.toString())) { // Fill missing hierarchy
+                    var category = categoryService[it.categoryId!!]
+                    while (category != null) {
+                        if (!entries.containsKey(category.id.toString())) {
+                            entries[category.id.toString()] = HierarchicalSeriesEntry(category.id.toString(), category.parentId?.toString() ?: "root", category.name, null)
+                        }
+                        category = category.parentId?.let { c -> categoryService[c] }
+                    }
+                }
+            }
+        }
+        return SimpleReport(listOf(from), entries.values)
     }
 
     fun budgetExecutionReport(from: LocalDate, to: LocalDate): BudgetExecutionReport {
@@ -132,10 +171,8 @@ open class ReportService(private val accountService: AccountService, private val
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
         val entries = budgetService.listEntries(budgetId) // TODO THis call pre-calculates actual spendings that we are going to re-calculate. Better to call repository here
-        val budgetLength = BigDecimal.valueOf(ChronoUnit.DAYS.between(budget.beginning.minusDays(1), budget.end)) // Including first day
         val expectedSpendings = dates.map { dt ->
             val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(dt.minusDays(1), budget.end)) // Including today
-            val daysPassed = BigDecimal.valueOf(ChronoUnit.DAYS.between(budget.beginning.minusDays(1), dt)) // Including first day and today
 
             entries.forEach {
                 budgetService.applyActualAmountForPeriod(it, budget.beginning, dt)

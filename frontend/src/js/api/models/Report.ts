@@ -1,5 +1,3 @@
-import { PointOptionsObject } from 'highcharts';
-
 export interface ReportAmount {
     amount: number;
     name?: string;
@@ -39,7 +37,14 @@ export interface BudgetCashflowReport {
     expected: ReportSeries;
 }
 
+export interface HierarchicalSeries {
+    id: string;
+    parent?: string;
+    name: string;
+    value?: number;
+}
+
 export interface PieData {
     readonly dates: string[];
-    readonly data: PointOptionsObject[];
+    readonly data: HierarchicalSeries[];
 }
