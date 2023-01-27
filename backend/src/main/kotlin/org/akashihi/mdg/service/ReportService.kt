@@ -137,13 +137,13 @@ open class ReportService(
                 entries[it.name] = HierarchicalSeriesEntry(it.name, "root", it.name, it.primaryAmount)
             } else {
                 entries[it.name] = HierarchicalSeriesEntry(it.name, it.categoryId.toString(), it.name, it.primaryAmount)
-                if (!entries.containsKey(it.categoryId.toString())) { //Fill missing hierarchy
+                if (!entries.containsKey(it.categoryId.toString())) { // Fill missing hierarchy
                     var category = categoryService[it.categoryId!!]
                     while (category != null) {
                         if (!entries.containsKey(category.id.toString())) {
                             entries[category.id.toString()] = HierarchicalSeriesEntry(category.id.toString(), category.parentId?.toString() ?: "root", category.name, null)
                         }
-                        category = category.parentId?.let {c-> categoryService[c] }
+                        category = category.parentId?.let { c -> categoryService[c] }
                     }
                 }
             }
