@@ -755,7 +755,7 @@ Provides assets overview information.
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
         + dates (array[string], required) - Array of reported dates in format YYYY-MM-DD
-        + actual (array[ReportSeries], required) - Array of actual cumulative balances per day on all operational accounts
+        + actual (array[ReportSeries], required) t- Array of actual cumulative balances per day on all operational accounts
         + expected (array[ReportSeries], required) - Array of expected cumulative balances per day on all operational accounts. Expected transactions are calculated with respected to scheduled budget entries and budget daily allowed spendings.
 
 # Data Structures
@@ -796,6 +796,16 @@ A single entry of report series. Names of the fields are based on [Highcharts AP
 + Attributes
     + y: 0.06(number, required) - A single datapoint. In case it is a monetary value, it will be converted to the primary currency.
     + custom: 120 (number, required) - Original monetary value in the original currency. Should be ignored for non-monetary values.
+
+## HierarchicalSeriesEntry
+
+Tree friendly entry of report series. Names of the fields are based on [Highcharts API requirements](https://www.highcharts.com/demo/sunburst):
+
++ Attributes
+    + id: "1" (string, required) - Unique entry id. Should be end-to-end unique for both categories and accounts.
+    + parent: "root" (string, optiona) - Entry parent if any
+    + name: "Rent" (string, required) - Entry name, whenever it is category or account entry
+    + value: 100 (number, optional) - Entry value, should be skipped for non-leave entries
 
 ## ReportSeries
 
