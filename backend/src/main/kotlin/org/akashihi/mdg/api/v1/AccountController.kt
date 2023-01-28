@@ -47,7 +47,7 @@ class AccountController(private val accountService: AccountService, private val 
         if (accountType != AccountType.ASSET) {
             val popularAccounts = accountService.listPopularByType(accountType)
             if (popularAccounts.isNotEmpty()) {
-                val popularCategory = CategoryTreeEntry(-1*popularAccounts.hashCode().toLong(), "Popular", popularAccounts, emptyList())
+                val popularCategory = CategoryTreeEntry(-1 * popularAccounts.hashCode().toLong(), "Popular", popularAccounts, emptyList())
                 topCategories.add(0, popularCategory)
             }
         }
