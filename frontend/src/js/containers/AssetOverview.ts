@@ -1,20 +1,20 @@
 import { connect } from 'react-redux';
 
-import FinanceOverviewPanel from '../components/report/FinanceOverviewPanel';
+import AssetOverviewPanel from '../components/report/AssetOverviewPanel';
 import { RootState } from '../reducers/rootReducer';
 import { TotalsReport } from '../api/models/Report';
 import { selectPrimaryCurrencyName } from '../selectors/CurrencySelector';
 
-export interface FinanceOverviewPanelProps {
+export interface AssetOverviewPanelProps {
     totals: TotalsReport[];
     primaryCurrency: string;
 }
 
-const mapStateToProps = (state: RootState): FinanceOverviewPanelProps => {
+const mapStateToProps = (state: RootState): AssetOverviewPanelProps => {
     return {
         totals: state.report.totals,
         primaryCurrency: selectPrimaryCurrencyName(state),
     };
 };
 
-export default connect(mapStateToProps)(FinanceOverviewPanel);
+export default connect(mapStateToProps)(AssetOverviewPanel);

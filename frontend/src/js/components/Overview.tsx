@@ -4,7 +4,7 @@ import Card from '@mui/material/Card';
 
 import AccountsOverview from '../containers/AccountsOverview';
 import BudgetOverview from '../containers/BudgetOverview';
-import FinanceOverview from '../containers/FinanceOverview';
+import FinanceOverview from '../containers/AssetOverview';
 import TransactionsOverview from '../containers/TransactionsOverview';
 
 export function Overview() {

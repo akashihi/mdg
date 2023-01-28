@@ -4,9 +4,9 @@ import CardHeader from '@mui/material/CardHeader';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Grid from '@mui/material/Grid';
-import { FinanceOverviewPanelProps } from '../../containers/FinanceOverview';
+import { AssetOverviewPanelProps } from '../../containers/AssetOverview';
 
-export function FinanceOverviewPanel(props: FinanceOverviewPanelProps) {
+export function AssetOverviewPanel(props: AssetOverviewPanelProps) {
     const items = props.totals.map((item, no) => {
         let color = 'black';
         if (item.primary_balance < 0) {
@@ -53,4 +53,4 @@ export function FinanceOverviewPanel(props: FinanceOverviewPanelProps) {
     );
 }
 
-export default FinanceOverviewPanel;
+export default AssetOverviewPanel;
