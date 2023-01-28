@@ -226,7 +226,24 @@ open class ReportService(
         val totalDebt = debtCategory?.let { c -> accountRepository.getTotalByAccountTypeForRange(AccountType.ASSET.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).filter { it.categoryId == c.id }.map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal ->  acc.add(r)}} ?: BigDecimal.ZERO
         val debtRatio = totalDebt.divide(registeredIncome, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
 
-        return EvaluationReport(balanceRatio,debtRatio,0,0,0)
+        // Budget execution evaluation
+        val budgets = budgetService.listInRange(LocalDate.now().minusMonths(3), LocalDate.now())
+        val actualExpense = budgets.mapNotNull { it.state?.expense?.actual }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal ->  acc.add(r)}
+        val expectedExpense = budgets.mapNotNull { it.state?.expense?.expected }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal ->  acc.add(r)}
+        val budgetExecution = expectedExpense.subtract(actualExpense)
+        val budgetExecutionRatio = budgetExecution.divide(expectedExpense, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+
+        // Wealth evaluation
+        val averageIncome = registeredIncome.divide(BigDecimal("3"), 2, RoundingMode.HALF_UP) // Average for 3 months
+        val wealth = accountRepository.getTotalAssetsForDate(LocalDate.now()) ?: BigDecimal.ZERO
+        var incomeRelation = wealth.divide(averageIncome, 2, RoundingMode.HALF_UP);
+        if (incomeRelation > BigDecimal("12")) {
+            incomeRelation = BigDecimal("12") //Clamp to 12 month
+        }
+        val incomeRatio = incomeRelation.divide(BigDecimal("12"), 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+
+
+        return EvaluationReport(balanceRatio,debtRatio,budgetExecutionRatio,incomeRatio,0)
     }
 
     companion object {
