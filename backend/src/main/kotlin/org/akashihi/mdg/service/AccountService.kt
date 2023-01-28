@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.util.*
-import javax.transaction.Transactional
 
 @Service
 open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val rateService: RateService, private val operationRepository: OperationRepository) {
@@ -55,7 +55,7 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         return applyBalance(account)
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     open fun list(query: Map<String, String>): Collection<Account> {
         val sort = Sort.by("accountType").ascending().and(Sort.by("name").ascending())
         return if (query.isEmpty()) {
@@ -65,10 +65,13 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     open fun listByType(type: AccountType): Collection<Account> = accountRepository.findAllByAccountType(type).map { applyBalance(it) }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    open fun listPopularByType(type: AccountType): Collection<Account> = accountRepository.getPopularAccountsForType(type.toDbValue()).mapNotNull { this.get(it) }
+
+    @Transactional(readOnly = true)
     open operator fun get(id: Long): Account? = accountRepository.findByIdOrNull(id)?.let { applyBalance(it) }
 
     @Transactional
@@ -122,7 +125,7 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         accountRepository.delete(account)
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     open fun isDeletable(id: Long?): Boolean {
         val account = accountRepository.findByIdOrNull(id) ?: throw MdgException("ACCOUNT_NOT_FOUND")
         return !(operationRepository.doOperationsExistForAccount(account.id!!) ?: false)
