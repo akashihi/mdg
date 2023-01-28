@@ -43,7 +43,7 @@ function accountList(tree: AccountTreeNode, indent: number, currencyFilter?: num
             .concat(accounts)
             .concat(subCategories);
     }
-    return accounts.concat(subCategories);
+    return subCategories.concat(accounts);
 }
 
 export function accountMenu(

@@ -57,4 +57,10 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
         value = "select sum(o.amount*coalesce(r.rate,1)) as amount, date(gs.dt) as dt from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) cross join generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, '1 day') gs(dt) where a.account_type='asset' and a.operational is True and tx.ts <= gs.dt group by date(gs.dt) order by date(gs.dt)"
     )
     fun getOperationalAssetsForDateRange(from: LocalDate, to: LocalDate): Collection<AmountAndDate>
+
+    @Query(
+        nativeQuery = true,
+        value = "select a.id, count(a.id) as popularity from account as a inner join operation o on a.id = o.account_id inner join tx t on t.id = o.tx_id where t.ts > now() - interval '3 months' and a.account_type=?1 group by a.id order by popularity desc limit 3"
+    )
+    fun getPopularAccountsForType(type: String): Collection<Long>
 }
