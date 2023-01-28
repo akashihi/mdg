@@ -1,6 +1,6 @@
 import { Result, Err, Ok } from 'ts-results';
 import * as Model from './model';
-import { parseError, parseListResponse } from './base';
+import { parseError, parseListResponse, parseResponse } from './base';
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import moment, { Moment } from 'moment/moment';
 import jQuery from 'jquery';
@@ -51,7 +51,18 @@ const totalsReportSchema: JTDSchemaType<
     },
 };
 
+const evaluationReportSchema: JTDSchemaType<Model.EvaluationReport> = {
+    properties: {
+        income: { type: 'int32' },
+        debt: { type: 'int32' },
+        budget: { type: 'int32' },
+        cash: { type: 'int32' },
+        state: { type: 'int32' },
+    },
+};
+
 const totalsReportParse = ajv.compileParser<Record<string, Model.TotalsReport[]>>(totalsReportSchema);
+const evaluationReportParse = ajv.compileParser<Model.EvaluationReport>(evaluationReportSchema);
 
 function reportDatesToParams(dates: ReportParams): string {
     const params = {
@@ -65,6 +76,11 @@ function reportDatesToParams(dates: ReportParams): string {
 export async function loadTotalsReport(): Promise<Result<Model.TotalsReport[], Model.Problem>> {
     const response = await fetch('/api/reports/totals');
     return parseListResponse(response, totalsReportParse, 'report');
+}
+
+export async function loadEvaluationReport(): Promise<Result<Model.EvaluationReport, Model.Problem>> {
+    const response = await fetch('/api/reports/evaluation');
+    return parseResponse(response, evaluationReportParse);
 }
 
 export async function loadAssetReport(

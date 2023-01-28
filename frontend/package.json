@@ -58,6 +58,7 @@
         "npm": "^8.12.2",
         "prop-types": "^15.5.8",
         "react": "^18.2.0",
+        "react-d3-speedometer": "^2.1.0-rc.0",
         "react-date-picker": "^9.0.0",
         "react-dom": "^18.2.0",
         "react-redux": "^8.0.2",
