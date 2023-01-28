@@ -629,6 +629,20 @@ Provides assets overview information.
     + Attributes
         + report (array[TotalsReportEntry], required) - Array of report entries.
 
+## EvaluationReport [/reports/evaluation]
+
+Provides financial state evaluation
+
+### View a report [GET]
+
++ Response 200 (application/vnd.mdg+json;version=1)
+    + Attributes
+        + income: 3 (number, required) - A score of income/expense ratio on a scale from -3 to +3, where -3 is expense much higher then income and completely opposite for +3
+        + debt: 6 (number, required) - A relation between your income and debt repayment in percents
+        + budget: 28 (number, required) - A relation between estimated budget expenses and actual budget expenses in percents
+        + cash: 100 (number, required) - Relation between sum of assets and monthly average income in last 12 months in percents. 100 percents is set to be on 12 average incomes.
+        + state: 72 (number, required) - You overall finacial state in range 0 to 100, higher is better
+
 ## AssetSimpleReport [/reports/assets/simple?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
 + Parameters

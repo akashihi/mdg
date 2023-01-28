@@ -3,6 +3,7 @@ package org.akashihi.mdg.api.v1
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
+import org.akashihi.mdg.entity.report.EvaluationReport
 import org.akashihi.mdg.entity.report.HierarchicalSeriesEntry
 import org.akashihi.mdg.entity.report.ReportSeries
 import org.akashihi.mdg.entity.report.SimpleReport
@@ -19,6 +20,9 @@ import java.time.LocalDate
 class ReportController(private val reportService: ReportService) {
     @GetMapping(value = ["/reports/totals"], produces = ["application/vnd.mdg+json;version=1"])
     fun totalsReport(): TotalsReport = reportService.totalsReport()
+
+    @GetMapping(value = ["/reports/evaluation"], produces = ["application/vnd.mdg+json;version=1"])
+    fun evaluationReport(): EvaluationReport = reportService.evaluationReport()
 
     @GetMapping(value = ["/reports/assets/simple"], produces = ["application/vnd.mdg+json;version=1"])
     fun simpleAssetsReport(

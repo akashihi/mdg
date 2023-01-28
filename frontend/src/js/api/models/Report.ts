@@ -10,6 +10,14 @@ export interface TotalsReport {
     amounts: ReportAmount[];
 }
 
+export interface EvaluationReport {
+    income: number;
+    debt: number;
+    budget: number;
+    cash: number;
+    state: number;
+}
+
 export interface ReportSeries {
     name: string;
     data: number[];

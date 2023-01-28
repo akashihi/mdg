@@ -9,6 +9,7 @@ import org.akashihi.mdg.entity.BudgetEntryMode
 import org.akashihi.mdg.entity.report.Amount
 import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
+import org.akashihi.mdg.entity.report.EvaluationReport
 import org.akashihi.mdg.entity.report.HierarchicalSeriesEntry
 import org.akashihi.mdg.entity.report.ReportSeries
 import org.akashihi.mdg.entity.report.ReportSeriesEntry
@@ -206,6 +207,66 @@ open class ReportService(
         val expected = ReportSeries("Expected operational assets", expectedSeries, "line")
 
         return BudgetCashflowReport(dates, actual, expected)
+    }
+
+    fun evaluationReport(): EvaluationReport {
+        // Income evaluation
+        val registeredIncome = accountRepository.getTotalByAccountTypeForRange(AccountType.INCOME.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).map { it.primaryAmount.negate() }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }
+        val registeredExpense = accountRepository.getTotalByAccountTypeForRange(AccountType.EXPENSE.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }
+        val balance = registeredIncome.subtract(registeredExpense)
+        var balanceRatio = balance.divide(registeredIncome, 1, RoundingMode.HALF_UP).multiply(BigDecimal.TEN).toLong()
+        if (balanceRatio > 3) {
+            balanceRatio = 3
+        } else if (balanceRatio < -3) {
+            balanceRatio = -3
+        }
+
+        // Debt re-payments evaluation
+        val debtCategory = categoryService.list().find { it.name == "Debt" } // This is a predefined category, should be always present
+        val totalDebt = debtCategory?.let { c -> accountRepository.getTotalByAccountTypeForRange(AccountType.ASSET.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).filter { it.categoryId == c.id }.map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) } } ?: BigDecimal.ZERO
+        val debtRatio = totalDebt.divide(registeredIncome, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+
+        // Budget execution evaluation
+        val budgets = budgetService.listInRange(LocalDate.now().minusMonths(3), LocalDate.now())
+        val actualExpense = budgets.mapNotNull { it.state?.expense?.actual }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }
+        val expectedExpense = budgets.mapNotNull { it.state?.expense?.expected }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }
+        val budgetExecution = expectedExpense.subtract(actualExpense)
+        var budgetExecutionRatio = budgetExecution.divide(expectedExpense, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+        if (budgetExecutionRatio < 0) {
+            budgetExecutionRatio = 0
+        }
+        if (budgetExecutionRatio > 100) {
+            budgetExecutionRatio = 100
+        }
+
+        // Wealth evaluation
+        val averageIncome = registeredIncome.divide(BigDecimal("3"), 2, RoundingMode.HALF_UP) // Average for 3 months
+        val wealth = accountRepository.getTotalAssetsForDate(LocalDate.now()) ?: BigDecimal.ZERO
+        var incomeRelation = wealth.divide(averageIncome, 2, RoundingMode.HALF_UP)
+        if (incomeRelation > BigDecimal("12")) {
+            incomeRelation = BigDecimal("12") // Clamp to 12 month
+        }
+        val incomeRatio = incomeRelation.divide(BigDecimal("12"), 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+
+        // Overall grade (maxgrade is 3  + 2 + 6 = 11
+        var grade = balanceRatio
+        if (debtRatio in 0..30) {
+            grade += 2
+        } else if (debtRatio in 31..60) {
+            grade += 1
+        }
+        if (budgetExecutionRatio in 91..99) {
+            grade -= 1
+        } else if (budgetExecutionRatio in 81..90) {
+            grade -= 2
+        } else if (budgetExecutionRatio < 81) {
+            grade -= 3
+        }
+        grade += incomeRelation.toLong() / 2
+
+        val gradeScore = ((grade.toFloat() / 11.0) * 100.0).toLong()
+
+        return EvaluationReport(balanceRatio, debtRatio, budgetExecutionRatio, incomeRatio, gradeScore)
     }
 
     companion object {
