@@ -242,8 +242,25 @@ open class ReportService(
         }
         val incomeRatio = incomeRelation.divide(BigDecimal("12"), 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
 
+        // Overall grade (maxgrade is 3  + 2 + 6 = 11
+        var grade = balanceRatio
+        if (debtRatio in 0 .. 30) {
+            grade += 2
+        } else if (debtRatio in 31 .. 60) {
+            grade += 1
+        }
+        if (budgetExecutionRatio in 91..99) {
+            grade -= 1
+        } else if (budgetExecutionRatio in 81 .. 90) {
+            grade -= 2
+        } else if (budgetExecutionRatio < 81) {
+            grade -= 3
+        }
+        grade += incomeRelation.toLong()/2
 
-        return EvaluationReport(balanceRatio,debtRatio,budgetExecutionRatio,incomeRatio,0)
+        val gradeScore = ((grade.toFloat()/11.0)*100.0).toLong()
+
+        return EvaluationReport(balanceRatio,debtRatio,budgetExecutionRatio,incomeRatio,gradeScore)
     }
 
     companion object {
