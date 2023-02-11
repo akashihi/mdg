@@ -45,9 +45,7 @@ object Embedding {
         val categories = embed?.contains("category") ?: false
         return { entry: BudgetEntry ->
             val embeddedEntry = BudgetEntry(entry)
-            embeddedEntry.accountId = embeddedEntry.account?.id!!
             if (embeddedEntry.account?.category != null) {
-                embeddedEntry.categoryId = embeddedEntry.account!!.category!!.id
                 if (categories) {
                     embeddedEntry.category = embeddedEntry.account!!.category
                 }

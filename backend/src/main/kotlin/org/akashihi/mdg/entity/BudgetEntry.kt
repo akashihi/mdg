@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.akashihi.mdg.dao.BudgetEntryModeConverter
+import org.hibernate.annotations.Formula
 import java.math.BigDecimal
 import java.time.LocalDate
 import javax.persistence.Column
@@ -26,7 +27,7 @@ class BudgetEntry(
     val budget: Budget,
 
     @JsonProperty("account_id")
-    @Transient
+    @Formula("account_id")
     var accountId: Long,
 
     @ManyToOne
@@ -35,7 +36,7 @@ class BudgetEntry(
     var account: Account? = null,
 
     @JsonProperty("category_id")
-    @Transient
+    @Formula("(select a.category_id from account as a where a.id=account_id)")
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var categoryId: Long? = null,
 
