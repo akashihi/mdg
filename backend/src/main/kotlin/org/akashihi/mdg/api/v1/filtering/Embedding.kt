@@ -8,7 +8,6 @@ object Embedding {
     fun embedOperationObjects(embed: Collection<String>?): (o: Operation) -> Operation {
         val accounts = embed?.contains("account") ?: false
         return { operation: Operation ->
-            operation.account_id = operation.account?.id
             if (!accounts) {
                 operation.account = null
             } else {
