@@ -16,12 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val rateService: RateService, private val operationRepository: OperationRepository) {
-    private fun applyBalance(a: Account): Account {
-        a.primaryBalance = a.currency?.let { rateService.toCurrentDefaultCurrency(it, a.balance) } ?: a.balance
-        return a
-    }
-
+open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository) {
     @Transactional
     open fun create(account: Account): Account {
         if (account.accountType != AccountType.ASSET) {
@@ -49,27 +44,27 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         account.hidden = false
         accountRepository.save(account)
         log.info("Created account {}", account)
-        return applyBalance(account)
+        return account
     }
 
     @Transactional(readOnly = true)
     open fun list(query: Map<String, String>): Collection<Account> {
         val sort = Sort.by("accountType").ascending().and(Sort.by("name").ascending())
         return if (query.isEmpty()) {
-            accountRepository.findAll(sort).map { applyBalance(it) }
+            accountRepository.findAll(sort)
         } else {
-            accountRepository.findAll(AccountSpecification.filteredAccount(query), sort).map { applyBalance(it) }
+            accountRepository.findAll(AccountSpecification.filteredAccount(query), sort)
         }
     }
 
     @Transactional(readOnly = true)
-    open fun listByType(type: AccountType): Collection<Account> = accountRepository.findAllByAccountType(type).map { applyBalance(it) }
+    open fun listByType(type: AccountType): Collection<Account> = accountRepository.findAllByAccountType(type)
 
     @Transactional(readOnly = true)
     open fun listPopularByType(type: AccountType): Collection<Account> = accountRepository.getPopularAccountsForType(type.toDbValue()).mapNotNull { this.get(it) }
 
     @Transactional(readOnly = true)
-    open operator fun get(id: Long): Account? = accountRepository.findByIdOrNull(id)?.let { applyBalance(it) }
+    open operator fun get(id: Long): Account? = accountRepository.findByIdOrNull(id)
 
     @Transactional
     open fun update(id: Long, newAccount: Account): Account? {
@@ -110,7 +105,7 @@ open class AccountService(private val accountRepository: AccountRepository, priv
             }
         }
         accountRepository.save(account)
-        return applyBalance(account)
+        return account
     }
 
     @Transactional
