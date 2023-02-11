@@ -14,9 +14,11 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import javax.persistence.EntityManager
+import javax.persistence.PersistenceContext
 
 @Service
-open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository) {
+open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository,  @PersistenceContext private val em: EntityManager) {
     @Transactional
     open fun create(account: Account): Account {
         if (account.accountType != AccountType.ASSET) {
@@ -104,7 +106,8 @@ open class AccountService(private val accountRepository: AccountRepository, priv
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
             }
         }
-        accountRepository.save(account)
+        accountRepository.saveAndFlush(account)
+        em.refresh(account)
         return account
     }
 
