@@ -21,7 +21,7 @@ class Account(
     @JsonProperty("account_type")
     val accountType: AccountType,
 
-    var name: String,
+    var name: String?,
 
     @ManyToOne
     @JoinColumn(name = "currency_id", nullable = false)
