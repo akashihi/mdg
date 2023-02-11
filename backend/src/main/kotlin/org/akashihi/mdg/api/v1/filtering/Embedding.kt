@@ -29,14 +29,10 @@ object Embedding {
             // and it will cause NPE. To avoid such situations a simple check was added:
             // if currency id is set, we know, that accounts was already visited and there is no need
             // to reprocess.
-            if (account.currencyId == null) {
-                account.currencyId = account.currency?.id
-            }
             if (!currencies) {
                 account.currency = null
             }
             if (account.category != null) {
-                account.categoryId = account.category!!.id
                 if (!categories) {
                     account.category = null
                 }

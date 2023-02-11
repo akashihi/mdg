@@ -3,6 +3,7 @@ package org.akashihi.mdg.entity
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.akashihi.mdg.dao.AccountTypeConverter
+import org.hibernate.annotations.Formula
 import java.math.BigDecimal
 import javax.persistence.Convert
 import javax.persistence.Entity
@@ -26,7 +27,7 @@ class Account(
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var currency: Currency? = null,
 
-    @Transient
+    @Formula("currency_id")
     @JsonProperty("currency_id")
     var currencyId: Long? = null,
 
@@ -35,7 +36,7 @@ class Account(
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var category: Category? = null,
 
-    @Transient
+    @Formula("category_id")
     @JsonProperty("category_id")
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var categoryId: Long? = null,
