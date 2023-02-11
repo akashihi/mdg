@@ -41,7 +41,7 @@ class Account(
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var categoryId: Long? = null,
 
-    @Transient
+    @Formula("coalesce((select ab.balance from account_balance as ab where ab.account_id=id), 0)")
     var balance: BigDecimal,
 
     @Transient

@@ -13,14 +13,11 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 import java.util.*
 
 @Service
 open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val rateService: RateService, private val operationRepository: OperationRepository) {
     private fun applyBalance(a: Account): Account {
-        val balance = a.id?.let { accountRepository.getBalance(it) } ?: BigDecimal.ZERO
-        a.balance = balance
         a.primaryBalance = a.currency?.let { rateService.toCurrentDefaultCurrency(it, a.balance) } ?: a.balance
         return a
     }
