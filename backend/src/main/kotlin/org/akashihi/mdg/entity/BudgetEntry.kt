@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.akashihi.mdg.dao.BudgetEntryModeConverter
+import org.hibernate.annotations.Formula
 import java.math.BigDecimal
 import java.time.LocalDate
 import javax.persistence.Column
@@ -26,7 +27,7 @@ class BudgetEntry(
     val budget: Budget,
 
     @JsonProperty("account_id")
-    @Transient
+    @Formula("account_id")
     var accountId: Long,
 
     @ManyToOne
@@ -35,7 +36,7 @@ class BudgetEntry(
     var account: Account? = null,
 
     @JsonProperty("category_id")
-    @Transient
+    @Formula("(select a.category_id from account as a where a.id=account_id)")
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var categoryId: Long? = null,
 
@@ -54,7 +55,7 @@ class BudgetEntry(
     var expectedAmount: BigDecimal,
 
     @JsonProperty("actual_amount")
-    @Transient
+    @Formula("coalesce((select case when a.account_type = 'income' then -1*sum(o.amount) else sum(o.amount) end from operation as o join tx on (o.tx_id = tx.id) join budget as b on (b.id = budget_id) join account as a on (a.id = account_id) where o.account_id = account_id and tx.ts between b.term_beginning and ((b.term_end + '1 day'::interval)::timestamp - '1 second'::interval) group by a.account_type), 0)")
     var actualAmount: BigDecimal,
 
     @JsonProperty("allowed_spendings")
@@ -68,6 +69,4 @@ class BudgetEntry(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
-) {
-    constructor(other: BudgetEntry) : this(other.budget, other.accountId, other.account, other.categoryId, other.category, other.dt, other.distribution, other.expectedAmount, other.actualAmount, other.allowedSpendings, other.spendingPercent, other.id)
-}
+)

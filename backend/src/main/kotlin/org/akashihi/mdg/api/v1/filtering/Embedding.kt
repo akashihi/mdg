@@ -8,7 +8,6 @@ object Embedding {
     fun embedOperationObjects(embed: Collection<String>?): (o: Operation) -> Operation {
         val accounts = embed?.contains("account") ?: false
         return { operation: Operation ->
-            operation.account_id = operation.account?.id
             if (!accounts) {
                 operation.account = null
             } else {
@@ -29,14 +28,10 @@ object Embedding {
             // and it will cause NPE. To avoid such situations a simple check was added:
             // if currency id is set, we know, that accounts was already visited and there is no need
             // to reprocess.
-            if (account.currencyId == null) {
-                account.currencyId = account.currency?.id
-            }
             if (!currencies) {
                 account.currency = null
             }
             if (account.category != null) {
-                account.categoryId = account.category!!.id
                 if (!categories) {
                     account.category = null
                 }
@@ -49,20 +44,17 @@ object Embedding {
         val accounts = embed?.contains("account") ?: false
         val categories = embed?.contains("category") ?: false
         return { entry: BudgetEntry ->
-            val embeddedEntry = BudgetEntry(entry)
-            embeddedEntry.accountId = embeddedEntry.account?.id!!
-            if (embeddedEntry.account?.category != null) {
-                embeddedEntry.categoryId = embeddedEntry.account!!.category!!.id
+            if (entry.account?.category != null) {
                 if (categories) {
-                    embeddedEntry.category = embeddedEntry.account!!.category
+                    entry.category = entry.account!!.category
                 }
             }
             if (!accounts) {
-                embeddedEntry.account = null
+                entry.account = null
             } else {
-                embeddedEntry.account = embeddedEntry.account?.let { embedAccountObjects(embed).invoke(it) }
+                entry.account = entry.account?.let { embedAccountObjects(embed).invoke(it) }
             }
-            embeddedEntry
+            entry
         }
     }
 }

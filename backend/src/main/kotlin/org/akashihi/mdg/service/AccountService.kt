@@ -13,18 +13,12 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 import java.util.*
+import javax.persistence.EntityManager
+import javax.persistence.PersistenceContext
 
 @Service
-open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val rateService: RateService, private val operationRepository: OperationRepository) {
-    private fun applyBalance(a: Account): Account {
-        val balance = a.id?.let { accountRepository.getBalance(it) } ?: BigDecimal.ZERO
-        a.balance = balance
-        a.primaryBalance = a.currency?.let { rateService.toCurrentDefaultCurrency(it, a.balance) } ?: a.balance
-        return a
-    }
-
+open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository, @PersistenceContext private val em: EntityManager) {
     @Transactional
     open fun create(account: Account): Account {
         if (account.accountType != AccountType.ASSET) {
@@ -52,27 +46,27 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         account.hidden = false
         accountRepository.save(account)
         log.info("Created account {}", account)
-        return applyBalance(account)
+        return account
     }
 
     @Transactional(readOnly = true)
     open fun list(query: Map<String, String>): Collection<Account> {
         val sort = Sort.by("accountType").ascending().and(Sort.by("name").ascending())
         return if (query.isEmpty()) {
-            accountRepository.findAll(sort).map { applyBalance(it) }
+            accountRepository.findAll(sort)
         } else {
-            accountRepository.findAll(AccountSpecification.filteredAccount(query), sort).map { applyBalance(it) }
+            accountRepository.findAll(AccountSpecification.filteredAccount(query), sort)
         }
     }
 
     @Transactional(readOnly = true)
-    open fun listByType(type: AccountType): Collection<Account> = accountRepository.findAllByAccountType(type).map { applyBalance(it) }
+    open fun listByType(type: AccountType): Collection<Account> = accountRepository.findAllByAccountType(type)
 
     @Transactional(readOnly = true)
     open fun listPopularByType(type: AccountType): Collection<Account> = accountRepository.getPopularAccountsForType(type.toDbValue()).mapNotNull { this.get(it) }
 
     @Transactional(readOnly = true)
-    open operator fun get(id: Long): Account? = accountRepository.findByIdOrNull(id)?.let { applyBalance(it) }
+    open operator fun get(id: Long): Account? = accountRepository.findByIdOrNull(id)
 
     @Transactional
     open fun update(id: Long, newAccount: Account): Account? {
@@ -112,8 +106,9 @@ open class AccountService(private val accountRepository: AccountRepository, priv
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
             }
         }
-        accountRepository.save(account)
-        return applyBalance(account)
+        accountRepository.saveAndFlush(account)
+        em.refresh(account)
+        return account
     }
 
     @Transactional

@@ -143,7 +143,6 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         budget.incomingAmount = incomingAmount
         val outgoingActual = accountRepository.getTotalAssetsForDate(budget.end.plusDays(1)) ?: BigDecimal.ZERO
         val entries = budgetEntryRepository.findByBudget(budget)
-            .map { applyBudgetActualAmount(it) }
             .map { analyzeSpendings(it, LocalDate.now()) }
             .toList()
         val outgoingExpected = entries
@@ -201,7 +200,6 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     @Transactional
     open fun getBudgetEntry(entryId: Long): BudgetEntry? {
         val entry = budgetEntryRepository.findByIdOrNull(entryId) ?: return null
-        applyBudgetActualAmount(entry)
         // Apply spendings analysis
         return analyzeSpendings(entry, LocalDate.now())
     }
@@ -215,7 +213,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             throw MdgException("BUDGETENTRY_IS_NEGATIVE")
         }
         entry.distribution = newEntry.distribution
-        if (entry.distribution == BudgetEntryMode.SINGLE) {
+        if (entry.distribution == BudgetEntryMode.SINGLE || entry.account?.accountType == AccountType.INCOME) {
             if (newEntry.dt != null) {
                 if (entry.budget.beginning > newEntry.dt || entry.budget.end < newEntry.dt) {
                     throw MdgException("BUDGETENTRY_DT_OUT_OF_BUDGET")
@@ -223,9 +221,8 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             }
             entry.dt = newEntry.dt
         } else {
-            entry.dt = null // Payment dates are only valid for non-distributed entries
+            entry.dt = null // Payment dates are only valid for non-distributed entries or income entries
         }
-        applyBudgetActualAmount(entry)
         analyzeSpendings(entry, LocalDate.now())
         budgetEntryRepository.save(entry)
         return entry
@@ -237,7 +234,6 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val today = LocalDate.now()
         val entries = budgetEntryRepository.findByBudget(budget)
         entries.forEach {
-            applyBudgetActualAmount(it)
             analyzeSpendings(it, today)
         }
         return entries
@@ -256,7 +252,6 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
         // Pick entries to copy
         val source = sourceEntries
-            .map { applyBudgetActualAmount(it) }
             .filter { it.expectedAmount.compareTo(BigDecimal.ZERO) != 0 || it.actualAmount.compareTo(BigDecimal.ZERO) != 0 }
             .map { if (it.expectedAmount.compareTo(BigDecimal.ZERO) == 0) { it.expectedAmount = it.actualAmount }; it }
             .associate { Pair(it.account?.id, Triple(it.expectedAmount, it.distribution, it.dt?.let { dt -> ChronoUnit.DAYS.between(it.budget.beginning, dt) })) }

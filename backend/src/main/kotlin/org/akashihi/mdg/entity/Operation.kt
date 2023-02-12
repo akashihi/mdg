@@ -3,6 +3,7 @@ package org.akashihi.mdg.entity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import org.hibernate.Hibernate
+import org.hibernate.annotations.Formula
 import java.math.BigDecimal
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -10,7 +11,6 @@ import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
-import javax.persistence.Transient
 
 @Entity
 class Operation(
@@ -26,7 +26,7 @@ class Operation(
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var account: Account? = null,
 
-    @Transient
+    @Formula("account_id")
     var account_id: Long? = null,
 
     @Id
