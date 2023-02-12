@@ -44,7 +44,7 @@ object Embedding {
         val accounts = embed?.contains("account") ?: false
         val categories = embed?.contains("category") ?: false
         return { entry: BudgetEntry ->
-            val embeddedEntry = BudgetEntry(entry)
+            val embeddedEntry = entry.copy()
             if (embeddedEntry.account?.category != null) {
                 if (categories) {
                     embeddedEntry.category = embeddedEntry.account!!.category

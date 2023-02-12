@@ -70,5 +70,5 @@ class BudgetEntry(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
 ) {
-    constructor(other: BudgetEntry) : this(other.budget, other.accountId, other.account, other.categoryId, other.category, other.dt, other.distribution, other.expectedAmount, other.actualAmount, other.allowedSpendings, other.spendingPercent, other.id)
+    fun copy(): BudgetEntry= BudgetEntry(budget, accountId, account, categoryId, category, dt, distribution, expectedAmount, actualAmount, allowedSpendings, spendingPercent, id)
 }
