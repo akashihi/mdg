@@ -45,7 +45,7 @@ class Account(
     @Formula(BALANCE_QUERY)
     var balance: BigDecimal = BigDecimal.ZERO,
 
-    @Formula("to_current_default_currency(currency_id, ${BALANCE_QUERY})")
+    @Formula("to_current_default_currency(currency_id, $BALANCE_QUERY)")
     @JsonProperty("primary_balance")
     var primaryBalance: BigDecimal = BigDecimal.ZERO,
     var hidden: Boolean? = null,

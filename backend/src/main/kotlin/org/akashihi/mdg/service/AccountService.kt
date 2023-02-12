@@ -18,7 +18,7 @@ import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
 @Service
-open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository,  @PersistenceContext private val em: EntityManager) {
+open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository, @PersistenceContext private val em: EntityManager) {
     @Transactional
     open fun create(account: Account): Account {
         if (account.accountType != AccountType.ASSET) {
