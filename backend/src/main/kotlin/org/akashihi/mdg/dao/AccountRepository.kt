@@ -20,38 +20,38 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
 
     @Query(
         nativeQuery = true,
-        value = "select sum(o.amount*coalesce(r.rate,1)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type='asset' and tx.ts < ?1"
+        value = "select sum(to_current_default_currency(a.currency_id, o.amount)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type='asset' and tx.ts < ?1"
     )
     fun getTotalAssetsForDate(dt: LocalDate): BigDecimal?
 
     @Query(
         nativeQuery = true,
-        value = "select sum(o.amount*coalesce(r.rate,1)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type='asset'  and a.operational is True and tx.ts < ?1"
+        value = "select sum(to_current_default_currency(a.currency_id, o.amount)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type='asset'  and a.operational is True and tx.ts < ?1"
     )
     fun getTotalOperationalAssetsForDate(dt: LocalDate): BigDecimal?
 
     @Query(
         nativeQuery = true,
-        value = "select sum(o.amount) as amount, sum(o.amount*coalesce(r.rate,1)) as primaryAmount, c.code as name from operation as o left outer join account as a on (o.account_id = a.id) inner join tx on (o.tx_id = tx.id) inner join currency c on c.id = a.currency_id inner join setting as s on (s.name='currency.primary') left outer join rates r on (c.id = r.from_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= ?1 and r.rate_end > ?1) where a.account_type = 'asset' and tx.ts < ?1 group by c.code;"
+        value = "select sum(o.amount) as amount, sum(to_current_default_currency(a.currency_id, o.amount)) as primaryAmount, c.code as name from operation as o left outer join account as a on (o.account_id = a.id) inner join tx on (o.tx_id = tx.id) inner join currency c on c.id = a.currency_id  where a.account_type = 'asset' and tx.ts < ?1 group by c.code"
     )
     fun getTotalAssetsForDateByCurrency(dt: LocalDate): List<AmountAndName>
 
     @Query(
         nativeQuery = true,
-        value = "select sum(o.amount) as amount, sum(o.amount*coalesce(r.rate,1)) as primaryAmount, c.name as name from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') inner join category c on c.id = a.category_id left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type='asset' and tx.ts < ?1 group by c.name"
+        value = "select sum(o.amount) as amount, sum(to_current_default_currency(a.currency_id, o.amount)) as primaryAmount, c.name as name from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join category c on c.id = a.category_id where a.account_type='asset' and tx.ts < ?1 group by c.name"
     )
     fun getTotalAssetsForDateByType(dt: LocalDate): List<AmountAndName>
 
     @Query(
         nativeQuery = true,
-        value = "select sum(o.amount) as amount, sum(o.amount*coalesce(r.rate,1)) as primaryAmount, a.name as name, a.category_id as categoryId from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) where a.account_type=?1 and tx.ts between ?2 and ?3 group by a.category_id,a.name order by a.name"
+        value = "select sum(o.amount) as amount, sum(to_current_default_currency(a.currency_id, o.amount)) as primaryAmount, a.name as name, a.category_id as categoryId from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type=?1 and tx.ts between ?2 and ?3 group by a.category_id,a.name order by a.name"
     )
     fun getTotalByAccountTypeForRange(type: String, from: LocalDate, to: LocalDate): List<AmountNameCategory>
     fun findAllByAccountType(type: AccountType): Collection<Account>
 
     @Query(
         nativeQuery = true,
-        value = "select sum(o.amount*coalesce(r.rate,1)) as amount, date(gs.dt) as dt from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join setting as s on (s.name='currency.primary') left outer join rates as r on (r.from_id=a.currency_id and r.to_id=s.value\\:\\:bigint and r.rate_beginning <= now() and r.rate_end > now()) cross join generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, '1 day') gs(dt) where a.account_type='asset' and a.operational is True and tx.ts <= gs.dt group by date(gs.dt) order by date(gs.dt)"
+        value = "select sum(to_current_default_currency(a.currency_id, o.amount)) as amount, date(gs.dt) as dt from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) cross join generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, '1 day') gs(dt) where a.account_type='asset' and a.operational is True and tx.ts <= gs.dt group by date(gs.dt) order by date(gs.dt)"
     )
     fun getOperationalAssetsForDateRange(from: LocalDate, to: LocalDate): Collection<AmountAndDate>
 
