@@ -55,7 +55,7 @@ class BudgetEntry(
     var expectedAmount: BigDecimal,
 
     @JsonProperty("actual_amount")
-    @Transient
+    @Formula("coalesce((select sum(o.amount) from operation as o join tx on (o.tx_id = tx.id) join budget as b on (b.id = budget_id) where o.account_id = account_id and tx.ts between b.term_beginning and ((b.term_end + '1 day'::interval)::timestamp - '1 second'::interval)), 0)")
     var actualAmount: BigDecimal,
 
     @JsonProperty("allowed_spendings")
