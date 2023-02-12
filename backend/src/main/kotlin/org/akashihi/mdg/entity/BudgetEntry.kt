@@ -69,6 +69,4 @@ class BudgetEntry(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
-) {
-    fun copy(): BudgetEntry= BudgetEntry(budget, accountId, account, categoryId, category, dt, distribution, expectedAmount, actualAmount, allowedSpendings, spendingPercent, id)
-}
+)
