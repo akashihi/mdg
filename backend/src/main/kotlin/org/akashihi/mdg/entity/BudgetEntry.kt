@@ -55,7 +55,7 @@ class BudgetEntry(
     var expectedAmount: BigDecimal,
 
     @JsonProperty("actual_amount")
-    @Formula("coalesce((select sum(o.amount) from operation as o join tx on (o.tx_id = tx.id) join budget as b on (b.id = budget_id) where o.account_id = account_id and tx.ts between b.term_beginning and ((b.term_end + '1 day'::interval)::timestamp - '1 second'::interval)), 0)")
+    @Formula("coalesce((select case when a.account_type = 'income' then -1*sum(o.amount) else sum(o.amount) end from operation as o join tx on (o.tx_id = tx.id) join budget as b on (b.id = budget_id) join account as a on (a.id = account_id) where o.account_id = account_id and tx.ts between b.term_beginning and ((b.term_end + '1 day'::interval)::timestamp - '1 second'::interval) group by a.account_type), 0)")
     var actualAmount: BigDecimal,
 
     @JsonProperty("allowed_spendings")
