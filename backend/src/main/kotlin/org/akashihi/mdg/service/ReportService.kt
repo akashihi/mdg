@@ -6,6 +6,7 @@ import org.akashihi.mdg.dao.projections.AmountNameCategory
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.Budget
 import org.akashihi.mdg.entity.BudgetEntryMode
+import org.akashihi.mdg.entity.Category
 import org.akashihi.mdg.entity.report.Amount
 import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
@@ -41,7 +42,7 @@ open class ReportService(
                 return@Comparator l.name.compareTo(r.name)
             }
         }
-        val accounts = accountService.listByType(AccountType.ASSET).groupBy { it.category!! }
+        val accounts = accountService.listByType(AccountType.ASSET).groupBy { it.category ?: Category(AccountType.ASSET, "", 0, children = emptyList()) } // There should be one category, but something went wrong ¯\_(ツ)_/¯
         val totals = ArrayList<TotalsReportEntry>()
         val orderedCategories = accounts.keys.sortedBy { it.priority }
         for (totalsCategory in orderedCategories) {
