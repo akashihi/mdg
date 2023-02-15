@@ -1,6 +1,5 @@
 const pactum = require('pactum');
 const {createAccountForTransaction} = require('./transaction.handler');
-const {stash} = require('pactum');
 const { notIncludes } = require('pactum-matchers');
 
 describe('Totals report test', () => {
@@ -11,15 +10,28 @@ describe('Totals report test', () => {
         await e2e.step('Post CZK/Debt accout')
             .spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:CZK:V1' })
             .stores('CZKAccountID', 'id');
-    });
 
-
-    it('Check that empty categories are not present in the totals report', async() => {
-        await e2e.step('Retrieve totals report')
+        await e2e.step('Check that empty categories are not present in the totals report')
             .spec('read')
             .get("/reports/totals")
             .expectJsonMatch("report.category_name", notIncludes("Debt"))
-    })
+
+        await e2e.step('Create multi-currency transaction')
+            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:CZK:V1' })
+            .stores('TransactionID', 'id')
+            .clean()
+            .delete("/transactions/{id}")
+            .withPathParams("id", "${CZKAccountID}")
+
+        await e2e.step('Check that transactions on assets are reported in totals report')
+            .spec('read')
+            .get("/reports/totals")
+            .expectJsonMatch("report[category_name=Debt].amounts[name=CZK].amount", 2500)
+
+        await e2e.cleanup();
+    });
+
+
 /*    it('Get entries ids', async () => {
         await e2e.step('List budget entries')
             .spec('read')
