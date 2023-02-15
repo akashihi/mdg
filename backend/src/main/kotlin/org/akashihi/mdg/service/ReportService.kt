@@ -60,7 +60,9 @@ open class ReportService(
                 currencyTotals.clear() // Drop totals if only primary currency is filled
             }
             val primaryTotal = accounts[totalsCategory]!!.map { it.primaryBalance }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal -> obj.add(augend) }
-            totals.add(TotalsReportEntry(totalsCategory.name, primaryTotal, currencyTotals))
+            if (primaryTotal.compareTo(BigDecimal.ZERO) !=0 || currencyTotals.isNotEmpty()) {
+                totals.add(TotalsReportEntry(totalsCategory.name, primaryTotal, currencyTotals))
+            }
         }
         return TotalsReport(totals)
     }
