@@ -44,7 +44,7 @@ open class ReportService(
         }
         val accounts = accountService.listByType(AccountType.ASSET).groupBy { it.category ?: Category(AccountType.ASSET, "", 0, children = emptyList()) } // There should be one category, but something went wrong ¯\_(ツ)_/¯
         val totals = ArrayList<TotalsReportEntry>()
-        val orderedCategories = accounts.toSortedMap { l, r -> l.priority.compareTo(r.priority)}
+        val orderedCategories = accounts.toSortedMap { l, r -> l.priority.compareTo(r.priority) }
         for (totalsCategory in orderedCategories) {
             val currencyGroups = totalsCategory.value.groupBy { it.currency ?: primaryCurrency }
             var currencyTotals = currencyGroups.map { (key, value) ->
@@ -56,7 +56,7 @@ open class ReportService(
                 currencyTotals = emptyList()
             }
             val primaryTotal = totalsCategory.value.map { it.primaryBalance }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal -> obj.add(augend) }
-            if (primaryTotal.compareTo(BigDecimal.ZERO) !=0 || currencyTotals.isNotEmpty()) {
+            if (primaryTotal.compareTo(BigDecimal.ZERO) != 0 || currencyTotals.isNotEmpty()) {
                 totals.add(TotalsReportEntry(totalsCategory.key.name, primaryTotal, currencyTotals))
             }
         }
