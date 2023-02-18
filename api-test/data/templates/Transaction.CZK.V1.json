@@ -1,0 +1,18 @@
+{
+  "Transaction:CZK:V1": {
+    "timestamp": "2023-02-15T13:54:35",
+    "comment": "Debt transaction",
+    "tags": [],
+    "operations": [
+      {
+        "account_id": "$S{AssetAccountID}",
+        "amount": -100
+      },
+      {
+        "account_id": "$S{CZKAccountID}",
+        "rate": 0.04,
+        "amount": 2500
+      }
+    ]
+  }
+}

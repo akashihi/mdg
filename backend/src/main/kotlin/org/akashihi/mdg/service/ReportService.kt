@@ -6,6 +6,7 @@ import org.akashihi.mdg.dao.projections.AmountNameCategory
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.Budget
 import org.akashihi.mdg.entity.BudgetEntryMode
+import org.akashihi.mdg.entity.Category
 import org.akashihi.mdg.entity.report.Amount
 import org.akashihi.mdg.entity.report.BudgetCashflowReport
 import org.akashihi.mdg.entity.report.BudgetExecutionReport
@@ -41,25 +42,23 @@ open class ReportService(
                 return@Comparator l.name.compareTo(r.name)
             }
         }
-        val accounts = accountService.listByType(AccountType.ASSET).groupBy { it.category!! }
+        val accounts = accountService.listByType(AccountType.ASSET).groupBy { it.category ?: Category(AccountType.ASSET, "", 0, children = emptyList()) } // There should be one category, but something went wrong ¯\_(ツ)_/¯
         val totals = ArrayList<TotalsReportEntry>()
-        val orderedCategories = accounts.keys.sortedBy { it.priority }
+        val orderedCategories = accounts.toSortedMap { l, r -> l.priority.compareTo(r.priority) }
         for (totalsCategory in orderedCategories) {
-            val currencyGroups = accounts[totalsCategory]!!.groupBy { it.currency!! }
-            val currencyTotals = ArrayList<Amount>()
-            // Only fill detailed totals if there is more than just primary currency
-            for ((key, value) in currencyGroups) {
-                val totalAmount = value.map { it.balance }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal -> obj.add(augend) }
-                if (totalAmount.compareTo(BigDecimal.ZERO) != 0) { // Only add non-zero currencies
-                    currencyTotals.add(Amount(totalAmount, key.code, null))
-                }
-            }
-            currencyTotals.sortedWith(primaryCurrencyComparator)
+            val currencyGroups = totalsCategory.value.groupBy { it.currency ?: primaryCurrency }
+            var currencyTotals = currencyGroups.map { (key, value) ->
+                val totalAmount = value.map { v -> v.balance }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal -> obj.add(augend) }
+                Amount(totalAmount, key?.code ?: "", null)
+            }.filter { it.amount.compareTo(BigDecimal.ZERO) != 0 }
+                .sortedWith(primaryCurrencyComparator)
             if (currencyTotals.size == 1 && primaryCurrencyCode == currencyTotals[0].name) {
-                currencyTotals.clear() // Drop totals if only primary currency is filled
+                currencyTotals = emptyList()
             }
-            val primaryTotal = accounts[totalsCategory]!!.map { it.primaryBalance }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal -> obj.add(augend) }
-            totals.add(TotalsReportEntry(totalsCategory.name, primaryTotal, currencyTotals))
+            val primaryTotal = totalsCategory.value.map { it.primaryBalance }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal -> obj.add(augend) }
+            if (primaryTotal.compareTo(BigDecimal.ZERO) != 0 || currencyTotals.isNotEmpty()) {
+                totals.add(TotalsReportEntry(totalsCategory.key.name, primaryTotal, currencyTotals))
+            }
         }
         return TotalsReport(totals)
     }

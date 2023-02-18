@@ -5,6 +5,6 @@
     "name"        : "Wallet USD",
     "favorite"    : false,
     "operational" : false,
-    "asset_type"  : "cash"
+    "category_id"  : "1"
   }
 }

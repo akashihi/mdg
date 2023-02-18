@@ -66,7 +66,7 @@ open class RateService(private val currencyService: CurrencyService, private val
             val response = client.get().uri(uri).retrieve().toEntity(String::class.java).block()
             if (response != null && response.statusCode == HttpStatus.OK) {
                 val rateValue = JsonPath.parse(response.body).read<Double>("$.spark.result[0].response[0].meta.regularMarketPrice")
-                rateValue?.let { BigDecimal.valueOf(it) }
+                return rateValue?.let { BigDecimal.valueOf(it) }
             }
             null
         } catch (ignored: WebClientResponseException.NotFound) {

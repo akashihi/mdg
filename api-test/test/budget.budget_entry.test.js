@@ -86,12 +86,13 @@ describe('Budget <-> entry calculations', () => {
 
         const budgetActualIncome = stash.getDataStore().BudgetActualIncome;
         const budgetActualExpense = stash.getDataStore().BudgetActualExpense;
+
         await e2e.step('Read budget')
             .spec('read')
             .get('/budgets/{id}')
             .withPathParams('id', '20170205')
-            .expectJsonMatch('state.income.actual', budgetActualIncome + 150)
-            .expectJsonMatch('state.expense.actual', budgetActualExpense + 100);
+            .expectJsonMatch('state.income.actual', Math.round((budgetActualIncome + 150)*100)/100)
+            .expectJsonMatch('state.expense.actual', Math.round((budgetActualExpense + 100)*100)/100);
         await e2e.cleanup();
     }).timeout(15000);
 });
