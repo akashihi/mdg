@@ -17,6 +17,8 @@ with no data;
 
 create unique index historical_balance_dt on historical_balance(dt, id);
 
+--changeset akashihi:2 splitStatements:false
 
+REFRESH MATERIALIZED VIEW historical_balance;
 
 

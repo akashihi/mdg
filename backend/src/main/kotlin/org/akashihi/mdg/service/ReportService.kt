@@ -18,11 +18,14 @@ import org.akashihi.mdg.entity.report.SimpleReport
 import org.akashihi.mdg.entity.report.TotalsReport
 import org.akashihi.mdg.entity.report.TotalsReportEntry
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 
 @Service
 open class ReportService(
@@ -32,6 +35,14 @@ open class ReportService(
     private val budgetService: BudgetService,
     private val categoryService: CategoryService
 ) {
+
+    @Transactional
+    @Scheduled(cron="* * 3 * * ?")
+    open fun refreshMQT() {
+        log.info("Refreshing reporting MQTs")
+        accountRepository.refreshHistoricalBalance();
+    }
+
     fun totalsReport(): TotalsReport {
         val primaryCurrency = settingService.currentCurrencyPrimary()
         val primaryCurrencyCode: String = primaryCurrency?.code ?: ""
