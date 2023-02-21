@@ -22,6 +22,10 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
     @Query(nativeQuery = true, value = "refresh materialized view concurrently historical_balance with data")
     fun refreshHistoricalBalance();
 
+
+    @Query(nativeQuery = true, value = "select sum(h.primaryamount) as amount, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id where a.account_type='asset' group by gs.dt order by gs.dt;")
+    fun getTotalAssetsReport(from: LocalDate, to: LocalDate, interval: Int): List<AmountAndDate>
+
     @Query(
         nativeQuery = true,
         value = "select sum(to_current_default_currency(a.currency_id, o.amount)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type='asset' and tx.ts < ?1"

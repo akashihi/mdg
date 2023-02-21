@@ -43,7 +43,8 @@ open class ReportService(
         accountRepository.refreshHistoricalBalance();
     }
 
-    fun totalsReport(): TotalsReport {
+    @Transactional
+    open fun totalsReport(): TotalsReport {
         val primaryCurrency = settingService.currentCurrencyPrimary()
         val primaryCurrencyCode: String = primaryCurrency?.code ?: ""
         val primaryCurrencyComparator = Comparator { l: Amount, r: Amount ->
@@ -74,9 +75,11 @@ open class ReportService(
         return TotalsReport(totals)
     }
 
-    fun simpleAssetReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> {
-        val dates = expandPeriod(from, to, granularity)
-        val amounts = dates.map { accountRepository.getTotalAssetsForDate(it) ?: BigDecimal.ZERO }.map { it.setScale(2, RoundingMode.DOWN) }.map { ReportSeriesEntry(it, it) }
+    @Transactional
+    open fun simpleAssetReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> {
+        val report = accountRepository.getTotalAssetsReport(from, to, granularity)
+        val dates = report.map { it.dt }
+        val amounts = report.map { ReportSeriesEntry(it.amount, it.amount) }
         val series = ReportSeries("Total assets", amounts, "area")
         return SimpleReport(dates, listOf(series))
     }
@@ -112,9 +115,11 @@ open class ReportService(
         return SimpleReport(dates, amountToSeries(amounts, "area"))
     }
 
-    fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency)
+    @Transactional
+    open fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency)
 
-    fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType)
+    @Transactional
+    open fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType)
 
     fun eventsByAccountReport(from: LocalDate, to: LocalDate, granularity: Int, type: AccountType): SimpleReport<ReportSeries> {
         val dates = expandPeriod(from, to, granularity)
