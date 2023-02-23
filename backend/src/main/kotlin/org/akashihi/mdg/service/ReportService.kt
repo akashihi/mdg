@@ -25,7 +25,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
 
 @Service
 open class ReportService(
@@ -37,10 +36,10 @@ open class ReportService(
 ) {
 
     @Transactional
-    @Scheduled(cron="* * 3 * * ?")
+    @Scheduled(cron = "* * 3 * * ?")
     open fun refreshMQT() {
         log.info("Refreshing reporting MQTs")
-        accountRepository.refreshHistoricalBalance();
+        accountRepository.refreshHistoricalBalance()
     }
 
     @Transactional

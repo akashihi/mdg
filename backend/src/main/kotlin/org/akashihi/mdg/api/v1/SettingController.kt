@@ -47,4 +47,5 @@ class SettingController(private val settingService: SettingService, private val 
     fun reportingRefresh(): Setting {
         reportService.refreshMQT()
         return Setting("mnt.reporting.refresh", "true")
-    }}
+    }
+}
