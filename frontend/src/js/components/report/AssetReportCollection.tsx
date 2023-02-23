@@ -12,7 +12,7 @@ import { ReportParams } from '../../api/api';
 export function AssetReportCollection(props: ReportParams): ReactElement {
     return (
         <Fragment>
-            <Accordion defaultExpanded>
+            <Accordion defaultExpanded TransitionProps={{ unmountOnExit: true }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>Assets by time</AccordionSummary>
                 <AccordionDetails>
                     <AssetReportSimple
@@ -23,7 +23,7 @@ export function AssetReportCollection(props: ReportParams): ReactElement {
                     />
                 </AccordionDetails>
             </Accordion>
-            <Accordion>
+            <Accordion TransitionProps={{ unmountOnExit: true }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>Detailed assets by time</AccordionSummary>
                 <AccordionDetails>
                     <AssetReportCurrency
@@ -34,7 +34,7 @@ export function AssetReportCollection(props: ReportParams): ReactElement {
                     />
                 </AccordionDetails>
             </Accordion>
-            <Accordion>
+            <Accordion TransitionProps={{ unmountOnExit: true }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>Asset structure</AccordionSummary>
                 <AccordionDetails>
                     <AssetReportType
