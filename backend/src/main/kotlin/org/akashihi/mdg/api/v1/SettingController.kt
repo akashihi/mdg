@@ -46,5 +46,5 @@ class SettingController(private val settingService: SettingService, private val 
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun reportingRefresh(): Setting {
         reportService.refreshMQT()
-        return Setting("mnt.transaction.reindex", "true")
+        return Setting("mnt.reporting.refresh", "true")
     }}
