@@ -59,4 +59,6 @@ databaseChangeLog:
       file: conf/liquibase/29-budgetentrydt.sql
   - include:
       file: conf/liquibase/30-currentdefaultcurrency.sql
+  - include:
+      file: conf/liquibase/31-historicaltotals.sql
 
