@@ -127,10 +127,10 @@ open class ReportService(
     }
 
     @Transactional
-    open fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency)
+    open fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsReportByCurrency)
 
     @Transactional
-    open fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType)
+    open fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsReportByType)
 
     fun eventsByAccountReport(from: LocalDate, to: LocalDate, granularity: Int, type: AccountType): SimpleReport<ReportSeries> {
         val dates = expandPeriod(from, to, granularity)
