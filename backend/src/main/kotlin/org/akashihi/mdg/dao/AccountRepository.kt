@@ -1,7 +1,7 @@
 package org.akashihi.mdg.dao
 
 import org.akashihi.mdg.dao.projections.AmountAndDate
-import org.akashihi.mdg.dao.projections.AmountAndName
+import org.akashihi.mdg.dao.projections.AmountDateName
 import org.akashihi.mdg.dao.projections.AmountNameCategory
 import org.akashihi.mdg.entity.Account
 import org.akashihi.mdg.entity.AccountType
@@ -27,6 +27,18 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
 
     @Query(
         nativeQuery = true,
+        value = "select sum(h.amount) as amount,sum(h.primaryamount) as primaryAmount, c.code as name, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id inner join currency as c on c.id=a.currency_id where a.account_type='asset' group by gs.dt,c.code order by gs.dt,c.code"
+    )
+    fun getTotalAssetsForDateByCurrency(from: LocalDate, to: LocalDate, interval: Int): List<AmountDateName>
+
+    @Query(
+        nativeQuery = true,
+        value = "select sum(h.amount) as amount,sum(h.primaryamount) as primaryAmount, c.name as name, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id inner join category as c on c.id=a.category_id where a.account_type='asset' group by gs.dt, c.name order by gs.dt, c.name"
+    )
+    fun getTotalAssetsForDateByType(from: LocalDate, to: LocalDate, interval: Int): List<AmountDateName>
+
+    @Query(
+        nativeQuery = true,
         value = "select sum(to_current_default_currency(a.currency_id, o.amount)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type='asset' and tx.ts < ?1"
     )
     fun getTotalAssetsForDate(dt: LocalDate): BigDecimal?
@@ -36,18 +48,6 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
         value = "select sum(to_current_default_currency(a.currency_id, o.amount)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type='asset'  and a.operational is True and tx.ts < ?1"
     )
     fun getTotalOperationalAssetsForDate(dt: LocalDate): BigDecimal?
-
-    @Query(
-        nativeQuery = true,
-        value = "select sum(o.amount) as amount, sum(to_current_default_currency(a.currency_id, o.amount)) as primaryAmount, c.code as name from operation as o left outer join account as a on (o.account_id = a.id) inner join tx on (o.tx_id = tx.id) inner join currency c on c.id = a.currency_id  where a.account_type = 'asset' and tx.ts < ?1 group by c.code"
-    )
-    fun getTotalAssetsForDateByCurrency(dt: LocalDate): List<AmountAndName>
-
-    @Query(
-        nativeQuery = true,
-        value = "select sum(o.amount) as amount, sum(to_current_default_currency(a.currency_id, o.amount)) as primaryAmount, c.name as name from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) inner join category c on c.id = a.category_id where a.account_type='asset' and tx.ts < ?1 group by c.name"
-    )
-    fun getTotalAssetsForDateByType(dt: LocalDate): List<AmountAndName>
 
     @Query(
         nativeQuery = true,
