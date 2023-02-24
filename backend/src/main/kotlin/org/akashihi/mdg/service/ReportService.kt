@@ -2,6 +2,7 @@ package org.akashihi.mdg.service
 
 import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.projections.AmountAndName
+import org.akashihi.mdg.dao.projections.AmountDateName
 import org.akashihi.mdg.dao.projections.AmountNameCategory
 import org.akashihi.mdg.entity.AccountType
 import org.akashihi.mdg.entity.Budget
@@ -108,10 +109,21 @@ open class ReportService(
             .filter { s: ReportSeries -> !s.data.map { it.y }.all { it.compareTo(BigDecimal.ZERO) == 0 } }
     }
 
-    private fun typedAssetReportReport(from: LocalDate, to: LocalDate, granularity: Int, query: (LocalDate) -> List<AmountAndName>): SimpleReport<ReportSeries> {
-        val dates = expandPeriod(from, to, granularity)
-        val amounts = dates.flatMap(query)
-        return SimpleReport(dates, amountToSeries(amounts, "area"))
+    // TODO remove amountToSeries and rename this back after refactoring
+    private fun datedAmountToSeries(amounts: List<AmountDateName>, type: String): Collection<ReportSeries> {
+        return amounts.groupBy { it.name }.map { (key, value) ->
+            val data = value.map { an: AmountDateName ->
+                ReportSeriesEntry(an.primaryAmount, an.amount)
+            }
+            ReportSeries(key, data, type) // Area is the default type
+        }
+            .filter { s: ReportSeries -> !s.data.map { it.y }.all { it.compareTo(BigDecimal.ZERO) == 0 } }
+    }
+
+    private fun typedAssetReportReport(from: LocalDate, to: LocalDate, granularity: Int, query: (LocalDate, LocalDate, Int) -> List<AmountDateName>): SimpleReport<ReportSeries> {
+        val report = query.invoke(from, to, granularity)
+        val dates = report.map { it.dt }.distinct()
+        return SimpleReport(dates, datedAmountToSeries(report, "area"))
     }
 
     @Transactional
