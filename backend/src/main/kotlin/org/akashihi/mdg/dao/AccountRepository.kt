@@ -21,18 +21,18 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
     @Query(nativeQuery = true, value = "refresh materialized view concurrently historical_balance with data")
     fun refreshHistoricalBalance()
 
-    @Query(nativeQuery = true, value = "select sum(h.primaryamount) as amount, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id where a.account_type='asset' group by gs.dt order by gs.dt")
+    @Query(nativeQuery = true, value = "select sum(h.primaryamount) as amount, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt group by gs.dt order by gs.dt")
     fun getTotalAssetsReport(from: LocalDate, to: LocalDate, interval: Int): List<AmountAndDate>
 
     @Query(
         nativeQuery = true,
-        value = "select sum(h.amount) as amount,sum(h.primaryamount) as primaryAmount, c.code as name, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id inner join currency as c on c.id=a.currency_id where a.account_type='asset' group by gs.dt,c.code order by gs.dt,c.code"
+        value = "select sum(h.amount) as amount,sum(h.primaryamount) as primaryAmount, c.code as name, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id inner join currency as c on c.id=a.currency_id group by gs.dt,c.code order by gs.dt,c.code"
     )
     fun getTotalAssetsReportByCurrency(from: LocalDate, to: LocalDate, interval: Int): List<AmountDateName>
 
     @Query(
         nativeQuery = true,
-        value = "select sum(h.amount) as amount,sum(h.primaryamount) as primaryAmount, c.name as name, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id inner join category as c on c.id=a.category_id where a.account_type='asset' group by gs.dt, c.name order by gs.dt, c.name"
+        value = "select sum(h.amount) as amount,sum(h.primaryamount) as primaryAmount, c.name as name, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt inner join account as a on h.id = a.id inner join category as c on c.id=a.category_id group by gs.dt, c.name order by gs.dt, c.name"
     )
     fun getTotalAssetsReportByType(from: LocalDate, to: LocalDate, interval: Int): List<AmountDateName>
 
