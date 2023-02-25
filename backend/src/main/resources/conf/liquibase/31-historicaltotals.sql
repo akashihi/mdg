@@ -11,6 +11,7 @@ with recursive totals as (select date((select min(ts) from tx)) as dt, a.id, coa
                                                              inner join tx t on t.id = o.tx_id
                                                     where date(t.ts) = date((select min(ts) from tx))
                                                     group by o.account_id) as totals on totals.id = a.id
+                          where a.account_type = 'asset'
                           union
                           select date(dt + interval '1 day'),
                                  t.id,

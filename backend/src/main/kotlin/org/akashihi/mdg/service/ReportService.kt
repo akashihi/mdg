@@ -109,30 +109,20 @@ open class ReportService(
             .filter { s: ReportSeries -> !s.data.map { it.y }.all { it.compareTo(BigDecimal.ZERO) == 0 } }
     }
 
-    // TODO remove amountToSeries and rename this back after refactoring
-    private fun datedAmountToSeries(amounts: List<AmountDateName>, type: String): Collection<ReportSeries> {
-        return amounts.groupBy { it.name }.map { (key, value) ->
-            val data = value.map { an: AmountDateName ->
-                ReportSeriesEntry(an.primaryAmount, an.amount)
-            }
-            ReportSeries(key, data, type) // Area is the default type
-        }
-            .filter { s: ReportSeries -> !s.data.map { it.y }.all { it.compareTo(BigDecimal.ZERO) == 0 } }
-    }
-
     private fun typedAssetReportReport(from: LocalDate, to: LocalDate, granularity: Int, query: (LocalDate, LocalDate, Int) -> List<AmountDateName>): SimpleReport<ReportSeries> {
         val report = query.invoke(from, to, granularity)
         val dates = report.map { it.dt }.distinct()
-        return SimpleReport(dates, datedAmountToSeries(report, "area"))
+        return SimpleReport(dates, amountToSeries(report, "area"))
     }
 
     @Transactional
-    open fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByCurrency)
+    open fun assetByCurrencyReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsReportByCurrency)
 
     @Transactional
-    open fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsForDateByType)
+    open fun assetByTypeReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> = typedAssetReportReport(from, to, granularity, accountRepository::getTotalAssetsReportByType)
 
-    fun eventsByAccountReport(from: LocalDate, to: LocalDate, granularity: Int, type: AccountType): SimpleReport<ReportSeries> {
+    @Transactional
+    open fun eventsByAccountReport(from: LocalDate, to: LocalDate, granularity: Int, type: AccountType): SimpleReport<ReportSeries> {
         val dates = expandPeriod(from, to, granularity)
         val amounts = (0..dates.size - 2)
             .map { dates.subList(it, it + 2) }
@@ -141,7 +131,8 @@ open class ReportService(
         return SimpleReport(dates, amountToSeries(amounts, "column"))
     }
 
-    fun structureReport(from: LocalDate, to: LocalDate, type: AccountType): SimpleReport<HierarchicalSeriesEntry> {
+    @Transactional
+    open fun structureReport(from: LocalDate, to: LocalDate, type: AccountType): SimpleReport<HierarchicalSeriesEntry> {
         val totals = accountRepository.getTotalByAccountTypeForRange(type.toDbValue(), from, to).map {
             if (type === AccountType.INCOME) {
                 object : AmountNameCategory {
