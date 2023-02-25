@@ -15,8 +15,8 @@ export interface EventReportProps extends ReportParams {
 export function EventReportCollection(props: EventReportProps) {
     return (
         <Fragment>
-            <Accordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>Income operations by account</AccordionSummary>
+            <Accordion defaultExpanded TransitionProps={{ unmountOnExit: true }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>{props.type} operations by account</AccordionSummary>
                 <AccordionDetails>
                     <EventsReportByAccount
                         startDate={props.startDate}
@@ -27,8 +27,8 @@ export function EventReportCollection(props: EventReportProps) {
                     />
                 </AccordionDetails>
             </Accordion>
-            <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>Income accounts weight</AccordionSummary>
+            <Accordion TransitionProps={{ unmountOnExit: true }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>{props.type} accounts weight</AccordionSummary>
                 <AccordionDetails>
                     <EventsReportByWeight
                         startDate={props.startDate}

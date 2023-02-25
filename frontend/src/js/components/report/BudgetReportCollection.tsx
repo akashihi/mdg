@@ -11,13 +11,13 @@ import BudgetCashflowReport from './BudgetCashflowReport';
 export function BudgetReportCollection(props: ReportParams): ReactElement {
     return (
         <Fragment>
-            <Accordion defaultExpanded>
+            <Accordion defaultExpanded TransitionProps={{ unmountOnExit: true }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>Assets by time</AccordionSummary>
                 <AccordionDetails>
                     <BudgetCashflowReport primaryCurrencyName={props.primaryCurrencyName} />
                 </AccordionDetails>
             </Accordion>
-            <Accordion>
+            <Accordion TransitionProps={{ unmountOnExit: true }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>Detailed assets by time</AccordionSummary>
                 <AccordionDetails>
                     <BudgetExecutionReport
