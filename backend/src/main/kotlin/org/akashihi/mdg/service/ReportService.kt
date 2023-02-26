@@ -169,7 +169,8 @@ open class ReportService(
         return SimpleReport(listOf(from), entries.values)
     }
 
-    fun budgetExecutionReport(from: LocalDate, to: LocalDate): BudgetExecutionReport {
+    @Transactional
+    open fun budgetExecutionReport(from: LocalDate, to: LocalDate): BudgetExecutionReport {
         val budgets = budgetService.listInRange(from, to)
         val dates = budgets.map(Budget::beginning)
         val actualIncomes: List<BigDecimal> = budgets.mapNotNull { b: Budget -> b.state?.income?.actual }
@@ -180,7 +181,8 @@ open class ReportService(
         return BudgetExecutionReport(dates, actualIncomes, actualExpenses, expectedIncomes, expectedExpenses, profits)
     }
 
-    fun budgetCashflowReport(budgetId: Long): BudgetCashflowReport {
+    @Transactional
+    open fun budgetCashflowReport(budgetId: Long): BudgetCashflowReport {
         val budget = budgetService[budgetId] ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
 
         val actualBalances = accountRepository.getOperationalAssetsForDateRange(budget.beginning, budget.end)
@@ -226,7 +228,8 @@ open class ReportService(
         return BudgetCashflowReport(dates, actual, expected)
     }
 
-    fun evaluationReport(): EvaluationReport {
+    @Transactional
+    open fun evaluationReport(): EvaluationReport {
         // Income evaluation
         val registeredIncome = accountRepository.getTotalByAccountTypeForRange(AccountType.INCOME.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).map { it.primaryAmount.negate() }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }
         val registeredExpense = accountRepository.getTotalByAccountTypeForRange(AccountType.EXPENSE.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }

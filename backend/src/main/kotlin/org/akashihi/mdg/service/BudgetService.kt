@@ -43,13 +43,6 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         return true
     }
 
-    private fun applyBudgetActualAmount(entry: BudgetEntry): BudgetEntry {
-        val from = entry.budget.beginning
-        val to = entry.budget.end
-
-        return applyActualAmountForPeriod(entry, from, to)
-    }
-
     open fun applyActualAmountForPeriod(entry: BudgetEntry, from: LocalDate, to: LocalDate): BudgetEntry {
         // Find actual spendings
         entry.actualAmount = entry.account?.let { transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
@@ -91,7 +84,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
     @Transactional
     open fun listInRange(from: LocalDate, to: LocalDate): Collection<Budget> {
-        return budgetRepository.findByBeginningGreaterThanEqualAndEndIsLessThanEqualOrderByBeginningAsc(from, to)
+        return budgetRepository.findByEndGreaterThanEqualAndBeginningLessThanEqualOrderByBeginningAsc(from, to)
             .map { budget: Budget -> enrichBudget(budget) }
             .toList()
     }
