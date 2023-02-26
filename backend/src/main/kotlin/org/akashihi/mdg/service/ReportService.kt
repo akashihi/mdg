@@ -183,14 +183,14 @@ open class ReportService(
 
     @Transactional
     open fun budgetCashflowReport(budgetId: Long): BudgetCashflowReport {
-        val budget = budgetService[budgetId] ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
+        val budget = budgetService.simplifiedGet(budgetId) ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
 
         val actualBalances = accountRepository.getOperationalAssetsForDateRange(budget.beginning, budget.end)
-        val dates = actualBalances.map { it.dt }
+        val dates = (0 .. ChronoUnit.DAYS.between(budget.beginning,budget.end)).map { budget.beginning.plusDays(it) }
         val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
-        val entries = budgetService.listEntries(budgetId) // TODO THis call pre-calculates actual spendings that we are going to re-calculate. Better to call repository here
+        val entries = budgetService.listSimplifiedEntries(budgetId)
         val expectedSpendings = dates.map { dt ->
             val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(dt.minusDays(1), budget.end)) // Including today
 
@@ -213,11 +213,13 @@ open class ReportService(
                 if (it.account?.accountType == AccountType.EXPENSE) {
                     it.allowedSpendings = it.allowedSpendings.negate() // Expenses will be deducted from the totals
                 }
-                log.debug("dt: {}, distribution: {}, name: {}, expected: {}, actual: {}, allowed: {}", dt, it.distribution, it.account?.name, it.expectedAmount, it.actualAmount, it.allowedSpendings)
+                log.info("dt: {}, distribution: {}, name: {}, expected: {}, actual: {}, allowed: {}", dt, it.distribution, it.account?.name, it.expectedAmount, it.actualAmount, it.allowedSpendings)
             }
-            entries.fold(BigDecimal.ZERO) { acc, e -> acc.add(e.allowedSpendings) }
+            val daySpendings = entries.fold(BigDecimal.ZERO) { acc, e -> acc.add(e.allowedSpendings) }
+            log.info("dt: {}, allowed spendings: {}", dt, daySpendings)
+            daySpendings
         }
-        var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning) ?: BigDecimal.ZERO
+        var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning.minusDays(1)) ?: BigDecimal.ZERO
         val expectedBalances = expectedSpendings.map {
             incomingAmount += it
             incomingAmount

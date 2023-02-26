@@ -121,15 +121,13 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         return BudgetPair(actual, expected)
     }
 
-    private fun getActualExpectedForBudget(budget: Budget, entries: Collection<BudgetEntry>, type: AccountType): BudgetPair {
-        return getActualExpectedForDate(budget.beginning, budget.end, entries, type)
-    }
+    private fun getActualExpectedForBudget(budget: Budget, entries: Collection<BudgetEntry>, type: AccountType): BudgetPair = getActualExpectedForDate(budget.beginning, budget.end, entries, type)
 
     @Transactional
-    open operator fun get(id: Long): Budget? {
-        val budget = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id) ?: return null
-        return enrichBudget(budget)
-    }
+    open fun simplifiedGet(id: Long): Budget? = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id)
+
+    @Transactional
+    open operator fun get(id: Long): Budget? = simplifiedGet(id)?.let{ enrichBudget(it) }
 
     private fun enrichBudget(budget: Budget): Budget {
         val incomingDay = if (budget.beginning > LocalDate.now()) {
@@ -232,10 +230,12 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     @Transactional
+    open fun listSimplifiedEntries(budgetId: Long): Collection<BudgetEntry>  = budgetEntryRepository.findByBudgetId(budgetId)
+
+    @Transactional
     open fun listEntries(budgetId: Long): Collection<BudgetEntry> {
-        val budget = this[budgetId] ?: return emptyList()
         val today = LocalDate.now()
-        val entries = budgetEntryRepository.findByBudget(budget)
+        val entries = listSimplifiedEntries(budgetId)
         entries.forEach {
             analyzeSpendings(it, today)
         }
