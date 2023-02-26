@@ -132,9 +132,19 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     private fun enrichBudget(budget: Budget): Budget {
-        val incomingAmount = accountRepository.getTotalAssetsForDate(budget.beginning) ?: BigDecimal.ZERO
+        val incomingDay = if (budget.beginning > LocalDate.now()) {
+            LocalDate.now()
+        } else {
+            budget.beginning
+        }
+        val incomingAmount = accountRepository.getTotalAssetsForDate(incomingDay) ?: BigDecimal.ZERO
         budget.incomingAmount = incomingAmount
-        val outgoingActual = accountRepository.getTotalAssetsForDate(budget.end.plusDays(1)) ?: BigDecimal.ZERO
+        val outgoingDay = if (budget.end.plusDays(1) > LocalDate.now()) {
+            LocalDate.now()
+        } else {
+            budget.end.plusDays(1)
+        }
+        val outgoingActual = accountRepository.getTotalAssetsForDate(outgoingDay) ?: BigDecimal.ZERO
         val entries = budgetEntryRepository.findByBudget(budget)
             .map { analyzeSpendings(it, LocalDate.now()) }
             .toList()
