@@ -60,13 +60,15 @@ class BudgetEntry(
 
     @JsonProperty("allowed_spendings")
     @Transient
-    var allowedSpendings: BigDecimal,
+    var allowedSpendings: BigDecimal?,
 
     @JsonProperty("spending_percent")
     @Transient
-    var spendingPercent: BigDecimal,
+    var spendingPercent: BigDecimal?,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
-)
+) {
+    fun copy(): BudgetEntry = BudgetEntry(budget, accountId, account, categoryId, category, dt, distribution, expectedAmount, actualAmount, allowedSpendings, spendingPercent, id)
+}
