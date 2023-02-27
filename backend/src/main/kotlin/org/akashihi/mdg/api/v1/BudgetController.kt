@@ -90,7 +90,7 @@ open class BudgetController(private val budgetService: BudgetService, private va
         }
         val actualSpendings = getEntryTotals({ obj: BudgetEntry -> obj.actualAmount }, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::actualAmount, subCategories))
         val expectedSpendings = getEntryTotals({ obj: BudgetEntry -> obj.expectedAmount }, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, subCategories))
-        val allowedSpendings = getEntryTotals({ obj: BudgetEntry -> obj.allowedSpendings }, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, subCategories))
+        val allowedSpendings = getEntryTotals({ obj: BudgetEntry -> obj.allowedSpendings ?: BigDecimal.ZERO }, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, subCategories))
         val percent = BudgetService.getSpendingPercent(actualSpendings, expectedSpendings)
         return BudgetEntryTreeEntry(category.id, category.name, actualSpendings, expectedSpendings, allowedSpendings, percent, categoryEntries, subCategories)
     }

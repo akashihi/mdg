@@ -116,7 +116,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         val expected = entries
             .filter { it.account?.accountType == AccountType.EXPENSE }
-            .map { applyRateForEntry(it.allowedSpendings, it) }
+            .map { applyRateForEntry(it.allowedSpendings ?: BigDecimal.ZERO, it) }
             .fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         return BudgetPair(actual, expected)
     }

@@ -191,34 +191,41 @@ open class ReportService(
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
         val entries = budgetService.listSimplifiedEntries(budgetId)
-        val expectedSpendings = dates.map { dt ->
-            val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(dt.minusDays(1), budget.end)) // Including today
-
-            entries.forEach {
-                budgetService.applyActualAmountForPeriod(it, budget.beginning, dt)
-                it.allowedSpendings = BigDecimal.ZERO
-                if (it.distribution == BudgetEntryMode.SINGLE || it.account?.accountType == AccountType.INCOME) {
+        val expandedEntries = entries.map { e ->
+            val dailyEntries = dates.map { dt ->
+                budgetService.applyActualAmountForPeriod(e, dt, dt).copy()
+            }
+            var currentExpected = e.expectedAmount
+            var currentAllowed = e.expectedAmount.divide(ChronoUnit.DAYS.between(budget.beginning, budget.end).toBigDecimal(), RoundingMode.HALF_DOWN)
+            val dailySpendings = dailyEntries.mapIndexed { day,entry->
+                entry.allowedSpendings = BigDecimal.ZERO
+                if (entry.distribution == BudgetEntryMode.SINGLE || entry.account?.accountType == AccountType.INCOME) {
                     // Not evenly distributed, spend everything left
-                    val opDate = it.dt ?: budget.beginning
-                    if (opDate.isEqual(dt)) {
-                        it.allowedSpendings = it.expectedAmount
+                    val opDate = entry.dt ?: budget.beginning
+                    if (opDate.isEqual(budget.beginning.plusDays(day.toLong()))) {
+                        entry.allowedSpendings = entry.expectedAmount
                     }
                 } else {
-                    // Non-Single spendings are always calculated in the EVEN mode as we can't propagate unspent money during planning (expending spending will constantly grow otherwise)
-                    it.allowedSpendings = it.expectedAmount.subtract(it.actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
-                    if (it.allowedSpendings < BigDecimal.ZERO) {
-                        it.allowedSpendings = BigDecimal.ZERO // Clamp to zero in case we are running out of money
+
+                    if (entry.actualAmount.compareTo(BigDecimal.ZERO) !=0) { //Spending happened today
+                        currentExpected = currentExpected.subtract(entry.actualAmount)
+                        currentAllowed = currentExpected.divide(BigDecimal(dailyEntries.size - day), RoundingMode.HALF_DOWN)
                     }
+                    entry.allowedSpendings = currentAllowed
                 }
-                if (it.account?.accountType == AccountType.EXPENSE) {
-                    it.allowedSpendings = it.allowedSpendings.negate() // Expenses will be deducted from the totals
+                if (entry.account?.accountType == AccountType.EXPENSE) {
+                    entry.allowedSpendings = entry.allowedSpendings?.negate() ?: BigDecimal.ZERO // Expenses will be deducted from the totals
                 }
-                log.info("dt: {}, distribution: {}, name: {}, expected: {}, actual: {}, allowed: {}", dt, it.distribution, it.account?.name, it.expectedAmount, it.actualAmount, it.allowedSpendings)
+                entry.allowedSpendings
             }
-            val daySpendings = entries.fold(BigDecimal.ZERO) { acc, e -> acc.add(e.allowedSpendings) }
-            log.info("dt: {}, allowed spendings: {}", dt, daySpendings)
-            daySpendings
+            dailySpendings
         }
+        val expectedSpendings = List(List(dates.size) {BigDecimal.ZERO}.size) { i ->
+            var totals= BigDecimal.ZERO
+            expandedEntries.forEach { e -> totals = totals.add(e[i]) }
+            totals
+        }
+
         var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning.minusDays(1)) ?: BigDecimal.ZERO
         val expectedBalances = expectedSpendings.map {
             incomingAmount += it
