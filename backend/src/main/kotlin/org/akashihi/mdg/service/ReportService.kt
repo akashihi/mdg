@@ -255,10 +255,16 @@ open class ReportService(
 
         // Debt re-payments evaluation
         val debtCategory = categoryService.list().find { it.name == "Debt" } // This is a predefined category, should be always present
-        val totalDebt = debtCategory?.let { c -> accountRepository.getTotalByAccountTypeForRange(AccountType.ASSET.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).filter { it.categoryId == c.id }.map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) } } ?: BigDecimal.ZERO
+        val totalDebtPayments = debtCategory?.let { c -> accountRepository.getTotalByAccountTypeForRange(AccountType.ASSET.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).filter { it.categoryId == c.id }.map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) } } ?: BigDecimal.ZERO
+        //TODO we should somehow include interest payments
         var debtRatio = 0L
         if (registeredIncome.compareTo(BigDecimal.ZERO) != 0) {
-            debtRatio = totalDebt.divide(registeredIncome, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+            debtRatio = totalDebtPayments.divide(registeredIncome, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+        }
+        if (debtRatio > 100) {
+            debtRatio = 100
+        } else if (debtRatio < 0) {
+            debtRatio = 0
         }
 
         // Budget execution evaluation
