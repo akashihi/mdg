@@ -38,7 +38,7 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
 
     @Query(
         nativeQuery = true,
-        value = "select sum(primaryamount) from historical_balance where dt = ?1"
+        value = "select sum(to_current_default_currency(a.currency_id, o.amount)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type='asset' and tx.ts < ?1"
     )
     fun getTotalAssetsForDate(dt: LocalDate): BigDecimal?
 
