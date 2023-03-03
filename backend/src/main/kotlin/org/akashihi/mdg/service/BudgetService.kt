@@ -43,13 +43,6 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         return true
     }
 
-    private fun applyBudgetActualAmount(entry: BudgetEntry): BudgetEntry {
-        val from = entry.budget.beginning
-        val to = entry.budget.end
-
-        return applyActualAmountForPeriod(entry, from, to)
-    }
-
     open fun applyActualAmountForPeriod(entry: BudgetEntry, from: LocalDate, to: LocalDate): BudgetEntry {
         // Find actual spendings
         entry.actualAmount = entry.account?.let { transactionService.spendingOverPeriod(from.atTime(0, 0), to.atTime(23, 59), it) } ?: BigDecimal.ZERO
@@ -91,7 +84,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
     @Transactional
     open fun listInRange(from: LocalDate, to: LocalDate): Collection<Budget> {
-        return budgetRepository.findByBeginningGreaterThanEqualAndEndIsLessThanEqualOrderByBeginningAsc(from, to)
+        return budgetRepository.findByEndGreaterThanEqualAndBeginningLessThanEqualOrderByBeginningAsc(from, to)
             .map { budget: Budget -> enrichBudget(budget) }
             .toList()
     }
@@ -123,25 +116,33 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
             }.fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         val expected = entries
             .filter { it.account?.accountType == AccountType.EXPENSE }
-            .map { applyRateForEntry(it.allowedSpendings, it) }
+            .map { applyRateForEntry(it.allowedSpendings ?: BigDecimal.ZERO, it) }
             .fold(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         return BudgetPair(actual, expected)
     }
 
-    private fun getActualExpectedForBudget(budget: Budget, entries: Collection<BudgetEntry>, type: AccountType): BudgetPair {
-        return getActualExpectedForDate(budget.beginning, budget.end, entries, type)
-    }
+    private fun getActualExpectedForBudget(budget: Budget, entries: Collection<BudgetEntry>, type: AccountType): BudgetPair = getActualExpectedForDate(budget.beginning, budget.end, entries, type)
 
     @Transactional
-    open operator fun get(id: Long): Budget? {
-        val budget = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id) ?: return null
-        return enrichBudget(budget)
-    }
+    open fun simplifiedGet(id: Long): Budget? = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id)
+
+    @Transactional
+    open operator fun get(id: Long): Budget? = simplifiedGet(id)?.also { enrichBudget(it) }
 
     private fun enrichBudget(budget: Budget): Budget {
-        val incomingAmount = accountRepository.getTotalAssetsForDate(budget.beginning) ?: BigDecimal.ZERO
+        val incomingDay = if (budget.beginning > LocalDate.now()) {
+            LocalDate.now()
+        } else {
+            budget.beginning
+        }
+        val incomingAmount = accountRepository.getTotalAssetsForDate(incomingDay) ?: BigDecimal.ZERO
         budget.incomingAmount = incomingAmount
-        val outgoingActual = accountRepository.getTotalAssetsForDate(budget.end.plusDays(1)) ?: BigDecimal.ZERO
+        val outgoingDay = if (budget.end.plusDays(1) > LocalDate.now()) {
+            LocalDate.now()
+        } else {
+            budget.end.plusDays(1)
+        }
+        val outgoingActual = accountRepository.getTotalAssetsForDate(outgoingDay) ?: BigDecimal.ZERO
         val entries = budgetEntryRepository.findByBudget(budget)
             .map { analyzeSpendings(it, LocalDate.now()) }
             .toList()
@@ -229,10 +230,12 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     @Transactional
+    open fun listSimplifiedEntries(budgetId: Long): Collection<BudgetEntry> = budgetEntryRepository.findByBudgetId(budgetId)
+
+    @Transactional
     open fun listEntries(budgetId: Long): Collection<BudgetEntry> {
-        val budget = this[budgetId] ?: return emptyList()
         val today = LocalDate.now()
-        val entries = budgetEntryRepository.findByBudget(budget)
+        val entries = listSimplifiedEntries(budgetId)
         entries.forEach {
             analyzeSpendings(it, today)
         }

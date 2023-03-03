@@ -169,7 +169,8 @@ open class ReportService(
         return SimpleReport(listOf(from), entries.values)
     }
 
-    fun budgetExecutionReport(from: LocalDate, to: LocalDate): BudgetExecutionReport {
+    @Transactional
+    open fun budgetExecutionReport(from: LocalDate, to: LocalDate): BudgetExecutionReport {
         val budgets = budgetService.listInRange(from, to)
         val dates = budgets.map(Budget::beginning)
         val actualIncomes: List<BigDecimal> = budgets.mapNotNull { b: Budget -> b.state?.income?.actual }
@@ -180,42 +181,51 @@ open class ReportService(
         return BudgetExecutionReport(dates, actualIncomes, actualExpenses, expectedIncomes, expectedExpenses, profits)
     }
 
-    fun budgetCashflowReport(budgetId: Long): BudgetCashflowReport {
-        val budget = budgetService[budgetId] ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
+    @Transactional
+    open fun budgetCashflowReport(budgetId: Long): BudgetCashflowReport {
+        val budget = budgetService.simplifiedGet(budgetId) ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
 
         val actualBalances = accountRepository.getOperationalAssetsForDateRange(budget.beginning, budget.end)
-        val dates = actualBalances.map { it.dt }
+        val dates = (0..ChronoUnit.DAYS.between(budget.beginning, budget.end)).map { budget.beginning.plusDays(it) }
         val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
-        val entries = budgetService.listEntries(budgetId) // TODO THis call pre-calculates actual spendings that we are going to re-calculate. Better to call repository here
-        val expectedSpendings = dates.map { dt ->
-            val daysLeft = BigDecimal.valueOf(ChronoUnit.DAYS.between(dt.minusDays(1), budget.end)) // Including today
-
-            entries.forEach {
-                budgetService.applyActualAmountForPeriod(it, budget.beginning, dt)
-                it.allowedSpendings = BigDecimal.ZERO
-                if (it.distribution == BudgetEntryMode.SINGLE || it.account?.accountType == AccountType.INCOME) {
+        val entries = budgetService.listSimplifiedEntries(budgetId)
+        val expandedEntries = entries.map { e ->
+            val dailyEntries = dates.map { dt ->
+                budgetService.applyActualAmountForPeriod(e, dt, dt).copy()
+            }
+            var currentExpected = e.expectedAmount
+            var currentAllowed = e.expectedAmount.divide(ChronoUnit.DAYS.between(budget.beginning, budget.end).toBigDecimal(), RoundingMode.HALF_DOWN)
+            val dailySpendings = dailyEntries.mapIndexed { day, entry ->
+                entry.allowedSpendings = BigDecimal.ZERO
+                if (entry.distribution == BudgetEntryMode.SINGLE || entry.account?.accountType == AccountType.INCOME) {
                     // Not evenly distributed, spend everything left
-                    val opDate = it.dt ?: budget.beginning
-                    if (opDate.isEqual(dt)) {
-                        it.allowedSpendings = it.expectedAmount
+                    val opDate = entry.dt ?: budget.beginning
+                    if (opDate.isEqual(budget.beginning.plusDays(day.toLong()))) {
+                        entry.allowedSpendings = entry.expectedAmount
                     }
                 } else {
-                    // Non-Single spendings are always calculated in the EVEN mode as we can't propagate unspent money during planning (expending spending will constantly grow otherwise)
-                    it.allowedSpendings = it.expectedAmount.subtract(it.actualAmount).divide(daysLeft, RoundingMode.HALF_DOWN)
-                    if (it.allowedSpendings < BigDecimal.ZERO) {
-                        it.allowedSpendings = BigDecimal.ZERO // Clamp to zero in case we are running out of money
+                    if (entry.actualAmount.compareTo(BigDecimal.ZERO) != 0) { // Spending happened today
+                        currentExpected = currentExpected.subtract(entry.actualAmount)
+                        currentAllowed = currentExpected.divide(BigDecimal(dailyEntries.size - day), RoundingMode.HALF_DOWN)
                     }
+                    entry.allowedSpendings = currentAllowed
                 }
-                if (it.account?.accountType == AccountType.EXPENSE) {
-                    it.allowedSpendings = it.allowedSpendings.negate() // Expenses will be deducted from the totals
+                if (entry.account?.accountType == AccountType.EXPENSE) {
+                    entry.allowedSpendings = entry.allowedSpendings?.negate() ?: BigDecimal.ZERO // Expenses will be deducted from the totals
                 }
-                log.debug("dt: {}, distribution: {}, name: {}, expected: {}, actual: {}, allowed: {}", dt, it.distribution, it.account?.name, it.expectedAmount, it.actualAmount, it.allowedSpendings)
+                entry.allowedSpendings
             }
-            entries.fold(BigDecimal.ZERO) { acc, e -> acc.add(e.allowedSpendings) }
+            dailySpendings
         }
-        var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning) ?: BigDecimal.ZERO
+        val expectedSpendings = List(List(dates.size) { BigDecimal.ZERO }.size) { i ->
+            var totals = BigDecimal.ZERO
+            expandedEntries.forEach { e -> totals = totals.add(e[i]) }
+            totals
+        }
+
+        var incomingAmount = accountRepository.getTotalOperationalAssetsForDate(budget.beginning.minusDays(1)) ?: BigDecimal.ZERO
         val expectedBalances = expectedSpendings.map {
             incomingAmount += it
             incomingAmount
@@ -226,7 +236,8 @@ open class ReportService(
         return BudgetCashflowReport(dates, actual, expected)
     }
 
-    fun evaluationReport(): EvaluationReport {
+    @Transactional
+    open fun evaluationReport(): EvaluationReport {
         // Income evaluation
         val registeredIncome = accountRepository.getTotalByAccountTypeForRange(AccountType.INCOME.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).map { it.primaryAmount.negate() }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }
         val registeredExpense = accountRepository.getTotalByAccountTypeForRange(AccountType.EXPENSE.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) }
@@ -243,10 +254,16 @@ open class ReportService(
 
         // Debt re-payments evaluation
         val debtCategory = categoryService.list().find { it.name == "Debt" } // This is a predefined category, should be always present
-        val totalDebt = debtCategory?.let { c -> accountRepository.getTotalByAccountTypeForRange(AccountType.ASSET.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).filter { it.categoryId == c.id }.map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) } } ?: BigDecimal.ZERO
+        val totalDebtPayments = debtCategory?.let { c -> accountRepository.getTotalByAccountTypeForRange(AccountType.ASSET.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).filter { it.categoryId == c.id }.map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) } } ?: BigDecimal.ZERO
+        // TODO we should somehow include interest payments
         var debtRatio = 0L
         if (registeredIncome.compareTo(BigDecimal.ZERO) != 0) {
-            debtRatio = totalDebt.divide(registeredIncome, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+            debtRatio = totalDebtPayments.divide(registeredIncome, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()
+        }
+        if (debtRatio > 100) {
+            debtRatio = 100
+        } else if (debtRatio < 0) {
+            debtRatio = 0
         }
 
         // Budget execution evaluation

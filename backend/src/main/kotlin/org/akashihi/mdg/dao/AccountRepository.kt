@@ -44,7 +44,7 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
 
     @Query(
         nativeQuery = true,
-        value = "select sum(to_current_default_currency(a.currency_id, o.amount)) from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) where a.account_type='asset'  and a.operational is True and tx.ts < ?1"
+        value = "select sum(h.primaryamount) as amount from historical_balance as h join account as a on a.id=h.id where a.operational is true and h.dt = ?1"
     )
     fun getTotalOperationalAssetsForDate(dt: LocalDate): BigDecimal?
 
@@ -57,7 +57,7 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
 
     @Query(
         nativeQuery = true,
-        value = "select sum(to_current_default_currency(a.currency_id, o.amount)) as amount, date(gs.dt) as dt from operation as o left outer join account as a on(o.account_id = a.id) inner join tx on (o.tx_id=tx.id) cross join generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, '1 day') gs(dt) where a.account_type='asset' and a.operational is True and tx.ts <= gs.dt group by date(gs.dt) order by date(gs.dt)"
+        value = "select sum(h.primaryamount) as amount, h.dt as dt from historical_balance as h join account as a on a.id=h.id where a.operational is true and dt between ?1\\:\\:date and ?2\\:\\:date group by h.dt order by h.dt;"
     )
     fun getOperationalAssetsForDateRange(from: LocalDate, to: LocalDate): Collection<AmountAndDate>
 

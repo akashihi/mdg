@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface BudgetEntryRepository : JpaRepository<BudgetEntry, Long> {
     fun findByBudget(b: Budget): Collection<BudgetEntry>
+    fun findByBudgetId(id: Long): Collection<BudgetEntry>
 }
