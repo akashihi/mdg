@@ -186,7 +186,7 @@ open class ReportService(
         val budget = budgetService.simplifiedGet(budgetId) ?: return BudgetCashflowReport(emptyList(), ReportSeries("actual", emptyList(), "line"), ReportSeries("actual", emptyList(), "line"))
 
         val actualBalances = accountRepository.getOperationalAssetsForDateRange(budget.beginning, budget.end)
-        val dates = (0 .. ChronoUnit.DAYS.between(budget.beginning,budget.end)).map { budget.beginning.plusDays(it) }
+        val dates = (0..ChronoUnit.DAYS.between(budget.beginning, budget.end)).map { budget.beginning.plusDays(it) }
         val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
@@ -197,7 +197,7 @@ open class ReportService(
             }
             var currentExpected = e.expectedAmount
             var currentAllowed = e.expectedAmount.divide(ChronoUnit.DAYS.between(budget.beginning, budget.end).toBigDecimal(), RoundingMode.HALF_DOWN)
-            val dailySpendings = dailyEntries.mapIndexed { day,entry->
+            val dailySpendings = dailyEntries.mapIndexed { day, entry ->
                 entry.allowedSpendings = BigDecimal.ZERO
                 if (entry.distribution == BudgetEntryMode.SINGLE || entry.account?.accountType == AccountType.INCOME) {
                     // Not evenly distributed, spend everything left
@@ -206,8 +206,7 @@ open class ReportService(
                         entry.allowedSpendings = entry.expectedAmount
                     }
                 } else {
-
-                    if (entry.actualAmount.compareTo(BigDecimal.ZERO) !=0) { //Spending happened today
+                    if (entry.actualAmount.compareTo(BigDecimal.ZERO) != 0) { // Spending happened today
                         currentExpected = currentExpected.subtract(entry.actualAmount)
                         currentAllowed = currentExpected.divide(BigDecimal(dailyEntries.size - day), RoundingMode.HALF_DOWN)
                     }
@@ -220,8 +219,8 @@ open class ReportService(
             }
             dailySpendings
         }
-        val expectedSpendings = List(List(dates.size) {BigDecimal.ZERO}.size) { i ->
-            var totals= BigDecimal.ZERO
+        val expectedSpendings = List(List(dates.size) { BigDecimal.ZERO }.size) { i ->
+            var totals = BigDecimal.ZERO
             expandedEntries.forEach { e -> totals = totals.add(e[i]) }
             totals
         }
@@ -256,7 +255,7 @@ open class ReportService(
         // Debt re-payments evaluation
         val debtCategory = categoryService.list().find { it.name == "Debt" } // This is a predefined category, should be always present
         val totalDebtPayments = debtCategory?.let { c -> accountRepository.getTotalByAccountTypeForRange(AccountType.ASSET.toDbValue(), LocalDate.now().minusMonths(3), LocalDate.now()).filter { it.categoryId == c.id }.map { it.primaryAmount }.fold(BigDecimal.ZERO) { acc: BigDecimal, r: BigDecimal -> acc.add(r) } } ?: BigDecimal.ZERO
-        //TODO we should somehow include interest payments
+        // TODO we should somehow include interest payments
         var debtRatio = 0L
         if (registeredIncome.compareTo(BigDecimal.ZERO) != 0) {
             debtRatio = totalDebtPayments.divide(registeredIncome, 2, RoundingMode.HALF_UP).multiply(BigDecimal("100")).toLong()

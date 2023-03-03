@@ -127,7 +127,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     open fun simplifiedGet(id: Long): Budget? = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id)
 
     @Transactional
-    open operator fun get(id: Long): Budget? = simplifiedGet(id)?.let{ enrichBudget(it) }
+    open operator fun get(id: Long): Budget? = simplifiedGet(id)?.let { enrichBudget(it) }
 
     private fun enrichBudget(budget: Budget): Budget {
         val incomingDay = if (budget.beginning > LocalDate.now()) {
@@ -230,7 +230,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     @Transactional
-    open fun listSimplifiedEntries(budgetId: Long): Collection<BudgetEntry>  = budgetEntryRepository.findByBudgetId(budgetId)
+    open fun listSimplifiedEntries(budgetId: Long): Collection<BudgetEntry> = budgetEntryRepository.findByBudgetId(budgetId)
 
     @Transactional
     open fun listEntries(budgetId: Long): Collection<BudgetEntry> {
