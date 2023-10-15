@@ -19,7 +19,7 @@ class TransactionDocument() {
     private var tags: String? = null
 
     companion object {
-        fun fromTx(tx: Transaction) : TransactionDocument {
+        fun fromTx(tx: Transaction): TransactionDocument {
             val td = TransactionDocument()
             td.id = tx.id!!
             td.tags = tx.tags.map(Tag::tag).joinToString(" ")
