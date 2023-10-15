@@ -8,19 +8,23 @@ import org.springframework.data.elasticsearch.annotations.Field
 import org.springframework.data.elasticsearch.annotations.FieldType
 
 @Document(indexName = "mdg")
-class TransactionDocument(tx: Transaction) {
+class TransactionDocument() {
     @Id
-    private val id: Long
+    private var id: Long? = null
 
     @Field(name = "comment", type = FieldType.Text, analyzer = "comments")
-    private val comment: String
+    private var comment: String? = null
 
     @Field(name = "tags", type = FieldType.Text, analyzer = "tags")
-    private val tags: String
+    private var tags: String? = null
 
-    init {
-        id = tx.id!!
-        tags = tx.tags.map(Tag::tag).joinToString(" ")
-        comment = tx.comment ?: ""
+    companion object {
+        fun fromTx(tx: Transaction) : TransactionDocument {
+            val td = TransactionDocument()
+            td.id = tx.id!!
+            td.tags = tx.tags.map(Tag::tag).joinToString(" ")
+            td.comment = tx.comment ?: ""
+            return td
+        }
     }
 }
