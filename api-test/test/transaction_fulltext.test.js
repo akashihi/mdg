@@ -4,7 +4,7 @@ const { createAccountForTransaction } = require('./transaction.handler');
 describe('Transaction full text search', () => {
     const e2e = pactum.e2e('Transaction operations');
 
-    it.skip('Force transactions full text re-index', async () => {
+    it('Force transactions full text re-index', async () => {
         await e2e.step('Force transactions full text re-index')
             .spec('update')
             .put('/settings/{id}')
@@ -13,24 +13,25 @@ describe('Transaction full text search', () => {
             .expectResponseTime(10000);
     }).timeout(15000);
 
-    it.skip('Create income transactions', async () => {
+    it('Create income transactions', async () => {
         await createAccountForTransaction(e2e);
 
         await e2e.step('Create transaction')
             .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' });
     });
 
-    it.skip('Transaction search by malformed comment', async () => {
+    it('Transaction search by malformed comment', async () => {
+        // We need to wait for the index update
+        await new Promise(resolve => setTimeout(resolve, 2000));
         await e2e.step('List transactions')
             .spec('read')
             .get('/transactions')
             .withQueryParams('q', '%7B%22comment%22%3A%22incme%22%7D')
             .expectJsonLike('transactions[*].comment', ['Income transaction']);
 
-        await e2e.cleanup();
-    });
+    }).timeout(10000);
 
-    it.skip('Transaction search by malformed tag', async () => {
+    it('Transaction search by malformed tag', async () => {
         await e2e.step('List transactions')
             .spec('read')
             .get('/transactions')

@@ -25,7 +25,7 @@ open class IndexingService(private val elasticsearchOperations: ElasticsearchOpe
     }
 
     open fun storeTransaction(tx: Transaction?) {
-        elasticsearchOperations.save(TransactionDocument(tx!!))
+        elasticsearchOperations.save(TransactionDocument.fromTx(tx!!))
     }
 
     open fun removeTransaction(id: Long) {

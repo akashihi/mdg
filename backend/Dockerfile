@@ -1,4 +1,4 @@
-FROM openjdk:17-slim
+FROM openjdk:18-slim
 LABEL Description="MDG server image"
 ADD target/mdg.jar /srv
 EXPOSE 8080

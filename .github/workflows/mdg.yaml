@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 17
+      - name: Set up JDK 18
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '18'
           distribution: 'adopt'
       - name: Run ktlint
         working-directory: ./backend
@@ -55,31 +55,25 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      elasticsearch:
-        image: library/elasticsearch:7.16.1
-        env:
-          discovery.type: single-node
-          http.publish_host: localhost
-          http.publish_port: 9200
-        ports:
-          - 9200:9200
-          - 9300:9300
-        options: >-
-          --health-cmd="curl http://localhost:9200/_cluster/health" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=10
     steps:
       - name: Dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - name: Set up JDK 17
+      - name: Set up JDK 18
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '18'
           distribution: 'adopt'
+      - name: Configure sysctl limits
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
+      - name: Start elasticsearch
+        run: docker run -d --name es -e "discovery.type=single-node" -e "http.publish_host=localhost" -e "http.publish_port=9200" -p 9200:9200 -p 9300:9300 -v ./dictionaries:/usr/share/elasticsearch/config/hunspell library/elasticsearch:7.16.2 
       - name: Install dependencies
         working-directory: ./api-test
         run: npm ci
@@ -89,6 +83,8 @@ jobs:
       - name: Install API test dependencies
         working-directory: ./api-test
         run: npm ci
+      - name: Debug ES
+        run: docker logs es
       - name: Run API tests
         working-directory: ./api-test
         run: npx gulp test
@@ -105,10 +101,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - name: Set up JDK 17
+      - name: Set up JDK 18
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '18'
           distribution: 'adopt'
       - name: Build with Maven
         working-directory: ./backend
