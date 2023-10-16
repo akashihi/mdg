@@ -12,12 +12,22 @@ export enum ReindexUiState {
     Failed = 'Failed',
 }
 
+export type OverviewPanels = "accounts" | "finance" | "asset" | "budget" | "transactions"
+
+export interface OverviewSetting {
+    readonly lt: OverviewPanels,
+    readonly rt: OverviewPanels,
+    readonly lb: OverviewPanels,
+    readonly rb: OverviewPanels,
+}
+
 export interface SettingState {
     readonly primaryCurrency: number;
     readonly closeTransactionDialog: boolean;
     readonly language: string;
     readonly available: boolean;
-    readonly indexingUi: ReindexUiState;
+    readonly indexingUi: ReindexUiState,
+    readonly overview: OverviewSetting
 }
 
 const initialState: SettingState = {
@@ -26,6 +36,7 @@ const initialState: SettingState = {
     language: 'en-US',
     available: false,
     indexingUi: ReindexUiState.NotRequested,
+    overview: {lt: "finance", rt: "asset", lb: "budget", rb: "transactions"}
 };
 
 export default createReducer(initialState, builder => {
