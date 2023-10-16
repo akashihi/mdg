@@ -1,7 +1,7 @@
 const pactum = require('pactum');
 const itParam = require('mocha-param');
 
-const SETTINGS = ['currency.primary', 'ui.transaction.closedialog', 'ui.language'];
+const SETTINGS = ['currency.primary', 'ui.transaction.closedialog', 'ui.language', 'ui.overviewpanel.widgets'];
 
 it('All settings are present in the settings list', async () => {
     await pactum.spec('read')
