@@ -26,6 +26,10 @@ class SettingController(private val settingService: SettingService, private val 
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun updateUiTransactionCloseDialog(@RequestBody setting: Setting): Setting = settingService.updateUiTransactionCloseDialog(setting.value)
 
+    @PutMapping(value = ["/settings/ui.overviewpanel.widgets"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    fun updateOverviewPanelWidgets(@RequestBody setting: Setting): Setting = settingService.updateOverviewPanelWidgets(setting.value)
+
     @PutMapping(value = ["/settings/currency.primary"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun updateCurrencyPrimary(@RequestBody setting: Setting): Setting = settingService.updateCurrencyPrimary(setting.value)
