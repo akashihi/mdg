@@ -1,4 +1,6 @@
 import { createAction, createReducer } from '@reduxjs/toolkit';
+import { OverviewSetting } from '../api/models/Setting';
+import { overviewSettingParse } from '../api/Settings';
 
 export const SettingsLoad = createAction('SettingsLoad');
 export const SettingsStore = createAction<Record<string, string>>('SettingsStore');
@@ -18,6 +20,7 @@ export interface SettingState {
     readonly language: string;
     readonly available: boolean;
     readonly indexingUi: ReindexUiState;
+    readonly overview: OverviewSetting;
 }
 
 const initialState: SettingState = {
@@ -26,6 +29,7 @@ const initialState: SettingState = {
     language: 'en-US',
     available: false,
     indexingUi: ReindexUiState.NotRequested,
+    overview: { lt: 'finance', rt: 'asset', lb: 'budget', rb: 'transactions' },
 };
 
 export default createReducer(initialState, builder => {
@@ -40,6 +44,10 @@ export default createReducer(initialState, builder => {
             state.language = action.payload['ui.language'];
             state.indexingUi =
                 state.indexingUi == ReindexUiState.InProgress ? ReindexUiState.Complete : state.indexingUi;
+            const overview = overviewSettingParse(action.payload['ui.overviewpanel.widgets']);
+            if (overview) {
+                state.overview = overview;
+            }
         })
         .addCase(InitiateReindex, state => {
             state.indexingUi = ReindexUiState.InProgress;

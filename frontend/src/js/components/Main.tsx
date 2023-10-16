@@ -5,7 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import TopBar from '../containers/TopBar';
 import TransactionCreate from '../containers/TransactionCreate';
-import Overview from './Overview';
+import OverviewPage from '../containers/OverviewPage';
 import BudgetViewer from '../containers/BudgetViewer';
 import AccountsViewer from '../containers/AccountsViewer';
 import TransactionsViewer from '../containers/TransactionsViewer';
@@ -24,7 +24,7 @@ export function Main() {
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={12} md={11} lg={11}>
                     <Routes>
-                        <Route path="/" element={<Overview />} />
+                        <Route path="/" element={<OverviewPage />} />
                         <Route path="/budget" element={<BudgetViewer />} />
                         <Route path="/transactions" element={<TransactionsViewer />} />
                         <Route path="/reports" element={<ReportsViewer />} />

@@ -52,6 +52,14 @@ open class SettingService(@Autowired private val currencyRepository: CurrencyRep
         return setting
     }
 
+    @CacheEvict(value = ["settingsCache"], key = "#result.id")
+    open fun updateOverviewPanelWidgets(newValue: String): Setting {
+        val setting = settingRepository.findByIdOrNull("ui.overviewpanel.widgets") ?: throw MdgException("SETTING_NOT_FOUND")
+        setting.value = newValue
+        settingRepository.save(setting)
+        return setting
+    }
+
     @Cacheable(value = ["settingsCache"], key = "#result.id", condition = "#result != null")
     @Transactional
     open fun currentCurrencyPrimary(): Currency? {
