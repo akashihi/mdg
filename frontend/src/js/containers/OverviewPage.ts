@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import {RootState} from "../reducers/rootReducer";
 import {OverviewSetting} from "../reducers/SettingReducer";
 import Overview from "../components/Overview";
+import {getOverviewPageSetting} from "../selectors/StateGetters";
 
 export interface OverviewPageProps {
     overview: OverviewSetting
@@ -9,7 +10,7 @@ export interface OverviewPageProps {
 
 const mapStateToProps = (state: RootState): OverviewPageProps => {
     return {
-        overview: state.setting.overview
+        overview: getOverviewPageSetting(state)
     }
 }
 

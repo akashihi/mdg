@@ -6,7 +6,7 @@ import {
     setPrimaryCurrency,
     setCloseTransactionDialog,
     setLanguage,
-    reindexTransactions,
+    reindexTransactions, setOverviewWidget,
 } from '../actions/SettingActions';
 import { SettingState } from '../reducers/SettingReducer';
 import { Currency } from '../api/model';
@@ -25,7 +25,7 @@ const mapStateToProps = (state: RootState): SettingsEditorState => {
     };
 };
 
-const mapDispatchToProps = { setPrimaryCurrency, setCloseTransactionDialog, setLanguage, reindexTransactions };
+const mapDispatchToProps = { setPrimaryCurrency, setCloseTransactionDialog, setLanguage, reindexTransactions, setOverviewWidget };
 
 export type SettingsEditorProps = SettingsEditorState & typeof mapDispatchToProps;
 

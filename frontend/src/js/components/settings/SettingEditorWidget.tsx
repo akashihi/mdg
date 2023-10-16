@@ -10,6 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { ReindexUiState } from '../../reducers/SettingReducer';
+import {setOverviewWidget} from "../../actions/SettingActions";
 
 export function SettingEditorWidget(props: SettingsEditorProps) {
     const currencies = props.activeCurrencies.map(v => {
@@ -19,6 +20,23 @@ export function SettingEditorWidget(props: SettingsEditorProps) {
             </MenuItem>
         );
     });
+
+    const overviewWidgets = [
+            <MenuItem value="accounts" key="accounts">
+                Accounts Overview
+            </MenuItem>,
+            <MenuItem value="finance" key="finance">
+                Financial state
+            </MenuItem>,
+            <MenuItem value="asset" key="asset">
+                Asset overview
+            </MenuItem>,
+            <MenuItem value="budget" key="budget">
+                Budget state
+            </MenuItem>,
+            <MenuItem value="transactions" key="transactions">
+                Latest transactions
+            </MenuItem>]
 
     return (
         <Fragment>
@@ -87,6 +105,25 @@ export function SettingEditorWidget(props: SettingsEditorProps) {
                         <MenuItem value="ru" key="ru">
                             Русский
                         </MenuItem>
+                    </Select>
+                </Grid>
+                <Box width="100%" />
+                <Grid item xs={12} sm={6} md={6} lg={4}>
+                    <p>Overview Page content:</p>
+                </Grid>
+                <Grid item xs={12} sm={6} md={6} lg={4}>
+                    <Select value={props.setting.overview.lt} sx={{ minWidth: 200 }} onChange={event => props.setOverviewWidget("lt", event.target.value)}>
+                        {overviewWidgets}
+                    </Select>
+                    <Select value={props.setting.overview.rt} sx={{ minWidth: 200 }} onChange={event => props.setOverviewWidget("rt", event.target.value)}>
+                        {overviewWidgets}
+                    </Select>
+                    <br/>
+                    <Select value={props.setting.overview.lb} sx={{ minWidth: 200 }} onChange={event => props.setOverviewWidget("lb", event.target.value)}>
+                        {overviewWidgets}
+                    </Select>
+                    <Select value={props.setting.overview.rb} sx={{ minWidth: 200 }} onChange={event => props.setOverviewWidget("rb", event.target.value)}>
+                        {overviewWidgets}
                     </Select>
                 </Grid>
             </Grid>

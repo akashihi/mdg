@@ -1,6 +1,6 @@
 import { RootState } from '../reducers/rootReducer';
 import * as Model from '../api/model';
-import { SettingState } from '../reducers/SettingReducer';
+import {OverviewSetting, SettingState} from '../reducers/SettingReducer';
 import { Account } from '../api/models/Account';
 import { Transaction } from '../api/models/Transaction';
 import { BudgetState } from '../reducers/BudgetReducer';
@@ -22,3 +22,5 @@ export const getRates = (state: RootState): Model.Rate[] => state.rate.rateList;
 
 // Settings
 export const getSettings = (state: RootState): SettingState => state.setting;
+
+export const getOverviewPageSetting = (state: RootState): OverviewSetting => state.setting.overview;
