@@ -3,9 +3,9 @@ import { loadTotalsReport } from './ReportActions';
 
 import * as API from '../api/api';
 import * as Model from '../api/model';
-import { Setting } from '../api/model';
+import {OverviewPanels, Setting} from '../api/model';
 import { wrap } from './base';
-import {InitiateReindex, OverviewPanels, ReindexFail, SettingsLoad, SettingsStore} from '../reducers/SettingReducer';
+import {InitiateReindex, ReindexFail, SettingsLoad, SettingsStore} from '../reducers/SettingReducer';
 import { NotifyError } from '../reducers/ErrorReducer';
 import {GetStateFunc} from "../reducers/rootReducer";
 import {produce} from "immer";
@@ -54,7 +54,6 @@ export function setLanguage(locale: string) {
 
 export function setOverviewWidget(position: "lt"|"rt"|"lb"|"rb", widget: string) {
     return wrap(async (dispatch, getState: GetStateFunc) => {
-        console.log(getState().setting.overview);
         const newValue = produce(getState().setting.overview, draft => { draft[position] = widget as OverviewPanels});
         dispatch(applySetting('ui.overviewpanel.widgets', JSON.stringify(newValue)))
     })

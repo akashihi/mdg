@@ -1,4 +1,6 @@
 import { createAction, createReducer } from '@reduxjs/toolkit';
+import {OverviewSetting} from "../api/models/Setting";
+import {overviewSettingParse} from "../api/Settings";
 
 export const SettingsLoad = createAction('SettingsLoad');
 export const SettingsStore = createAction<Record<string, string>>('SettingsStore');
@@ -10,15 +12,6 @@ export enum ReindexUiState {
     InProgress = 'InProgress',
     Complete = 'Complete',
     Failed = 'Failed',
-}
-
-export type OverviewPanels = "accounts" | "finance" | "asset" | "budget" | "transactions"
-
-export interface OverviewSetting {
-    readonly lt: OverviewPanels,
-    readonly rt: OverviewPanels,
-    readonly lb: OverviewPanels,
-    readonly rb: OverviewPanels,
 }
 
 export interface SettingState {
@@ -51,6 +44,10 @@ export default createReducer(initialState, builder => {
             state.language = action.payload['ui.language'];
             state.indexingUi =
                 state.indexingUi == ReindexUiState.InProgress ? ReindexUiState.Complete : state.indexingUi;
+            const overview = overviewSettingParse(action.payload['ui.overviewpanel.widgets']);
+            if (overview) {
+                state.overview = overview
+            }
         })
         .addCase(InitiateReindex, state => {
             state.indexingUi = ReindexUiState.InProgress;

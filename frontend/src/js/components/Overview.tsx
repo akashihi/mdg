@@ -8,7 +8,7 @@ import AssetOverview from '../containers/AssetOverview';
 import TransactionsOverview from '../containers/TransactionsOverview';
 import FinanceEvaluation from '../containers/FinanceEvaluation';
 import {OverviewPageProps} from "../containers/OverviewPage";
-import {OverviewPanels} from "../reducers/SettingReducer";
+import {OverviewPanels} from "../api/models/Setting";
 
 export function Overview(props: OverviewPageProps): JSX.Element {
     const cardStyle = {

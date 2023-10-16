@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
 import {RootState} from "../reducers/rootReducer";
-import {OverviewSetting} from "../reducers/SettingReducer";
 import Overview from "../components/Overview";
 import {getOverviewPageSetting} from "../selectors/StateGetters";
+import {OverviewSetting} from "../api/models/Setting";
 
 export interface OverviewPageProps {
     overview: OverviewSetting

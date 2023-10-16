@@ -10,7 +10,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { ReindexUiState } from '../../reducers/SettingReducer';
-import {setOverviewWidget} from "../../actions/SettingActions";
 
 export function SettingEditorWidget(props: SettingsEditorProps) {
     const currencies = props.activeCurrencies.map(v => {
