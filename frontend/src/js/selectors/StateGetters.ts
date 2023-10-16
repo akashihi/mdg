@@ -1,10 +1,10 @@
 import { RootState } from '../reducers/rootReducer';
 import * as Model from '../api/model';
-import {SettingState} from '../reducers/SettingReducer';
+import { SettingState } from '../reducers/SettingReducer';
 import { Account } from '../api/models/Account';
 import { Transaction } from '../api/models/Transaction';
 import { BudgetState } from '../reducers/BudgetReducer';
-import {OverviewSetting} from "../api/model";
+import { OverviewSetting } from '../api/model';
 
 // Transaction
 export const getLastTransactions = (state: RootState): Transaction[] => state.transaction.lastTransactionList;

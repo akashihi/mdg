@@ -6,7 +6,15 @@ import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 const ajv = new Ajv();
 const settingSchema: JTDSchemaType<Model.Setting> = {
     properties: {
-        id: { enum: ['currency.primary', 'ui.transaction.closedialog', 'ui.language', 'mnt.transaction.reindex', 'ui.overviewpanel.widgets'] },
+        id: {
+            enum: [
+                'currency.primary',
+                'ui.transaction.closedialog',
+                'ui.language',
+                'mnt.transaction.reindex',
+                'ui.overviewpanel.widgets',
+            ],
+        },
         value: { type: 'string' },
     },
 };
@@ -18,13 +26,12 @@ const settingListSchema: JTDSchemaType<{ settings: Model.Setting[] }> = {
 
 const overviewSettingSchema: JTDSchemaType<Model.OverviewSetting> = {
     properties: {
-        lt: { enum: ["accounts", "finance", "asset", "budget", "transactions"]},
-        rt: { enum: ["accounts", "finance", "asset", "budget", "transactions"]},
-        lb: { enum: ["accounts", "finance", "asset", "budget", "transactions"]},
-        rb: { enum: ["accounts", "finance", "asset", "budget", "transactions"]},
-    }
-}
-
+        lt: { enum: ['accounts', 'finance', 'asset', 'budget', 'transactions'] },
+        rt: { enum: ['accounts', 'finance', 'asset', 'budget', 'transactions'] },
+        lb: { enum: ['accounts', 'finance', 'asset', 'budget', 'transactions'] },
+        rb: { enum: ['accounts', 'finance', 'asset', 'budget', 'transactions'] },
+    },
+};
 
 const settingParse = ajv.compileParser<Model.Setting>(settingSchema);
 const settingListParse = ajv.compileParser<Record<string, Model.Setting[]>>(settingListSchema);
