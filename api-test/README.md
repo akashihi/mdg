@@ -1,1 +1,0 @@
-This repository is a part of [MDG project](https://github.com/akashihi/mdg)
