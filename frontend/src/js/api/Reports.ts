@@ -1,8 +1,8 @@
-import { Result, Err, Ok } from 'ts-results';
+import {Result, Err, Ok, Option, None, Some} from 'ts-results';
 import * as Model from './model';
-import { parseError, parseListResponse, parseResponse } from './base';
-import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
-import moment, { Moment } from 'moment/moment';
+import {parseError, parseListResponse, parseResponse} from './base';
+import Ajv, {JTDSchemaType} from 'ajv/dist/jtd';
+import moment, {Moment} from 'moment/moment';
 import jQuery from 'jquery';
 import * as Errors from './errors';
 
@@ -17,19 +17,19 @@ const ajv = new Ajv();
 
 const reportAmountDefinition = {
     properties: {
-        amount: { type: 'float32' },
+        amount: {type: 'float32'},
     },
     optionalProperties: {
-        name: { type: 'string' },
-        data: { type: 'timestamp' },
+        name: {type: 'string'},
+        data: {type: 'timestamp'},
     },
 };
 
 const totalsReportDefinition = {
     properties: {
-        category_name: { type: 'string' },
-        primary_balance: { type: 'float32' },
-        amounts: { elements: { ref: 'amount' } },
+        category_name: {type: 'string'},
+        primary_balance: {type: 'float32'},
+        amounts: {elements: {ref: 'amount'}},
     },
 };
 const totalsReportSchema: JTDSchemaType<
@@ -47,17 +47,17 @@ const totalsReportSchema: JTDSchemaType<
         >,
     },
     properties: {
-        report: { elements: { ref: 'report' } },
+        report: {elements: {ref: 'report'}},
     },
 };
 
 const evaluationReportSchema: JTDSchemaType<Model.EvaluationReport> = {
     properties: {
-        income: { type: 'int32' },
-        debt: { type: 'int32' },
-        budget: { type: 'int32' },
-        cash: { type: 'int32' },
-        state: { type: 'int32' },
+        income: {type: 'int32'},
+        debt: {type: 'int32'},
+        budget: {type: 'int32'},
+        cash: {type: 'int32'},
+        state: {type: 'int32'},
     },
 };
 
@@ -78,9 +78,20 @@ export async function loadTotalsReport(): Promise<Result<Model.TotalsReport[], M
     return parseListResponse(response, totalsReportParse, 'report');
 }
 
-export async function loadEvaluationReport(): Promise<Result<Model.EvaluationReport, Model.Problem>> {
-    const response = await fetch('/api/reports/evaluation');
-    return parseResponse(response, evaluationReportParse);
+export async function loadEvaluationReport(etag: string | undefined): Promise<Result<Option<Model.EvaluationReport>, Model.Problem>> {
+    var requestParams = {
+        method: 'GET',
+    }
+    if (etag != undefined) {
+        requestParams['If-None-Match'] = etag
+    }
+    const response = await fetch('/api/reports/evaluation', requestParams);
+    if (response.status == 304) {
+        console.log("Report cached");
+        return new Ok(None);
+    }
+    console.log("Report loaded");
+    return parseResponse(response, evaluationReportParse).then(v => v.map(result => Some(result)));
 }
 
 export async function loadAssetReport(
@@ -96,7 +107,7 @@ export async function loadAssetReport(
         // Should be fine, try to convert
         try {
             const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
-            return new Ok({ dates: dates, series: responseJson.series });
+            return new Ok({dates: dates, series: responseJson.series});
         } catch (e) {
             return new Err(Errors.InvalidObject(e as string));
         }
@@ -118,7 +129,7 @@ export async function loadEventsReport(
             const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
 
             const data = responseJson.series;
-            return new Ok({ dates: dates, data: data });
+            return new Ok({dates: dates, data: data});
         } catch (e) {
             return new Err(Errors.InvalidObject(e as string));
         }
