@@ -29,7 +29,7 @@ Appliances are available since version 0.5.0 and are built for each release. If 
 
 #### Deployment guide
 
-Just grab the VM package from [github](https://github.com/akashihi/mdg/releases/download/v0.6.0/MDG-appliance-v0.6.0.ova.bz2)  and import it
+Just grab the VM package from [github](https://github.com/akashihi/mdg/releases/download/v0.8.0/MDG-appliance-v0.8.0.ova.bz2)  and import it
 into you virtualization system as a new VM. Boot up the VM and try to access MDG in VM's port 80. Default VM credentials for _remote_ access are `mdg/mdg`. 
 Console access is passwordless.
 
