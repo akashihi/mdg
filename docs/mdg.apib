@@ -16,7 +16,7 @@ Resources describing system configuration variables.
 + parameters
     + id (required, string) - Name of the setting
         Valid setting names are:
-
+        
         * currency.primary - Changes primary currency of the MDG. Value is a currency id
         * ui.transaction.closedialog - Configures auto-closing of transaction dialog, values are "true" or "false"
         * ui.language - Configures sytem locale. At the moment it only has impact on full-text indexing settings. Valid values are locale names like "en-US".
@@ -41,7 +41,7 @@ Settings may have different valid values for different names. Invalid values wil
 
 + Request (application/vnd.mdg+json;version=1)
     + Attributes (Setting)
-
+    
 + Response 202 (application/vnd.mdg+json)
     + Attributes (Setting)
 ## Settings Collection [/settings]
@@ -54,8 +54,8 @@ Settings may have different valid values for different names. Invalid values wil
 
 # Group Currencies
 
-Resources describing currencies known to the system.
-Currencies are identified by their numeric ISO 4217 code
+Resources describing currencies known to the system. 
+Currencies are identified by their numeric ISO 4217 code 
 
 ## Currency [/currencies/{id}]
 
@@ -64,12 +64,12 @@ Currencies are identified by their numeric ISO 4217 code
 
 + Attributes (object)
     + id: 978 (string, required) - Currency ISO 4217 alfa-3 code
-    + code: EUR (string, required) - Short currency code
+    + code: EUR (string, required) - Short currency code 
     + name: € (string, required) - Human friendly currency name
     + active: true (boolean, required) - Whether this currency is used or not
         Inactive currencies are known by the system, but do not participate in other activities, like rate retireval account management etc
 
-
+        
 ### View a currency detail [GET]
 
 + Response 200 (application/vnd.mdg+json;version=1)
@@ -77,14 +77,14 @@ Currencies are identified by their numeric ISO 4217 code
 + Response 404 (application/vnd.mdg+json;version=1)
     + Attributes (Problem)
 
-
+    
 ### Modify currency data [PUT]
 
 Only `active` field could be changed. Values in the other fields will be silently ignored.
 
 + Request (application/vnd.mdg+json;version=1)
     + Attributes (Currency)
-
+    
 + Response 202 (application/vnd.mdg+json)
     + Attributes (Currency)
 
@@ -119,7 +119,7 @@ Resources describing currency exchange rates
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes (Rate)
-
+        
 ## Rate collection [/rates/{timestamp}]
 
 + parameters
@@ -149,7 +149,7 @@ Resources describing account categories. A category is just an account label, us
 
 + parameters
     + category_id (number, required) - ID of a category
-
+    
 + Attributes
     + id: 2 (number, required) - Due to hierarchical nature of categories, category is an exception and provides id twice: inside of a attributes and in a wrapper object.
     + parent_id: 1 (number, optional) - Category's parent category id. May be missing for top level categories
@@ -159,14 +159,14 @@ Resources describing account categories. A category is just an account label, us
         + `ASSET`
         + `EXPENSE`
         + `INCOME`
-    + children (array[Category], optional) - Array of subcategories of that categories, may be empty or missing.
+    + children (array[Category], optional) - Array of subcategories of that categories, may be empty or missing. 
 
 ### View a category detail [GET]
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes (Category)
 
-
+    
 ### Modify category data [PUT]
 
 Only `parent_id`, `name` and `priority` fields could be changed. Values in other fields will be silently ignored. Changing 'parent_id' gives that category a new place in a category tree. all chidlren categories of that categories will be moved with their ancsetor. In case new parent is a descendand of that category, error will be returned. Set parent_id to the category id (self) to make that category a top level category. Parenting category to the parent with different account_type is not possible.
@@ -198,9 +198,9 @@ Deleting a category reparents all it's 1st degree descendants to the up level pa
 
 + Response 201 (application/vnd.mdg+json)
     + Headers
-
+    
             Location: /category/5
-
+            
     + Attributes (Category)
 
 # Group Accounts
@@ -242,11 +242,11 @@ Only `hidden`, `name`, `category_id`, `favorite` and `operational` fields could 
 
 + Request (application/vnd.mdg+json;version=1)
     + Attributes (Account)
-
+    
 + Response 202 (application/vnd.mdg+json;version=1)
     + Attributes (Account)
 
-
+    
 ### Delete an account [DELETE]
 
 Only accounts without operations will be deleted. If there exists any operations, referring to the account, an error will be returned instead. Check the `status` object below.
@@ -274,7 +274,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 
 + Response 201 (application/vnd.mdg+json;version=1)
     + Attributes (Account)
-
+  
 
 ## Account tree [/accounts/tree?q={query}&embed={embed}]
 
@@ -284,7 +284,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 
 ### Get all Accounts [GET]
 
-Accounts with attribute 'hidden' equal to 'true' are shown if no filter is specified. Categories may include transient categories, like 'Favorite' with **negative** ids.
+Accounts with attribute 'hidden' equal to 'true' are shown if no filter is specified. Categories may include transient categories, like 'Favorite' with **negative** ids. 
 
 + Response 200 (application/vnd.mdg+json;version=1)
 
@@ -325,7 +325,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
                             "categories": []
                         }
                     }
-            ]
+            ]    
         }
 
 ## Account status [/accounts/{account_id}/status]
@@ -341,7 +341,7 @@ Accounts with attribute 'hidden' equal to 'true' are shown if no filter is speci
 
 + Response 201 (application/vnd.mdg+json;version=1)
     + Attributes (Account status)
-
+    
 # Group Tags
 
 Transaction tags dictionary. Each tag is an unique, case-insensitive string.
@@ -388,7 +388,7 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes (Transaction)
-
+    
 ### Modify transaction data [PUT]
 
 + Request (application/vnd.mdg+json;version=1)
@@ -397,7 +397,7 @@ operation will be multiplied to its rate and only after that it will be summariz
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes (Transaction)
 
-
+    
 ### Delete an transaction [DELETE]
 
 + Response 204
@@ -408,12 +408,12 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + Parameters
   + q (object, optional) - dictionary of fields and their values, to be applied as a filter to transactions list. For attributes of array type it could also be an array. Filtering could be done only on `comment`, `tags` and `account_id` attributes. Timestmap filtering is supported with 'notEarlier' and 'notLater' keys
-  + sort: timestamp (array[string], optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order.
+  + sort: timestamp (array[string], optional) - list of fields used for transactions list sorting. Sort will be applied in the same order as fields are listed. Prepend field name with dash, to revert sort order. 
   + embed: account,currency,category (array[string], optional) - Objects to embed. accout_id and other _id fields are always provided.
-  + limit: 10 (number, optional) - Paginate list using specified page size.
+  + limit: 10 (number, optional) - Paginate list using specified page size. 
   + cursor: AAABBB (string, optional) - A pointer to the next page. Only valid if cursor value was previously set by the backend.
-    The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit`
-    number of trasactions will be returned along side with additional cursor fields (see below). Each cursor is
+    The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit` 
+    number of trasactions will be returned along side with additional cursor fields (see below). Each cursor is 
     self-contained and can be used without repeating other parameters.
 
 + Response 200 (application/vnd.mdg+json;version=1)
@@ -429,7 +429,7 @@ operation will be multiplied to its rate and only after that it will be summariz
 
 + Request (application/vnd.mdg+json;version=1)
     + Attributes (Transaction)
-
+    
 + Response 202 (application/vnd.mdg+json;version=1)
     + Attributes (Transaction)
 
@@ -467,8 +467,8 @@ Resources related to budget management
 
   + limit: 10 (number, optional) - Paginate list using specified page size.
   + cursor: AAABBB (string, optional) - A pointer to the next page. Only valid if cursor value was previously set by the backend.
-    The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit`
-    number of budgets will be returned along side with additional cursor fields (see below). Each cursor is
+    The `cursor` field is used in the cursor based paging. In case `limit` is set, a single page holding a `limit` 
+    number of budgets will be returned along side with additional cursor fields (see below). Each cursor is 
     self-contained and can be used without repeating other parameters.
 
 Only term_beginning and term_end are returned for a budget collection. Detailed info (incoming_amount, outgoing_amount, state) can be retrieved by reading specific budget object.
@@ -479,7 +479,7 @@ Budgets effective dates are inclusive and should not overlap.
 
 + Request (application/vnd.mdg+json;version=1)
     + Attributes (Budget)
-
+    
 + Response 202 (application/vnd.mdg+json;version=1)
     + Attributes (Budget)
 
@@ -509,7 +509,7 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
     + category_id: 1 (number, optional) - Related account's category id, may be missing in case account doesn't belongs to the any category.
     + category (Category, optional) - Related account's associated category object.
     + dt: `YYYY-MM-DD` (string, optional) - Estimated payment date. Only valid for entries with mode 'SINGLE'. For missing values in 'SINGLE' mode entries the first day of budget is assumed as a payment date.
-    + distribution: 'SINGLE' (BudgetEntryMode, required) - Cashflow/Spending estimation mode for the buget
+    + distribution: 'SINGLE' (BudgetEntryMode, required) - Cashflow/Spending estimation mode for the buget 
     + expected_amount: 1000 (number, required) - your expected change on account_id amount during Budget effective period.
     + actual_amount: 50 (number, required) - your *actual* change on account_id amount during Budget effective period. Calculated automatically.
     + allowed_spendings: 5 (number, required) - hint on your spendings, helping you to keep in expected_amount. change_amount is calculated automatically as a `expected_amount/number of days in Budget term`. May be recalculated during your actual Budget execution. Only valid is BudgetEntry.even_distribution is set to `True`. If 'BudgetEntry.proration' is set to `False` it will recalculate with each submited budget related transaction as (expected_amount-actual_amount)/number of days *left* in Budget term, negative value will be cut to zero. If `BudgetEntry.proration` is set to `True` it will recalculate with each submited budget related transaction as (expected_amount/number of days in Budget term)*number of days *passed* in Budget term - actual_amount`, negative value will be cut to zero.
@@ -549,8 +549,8 @@ BudgetEntry lifecycle is managed automatically. It will be created with budget a
 ### Get all Budget entries [GET]
 
 In that mode statistics, similar to budget entry statistics, is calculated for each category. The rules of calculation (prorated/even/one-shot) is
-derived from owned entries/sub categories using the following rule: if at least one sub entry is one-shot, all other entries are considered one-show.
-If there are no one-show entries, but at least one non-prorated entry, all of them are considered to be even distributed. OTherwise
+derived from owned entries/sub categories using the following rule: if at least one sub entry is one-shot, all other entries are considered one-show. 
+If there are no one-show entries, but at least one non-prorated entry, all of them are considered to be even distributed. OTherwise 
 
 + Response 200 (application/vnd.mdg+json;version=1)
 
@@ -599,7 +599,7 @@ If there are no one-show entries, but at least one non-prorated entry, all of th
                             "categories": []
                         }
                     }
-            ]
+            ]    
         }
 
 ## BudgetEntry duplication ops [/budgets/{budget_id}/entries/copy/{mode}/{source_budget_id}]
@@ -614,7 +614,7 @@ If there are no one-show entries, but at least one non-prorated entry, all of th
 + Response 204
     + Attributes
         + budget_entries (array[BudgetEntry], required) - List of entries of that budget
-
+        
 # Group Report
 
 Various reporting data, mostly read-only
@@ -631,17 +631,13 @@ Provides assets overview information.
 
 ## EvaluationReport [/reports/evaluation]
 
-Provides financial state evaluation
+Provides finacial status report, stating your status over last several months. This API supports ETags and will return 304 for matching ETag.
 
 ### View a report [GET]
 
 + Response 200 (application/vnd.mdg+json;version=1)
     + Attributes
-        + income: 3 (number, required) - A score of income/expense ratio on a scale from -3 to +3, where -3 is expense much higher then income and completely opposite for +3
-        + debt: 6 (number, required) - A relation between your income and debt repayment in percents
-        + budget: 28 (number, required) - A relation between estimated budget expenses and actual budget expenses in percents
-        + cash: 100 (number, required) - Relation between sum of assets and monthly average income in last 12 months in percents. 100 percents is set to be on 12 average incomes.
-        + state: 72 (number, required) - You overall finacial state in range 0 to 100, higher is better
+        + report (array[TotalsReportEntry], required) - Array of report entries.
 
 ## AssetSimpleReport [/reports/assets/simple?startDate={startDate}&endDate={endDate}&granularity={granularity}]
 
@@ -778,7 +774,7 @@ Provides financial state evaluation
 + title: 'Requested currency could not be found' (string, required) - Human-friendly error description
 + status: 404 (number, required) - HTTP Status code, must match response status code
 + instance: /currency/1 (string, optional) - URL of errored object if applicable
-+ detail: 'We can not find currency with specified code in the database, check its id please.' (string, optional) - More
++ detail: 'We can not find currency with specified code in the database, check its id please.' (string, optional) - More 
 
 ## Operation (object)
 
@@ -805,7 +801,7 @@ Budget specific thing. As budget manages a predicted future and harsh reality at
 
 ## ReportSeriesEntry
 
-A single entry of report series. Names of the fields are based on [Highcharts API requirements](https://api.highcharts.com/highcharts/series.area.data.y):
+A single entry of report series. Names of the fields are based on [Highcharts API requirements](https://api.highcharts.com/highcharts/series.area.data.y): 
 
 + Attributes
     + y: 0.06(number, required) - A single datapoint. In case it is a monetary value, it will be converted to the primary currency.
@@ -813,7 +809,7 @@ A single entry of report series. Names of the fields are based on [Highcharts AP
 
 ## HierarchicalSeriesEntry
 
-Tree friendly entry of report series. Names of the fields are based on [Highcharts API requirements](https://www.highcharts.com/demo/sunburst):
+Tree friendly entry of report series. Names of the fields are based on [Highcharts API requirements](https://www.highcharts.com/demo/sunburst): 
 
 + Attributes
     + id: "1" (string, required) - Unique entry id. Should be end-to-end unique for both categories and accounts.

@@ -10,11 +10,17 @@ import org.akashihi.mdg.entity.report.SimpleReport
 import org.akashihi.mdg.entity.report.TotalsReport
 import org.akashihi.mdg.service.ReportService
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.security.MessageDigest
 import java.time.LocalDate
+import java.util.*
+import javax.xml.bind.DatatypeConverter
 
 @RestController
 class ReportController(private val reportService: ReportService) {
@@ -22,7 +28,21 @@ class ReportController(private val reportService: ReportService) {
     fun totalsReport(): TotalsReport = reportService.totalsReport()
 
     @GetMapping(value = ["/reports/evaluation"], produces = ["application/vnd.mdg+json;version=1"])
-    fun evaluationReport(): EvaluationReport = reportService.evaluationReport()
+    fun evaluationReport(@RequestHeader("If-None-Match") etagMatch: String?): ResponseEntity<EvaluationReport> {
+        val strippedEtagMatch = etagMatch?.trim('"')
+        val today = LocalDate.now().toString()
+        val md = MessageDigest.getInstance("MD5")
+        md.update(today.encodeToByteArray())
+        val digest: ByteArray = md.digest()
+        val etag = DatatypeConverter
+            .printHexBinary(digest).uppercase(Locale.getDefault())
+
+        return if (strippedEtagMatch == etag) {
+            ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).build()
+        } else {
+            ResponseEntity.ok().eTag(etag).body(reportService.evaluationReport())
+        }
+    }
 
     @GetMapping(value = ["/reports/assets/simple"], produces = ["application/vnd.mdg+json;version=1"])
     fun simpleAssetsReport(

@@ -1,4 +1,4 @@
-import { Result, Err, Ok } from 'ts-results';
+import { Result, Err, Ok, Option, None, Some } from 'ts-results';
 import * as Model from './model';
 import { parseError, parseListResponse, parseResponse } from './base';
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
@@ -78,9 +78,22 @@ export async function loadTotalsReport(): Promise<Result<Model.TotalsReport[], M
     return parseListResponse(response, totalsReportParse, 'report');
 }
 
-export async function loadEvaluationReport(): Promise<Result<Model.EvaluationReport, Model.Problem>> {
-    const response = await fetch('/api/reports/evaluation');
-    return parseResponse(response, evaluationReportParse);
+export async function loadEvaluationReport(
+    etag: string | null
+): Promise<Result<readonly [Option<Model.EvaluationReport>, string], Model.Problem>> {
+    const requestParams = {
+        method: 'GET',
+    };
+    if (etag != null) {
+        requestParams['If-None-Match'] = etag;
+    }
+    const response = await fetch('/api/reports/evaluation', requestParams);
+    const responseEtag = response.headers.get('etag') as string;
+    if (response.status == 304) {
+        console.log('Report from cache');
+        return new Ok([None, responseEtag]);
+    }
+    return parseResponse(response, evaluationReportParse).then(v => v.map(result => [Some(result), responseEtag]));
 }
 
 export async function loadAssetReport(

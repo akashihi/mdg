@@ -16,9 +16,13 @@ export function FinanceEvaluationPanel(props: FinanceEvaluationPanelProps) {
     useEffect(() => {
         setLoading(true);
         (async () => {
-            const result = await API.loadEvaluationReport();
+            const result = await API.loadEvaluationReport(window.sessionStorage.getItem('evaluationEtag'));
             if (result.ok) {
-                setReport(result.val);
+                const [report, etagResponse] = result.val;
+                window.sessionStorage.setItem('evaluationEtag', etagResponse);
+                if (report.some) {
+                    setReport(report.val);
+                }
                 setLoading(false);
             } else {
                 props.reportError(result.val);
