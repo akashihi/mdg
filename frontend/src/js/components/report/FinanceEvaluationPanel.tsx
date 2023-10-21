@@ -12,15 +12,16 @@ import { FinanceEvaluationPanelProps } from '../../containers/FinanceEvaluation'
 export function FinanceEvaluationPanel(props: FinanceEvaluationPanelProps) {
     const [report, setReport] = useState<EvaluationReport>({ income: 0, debt: 0, budget: 0, cash: 0, state: 0 });
     const [loading, setLoading] = useState<boolean>(false);
-    const [etag, setEtag] = useState<string|undefined>(undefined)
 
     useEffect(() => {
         setLoading(true);
         (async () => {
-            const result = await API.loadEvaluationReport(etag);
+            const result = await API.loadEvaluationReport(window.sessionStorage.getItem("evaluationEtag"));
             if (result.ok) {
-                if (result.val.some) {
-                    setReport(result.val.val);
+                const [report, etagResponse] = result.val;
+                window.sessionStorage.setItem("evaluationEtag", etagResponse);
+                if (report.some) {
+                    setReport(report.val);
                 }
                 setLoading(false);
             } else {

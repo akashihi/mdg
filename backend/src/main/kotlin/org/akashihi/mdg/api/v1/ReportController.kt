@@ -40,7 +40,7 @@ class ReportController(private val reportService: ReportService) {
         val etag = DatatypeConverter
             .printHexBinary(digest).uppercase(Locale.getDefault())
 
-        return if (etagMatch == etag) {
+        return if (strippedEtagMatch == etag) {
             ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).build();
         } else {
             ResponseEntity.ok().eTag(etag).body(reportService.evaluationReport());

@@ -78,20 +78,20 @@ export async function loadTotalsReport(): Promise<Result<Model.TotalsReport[], M
     return parseListResponse(response, totalsReportParse, 'report');
 }
 
-export async function loadEvaluationReport(etag: string | undefined): Promise<Result<Option<Model.EvaluationReport>, Model.Problem>> {
+export async function loadEvaluationReport(etag: string | null): Promise<Result<readonly [Option<Model.EvaluationReport>, string], Model.Problem>> {
     var requestParams = {
         method: 'GET',
     }
-    if (etag != undefined) {
+    if (etag != null) {
         requestParams['If-None-Match'] = etag
     }
     const response = await fetch('/api/reports/evaluation', requestParams);
+    const responseEtag = response.headers.get("etag") as string;
     if (response.status == 304) {
-        console.log("Report cached");
-        return new Ok(None);
+        console.log("Report from cache")
+        return new Ok([None, responseEtag]);
     }
-    console.log("Report loaded");
-    return parseResponse(response, evaluationReportParse).then(v => v.map(result => Some(result)));
+    return parseResponse(response, evaluationReportParse).then(v => v.map(result => [Some(result), responseEtag]));
 }
 
 export async function loadAssetReport(
