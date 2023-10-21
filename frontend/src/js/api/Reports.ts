@@ -81,7 +81,7 @@ export async function loadTotalsReport(): Promise<Result<Model.TotalsReport[], M
 export async function loadEvaluationReport(
     etag: string | null
 ): Promise<Result<readonly [Option<Model.EvaluationReport>, string], Model.Problem>> {
-    var requestParams = {
+    const requestParams = {
         method: 'GET',
     };
     if (etag != null) {
