@@ -16,10 +16,10 @@ export function FinanceEvaluationPanel(props: FinanceEvaluationPanelProps) {
     useEffect(() => {
         setLoading(true);
         (async () => {
-            const result = await API.loadEvaluationReport(window.sessionStorage.getItem("evaluationEtag"));
+            const result = await API.loadEvaluationReport(window.sessionStorage.getItem('evaluationEtag'));
             if (result.ok) {
                 const [report, etagResponse] = result.val;
-                window.sessionStorage.setItem("evaluationEtag", etagResponse);
+                window.sessionStorage.setItem('evaluationEtag', etagResponse);
                 if (report.some) {
                     setReport(report.val);
                 }
