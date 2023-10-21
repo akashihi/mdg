@@ -32,6 +32,7 @@ class ReportController(private val reportService: ReportService) {
 
     @GetMapping(value = ["/reports/evaluation"], produces = ["application/vnd.mdg+json;version=1"])
     fun evaluationReport(@RequestHeader("If-None-Match") etagMatch : String?): ResponseEntity<EvaluationReport> {
+        val strippedEtagMatch = etagMatch?.trim('"');
         val today = LocalDate.now().toString();
         val md = MessageDigest.getInstance("MD5")
         md.update(today.encodeToByteArray())
