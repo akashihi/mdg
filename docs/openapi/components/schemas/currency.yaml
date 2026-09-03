@@ -1,0 +1,33 @@
+Currency:
+  type: object
+  description: |
+    A currency known to the system. The currency list is fixed data — there
+    is no create or delete operation, and only `active` can be changed.
+  required: [code, name, active, id]
+  properties:
+    id:
+      $ref: './common.yaml#/CurrencyId'
+    code:
+      type: string
+      minLength: 3
+      maxLength: 3
+      description: ISO 4217 alpha-3 currency code.
+      example: EUR
+    name:
+      type: string
+      description: Human friendly currency name.
+      example: "€"
+    active:
+      type: boolean
+      description: |
+        Whether this currency is in use.
+      example: true
+
+Currencies:
+  type: object
+  required: [currencies]
+  properties:
+    currencies:
+      type: array
+      items:
+        $ref: './currency.yaml#/Currency'

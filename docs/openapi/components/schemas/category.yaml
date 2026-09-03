@@ -1,0 +1,56 @@
+Category:
+  type: object
+  description: |
+    An account category. Categories form a forest — one tree per account type —
+    and a category may only ever hold children and accounts of its own
+    `account_type`.
+  required: [account_type, name, priority, children]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Category id.
+      example: 2
+    parent_id:
+      type: integer
+      format: int64
+      description: |
+        Parent category id. Empty for top-level categories.
+
+        On update this field re-parents the category, moving all of its
+        descendants with it. Setting it to the category's own id promotes the
+        category to top level. Re-parenting under a descendant of itself fails
+        with `CATEGORY_TREE_CYCLED`; re-parenting under a category of a
+        different `account_type` fails with `CATEGORY_INVALID_TYPE`.
+      example: 1
+    name:
+      type: string
+      example: Pet expenses
+    priority:
+      type: integer
+      description: |
+        Ordering weight. Categories  are sorted
+        ascending by this value.
+      example: 7
+    account_type:
+      allOf:
+        - $ref: './common.yaml#/AccountType'
+      description: |
+        Type of account this category may hold.
+    children:
+      type: ['array', 'null']
+      readOnly: true
+      description: |
+        Sub-categories, recursively.
+      items:
+        $ref: './category.yaml#/Category'
+
+Categories:
+  type: object
+  required: [categories]
+  properties:
+    categories:
+      type: array
+      description: The full category forest — root categories with nested `children`.
+      items:
+        $ref: './category.yaml#/Category'

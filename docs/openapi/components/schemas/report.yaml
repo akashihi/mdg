@@ -1,0 +1,225 @@
+Amount:
+  type: object
+  description: A balance amount paired with the name of whatever it belongs to.
+  required: [amount, name]
+  properties:
+    amount:
+      $ref: './common.yaml#/Money'
+    name:
+      type: string
+      description: Name of the related entry.
+      example: CZK
+    date:
+      type: string
+      format: date
+      description: |
+        Date for which the entry is valid.
+      example: '2017-03-01'
+
+TotalsReportEntry:
+  type: object
+  description: Totals for a single asset category.
+  required: [category_name, primary_balance, amounts]
+  properties:
+    category_name:
+      type: string
+      description: Asset category name.
+      example: Cash
+    primary_balance:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: |
+        Sum of every asset account in this category, converted to the primary
+        currency.
+      example: 100500
+    amounts:
+      type: array
+      description: |
+        The same total broken down by currency — one entry per currency, summing
+        the accounts of this category held in it.
+      items:
+        $ref: './report.yaml#/Amount'
+
+TotalsReport:
+  type: object
+  description: |
+    Assets overview. Categories with no accounts, or with no balance, are
+    omitted entirely rather than reported as zero.
+  required: [report]
+  properties:
+    report:
+      type: array
+      items:
+        $ref: './report.yaml#/TotalsReportEntry'
+
+EvaluationReport:
+  type: object
+  description: |
+    Financial status scores. Each value is a small integer score, not a monetary
+    amount and not a currency-converted balance.
+  required: [income, debt, budget, cash, state]
+  properties:
+    income: { type: integer, format: int64, example: 3 }
+    debt: { type: integer, format: int64, example: 0 }
+    budget: { type: integer, format: int64, example: 2 }
+    cash: { type: integer, format: int64, example: 4 }
+    state: { type: integer, format: int64, example: 3 }
+
+ReportSeriesEntry:
+  type: object
+  description: |
+    A single datapoint.
+  required: [y, custom]
+  properties:
+    y:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: |
+        The datapoint. Monetary values are converted to the primary currency.
+      example: 0.06
+    custom:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: |
+        The original value in its original currency.
+      example: 120
+
+ReportSeries:
+  type: object
+  description: |
+    One data series: a name, its datapoints, and the chart type that suits it.
+  required: [name, data, type]
+  properties:
+    name:
+      type: string
+      description: |
+        Series name. For the by-currency asset report this is a currency code;
+        for other reports it is an account or account-type name.
+      example: CZK
+    data:
+      type: array
+      description: |
+        Datapoints, one per entry of the report's `dates` array and in the same
+        order. Note these are **objects**, not bare numbers.
+      items:
+        $ref: './report.yaml#/ReportSeriesEntry'
+    type:
+      type: string
+      enum: [area, column, line]
+      description: |
+        Recommended chart type.
+      example: area
+
+HierarchicalSeriesEntry:
+  type: object
+  description: |
+    A tree-friendly series entry.
+  required: [id, name]
+  properties:
+    id:
+      type: string
+      description: |
+        Unique entry id, unique across both categories and accounts in the same
+        report.
+      example: '1'
+    parent:
+      type: string
+      description: Parent entry id.
+      example: root
+    name:
+      type: string
+      description: Entry name, whether the entry is a category or an account.
+      example: Rent
+    value:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: Entry value.
+      example: 100
+
+SimpleReportSeries:
+  type: object
+  description: A dated report carrying flat data series.
+  required: [dates, series]
+  properties:
+    dates:
+      type: array
+      description: |
+        The reported dates. Every series has exactly this many datapoints, in
+        this order.
+      items:
+        type: string
+        format: date
+      example: ['2017-03-01', '2017-03-02', '2017-03-03']
+    series:
+      type: array
+      items:
+        $ref: './report.yaml#/ReportSeries'
+
+SimpleReportHierarchical:
+  type: object
+  description: |
+    A dated report carrying a flattened tree of entries rather than data series.
+    `dates` is present for structural symmetry with the other reports but is
+    unrelated to the entries.
+  required: [dates, series]
+  properties:
+    dates:
+      type: array
+      items:
+        type: string
+        format: date
+    series:
+      type: array
+      items:
+        $ref: './report.yaml#/HierarchicalSeriesEntry'
+
+BudgetExecutionReport:
+  type: object
+  description: |
+    Budget performance over time. Every array has exactly as many elements as
+    `dates`, in the same order.
+  required: [dates, actual_income, actual_expense, expected_income, expected_expense, profit]
+  properties:
+    dates:
+      type: array
+      items:
+        type: string
+        format: date
+    actual_income:
+      type: array
+      items: { $ref: './common.yaml#/Money' }
+    actual_expense:
+      type: array
+      items: { $ref: './common.yaml#/Money' }
+    expected_income:
+      type: array
+      items: { $ref: './common.yaml#/Money' }
+    expected_expense:
+      type: array
+      items: { $ref: './common.yaml#/Money' }
+    profit:
+      type: array
+      items: { $ref: './common.yaml#/Money' }
+
+BudgetCashflowReport:
+  type: object
+  description: |
+    Daily cumulative balances across all operational accounts for one budget.
+    `actual` and `expected` are each a **single** series, not arrays of series.
+  required: [dates, actual, expected]
+  properties:
+    dates:
+      type: array
+      items:
+        type: string
+        format: date
+    actual:
+      allOf:
+        - $ref: './report.yaml#/ReportSeries'
+      description: Actual cumulative balance per day on all operational accounts.
+    expected:
+      allOf:
+        - $ref: './report.yaml#/ReportSeries'
+      description: |
+        Expected cumulative balance per day, derived from scheduled budget
+        entries and their daily allowed spendings.

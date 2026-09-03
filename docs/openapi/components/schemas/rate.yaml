@@ -1,0 +1,52 @@
+Rate:
+  type: object
+  description: |
+    An exchange rate valid over a period of time.
+
+  required: [id, from, to, rate, beginning, end]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: |
+        Synthetic identifier. **`-1` marks a synthesised rate**
+      example: 1
+    from:
+      $ref: './common.yaml#/CurrencyId'
+    to:
+      $ref: './common.yaml#/CurrencyId'
+    rate:
+      type: number
+      description: |
+        How much of the `from` currency buys a single unit of the `to` currency.
+      example: 1.19
+    beginning:
+      allOf:
+        - $ref: './common.yaml#/ZuluDateTime'
+      description: Start of the rate's validity period.
+    end:
+      allOf:
+        - $ref: './common.yaml#/ZuluDateTime'
+      description: End of the rate's validity period.
+
+Rates:
+  type: object
+  required: [rates]
+  properties:
+    rates:
+      type: array
+      items:
+        $ref: './rate.yaml#/Rate'
+
+RateStatus:
+  type: object
+  description: Status of the scheduled rate-retrieval job.
+  required: [dt]
+  properties:
+    dt:
+      allOf:
+        - $ref: './common.yaml#/LocalDateTime'
+      description: |
+        Timestamp of the last successful rate update. `0001-01-01T00:00:00` is
+        the sentinel meaning "rates have never been updated".
+      example: '0001-01-01T00:00:00'

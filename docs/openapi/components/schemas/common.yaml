@@ -1,0 +1,61 @@
+# Shared primitives used across more than one resource.
+
+AccountType:
+  type: string
+  enum: [ASSET, EXPENSE, INCOME]
+  description: |
+    Type of an account.
+  example: ASSET
+
+BudgetEntryMode:
+  type: string
+  enum: [SINGLE, EVEN, PRORATED]
+  description: |
+    Cashflow/spending estimation mode of a budget entry.
+
+    * `SINGLE` — transactions for this entry happen occasionally, possibly only
+      once, during the budget period (rent, for example). This is the only mode
+      in which `dt` is meaningful.
+    * `EVEN` — transactions happen evenly across the budget period. 
+    * `PRORATED` — like `EVEN`, but a cumulative total is tracked instead.
+  example: EVEN
+
+Money:
+  type: number
+  description: |
+    A monetary amount.
+  example: 100.50
+
+MoneyOrNull:
+  type: ['number', 'null']
+  description: |
+    A monetary amount that the server may leave unpopulated.
+  example: 100.50
+
+CurrencyId:
+  type: integer
+  format: int64
+  minimum: 1
+  maximum: 999
+  description: |
+    ISO 4217 numeric currency code.
+  example: 978
+
+BudgetId:
+  type: integer
+  format: int64
+  description: |
+    Budget identifier.
+  example: 20220101
+
+LocalDateTime:
+  type: string
+  description: |
+    A local date-time.
+  example: '2017-02-04T16:45:36'
+
+ZuluDateTime:
+  type: string
+  description: |
+    A local date-time.
+  example: '2017-02-04T16:45:36Z'

@@ -1,0 +1,141 @@
+Account:
+  type: object
+  description: |
+    An account. Accounts of type `ASSET` hold money.
+
+    On create, only `account_type`, `currency_id`, `name`, `category_id` and —
+    for asset accounts — `favorite`/`operational` are read. On update, only
+    `hidden`, `name`, `category_id`, `favorite` and `operational` are applied;
+    everything else is silently ignored, except `currency_id`, which is rejected
+    with `ACCOUNT_CURRENCY_ASSET` on an asset account and re-rates
+    existing operations on a non-asset one.
+  required: [account_type, currency_id, balance, primary_balance]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Account id. Absent on create requests.
+      example: 2
+    account_type:
+      $ref: './common.yaml#/AccountType'
+    name:
+      type: [string, 'null']
+      example: Wallet
+    currency_id:
+      allOf:
+        - $ref: './common.yaml#/CurrencyId'
+      description: |
+        The account's currency. Writable on create; on update it is only
+        accepted for non-asset accounts.
+    currency:
+      allOf:
+        - $ref: './currency.yaml#/Currency'
+      description: |
+        The currency object itself.
+    category_id:
+      type: integer
+      format: int64
+      description: |
+        The account's category.
+      example: 1
+    category:
+      allOf:
+        - $ref: './category.yaml#/Category'
+      description: |
+        The category object itself.
+    balance:
+      allOf:
+        - $ref: './common.yaml#/MoneyOrNull'
+      readOnly: true
+      description: |
+        Current account balance in the account's own currency.
+    primary_balance:
+      allOf:
+        - $ref: './common.yaml#/MoneyOrNull'
+      readOnly: true
+      description: |
+        `balance` converted to the primary currency at the current rate.
+    hidden:
+      type: [boolean, 'null']
+      description: |
+        Marks a soft-deleted account.
+      example: false
+    operational:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is an operational one. Valid for asset
+        accounts only — setting it on any other type fails with
+        `ACCOUNT_NONASSET_INVALIDFLAG`.
+      example: true
+    favorite:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is a favorite. Valid for asset accounts only;
+        same error as `operational` otherwise. Favorite accounts additionally
+        appear under the synthetic `Favorite` category in `GET /accounts/tree`.
+      example: true
+
+Accounts:
+  type: object
+  required: [accounts]
+  properties:
+    accounts:
+      type: array
+      description: Flat list of accounts.
+      items:
+        $ref: './account.yaml#/Account'
+
+AccountStatus:
+  type: object
+  description: Whether an account may be deleted.
+  required: [id, deletable]
+  properties:
+    id:
+      type: integer
+      format: int64
+      example: 2
+    deletable:
+      type: boolean
+      description: |
+        `false` when at least one operation references the account. Deleting
+        such an account fails with 409 `ACCOUNT_IN_USE`.
+      example: false
+
+CategoryTreeEntry:
+  type: object
+  description: |
+    One node of the account tree.
+  required: [accounts, categories]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: |
+        Category id.
+      example: 2
+    name:
+      type: string
+      example: cash
+    accounts:
+      type: array
+      description: Accounts directly in this category.
+      items:
+        $ref: './account.yaml#/Account'
+    categories:
+      type: array
+      description: Sub-categories, recursively.
+      items:
+        $ref: './account.yaml#/CategoryTreeEntry'
+
+CategoryTree:
+  type: object
+  description: |
+    The account tree, split by account type.
+  required: [asset, expense, income]
+  properties:
+    asset:
+      $ref: './account.yaml#/CategoryTreeEntry'
+    expense:
+      $ref: './account.yaml#/CategoryTreeEntry'
+    income:
+      $ref: './account.yaml#/CategoryTreeEntry'

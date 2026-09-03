@@ -1,0 +1,44 @@
+Setting:
+  type: object
+  description: |
+    A single configuration variable.
+  required: [id, value]
+  properties:
+    id:
+      type: string
+      description: Setting name.
+      example: currency.primary
+    value:
+      type: string
+      description: Setting value, always a string.
+      example: '978'
+
+Settings:
+  type: object
+  required: [settings]
+  properties:
+    settings:
+      type: array
+      items:
+        $ref: './setting.yaml#/Setting'
+
+OverviewWidgets:
+  type: object
+  description: |
+    Tthis is the structure the frontend stores,
+    JSON-encoded. The backend does not validate it.
+  properties:
+    lt: { $ref: './setting.yaml#/OverviewWidgetName' }
+    rt: { $ref: './setting.yaml#/OverviewWidgetName' }
+    lb: { $ref: './setting.yaml#/OverviewWidgetName' }
+    rb: { $ref: './setting.yaml#/OverviewWidgetName' }
+  example:
+    lt: TotalsWidget
+    rt: BudgetWidget
+    lb: EvaluationWidget
+    rb: RatesWidget
+
+OverviewWidgetName:
+  type: string
+  description: Name of a widget that can be placed in an overview panel slot.
+  example: TotalsWidget

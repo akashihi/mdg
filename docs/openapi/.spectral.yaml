@@ -1,0 +1,24 @@
+# Spectral ruleset for the MDG API specification.
+#
+#   Lint:
+#   npx @stoplight/spectral-cli lint docs/openapi/openapi.yaml \
+#     --ruleset docs/openapi/.spectral.yaml
+#
+#   Render the docs in a browser, with live reload.
+#   npx @redocly/cli preview-docs docs/openapi/openapi.yaml
+#
+#   Flatten to a single self-contained file, for a tool that wants one.
+#   npx @redocly/cli bundle docs/openapi/openapi.yaml -o mdg-openapi.yaml
+
+extends: [[spectral:oas, recommended]]
+
+rules:
+  oas3-server-not-example.com: off
+  oas3-server-trailing-slash: error
+  operation-description: off
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-tags: error
+  operation-tag-defined: error
+  oas3-valid-media-example: error
+  oas3-valid-schema-example: error

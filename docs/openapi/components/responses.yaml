@@ -1,0 +1,76 @@
+# Shared responses.
+
+Conflict:
+  description: |
+    The request conflicts with the current state — an account that still has
+    operations, or a budget entry date outside its budget's term.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Used accounts can not be deleted
+        status: 409
+        instance: /accounts/2
+        code: ACCOUNT_IN_USE
+        detail: Account has operations and can not be deleted
+
+PreconditionFailed:
+  description: |
+    A business rule was violated. This is the status this API uses for most
+    validation failures — read `code` to find out which rule.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Transaction is not in balance
+        status: 412
+        instance: /transactions
+        code: TRANSACTION_NOT_BALANCED
+        detail: Sum of transaction operations is not equal to zero
+
+UnprocessableEntity:
+  description: The submitted attributes are individually invalid.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Setting value is invalid
+        status: 422
+        instance: /settings/currency.primary
+        code: SETTING_DATA_INVALID
+        detail: Setting value is invalid
+
+
+# --- Success responses shared by more than one operation ---------------------
+
+SeriesReport:
+  description: The report.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/report.yaml#/SimpleReportSeries'
+
+HierarchicalReport:
+  description: The report.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/report.yaml#/SimpleReportHierarchical'
+
+SettingAccepted:
+  description: The updated setting.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/setting.yaml#/Setting'
+
+MaintenanceAccepted:
+  description: |
+    The maintenance action ran.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/setting.yaml#/Setting'
