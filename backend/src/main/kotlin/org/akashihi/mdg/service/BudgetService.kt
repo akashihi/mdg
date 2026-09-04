@@ -216,7 +216,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         entry.distribution = newEntry.distribution
         if (entry.distribution == BudgetEntryMode.SINGLE || entry.account?.accountType == AccountType.INCOME) {
             if (newEntry.dt != null) {
-                if (entry.budget.beginning > newEntry.dt || entry.budget.end < newEntry.dt) {
+                if (entry.budget!!.beginning > newEntry.dt || entry.budget!!.end < newEntry.dt) {
                     throw MdgException("BUDGETENTRY_DT_OUT_OF_BUDGET")
                 }
             }
@@ -257,7 +257,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val source = sourceEntries
             .filter { it.expectedAmount.compareTo(BigDecimal.ZERO) != 0 || it.actualAmount.compareTo(BigDecimal.ZERO) != 0 }
             .map { if (it.expectedAmount.compareTo(BigDecimal.ZERO) == 0) { it.expectedAmount = it.actualAmount }; it }
-            .associate { Pair(it.account?.id, Triple(it.expectedAmount, it.distribution, it.dt?.let { dt -> ChronoUnit.DAYS.between(it.budget.beginning, dt) })) }
+            .associate { Pair(it.account?.id, Triple(it.expectedAmount, it.distribution, it.dt?.let { dt -> ChronoUnit.DAYS.between(it.budget!!.beginning, dt) })) }
 
         targetEntries.filter { overwrite || it.expectedAmount.compareTo(BigDecimal.ZERO) == 0 }
             .forEach {
@@ -267,9 +267,9 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
                     it.distribution = value.second
                     if (it.distribution == BudgetEntryMode.SINGLE) {
                         it.dt = value.third?.let { dt ->
-                            val adjustedDate = it.budget.beginning.plusDays(dt)
-                            if (adjustedDate > it.budget.end) {
-                                return@let it.budget.end
+                            val adjustedDate = it.budget!!.beginning.plusDays(dt)
+                            if (adjustedDate > it.budget!!.end) {
+                                return@let it.budget!!.end
                             }
                             return@let adjustedDate
                         }
@@ -323,8 +323,8 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
         fun analyzeSpendings(entry: BudgetEntry, forDay: LocalDate): BudgetEntry {
             entry.spendingPercent = getSpendingPercent(entry.actualAmount, entry.expectedAmount)
-            val from = entry.budget.beginning
-            val to = entry.budget.end
+            val from = entry.budget!!.beginning
+            val to = entry.budget!!.end
             entry.allowedSpendings = getAllowedSpendings(entry, from, to, forDay)
             return entry
         }

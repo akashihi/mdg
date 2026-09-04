@@ -8,6 +8,7 @@ it('Empty transactions are not allowed', async () => {
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_EMPTY' })
         .post('/transactions')
         .withJson({
+            timestamp: '2017-02-04T16:45:36',
             comment: 'Test transaction',
             tags: [
                 'test',

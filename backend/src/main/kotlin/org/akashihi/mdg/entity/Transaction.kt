@@ -23,7 +23,7 @@ class Transaction(
 
     @ManyToMany
     @JoinTable(name = "tx_tags", joinColumns = [JoinColumn(name = "tx_id")], inverseJoinColumns = [JoinColumn(name = "tag_id")])
-    var tags: MutableSet<Tag>,
+    var tags: MutableSet<Tag> = mutableSetOf(),
 
     @OneToMany(mappedBy = "transaction")
     @OrderBy("id")

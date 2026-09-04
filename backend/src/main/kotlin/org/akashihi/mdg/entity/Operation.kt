@@ -17,7 +17,7 @@ class Operation(
     @ManyToOne
     @JoinColumn(name = "tx_id", nullable = false)
     @JsonIgnore
-    var transaction: Transaction,
+    var transaction: Transaction? = null,
     var rate: BigDecimal?,
     var amount: BigDecimal,
 

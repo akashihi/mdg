@@ -24,7 +24,7 @@ class Category(
     var parentId: Long? = null,
 
     @Transient
-    var children: Collection<Category>,
+    var children: Collection<Category> = emptyList(),
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
