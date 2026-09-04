@@ -1,0 +1,13 @@
+# Schemathesis configuration for the MDG API.
+
+base-url = "http://localhost:8080"
+
+[[operations]]
+include-name = "PUT /settings/mnt.transaction.reindex"
+[operations.checks]
+negative_data_rejection.enabled = false
+
+[[operations]]
+include-name = "PUT /settings/mnt.reporting.refresh"
+[operations.checks]
+negative_data_rejection.enabled = false

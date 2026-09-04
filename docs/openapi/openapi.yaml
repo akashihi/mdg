@@ -167,6 +167,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/account.yaml#/Account'
+        '404':
+          description: No account found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
     put:
       tags: [Accounts]
       summary: Modify account data
@@ -211,6 +217,12 @@ paths:
       responses:
         '204':
           description: The account was deleted.
+        '404':
+          description: No account found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
         '409':
           $ref: './components/responses.yaml#/Conflict'
   /accounts/{id}/status:
@@ -1107,17 +1119,14 @@ paths:
         `value` must be the ISO 4217 numeric code of a currency that exists in the
         currency table; anything else is rejected with 422
         `SETTING_DATA_INVALID`.
-
-        Only `value` is read from the body — the `id` in the payload is ignored,
-        the path decides which setting is written.
       operationId: setPrimaryCurrency
       requestBody:
         required: true
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/Setting'
-            example: { id: currency.primary, value: '840' }
+              $ref: './components/schemas/setting.yaml#/SettingUpdate'
+            example: { value: '840' }
       responses:
         '202':
           $ref: './components/responses.yaml#/SettingAccepted'
@@ -1135,8 +1144,8 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/Setting'
-            example: { id: ui.transaction.closedialog, value: 'true' }
+              $ref: './components/schemas/setting.yaml#/SettingUpdate'
+            example: { value: 'true' }
       responses:
         '202':
           $ref: './components/responses.yaml#/SettingAccepted'
@@ -1155,8 +1164,8 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/Setting'
-            example: { id: ui.language, value: en-US }
+              $ref: './components/schemas/setting.yaml#/SettingUpdate'
+            example: { value: en-US }
       responses:
         '202':
           $ref: './components/responses.yaml#/SettingAccepted'
@@ -1176,9 +1185,8 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/Setting'
+              $ref: './components/schemas/setting.yaml#/SettingUpdate'
             example:
-              id: ui.overviewpanel.widgets
               value: '{"lt":"TotalsWidget","rt":"BudgetWidget","lb":"EvaluationWidget","rb":"RatesWidget"}'
       responses:
         '202':
@@ -1197,6 +1205,9 @@ paths:
         The call is synchronous and can take a while on a large database; the
         response only returns once the reindex completes.
 
+        The controller method takes no request body. The vendor content type is
+        still required, but the payload itself is never parsed — any bytes at all
+        are accepted. Send `{}`.
       operationId: reindexTransactions
       requestBody:
         required: false
@@ -1217,6 +1228,9 @@ paths:
 
         Refreshes the materialized query tables.
 
+        The controller method takes no request body. The vendor content type is
+        still required, but the payload itself is never parsed — any bytes at all
+        are accepted. Send `{}`.
       operationId: refreshReporting
       requestBody:
         required: false

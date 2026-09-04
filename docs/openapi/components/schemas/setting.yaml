@@ -13,6 +13,24 @@ Setting:
       description: Setting value, always a string.
       example: '978'
 
+SettingUpdate:
+  type: object
+  description: |
+    The body of a setting update.
+
+    Only `value` is read. The path decides which setting is written, and every
+    other member of the body — `id` included — is ignored, so a body carrying an
+    `id` that disagrees with the path is accepted and the path wins.
+  required: [value]
+  properties:
+    value:
+      type: [string, number, boolean]
+      description: |
+        New setting value. Stored as a string; a JSON number or boolean is
+        coerced by Jackson rather than rejected, so `42` and `true` are accepted
+        and stored as `"42"` and `"true"`.
+      example: '978'
+
 Settings:
   type: object
   required: [settings]
