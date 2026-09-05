@@ -204,6 +204,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/account.yaml#/Account'
+        '404':
+          description: No account found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
     delete:
       tags: [Accounts]
       summary: Delete an account
@@ -240,6 +246,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/account.yaml#/AccountStatus'
+        '404':
+          description: No account found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
 
   /categories:
     get:
@@ -433,6 +445,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/transaction.yaml#/Transaction'
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
         '422':
@@ -452,6 +470,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/transaction.yaml#/Transaction'
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
     put:
       tags: [Transactions]
       summary: Modify transaction data
@@ -483,6 +507,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/transaction.yaml#/Transaction'
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
         '422':
@@ -694,6 +724,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/BudgetEntry'
+        '404':
+          description: No entry found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
     put:
       tags: [Budget entries]
       summary: Modify a budget entry
@@ -730,6 +766,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/BudgetEntry'
+        '404':
+          description: No entry found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
         '409':
           $ref: './components/responses.yaml#/Conflict'
         '422':
@@ -774,6 +816,12 @@ paths:
       responses:
         '204':
           description: The entries were copied.
+        '404':
+          description: Source budget could not be found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
 
   /currencies:
     get:
