@@ -240,7 +240,7 @@ BudgetIdPath:
   description: |
     A budget id, or **any date inside a budget's term**, as `YYYYMMDD`. The
     budget whose `term_beginning` is closest to and not after the given date is
-    returned.
+    the one the operation acts on.
   schema:
     type: integer
     format: int64

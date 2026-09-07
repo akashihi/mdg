@@ -83,6 +83,14 @@ describe('Budget operations', () => {
       });
   });
 
+  it('Delete non-existent budget', async () => {
+    /* Budget ids are YYYYMMDD, so no budget can ever
+     * have an id less than or equal to 1
+     */
+    await pactum.spec('expect error', { statusCode: 404, code: 'BUDGET_NOT_FOUND', instance: '/budgets/1' })
+      .delete('/budgets/1');
+  });
+
   it('Delete budget', async () => {
     await e2e.step('Delete budget')
       .spec('delete')

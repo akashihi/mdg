@@ -528,6 +528,12 @@ paths:
       responses:
         '204':
           description: The transaction was deleted.
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
 
   /tags:
     get:
@@ -624,6 +630,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/Budget'
+        '404':
+          description: No budget found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
     put:
       tags: [Budgets]
       summary: Modify a budget
@@ -648,6 +660,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/Budget'
+        '404':
+          description: No budget found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
         '422':
@@ -655,13 +673,26 @@ paths:
     delete:
       tags: [Budgets]
       summary: Delete a budget
-      description: All of the budget's entries are deleted with it.
+      description: |
+        All of the budget's entries are deleted with it.
+
+        The path segment resolves exactly as it does on `GET`: it may be a budget
+        id or **any date inside a budget's term** in `YYYYMMDD` form, and the
+        budget whose `term_beginning` is closest to and not after that date is the
+        one deleted. `DELETE /budgets/20170205` therefore deletes the budget that
+        began on `2017-02-04`.
       operationId: deleteBudget
       parameters:
         - $ref: './components/parameters.yaml#/BudgetIdPath'
       responses:
         '204':
           description: The budget was deleted.
+        '404':
+          description: No budget found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
   /budgets/{budgetId}/entries:
     get:
       tags: [Budget entries]

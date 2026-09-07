@@ -243,7 +243,10 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     @Transactional
-    open fun delete(id: Long) = budgetRepository.deleteById(id)
+    open fun delete(id: Long) {
+        val budget = simplifiedGet(id) ?: throw MdgException("BUDGET_NOT_FOUND")
+        budgetRepository.delete(budget)
+    }
 
     @Transactional
     open fun copyEntries(sourceBudgetId: Long, targetBudgetId: Long, overwrite: Boolean): Collection<BudgetEntry>? {

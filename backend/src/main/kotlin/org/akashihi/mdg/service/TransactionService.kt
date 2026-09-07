@@ -234,6 +234,9 @@ open class TransactionService(
 
     @Transactional
     open fun delete(id: Long) {
+        if (!transactionRepository.existsById(id)) {
+            throw MdgException("TRANSACTION_NOT_FOUND")
+        }
         operationRepository.deleteOperationsForTransaction(id)
         transactionRepository.deleteById(id)
         indexingService.removeTransaction(id)
