@@ -10,6 +10,7 @@ import java.util.*
 @Repository
 interface BudgetRepository : JpaRepository<Budget, Long>, JpaSpecificationExecutor<Budget> {
     fun existsByEndGreaterThanEqualAndBeginningLessThanEqual(otherBeginning: LocalDate, otherEnd: LocalDate): Boolean
+    fun existsByEndGreaterThanEqualAndBeginningLessThanEqualAndIdNot(otherBeginning: LocalDate, otherEnd: LocalDate, id: Long): Boolean
     fun findFirstByIdLessThanEqualOrderByIdDesc(id: Long): Budget?
     fun findByEndGreaterThanEqualAndBeginningLessThanEqualOrderByBeginningAsc(from: LocalDate, to: LocalDate): Collection<Budget>
 }

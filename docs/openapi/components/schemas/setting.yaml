@@ -13,23 +13,59 @@ Setting:
       description: Setting value, always a string.
       example: '978'
 
-SettingUpdate:
+SettingUpdateCurrency:
   type: object
-  description: |
-    The body of a setting update.
-
-    Only `value` is read. The path decides which setting is written, and every
-    other member of the body — `id` included — is ignored, so a body carrying an
-    `id` that disagrees with the path is accepted and the path wins.
+  description: The body of a `currency.primary` update.
   required: [value]
   properties:
     value:
-      type: [string, number, boolean]
+      type: [string, number]
       description: |
-        New setting value. Stored as a string; a JSON number or boolean is
-        coerced by Jackson rather than rejected, so `42` and `true` are accepted
-        and stored as `"42"` and `"true"`.
-      example: '978'
+        ISO 4217 numeric code of a currency that exists in the currency table.
+        Anything else — including a non-numeric string — is rejected with 422
+        `SETTING_DATA_INVALID`.
+      example: '840'
+
+SettingUpdateCloseDialog:
+  type: object
+  description: The body of a `ui.transaction.closedialog` update.
+  required: [value]
+  properties:
+    value:
+      type: [string, boolean]
+      enum: ['true', 'false', true, false]
+      description: |
+        Whether the transaction dialog closes itself. The comparison is
+        case-insensitive, and a JSON boolean is coerced before it is made, so
+        `true`, `"true"` and `"TRUE"` are equivalent. Any other value is rejected
+        with 422 `SETTING_DATA_INVALID`.
+      example: 'true'
+
+SettingUpdateLanguage:
+  type: object
+  description: The body of a `ui.language` update.
+  required: [value]
+  properties:
+    value:
+      type: string
+      description: |
+        A locale name. The backend does not validate it, but it selects the
+        Elasticsearch analyzer settings used by the next
+        `mnt.transaction.reindex`, and an unknown locale falls back to the
+        default one.
+      example: en-US
+
+SettingUpdateWidgets:
+  type: object
+  description: The body of a `ui.overviewpanel.widgets` update.
+  required: [value]
+  properties:
+    value:
+      type: string
+      description: |
+        The overview panel layout as a JSON object **encoded as a string**. The
+        backend does not validate it; the frontend owns the format.
+      example: '{"lt":"TotalsWidget","rt":"BudgetWidget","lb":"EvaluationWidget","rb":"RatesWidget"}'
 
 Settings:
   type: object

@@ -45,6 +45,34 @@ Category:
       items:
         $ref: './category.yaml#/Category'
 
+CategoryCreate:
+  type: object
+  description: |
+    The body of a category create.
+  required: [account_type, name, priority]
+  properties:
+    parent_id:
+      type: integer
+      format: int64
+      description: |
+        Parent category. It must already exist — `CATEGORY_DATA_INVALID`
+        otherwise — and be of the same `account_type`, else
+        `CATEGORY_INVALID_TYPE`. Omit for a top-level category.
+    name:
+      type: string
+      description: Category name. Not required to be unique.
+    priority:
+      type: integer
+      description: |
+        Ordering weight. Categories are sorted ascending by this value.
+    account_type:
+      type: string
+      enum: [EXPENSE, INCOME]
+      description: |
+        Type of account this category may hold. `ASSET` is rejected with
+        `CATEGORY_INVALID_TYPE` — asset categories cannot be created through the
+        API.
+
 Categories:
   type: object
   required: [categories]

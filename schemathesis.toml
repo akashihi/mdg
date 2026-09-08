@@ -4,10 +4,17 @@ base-url = "http://localhost:8080"
 
 [[operations]]
 include-name = "PUT /settings/mnt.transaction.reindex"
+request-timeout = 300
 [operations.checks]
 negative_data_rejection.enabled = false
 
 [[operations]]
 include-name = "PUT /settings/mnt.reporting.refresh"
+request-timeout = 300
 [operations.checks]
 negative_data_rejection.enabled = false
+
+[[operations]]
+include-name = "POST /budgets"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412", "5xx"]

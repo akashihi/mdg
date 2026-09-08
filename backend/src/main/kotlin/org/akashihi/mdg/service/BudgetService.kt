@@ -30,14 +30,20 @@ data class ListResult<T>(val items: List<T>, val left: Long)
 
 @Service
 open class BudgetService(private val accountRepository: AccountRepository, private val budgetRepository: BudgetRepository, private val budgetEntryRepository: BudgetEntryRepository, private val transactionService: TransactionService, private val rateService: RateService) {
-    private fun validateBudget(budget: Budget): Boolean {
+    private fun validateBudget(budget: Budget, selfId: Long? = null): Boolean {
         if (budget.beginning.isAfter(budget.end)) {
             throw MdgException("BUDGET_INVALID_TERM")
         }
         if (ChronoUnit.DAYS.between(budget.beginning, budget.end) < 1) {
             throw MdgException("BUDGET_SHORT_RANGE")
         }
-        if (budgetRepository.existsByEndGreaterThanEqualAndBeginningLessThanEqual(budget.beginning, budget.end)) {
+        val overlapping = if (selfId == null) {
+            budgetRepository.existsByEndGreaterThanEqualAndBeginningLessThanEqual(budget.beginning, budget.end)
+        } else {
+            // The budget being updated is allowed to overlap its own current term
+            budgetRepository.existsByEndGreaterThanEqualAndBeginningLessThanEqualAndIdNot(budget.beginning, budget.end, selfId)
+        }
+        if (overlapping) {
             throw MdgException("BUDGET_OVERLAPPING")
         }
         return true
@@ -172,8 +178,8 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
     @Transactional
     open fun update(id: Long, newBudget: Budget): Budget? {
-        validateBudget(newBudget)
-        val budget = budgetRepository.findByIdOrNull(id) ?: return null
+        val budget = simplifiedGet(id) ?: return null
+        validateBudget(newBudget, budget.id)
         budget.beginning = newBudget.beginning
         budget.end = newBudget.end
         budgetRepository.save(budget)

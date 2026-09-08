@@ -108,3 +108,8 @@ fabric.properties
 
 spring-boot-ehcache/
 *.ign
+# Claude Code project MCP config — carries a local dev DSN, do not commit
+.mcp.json
+
+# Schemathesis run cache
+.schemathesis/

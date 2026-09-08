@@ -283,7 +283,7 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/category.yaml#/Category'
+              $ref: './components/schemas/category.yaml#/CategoryCreate'
             example:
               account_type: EXPENSE
               name: Bonuses
@@ -640,7 +640,20 @@ paths:
       tags: [Budgets]
       summary: Modify a budget
       description: |
-        Changes the budget's term. The same three term rules as on create apply.
+        Changes the budget's term.
+
+        The path segment resolves exactly as it does on `GET` and `DELETE`: it
+        may be a budget id or **any date inside a budget's term** in `YYYYMMDD`
+        form, and the budget whose `term_beginning` is closest to and not after
+        that date is the one updated.
+
+        The same three term rules as on create apply, except that the overlap
+        check ignores the budget being updated — a term may be kept as-is,
+        shrunk, or extended into free space without tripping
+        `BUDGET_OVERLAPPING`.
+
+        The budget's `id` is **not** recomputed from a new `term_beginning`; it
+        keeps the id it was created with.
       operationId: updateBudget
       parameters:
         - $ref: './components/parameters.yaml#/BudgetIdPath'
@@ -1204,7 +1217,7 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/SettingUpdate'
+              $ref: './components/schemas/setting.yaml#/SettingUpdateCurrency'
             example: { value: '840' }
       responses:
         '202':
@@ -1223,7 +1236,7 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/SettingUpdate'
+              $ref: './components/schemas/setting.yaml#/SettingUpdateCloseDialog'
             example: { value: 'true' }
       responses:
         '202':
@@ -1243,7 +1256,7 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/SettingUpdate'
+              $ref: './components/schemas/setting.yaml#/SettingUpdateLanguage'
             example: { value: en-US }
       responses:
         '202':
@@ -1264,7 +1277,7 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/setting.yaml#/SettingUpdate'
+              $ref: './components/schemas/setting.yaml#/SettingUpdateWidgets'
             example:
               value: '{"lt":"TotalsWidget","rt":"BudgetWidget","lb":"EvaluationWidget","rb":"RatesWidget"}'
       responses:

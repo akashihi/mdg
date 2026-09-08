@@ -83,6 +83,47 @@ describe('Budget operations', () => {
       });
   });
 
+  it('Update budget by date, keeping the term', async () => {
+    await e2e.step('Update budget')
+      .spec('update')
+      .put('/budgets/{id}')
+      .withPathParams('id', '20170205')
+      .withJson({ '@DATA:TEMPLATE@': 'Budget:Feb:V1' })
+      .expectJsonMatch({
+        '@DATA:TEMPLATE@': 'Budget:Feb:V1',
+        '@OVERRIDES@': {
+          id: int()
+        }
+      });
+  });
+
+  it('Update budget term', async () => {
+    await e2e.step('Extend budget term')
+      .spec('update')
+      .put('/budgets/{id}')
+      .withPathParams('id', '$S{BudgetID}')
+      .withJson({
+        '@DATA:TEMPLATE@': 'Budget:Feb:V1',
+        '@OVERRIDES@': {
+          term_end: '2017-02-28'
+        }
+      })
+      .expectJson('term_end', '2017-02-28');
+
+    await e2e.step('Restore budget term')
+      .spec('update')
+      .put('/budgets/{id}')
+      .withPathParams('id', '$S{BudgetID}')
+      .withJson({ '@DATA:TEMPLATE@': 'Budget:Feb:V1' })
+      .expectJson('term_end', '2017-02-26');
+  });
+
+  it('Update non-existent budget', async () => {
+    await pactum.spec('expect error', { statusCode: 404, code: 'BUDGET_NOT_FOUND', instance: '/budgets/1' })
+      .put('/budgets/1')
+      .withJson({ '@DATA:TEMPLATE@': 'Budget:Feb:V1' });
+  });
+
   it('Delete non-existent budget', async () => {
     /* Budget ids are YYYYMMDD, so no budget can ever
      * have an id less than or equal to 1
