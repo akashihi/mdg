@@ -108,6 +108,22 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/account.yaml#/Accounts'
+          links:
+            GetListedAccount:
+              operationId: getAccount
+              description: Read the first account of this listing.
+              parameters:
+                path.id: '$response.body#/accounts/0/id'
+            GetListedAccountStatus:
+              operationId: getAccountStatus
+              description: Check whether the first account of this listing may be deleted.
+              parameters:
+                path.id: '$response.body#/accounts/0/id'
+            DeleteListedAccount:
+              operationId: deleteAccount
+              description: Delete the first account of this listing.
+              parameters:
+                path.id: '$response.body#/accounts/0/id'
     post:
       tags: [Accounts]
       summary: Create a new account
@@ -133,6 +149,56 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/account.yaml#/Account'
+          links:
+            GetAccount:
+              operationId: getAccount
+              description: Read the account that was just created.
+              parameters:
+                path.id: '$response.body#/id'
+            GetAccountStatus:
+              operationId: getAccountStatus
+              description: Check whether the new account may still be deleted.
+              parameters:
+                path.id: '$response.body#/id'
+            UpdateAccount:
+              operationId: updateAccount
+              description: |
+                Rename the new account. The body echoes the account's own `account_type`
+                and `currency_id`, because an asset account rejects a different currency
+                with `ACCOUNT_CURRENCY_ASSET`, and it omits `favorite`/`operational`,
+                which a non-asset account rejects with `ACCOUNT_NONASSET_INVALIDFLAG`.
+              parameters:
+                path.id: '$response.body#/id'
+              requestBody:
+                account_type: '$response.body#/account_type'
+                currency_id: '$response.body#/currency_id'
+                name: Renamed account
+              x-schemathesis:
+                merge_body: false
+            DeleteAccount:
+              operationId: deleteAccount
+              description: |
+                Delete the new account, which succeeds while it carries no operations.
+              parameters:
+                path.id: '$response.body#/id'
+            CreateTransaction:
+              operationId: createTransaction
+              description: |
+                Book a transaction against the new account. Both operations sit on that
+                one account, which keeps the transaction single-currency and balanced
+                without needing a second account to exist.
+              requestBody:
+                timestamp: '2017-02-04T16:45:36'
+                comment: Booked through a link
+                operations:
+                  - account_id: '$response.body#/id'
+                    amount: -100
+                    rate: 1
+                  - account_id: '$response.body#/id'
+                    amount: 100
+                    rate: 1
+              x-schemathesis:
+                merge_body: false
   /accounts/tree:
     get:
       tags: [Accounts]
@@ -386,6 +452,36 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/transaction.yaml#/Transactions'
+          links:
+            GetListedTransaction:
+              operationId: getTransaction
+              description: Read the first transaction of this page.
+              parameters:
+                path.id: '$response.body#/transactions/0/id'
+            UpdateListedTransaction:
+              operationId: updateTransaction
+              description: |
+                Rewrite the first transaction of this page as a balanced pair of operations
+                on the account it already touches.
+              parameters:
+                path.id: '$response.body#/transactions/0/id'
+              requestBody:
+                timestamp: '$response.body#/transactions/0/timestamp'
+                comment: Updated through a link
+                operations:
+                  - account_id: '$response.body#/transactions/0/operations/0/account_id'
+                    amount: -100
+                    rate: 1
+                  - account_id: '$response.body#/transactions/0/operations/0/account_id'
+                    amount: 100
+                    rate: 1
+              x-schemathesis:
+                merge_body: false
+            DeleteListedTransaction:
+              operationId: deleteTransaction
+              description: Delete the first transaction of this page.
+              parameters:
+                path.id: '$response.body#/transactions/0/id'
     post:
       tags: [Transactions]
       summary: Create a new transaction
@@ -445,6 +541,37 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/transaction.yaml#/Transaction'
+          links:
+            GetTransaction:
+              operationId: getTransaction
+              description: Read the transaction that was just created.
+              parameters:
+                path.id: '$response.body#/id'
+            UpdateTransaction:
+              operationId: updateTransaction
+              description: |
+                Rewrite the transaction as a balanced pair of operations on the account it
+                already touches, which re-runs every validation rule against a body that
+                is known to pass them.
+              parameters:
+                path.id: '$response.body#/id'
+              requestBody:
+                timestamp: '$response.body#/timestamp'
+                comment: Updated through a link
+                operations:
+                  - account_id: '$response.body#/operations/0/account_id'
+                    amount: -100
+                    rate: 1
+                  - account_id: '$response.body#/operations/0/account_id'
+                    amount: 100
+                    rate: 1
+              x-schemathesis:
+                merge_body: false
+            DeleteTransaction:
+              operationId: deleteTransaction
+              description: Delete the transaction that was just created.
+              parameters:
+                path.id: '$response.body#/id'
         '404':
           description: No transaction found
           content:
@@ -573,6 +700,41 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/Budgets'
+          links:
+            GetListedBudget:
+              operationId: getBudget
+              description: Read the first budget of this page, with its computed totals.
+              parameters:
+                path.id: '$response.body#/budgets/0/id'
+            UpdateListedBudget:
+              operationId: updateBudget
+              description: Submit the first budget's own term back to it.
+              parameters:
+                path.id: '$response.body#/budgets/0/id'
+              requestBody:
+                term_beginning: '$response.body#/budgets/0/term_beginning'
+                term_end: '$response.body#/budgets/0/term_end'
+              x-schemathesis:
+                merge_body: false
+            ListListedBudgetEntries:
+              operationId: listBudgetEntries
+              description: List the entries of the first budget of this page.
+              parameters:
+                path.budgetId: '$response.body#/budgets/0/id'
+            CopyListedBudgetEntries:
+              operationId: copyBudgetEntries
+              description: |
+                Copy the first budget's entry amounts onto itself — the one source that
+                is guaranteed to exist for any budget in the page.
+              parameters:
+                path.budgetId: '$response.body#/budgets/0/id'
+                path.sourceBudgetId: '$response.body#/budgets/0/id'
+                path.mode: preserve
+            DeleteListedBudget:
+              operationId: deleteBudget
+              description: Delete the first budget of this page and all of its entries.
+              parameters:
+                path.id: '$response.body#/budgets/0/id'
     post:
       tags: [Budgets]
       summary: Create a new budget
@@ -605,6 +767,52 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/Budget'
+          links:
+            GetBudget:
+              operationId: getBudget
+              description: Read the new budget together with its computed totals.
+              parameters:
+                path.id: '$response.body#/id'
+            UpdateBudget:
+              operationId: updateBudget
+              description: |
+                Submit the budget's own term back to it. The overlap check ignores the
+                budget being updated, so an unchanged term is accepted rather than
+                failing with `BUDGET_OVERLAPPING`.
+              parameters:
+                path.id: '$response.body#/id'
+              requestBody:
+                term_beginning: '$response.body#/term_beginning'
+                term_end: '$response.body#/term_end'
+              x-schemathesis:
+                merge_body: false
+            ListBudgetEntries:
+              operationId: listBudgetEntries
+              description: |
+                List the entries created together with the budget — one per income and
+                expense account that existed when it was created.
+              parameters:
+                path.budgetId: '$response.body#/id'
+            GetBudgetEntryTree:
+              operationId: getBudgetEntryTree
+              description: The same entries, arranged into the category tree.
+              parameters:
+                path.budgetId: '$response.body#/id'
+            CopyBudgetEntries:
+              operationId: copyBudgetEntries
+              description: |
+                Copy entry amounts into the new budget. Source and target are the same
+                budget here, that being the only source guaranteed to exist at this
+                point; both ids are resolved exactly, so the call answers 204.
+              parameters:
+                path.budgetId: '$response.body#/id'
+                path.sourceBudgetId: '$response.body#/id'
+                path.mode: preserve
+            DeleteBudget:
+              operationId: deleteBudget
+              description: Delete the new budget and every entry belonging to it.
+              parameters:
+                path.id: '$response.body#/id'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
         '422':
@@ -724,6 +932,26 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/BudgetEntries'
+          links:
+            GetBudgetEntry:
+              operationId: getBudgetEntry
+              description: Read the first entry of this listing.
+              parameters:
+                path.budgetId: '$request.path.budgetId'
+                path.entryId: '$response.body#/budget_entries/0/id'
+            UpdateBudgetEntry:
+              operationId: updateBudgetEntry
+              description: |
+                Put an expected amount on the first entry of this listing. Only
+                `distribution`, `expected_amount` and `dt` are writable.
+              parameters:
+                path.budgetId: '$request.path.budgetId'
+                path.entryId: '$response.body#/budget_entries/0/id'
+              requestBody:
+                distribution: EVEN
+                expected_amount: 100
+              x-schemathesis:
+                merge_body: false
   /budgets/{budgetId}/entries/tree:
     get:
       tags: [Budget entries]

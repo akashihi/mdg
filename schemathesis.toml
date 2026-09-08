@@ -18,3 +18,27 @@ negative_data_rejection.enabled = false
 include-name = "POST /budgets"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412", "5xx"]
+
+# The stateful phase walks the OpenAPI links in docs/openapi/openapi.yaml, so it needs
+# `POST /accounts` to actually succeed: a generated `currency_id` in 1..999 usually names
+# a code that is not in the currency table (`CURRENCY_NOT_FOUND`), and a generated
+# `favorite`/`operational` on a non-asset account is `ACCOUNT_NONASSET_INVALIDFLAG`.
+# These pins apply to generated bodies only — explicit examples are never overridden.
+[[operations]]
+include-name = "POST /accounts"
+[operations.parameters]
+"body.currency_id" = 978
+"body.favorite" = false
+"body.operational" = false
+
+# Longer scenarios so a created resource is read and updated before the link that
+# deletes it fires, and generated bodies that the API can actually parse: MDG answers
+# a body carrying unknown properties with an empty 400, which otherwise burns most of
+# the phase's budget before any link is traversed.
+[phases.stateful]
+max-steps = 12
+
+[phases.stateful.generation]
+mode = "positive"
+allow-extra-parameters = false
+max-examples = 75
