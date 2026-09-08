@@ -1,67 +1,84 @@
 const pactum = require('pactum');
 const itParam = require('mocha-param');
+const { snapshotSettings, restoreSettings } = require('./cleanup');
 
 const SETTINGS = ['currency.primary', 'ui.transaction.closedialog', 'ui.language', 'ui.overviewpanel.widgets'];
 
-it('All settings are present in the settings list', async () => {
-    await pactum.spec('read')
-        .get('/settings')
-        .expectJsonLike('settings[*].id', SETTINGS);
-});
+describe('Settings', () => {
+    // These tests drive settings to fixed values and never put them back. The
+    // settings are application-wide singletons, so the values outlive the run
+    // unless the suite restores them itself. Wrapped in a describe so the hooks
+    // stay scoped to this file rather than becoming root hooks.
+    let snapshot = null;
 
-itParam('Loading setting ${value}', SETTINGS, async (params) => { // eslint-disable-line no-template-curly-in-string
-    await pactum.spec('read')
-        .get('/settings/{id}')
-        .withPathParams('id', params)
-        .expectJson("id", params);
-});
-
-const SETTINGS_TRIGGERS = [
-    {
-        id: 'ui.transaction.closedialog',
-        firstValue: 'false',
-        secondValue: 'true'
-    },
-    {
-        id: 'currency.primary',
-        firstValue: '840',
-        secondValue: '978'
-    }
-
-];
-
-itParam('Check ${value.id} value setting', SETTINGS_TRIGGERS, async (params) => { // eslint-disable-line no-template-curly-in-string
-    await pactum.spec('Set setting value', {
-        id: params.id,
-        value: params.firstValue
+    before(async () => {
+        snapshot = await snapshotSettings();
     });
 
-    await pactum.spec('Check setting value', { id: params.id, value: params.firstValue });
-
-    await pactum.spec('Set setting value', {
-        id: params.id,
-        value: params.secondValue
+    after(async () => {
+        await restoreSettings(snapshot);
     });
 
-    await pactum.spec('Check setting value', { id: params.id, value: params.secondValue });
-});
+    it('All settings are present in the settings list', async () => {
+        await pactum.spec('read')
+            .get('/settings')
+            .expectJsonLike('settings[*].id', SETTINGS);
+    });
 
-it('Invalid primary currency is rejected', async () => {
-    await pactum.spec('expect error', { statusCode: 422, code: 'SETTING_DATA_INVALID' })
-        .put('/settings/{id}')
-        .withPathParams('id', 'currency.primary')
-        .withJson({
+    itParam('Loading setting ${value}', SETTINGS, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('read')
+            .get('/settings/{id}')
+            .withPathParams('id', params)
+            .expectJson("id", params);
+    });
+
+    const SETTINGS_TRIGGERS = [
+        {
+            id: 'ui.transaction.closedialog',
+            firstValue: 'false',
+            secondValue: 'true'
+        },
+        {
             id: 'currency.primary',
-            value: -1
-        });
-});
+            firstValue: '840',
+            secondValue: '978'
+        }
 
-itParam('Setting update without a value is rejected: ${value}', SETTINGS, async (params) => { // eslint-disable-line no-template-curly-in-string
-    await pactum.spec()
-        .put('/settings/{id}')
-        .withPathParams('id', params)
-        .withHeaders('Content-Type', 'application/vnd.mdg+json;version=1')
-        .withJson({})
-        .expectStatus(400)
-        .expectBody('');
+    ];
+
+    itParam('Check ${value.id} value setting', SETTINGS_TRIGGERS, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('Set setting value', {
+            id: params.id,
+            value: params.firstValue
+        });
+
+        await pactum.spec('Check setting value', { id: params.id, value: params.firstValue });
+
+        await pactum.spec('Set setting value', {
+            id: params.id,
+            value: params.secondValue
+        });
+
+        await pactum.spec('Check setting value', { id: params.id, value: params.secondValue });
+    });
+
+    it('Invalid primary currency is rejected', async () => {
+        await pactum.spec('expect error', { statusCode: 422, code: 'SETTING_DATA_INVALID' })
+            .put('/settings/{id}')
+            .withPathParams('id', 'currency.primary')
+            .withJson({
+                id: 'currency.primary',
+                value: -1
+            });
+    });
+
+    itParam('Setting update without a value is rejected: ${value}', SETTINGS, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec()
+            .put('/settings/{id}')
+            .withPathParams('id', params)
+            .withHeaders('Content-Type', 'application/vnd.mdg+json;version=1')
+            .withJson({})
+            .expectStatus(400)
+            .expectBody('');
+    });
 });

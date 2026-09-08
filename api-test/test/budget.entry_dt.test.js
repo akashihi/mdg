@@ -1,8 +1,13 @@
 const pactum = require('pactum');
 const {createAccountForTransaction} = require('./transaction.handler');
+const {stash} = require('pactum');
 
 describe('Budget entry transaction date handling', () => {
     const e2e = pactum.e2e('Budget entry transaction date handling');
+
+    after(async () => {
+        await e2e.cleanup();
+    });
 
     it('Prepare budget and accounts', async () => {
         await createAccountForTransaction(e2e);
@@ -19,8 +24,14 @@ describe('Budget entry transaction date handling', () => {
             .spec('read')
             .get('/budgets/{id}/entries')
             .withPathParams('id', '$S{BudgetID}')
-            .stores('BudgetEntryID', 'budget_entries[0].id')
-            .stores('BudgetEntryAccountID', 'budget_entries[0].account_id');
+            .expect(ctx => {
+                const expenseAccountID = stash.getDataStore().ExpenseAccountID;
+                const entry = ctx.res.json.budget_entries.find(e => e.account_id === expenseAccountID);
+                if (!entry) {
+                    throw new Error('No budget entry for the expense account ' + expenseAccountID);
+                }
+                stash.addDataStore({ BudgetEntryID: entry.id, BudgetEntryAccountID: entry.account_id });
+            });
     });
 
     it('Set dt for entry', async () => {
@@ -145,6 +156,5 @@ describe('Budget entry transaction date handling', () => {
                     throw new Error('DT field still present on BudgetEntry object');
                 }
             });
-        await e2e.cleanup();
     });
 });

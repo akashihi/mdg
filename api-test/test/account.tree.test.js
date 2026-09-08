@@ -4,6 +4,10 @@ const {stash} = require("pactum");
 
 describe('Category-Account tree', () => {
     const e2e = pactum.e2e('Category-Account tree');
+
+    after(async () => {
+        await e2e.cleanup();
+    });
     let categories;
     it('Create categories tree', async () => {
         categories = await makeTree();
@@ -18,7 +22,10 @@ describe('Category-Account tree', () => {
                 }
             })
             .stores('AccountID', 'id')
-            .expectJson("category_id", categories.inner);
+            .expectJson("category_id", categories.inner)
+            .clean()
+            .delete('/accounts/{id}')
+            .withPathParams('id', '$S{AccountID}');
     });
 
     it('Read account within tree', async () => {
@@ -69,7 +76,6 @@ describe('Category-Account tree', () => {
 
     it('Delete categories', async () => {
         await dropTree(categories);
-        await e2e.cleanup();
     });
 
 });

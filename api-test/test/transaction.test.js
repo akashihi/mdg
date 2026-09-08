@@ -12,6 +12,9 @@ before(() => {
 
 describe('Transaction operations', () => {
     const e2e = pactum.e2e('Transaction operations');
+    after(async () => {
+        await e2e.cleanup();
+    });
 
     it('Get transactions count', async () => {
         await e2e.step('List transactions')
@@ -122,7 +125,5 @@ describe('Transaction operations', () => {
 
     it('Transaction deletion reverts accounts balances', async () => {
         await checkAccountsBalances(e2e, 0, 0, 0);
-
-        await e2e.cleanup();
     });
 });

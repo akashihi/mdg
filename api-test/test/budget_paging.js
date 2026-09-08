@@ -38,6 +38,10 @@ const IDS = ['20220101','20210101','20200101','20190101','20180101','20170101'];
 describe('Budget paging', () => {
     const e2e = pactum.e2e('Budget paging');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create series of budgets', async () => {
         for (let b of BUDGETS_SERIES) {
             await e2e.step('Post budget')
@@ -78,7 +82,5 @@ describe('Budget paging', () => {
                 .delete('/budgets/{id}')
                 .withPathParams('id', IDS[id]);
         }
-
-        await e2e.cleanup();
     });
 });

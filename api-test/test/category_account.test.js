@@ -1,15 +1,25 @@
 const pactum = require('pactum');
+const { createTracker } = require('./cleanup');
+
+const tracker = createTracker();
+
+after(async () => {
+    await tracker.cleanup();
+});
 
 describe('Category-Account operations', () => {
     const e2e = pactum.e2e('Category-Account operations');
 
+    // In an after() hook rather than as the last line of the last test: a failing
+    // assertion would otherwise skip the cleanup call altogether.
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create category', async () => {
         await e2e.step('Post category')
             .spec('Create Category', { '@DATA:TEMPLATE@': 'Category:Basic:V1' })
-            .stores('CategoryID', 'id')
-            .clean()
-            .delete('/categories/{id}')
-            .withPathParams('id', '$S{CategoryID}');
+            .stores('CategoryID', 'id');
     });
 
     it('Create account with category', async () => {
@@ -21,7 +31,10 @@ describe('Category-Account operations', () => {
                 }
             })
             .expectJson('category_id', '$S{CategoryID}')
-            .stores('AccountID', 'id');
+            .stores('AccountID', 'id')
+            .clean()
+            .delete('/accounts/{id}')
+            .withPathParams('id', '$S{AccountID}');
     });
 
     it('Read account with category', async () => {
@@ -64,7 +77,10 @@ describe('Category-Account operations', () => {
     it('Create one more category', async () => {
         await e2e.step('Post category')
             .spec('Create Category', { '@DATA:TEMPLATE@': 'Category:Basic:V1' })
-            .stores('CategoryID', 'id');
+            .stores('CategoryID', 'id')
+            .clean()
+            .delete('/categories/{id}')
+            .withPathParams('id', '$S{CategoryID}');
     });
 
     it('Assign account to the new category', async () => {
@@ -84,8 +100,6 @@ describe('Category-Account operations', () => {
             .get('/accounts/{id}')
             .withPathParams('id', '$S{AccountID}')
             .expectJson('category_id', '$S{CategoryID}');
-
-        await e2e.cleanup();
     });
 });
 
@@ -95,9 +109,9 @@ it('Asset account has default category', async () => {
     const categories = categoryResponse.json;
     const categoryID = categories.categories.filter((c) => c.name === 'Current').map((c) => c.id)[0];
 
-    const accountID = await pactum.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:V1' })
+    const accountID = tracker.account(await pactum.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:V1' })
         .expectJson('category_id', categoryID)
-        .returns('id');
+        .returns('id'));
 
     await pactum.spec('read')
         .get('/accounts/{id}')
@@ -106,11 +120,11 @@ it('Asset account has default category', async () => {
 });
 
 it('Category can not be assigned to the incompatible account', async () => {
-    const categoryID = await pactum.spec('Create Category', { '@DATA:TEMPLATE@': 'Category:Basic:V1' })
-        .returns('id');
+    const categoryID = tracker.category(await pactum.spec('Create Category', { '@DATA:TEMPLATE@': 'Category:Basic:V1' })
+        .returns('id'));
 
-    const accountID = await pactum.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:V1' })
-        .returns('id');
+    const accountID = tracker.account(await pactum.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:V1' })
+        .returns('id'));
 
     await pactum.spec('expect error', { statusCode: 412, code: 'CATEGORY_INVALID_TYPE' })
         .put('/accounts/{id}')

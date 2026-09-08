@@ -1,8 +1,25 @@
 const pactum = require('pactum');
 const { createAccountForTransaction, createUSDAccountForTransaction } = require('./transaction.handler');
+const { createTracker } = require('./cleanup');
+
+
+const tracker = createTracker();
+
+after(async () => {
+    await tracker.cleanup();
+});
+
+async function prepareAccounts (withUsd) {
+    await createAccountForTransaction();
+    tracker.accountsFromStore('IncomeAccountID', 'AssetAccountID', 'ExpenseAccountID');
+    if (withUsd) {
+        await createUSDAccountForTransaction();
+        tracker.accountsFromStore('AssetUSDAccountID');
+    }
+}
 
 it('Empty transactions are not allowed', async () => {
-    await createAccountForTransaction();
+    await prepareAccounts(false);
 
     // No way to remove field from the template
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_EMPTY' })
@@ -19,7 +36,7 @@ it('Empty transactions are not allowed', async () => {
 });
 
 it('Empty operations are ignored', async () => {
-    await createAccountForTransaction();
+    await prepareAccounts(false);
 
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_EMPTY' })
         .post('/transactions')
@@ -42,7 +59,7 @@ it('Empty operations are ignored', async () => {
 });
 
 it('Unbalanced transactions are not allowed', async () => {
-    await createAccountForTransaction();
+    await prepareAccounts(false);
 
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_NOT_BALANCED' })
         .post('/transactions')
@@ -65,8 +82,7 @@ it('Unbalanced transactions are not allowed', async () => {
 });
 
 it('Multi currency transaction without rate are not allowed', async () => {
-    await createAccountForTransaction();
-    await createUSDAccountForTransaction();
+    await prepareAccounts(true);
 
     // No way to remove field from the template
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_AMBIGUOUS_RATE' })
@@ -92,8 +108,7 @@ it('Multi currency transaction without rate are not allowed', async () => {
 });
 
 it('Multi currency transaction with rate set to all operations are not allowed', async () => {
-    await createAccountForTransaction();
-    await createUSDAccountForTransaction();
+    await prepareAccounts(true);
 
     // No way to remove field from the template
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_NO_DEFAULT_RATE' })
@@ -111,8 +126,7 @@ it('Multi currency transaction with rate set to all operations are not allowed',
 });
 
 it('Multi currency transaction with default rate on different currencies are not allowed', async () => {
-    await createAccountForTransaction();
-    await createUSDAccountForTransaction();
+    await prepareAccounts(true);
 
     // No way to remove field from the template
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_AMBIGUOUS_RATE' })
@@ -132,8 +146,7 @@ it('Multi currency transaction with default rate on different currencies are not
 });
 
 it('Multi currency transaction with 0 rate is not allowed', async () => {
-    await createAccountForTransaction();
-    await createUSDAccountForTransaction();
+    await prepareAccounts(true);
 
     // No way to remove field from the template
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_ZERO_RATE' })
@@ -153,8 +166,7 @@ it('Multi currency transaction with 0 rate is not allowed', async () => {
 });
 
 it('Unbalanced multi currency transactions are not allowed', async () => {
-    await createAccountForTransaction();
-    await createUSDAccountForTransaction();
+    await prepareAccounts(true);
 
     // No way to remove field from the template
     await pactum.spec('expect error', { statusCode: 412, code: 'TRANSACTION_NOT_BALANCED' })

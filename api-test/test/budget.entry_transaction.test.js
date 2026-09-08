@@ -4,6 +4,10 @@ const {createAccountForTransaction} = require('./transaction.handler');
 describe('BudgetEntry <-> Transaction operations', () => {
     const e2e = pactum.e2e('BudgetEntry <-> Transaction operations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Prepare budget and accounts', async () => {
         await createAccountForTransaction(e2e);
         await e2e.step('Post budget')
@@ -55,7 +59,5 @@ describe('BudgetEntry <-> Transaction operations', () => {
 
         await e2e.step('List budget entries')
             .spec('Validate Budget Entry actual amount', 0);
-
-        await e2e.cleanup();
     });
 });

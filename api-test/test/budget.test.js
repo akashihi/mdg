@@ -38,6 +38,10 @@ const INVALID_BUDGETS = [
 describe('Budget operations', () => {
   const e2e = pactum.e2e('Budget operations');
 
+  after(async () => {
+      await e2e.cleanup();
+  });
+
   it('Budget account', async () => {
     await e2e.step('Post budget')
       .spec('Create Budget', { '@DATA:TEMPLATE@': 'Budget:Feb:V1' })
@@ -142,7 +146,5 @@ describe('Budget operations', () => {
       .spec('read')
       .get('/budgets')
       .expectJsonMatch('budgets[*].id', expression('$S{BudgetID}', '!$V.includes($S{BudgetID})'));
-
-    await e2e.cleanup();
   });
 });

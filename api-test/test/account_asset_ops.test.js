@@ -3,12 +3,19 @@ const pactum = require('pactum');
 describe('Account flag management', () => {
     const e2e = pactum.e2e('Account operations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create account with flags', async () => {
         await e2e.step('Post account')
             .spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:V1' })
             .stores('AccountID', 'id')
             .expectJson('favorite', true)
-            .expectJson('operational', true);
+            .expectJson('operational', true)
+            .clean()
+            .delete('/accounts/{id}')
+            .withPathParams('id', '$S{AccountID}');
     });
 
     it('List flagged accounts', async () => {
@@ -50,7 +57,6 @@ describe('Account flag management', () => {
             .withPathParams('id', '$S{AccountID}')
             .expectJson('favorite', false)
             .expectJson('operational', false);
-        await e2e.cleanup();
     });
 
     it('Currency change is no allowed for asset accounts', async () => {

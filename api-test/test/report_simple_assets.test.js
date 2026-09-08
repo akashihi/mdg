@@ -6,6 +6,10 @@ const {stash} = require("pactum");
 describe('Simple assets report test', () => {
     const e2e = pactum.e2e('Totals report test');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Prepare accounts', async () => {
         await createAccountForTransaction(e2e);
     });
@@ -28,7 +32,11 @@ describe('Simple assets report test', () => {
 
     it('Transaction updates simple report', async () => {
         await e2e.step('Create transaction')
-            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' });
+            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' })
+            .stores('TransactionID', 'id')
+            .clean()
+            .delete('/transactions/{id}')
+            .withPathParams('id', '$S{TransactionID}');
 
         await e2e.step('Force historical balances re index')
             .spec('update')
@@ -45,7 +53,5 @@ describe('Simple assets report test', () => {
             .spec('read')
             .get("/reports/assets/simple?startDate=2017-03-01&endDate=2017-03-15&granularity=1")
             .expectJson('series[0].data[0].y', initialValue + 150);
-
-        await e2e.cleanup();
     });
 });

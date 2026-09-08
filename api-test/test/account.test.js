@@ -4,13 +4,20 @@ const { int, expression } = require('pactum-matchers');
 describe('Account operations', () => {
     const e2e = pactum.e2e('Account operations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create account', async () => {
         await e2e.step('Post account')
             .spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Expense:V1' })
             .stores('AccountID', 'id')
             .expectJson("name", "Rent")
             .expectJson("account_type", "EXPENSE")
-            .expectJsonMatch("id",int());
+            .expectJsonMatch("id",int())
+            .clean()
+            .delete('/accounts/{id}')
+            .withPathParams('id', '$S{AccountID}');
     });
 
     it('List accounts', async () => {
@@ -125,7 +132,5 @@ describe('Account operations', () => {
             .get('/accounts')
             .withQueryParams({ q: '%7B%22name%22%3A%22Monthly%20rent%22%7D'})
             .expectJsonMatch('accounts[*].id', expression('$S{AccountID}', '$V.includes($S{AccountID})'));
-
-        await e2e.cleanup();
     });
 });
