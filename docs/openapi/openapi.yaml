@@ -201,6 +201,12 @@ paths:
                     rate: 1
               x-schemathesis:
                 merge_body: false
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
   /accounts/tree:
     get:
       tags: [Accounts]
@@ -272,12 +278,16 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/account.yaml#/Account'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '404':
           description: No account found
           content:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/problem.yaml#/Problem'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
     delete:
       tags: [Accounts]
       summary: Delete an account
@@ -363,8 +373,12 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/category.yaml#/Category'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
   /categories/{id}:
     get:
       tags: [Categories]
@@ -380,6 +394,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/category.yaml#/Category'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
     put:
       tags: [Categories]
       summary: Modify category data
@@ -415,8 +431,14 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/category.yaml#/Category'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
     delete:
       tags: [Categories]
       summary: Delete a category
@@ -432,6 +454,8 @@ paths:
         '204':
           description: The category was deleted.
 
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
   /transactions:
     get:
       tags: [Transactions]
@@ -491,6 +515,8 @@ paths:
                 string, which reads as *no cursor* and returns the first page again.
               parameters:
                 query.cursor: '$response.body#/next'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
     post:
@@ -583,6 +609,8 @@ paths:
               description: Delete the transaction that was just created.
               parameters:
                 path.id: '$response.body#/id'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '404':
           description: No transaction found
           content:
@@ -591,6 +619,8 @@ paths:
                 $ref: './components/schemas/problem.yaml#/Problem'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /transactions/{id}:
@@ -645,6 +675,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/transaction.yaml#/Transaction'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '404':
           description: No transaction found
           content:
@@ -653,6 +685,8 @@ paths:
                 $ref: './components/schemas/problem.yaml#/Problem'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
     delete:
@@ -753,6 +787,8 @@ paths:
                 string, which reads as *no cursor* and returns the first page again.
               parameters:
                 query.cursor: '$response.body#/next'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
     post:
@@ -833,8 +869,12 @@ paths:
               description: Delete the new budget and every entry belonging to it.
               parameters:
                 path.id: '$response.body#/id'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /budgets/{id}:
@@ -901,6 +941,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/Budget'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '404':
           description: No budget found
           content:
@@ -909,6 +951,8 @@ paths:
                 $ref: './components/schemas/problem.yaml#/Problem'
         '412':
           $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
     delete:
@@ -972,6 +1016,8 @@ paths:
                 expected_amount: 100
               x-schemathesis:
                 merge_body: false
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
   /budgets/{budgetId}/entries/tree:
     get:
       tags: [Budget entries]
@@ -1000,6 +1046,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/BudgetEntryTree'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
   /budgets/{budgetId}/entries/{entryId}:
     get:
       tags: [Budget entries]
@@ -1058,6 +1106,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/budget.yaml#/BudgetEntry'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '404':
           description: No entry found
           content:
@@ -1066,6 +1116,8 @@ paths:
                 $ref: './components/schemas/problem.yaml#/Problem'
         '409':
           $ref: './components/responses.yaml#/Conflict'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /budgets/{budgetId}/entries/copy/{mode}/{sourceBudgetId}:
@@ -1144,6 +1196,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/currency.yaml#/Currency'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
     put:
       tags: [Currencies]
       summary: Modify currency data
@@ -1172,6 +1226,12 @@ paths:
               schema:
                 $ref: './components/schemas/currency.yaml#/Currency'
 
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
   /rates/status:
     get:
       tags: [Rates]
@@ -1200,6 +1260,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/rate.yaml#/Rates'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /rates/{ts}/{from}/{to}:
     get:
       tags: [Rates]
@@ -1233,6 +1295,8 @@ paths:
               schema:
                 $ref: './components/schemas/rate.yaml#/Rate'
 
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   # All reporting endpoints are read-only.
   /reports/totals:
     get:
@@ -1290,6 +1354,8 @@ paths:
       responses:
         '200':
           $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/assets/currency:
     get:
       tags: [Reports]
@@ -1305,6 +1371,8 @@ paths:
       responses:
         '200':
           $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/assets/type:
     get:
       tags: [Reports]
@@ -1318,6 +1386,8 @@ paths:
       responses:
         '200':
           $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/income/events:
     get:
       tags: [Reports]
@@ -1331,6 +1401,8 @@ paths:
       responses:
         '200':
           $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/expense/events:
     get:
       tags: [Reports]
@@ -1344,6 +1416,8 @@ paths:
       responses:
         '200':
           $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/income/accounts:
     get:
       tags: [Reports]
@@ -1357,6 +1431,8 @@ paths:
       responses:
         '200':
           $ref: './components/responses.yaml#/HierarchicalReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/expense/accounts:
     get:
       tags: [Reports]
@@ -1370,6 +1446,8 @@ paths:
       responses:
         '200':
           $ref: './components/responses.yaml#/HierarchicalReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/budget/execution:
     get:
       tags: [Reports]
@@ -1390,6 +1468,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/report.yaml#/BudgetExecutionReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
   /reports/budget/cashflow/{budget_id}:
     get:
       tags: [Reports]
@@ -1417,6 +1497,8 @@ paths:
               schema:
                 $ref: './components/schemas/report.yaml#/BudgetCashflowReport'
 
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
   /settings:
     get:
       tags: [Settings]
@@ -1470,6 +1552,10 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/ui.transaction.closedialog:
@@ -1489,6 +1575,10 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/ui.language:
@@ -1509,6 +1599,10 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/ui.overviewpanel.widgets:
@@ -1531,6 +1625,10 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/mnt.transaction.reindex:
@@ -1559,6 +1657,8 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/MaintenanceAccepted'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
   /settings/mnt.reporting.refresh:
     put:
       tags: [Settings]
@@ -1582,3 +1682,5 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/MaintenanceAccepted'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'

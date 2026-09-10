@@ -74,3 +74,51 @@ MaintenanceAccepted:
     application/vnd.mdg+json;version=1:
       schema:
         $ref: './schemas/setting.yaml#/Setting'
+
+# --- Failures the framework reports before the application is reached -------
+
+BadRequest:
+  description: |
+    The request could not be bound to the operation — a parameter that does not
+    convert to the declared type, a required parameter that is absent, or a body
+    that could not be read. Read `code` to find out which.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Request parameter is invalid
+        status: 400
+        instance: /transactions
+        code: REQUEST_PARAMETER_INVALID
+        detail: A request parameter could not be converted to the type this operation expects, check the specification for its format
+
+NotFound:
+  description: |
+    No such resource. A path id that is not a number is reported here as well,
+    since it can not name an existing resource.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Requested account could not be found
+        status: 404
+        instance: /accounts/2
+        code: ACCOUNT_NOT_FOUND
+        detail: We can not find account with specified code in the database, check it's id please.
+
+UnsupportedMediaType:
+  description: |
+    The request body was sent with a media type other than
+    `application/vnd.mdg+json;version=1`, which is the only one this API consumes.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Media type is not supported
+        status: 415
+        instance: /accounts
+        code: REQUEST_MEDIATYPE_UNSUPPORTED
+        detail: This API only consumes application/vnd.mdg+json;version=1

@@ -73,12 +73,9 @@ describe('Settings', () => {
     });
 
     itParam('Setting update without a value is rejected: ${value}', SETTINGS, async (params) => { // eslint-disable-line no-template-curly-in-string
-        await pactum.spec()
+        await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID' })
             .put('/settings/{id}')
             .withPathParams('id', params)
-            .withHeaders('Content-Type', 'application/vnd.mdg+json;version=1')
-            .withJson({})
-            .expectStatus(400)
-            .expectBody('');
+            .withJson({});
     });
 });

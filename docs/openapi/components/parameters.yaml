@@ -102,7 +102,9 @@ Limit:
     populates the `first` and `next` cursors.
   schema:
     type: integer
+    format: int32
     minimum: 1
+    maximum: 2147483647
   example: 10
 
 Cursor:
@@ -152,7 +154,9 @@ Granularity:
     granularity of `0` collapses the whole range into a single bucket.
   schema:
     type: integer
+    format: int32
     minimum: 0
+    maximum: 2147483647
   example: 1
 
 BudgetEntryFilter:

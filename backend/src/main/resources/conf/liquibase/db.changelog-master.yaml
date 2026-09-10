@@ -67,3 +67,5 @@ databaseChangeLog:
       file: conf/liquibase/33-budgetselfoverlap.sql
   - include:
       file: conf/liquibase/34-cursorerror.sql
+  - include:
+      file: conf/liquibase/35-requesterrors.sql

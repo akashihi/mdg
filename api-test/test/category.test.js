@@ -48,6 +48,11 @@ describe('Category operations', () => {
             .expectJson('name', 'Salary');
     });
 
+    it('Delete non-existent category', async () => {
+        await pactum.spec('expect error', { statusCode: 404, code: 'CATEGORY_NOT_FOUND', instance: '/categories/999999999' })
+            .delete('/categories/999999999');
+    });
+
     it('Delete category', async () => {
         await e2e.step('Delete category')
             .spec('delete')
