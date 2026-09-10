@@ -34,7 +34,9 @@ info:
     start paging, then follow the `next` cursor. Cursors are **self-contained** —
     they carry the original filter, sort, embed and limit — so when `cursor` is
     supplied every other query parameter is ignored. `first` and `next` come
-    back as the empty string when there is no such page.
+    back as the empty string when there is no such page, and handing an empty
+    `cursor` back reads as *no cursor* rather than as an error. Any other cursor
+    this API did not issue is rejected with `422` `CURSOR_DATA_INVALID`.
 
     ## Embedding
 
@@ -482,6 +484,15 @@ paths:
               description: Delete the first transaction of this page.
               parameters:
                 path.id: '$response.body#/transactions/0/id'
+            NextTransactionPage:
+              operationId: listTransactions
+              description: |
+                Follow this page's `next` cursor. An exhausted page carries the empty
+                string, which reads as *no cursor* and returns the first page again.
+              parameters:
+                query.cursor: '$response.body#/next'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
     post:
       tags: [Transactions]
       summary: Create a new transaction
@@ -735,6 +746,15 @@ paths:
               description: Delete the first budget of this page and all of its entries.
               parameters:
                 path.id: '$response.body#/budgets/0/id'
+            NextBudgetPage:
+              operationId: listBudgets
+              description: |
+                Follow this page's `next` cursor. An exhausted page carries the empty
+                string, which reads as *no cursor* and returns the first page again.
+              parameters:
+                query.cursor: '$response.body#/next'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
     post:
       tags: [Budgets]
       summary: Create a new budget

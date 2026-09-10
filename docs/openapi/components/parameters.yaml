@@ -112,6 +112,12 @@ Cursor:
   description: |
     A page pointer previously handed out by the server in `self`, `first` or
     `next`. Treat it as opaque; the encoding is not part of the contract.
+
+    Only a cursor this API issued is accepted. Anything else — a corrupted or
+    truncated one, or a value the client made up — is rejected with `422`
+    `CURSOR_DATA_INVALID`. The empty string is the exception: it reads as *no
+    cursor* and returns the first page, which is what following an exhausted
+    `next` does.
   schema:
     type: string
   example: eyJsaW1pdCI6MywicG9pbnRlciI6N30=

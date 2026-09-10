@@ -42,3 +42,18 @@ max-steps = 12
 mode = "positive"
 allow-extra-parameters = false
 max-examples = 75
+
+# A generated `cursor` is a schema-conforming string but not a cursor this API ever issued,
+# so 422 CURSOR_DATA_INVALID is the correct answer and `positive_data_acceptance` would
+# otherwise read it as an API rejecting valid data. OpenAPI has no way to say "only values
+# the server handed out", so the check has to allow it. The `next` self-links on these two
+# operations are what make the stateful phase follow real, server-issued cursors as well.
+[[operations]]
+include-name = "GET /transactions"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "422"]
+
+[[operations]]
+include-name = "GET /budgets"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "422"]
