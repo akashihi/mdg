@@ -1,5 +1,6 @@
 Currency:
   type: object
+  additionalProperties: false
   description: |
     A currency known to the system. The currency list is fixed data — there
     is no create or delete operation, and only `active` can be changed.

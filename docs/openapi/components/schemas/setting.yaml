@@ -15,6 +15,7 @@ Setting:
 
 SettingUpdateCurrency:
   type: object
+  additionalProperties: false
   description: The body of a `currency.primary` update.
   required: [value]
   properties:
@@ -28,6 +29,7 @@ SettingUpdateCurrency:
 
 SettingUpdateCloseDialog:
   type: object
+  additionalProperties: false
   description: The body of a `ui.transaction.closedialog` update.
   required: [value]
   properties:
@@ -43,6 +45,7 @@ SettingUpdateCloseDialog:
 
 SettingUpdateLanguage:
   type: object
+  additionalProperties: false
   description: The body of a `ui.language` update.
   required: [value]
   properties:
@@ -57,6 +60,7 @@ SettingUpdateLanguage:
 
 SettingUpdateWidgets:
   type: object
+  additionalProperties: false
   description: The body of a `ui.overviewpanel.widgets` update.
   required: [value]
   properties:

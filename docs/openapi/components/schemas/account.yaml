@@ -1,5 +1,6 @@
 Account:
   type: object
+  additionalProperties: false
   description: |
     An account. Accounts of type `ASSET` hold money.
 
@@ -82,6 +83,7 @@ Account:
 
 AccountCreate:
   type: object
+  additionalProperties: false
   description: |
     The body of an account create.
 

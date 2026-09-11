@@ -1,5 +1,6 @@
 Operation:
   type: object
+  additionalProperties: false
   description: |
     A single entry of a transaction — one account's balance change.
   required: [account_id, amount]
@@ -31,6 +32,7 @@ Operation:
 
 Transaction:
   type: object
+  additionalProperties: false
   description: A double-entry transaction.
   required: [timestamp, operations]
   properties:

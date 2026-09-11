@@ -1,5 +1,6 @@
 Category:
   type: object
+  additionalProperties: false
   description: |
     An account category. Categories form a forest — one tree per account type —
     and a category may only ever hold children and accounts of its own
@@ -28,6 +29,9 @@ Category:
       example: Pet expenses
     priority:
       type: integer
+      format: int32
+      minimum: -2147483648
+      maximum: 2147483647
       description: |
         Ordering weight. Categories  are sorted
         ascending by this value.
@@ -47,6 +51,7 @@ Category:
 
 CategoryCreate:
   type: object
+  additionalProperties: false
   description: |
     The body of a category create.
   required: [account_type, name, priority]
@@ -63,6 +68,9 @@ CategoryCreate:
       description: Category name. Not required to be unique.
     priority:
       type: integer
+      format: int32
+      minimum: -2147483648
+      maximum: 2147483647
       description: |
         Ordering weight. Categories are sorted ascending by this value.
     account_type:

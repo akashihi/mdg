@@ -14,11 +14,38 @@ request-timeout = 300
 [operations.checks]
 negative_data_rejection.enabled = false
 
+# MDG answers business-rule rejections with 412 and data-validation rejections with 422,
+# and `positive_data_acceptance` accepts neither by default — so a correct rejection of a
+# schema-compliant body reads as "API rejected schema-compliant request". Several of these
+# rules cannot be expressed in OpenAPI at all: `term_end` after `term_beginning` is
+# cross-field, TRANSACTION_NOT_BALANCED is arithmetic over an array, and BUDGET_OVERLAPPING
+# depends on rows this run created earlier. Each allowance below is derived from the
+# MdgException throw sites the operation can actually reach; `expected-statuses` replaces
+# the default rather than extending it, so the whole list is spelled out every time.
+#
+# 5xx is deliberately absent everywhere: `server_error` is the check that should report a
+# 500, and listing it here only hides one. See MIGRATION-NOTES.md #25 and #26.
+
+# BUDGET_INVALID_TERM, BUDGET_SHORT_RANGE, BUDGET_OVERLAPPING — BudgetService.kt:35-47.
 [[operations]]
 include-name = "POST /budgets"
 [operations.checks.positive_data_acceptance]
-expected-statuses = ["2xx", "401", "403", "404", "409", "412", "5xx"]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
 
+[[operations]]
+include-name = "PUT /budgets/{id}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+
+# BUDGETENTRY_IS_NEGATIVE — BudgetService.kt:220.
+[[operations]]
+include-name = "PUT /budgets/{budgetId}/entries/{entryId}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "422"]
+
+# ACCOUNT_NONASSET_INVALIDFLAG and CATEGORY_INVALID_TYPE (412), ACCOUNT_DATA_INVALID and
+# ACCOUNT_CURRENCY_ASSET (422) — AccountService.kt:25-45 and :82-112.
+#
 # The stateful phase walks the OpenAPI links in docs/openapi/openapi.yaml, so it needs
 # `POST /accounts` to actually succeed: a generated `currency_id` in 1..999 usually names
 # a code that is not in the currency table (`CURRENCY_NOT_FOUND`), and a generated
@@ -30,18 +57,56 @@ include-name = "POST /accounts"
 "body.currency_id" = 978
 "body.favorite" = false
 "body.operational" = false
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412", "422"]
 
-# Longer scenarios so a created resource is read and updated before the link that
-# deletes it fires, and generated bodies that the API can actually parse: MDG answers
-# a body carrying unknown properties with an empty 400, which otherwise burns most of
-# the phase's budget before any link is traversed.
-[phases.stateful]
-max-steps = 12
+[[operations]]
+include-name = "PUT /accounts/{id}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412", "422"]
 
-[phases.stateful.generation]
-mode = "positive"
-allow-extra-parameters = false
-max-examples = 75
+# CATEGORY_DATA_INVALID, CATEGORY_INVALID_TYPE, CATEGORY_TREE_CYCLED — CategoryService.kt:18-23
+# and :78-87. On create it is reached through a generated `parent_id` naming no category.
+[[operations]]
+include-name = "POST /categories"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+
+[[operations]]
+include-name = "PUT /categories/{id}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+
+# TRANSACTION_EMPTY, _ZERO_RATE, _NO_DEFAULT_RATE, _AMBIGUOUS_RATE, _NOT_BALANCED —
+# TransactionService.kt:57-77.
+#
+# `timestamp` is pinned for the same reason `body.currency_id` is pinned above. Transaction.ts
+# is a LocalDateTime, and common.yaml#/LocalDateTime can only constrain the *shape* of the
+# string — a generated value matching that pattern is still free to be 9999-99-99T99:99, which
+# is a 400 REQUEST_BODY_INVALID. `format: date-time` is not the answer either: it mandates an
+# RFC 3339 offset, which Jackson's LocalDateTimeDeserializer rejects outright.
+[[operations]]
+include-name = "POST /transactions"
+[operations.parameters]
+"body.timestamp" = "2017-02-04T16:45:36"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+
+[[operations]]
+include-name = "PUT /transactions/{id}"
+[operations.parameters]
+"body.timestamp" = "2017-02-04T16:45:36"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+
+# SETTING_DATA_INVALID — SettingService.kt:39. A generated value almost never names a
+# currency that exists in the currency table. The three sibling settings need no allowance:
+# `ui.transaction.closedialog` is already pinned down by an enum in its schema, and neither
+# `ui.language` nor `ui.overviewpanel.widgets` validates its value at all.
+[[operations]]
+include-name = "PUT /settings/currency.primary"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "422"]
 
 # A generated `cursor` is a schema-conforming string but not a cursor this API ever issued,
 # so 422 CURSOR_DATA_INVALID is the correct answer and `positive_data_acceptance` would
@@ -57,3 +122,27 @@ expected-statuses = ["2xx", "422"]
 include-name = "GET /budgets"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "422"]
+
+# Longer scenarios so a created resource is read and updated before the link that deletes it
+# fires. `allow-extra-parameters` governs query and header parameters only — unknown *body*
+# properties are held back by `additionalProperties: false` in the schemas instead, which the
+# spec declares on every object reachable from a request body. Note that is a deliberately
+# stricter contract than the server enforces: MDG's ObjectMapper has FAIL_ON_UNKNOWN_PROPERTIES
+# off, so it silently ignores unknown body properties rather than rejecting them. Saying so in
+# the schema is what stops the generator burying real failures under junk fields at every
+# nesting level. See MIGRATION-NOTES.md #28.
+[generation]
+# `additionalProperties: false` in the schemas is a contract for clients, not a claim about
+# the server: MDG's ObjectMapper has FAIL_ON_UNKNOWN_PROPERTIES off and answers an unknown
+# body property with 201, not 400. Left at its default of `true`, `negative_data_rejection`
+# would negate that keyword, send a body with an extra property and demand a 4xx it can never
+# get. Turning it off here keeps `additionalProperties` out of the negative phase entirely,
+# which is the only reason the schemas can state it. See MIGRATION-NOTES.md #28.
+allow-extra-parameters = false
+
+[phases.stateful]
+max-steps = 12
+
+[phases.stateful.generation]
+mode = "positive"
+max-examples = 75

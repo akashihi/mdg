@@ -1,5 +1,6 @@
 BudgetPair:
   type: object
+  additionalProperties: false
   description: |
     A budget deals with a predicted future and the actual present at the same
     time, so most of its numbers come in pairs.
@@ -16,6 +17,7 @@ BudgetPair:
 
 BudgetState:
   type: object
+  additionalProperties: false
   description: |
     Budget totals, all expressed in the primary currency.
   required: [income, expense, allowed]
@@ -43,6 +45,7 @@ BudgetState:
 
 Budget:
   type: object
+  additionalProperties: false
   description: |
     A budget covering an inclusive date range. Budget ranges may not overlap and
     must span at least two days.
@@ -114,6 +117,7 @@ Budgets:
 
 BudgetEntry:
   type: object
+  additionalProperties: false
   description: |
     A per-account line of a budget.
 
