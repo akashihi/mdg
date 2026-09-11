@@ -3,12 +3,11 @@ Account:
   description: |
     An account. Accounts of type `ASSET` hold money.
 
-    On create, only `account_type`, `currency_id`, `name`, `category_id` and —
-    for asset accounts — `favorite`/`operational` are read. On update, only
-    `hidden`, `name`, `category_id`, `favorite` and `operational` are applied;
-    everything else is silently ignored, except `currency_id`, which is rejected
-    with `ACCOUNT_CURRENCY_ASSET` on an asset account and re-rates
-    existing operations on a non-asset one.
+    This is the response shape and the body of an update; a create body is
+    `AccountCreate`. On update, only `hidden`, `name`, `category_id`, `favorite`
+    and `operational` are applied; everything else is silently ignored, except
+    `currency_id`, which is rejected with `ACCOUNT_CURRENCY_ASSET` on an asset
+    account and re-rates existing operations on a non-asset one.
   required: [account_type, currency_id, balance, primary_balance]
   properties:
     id:
@@ -20,6 +19,12 @@ Account:
       $ref: './common.yaml#/AccountType'
     name:
       type: [string, 'null']
+      minLength: 1
+      description: |
+        The account's name. Never empty on a stored account, so it is never empty
+        in a response. In an update body it may be absent or `null`, which keeps
+        the current name; a string has to be a non-blank one, else
+        `ACCOUNT_DATA_INVALID`.
       example: Wallet
     currency_id:
       allOf:
@@ -73,6 +78,66 @@ Account:
         Whether this asset account is a favorite. Valid for asset accounts only;
         same error as `operational` otherwise. Favorite accounts additionally
         appear under the synthetic `Favorite` category in `GET /accounts/tree`.
+      example: true
+
+AccountCreate:
+  type: object
+  description: |
+    The body of an account create.
+
+    `favorite` and `operational` are asset-only — sending either as `true` on any
+    other type fails with `ACCOUNT_NONASSET_INVALIDFLAG`. An asset account with no
+    `category_id` is filed under the seeded `Current` category. `hidden` is not
+    read here: a new account is never hidden.
+
+    The embedded `currency` and `category` objects are writable, because entities
+    double as API payloads and an embedded association deserializes straight onto
+    the entity. Only the `*_id` fields are validated, so an embedded object naming
+    a row that does not exist reaches the database unchecked and comes back as a
+    500. That is documented rather than tidied away — see `AccountService.create`.
+  required: [account_type, currency_id, name]
+  properties:
+    account_type:
+      $ref: './common.yaml#/AccountType'
+    name:
+      type: string
+      minLength: 1
+      description: |
+        Account name. Not required to be unique, but it may not be absent, `null`
+        or blank — any of those fails with `ACCOUNT_DATA_INVALID`.
+      example: Wallet
+    currency_id:
+      allOf:
+        - $ref: './common.yaml#/CurrencyId'
+      description: |
+        The account's currency. It must exist, else `CURRENCY_NOT_FOUND`.
+    currency:
+      allOf:
+        - $ref: './currency.yaml#/Currency'
+      description: |
+        The currency object itself. Unvalidated — see the note above.
+    category_id:
+      type: integer
+      format: int64
+      description: |
+        The account's category. It must exist, else `CATEGORY_NOT_FOUND`, and its
+        `account_type` has to match this account's, else `CATEGORY_INVALID_TYPE`.
+        Omit it on an asset account to get the default `Current` category.
+      example: 1
+    category:
+      allOf:
+        - $ref: './category.yaml#/Category'
+      description: |
+        The category object itself. Unvalidated — see the note above.
+    operational:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is an operational one. Asset accounts only.
+      example: true
+    favorite:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is a favorite. Asset accounts only.
       example: true
 
 Accounts:

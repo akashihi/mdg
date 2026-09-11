@@ -21,6 +21,9 @@ import javax.persistence.PersistenceContext
 open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository, @PersistenceContext private val em: EntityManager) {
     @Transactional
     open fun create(account: Account): Account {
+        if (account.name.isNullOrBlank()) {
+            throw MdgException("ACCOUNT_DATA_INVALID")
+        }
         if (account.accountType != AccountType.ASSET) {
             if (account.operational == true) {
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
@@ -74,8 +77,11 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         if (newAccount.hidden != null) {
             account.hidden = newAccount.hidden
         }
-        if (newAccount.name != null) {
-            account.name = newAccount.name
+        newAccount.name?.also {
+            if (it.isBlank()) {
+                throw MdgException("ACCOUNT_DATA_INVALID")
+            }
+            account.name = it
         }
         if (newAccount.categoryId == null) {
             account.category = null

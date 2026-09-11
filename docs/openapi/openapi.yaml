@@ -130,14 +130,15 @@ paths:
       tags: [Accounts]
       summary: Create a new account
       description: |
-        `account_type`, `currency_id` and `name` are required;
+        `account_type`, `currency_id` and `name` are required; a `name` that is
+        absent, `null` or blank is rejected with 422 `ACCOUNT_DATA_INVALID`.
       operationId: createAccount
       requestBody:
         required: true
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/account.yaml#/Account'
+              $ref: './components/schemas/account.yaml#/AccountCreate'
             example:
               account_type: ASSET
               currency_id: 978
@@ -207,6 +208,8 @@ paths:
           $ref: './components/responses.yaml#/NotFound'
         '415':
           $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
   /accounts/tree:
     get:
       tags: [Accounts]
@@ -257,6 +260,9 @@ paths:
         `currency_id` on an **asset** account is rejected with
         `ACCOUNT_CURRENCY_ASSET`. Changing the currency of a non-asset account rewrites the `rate` of every
         existing operation on it and recomputes the balance.
+
+        An absent or `null` `name` keeps the current one; a blank one is rejected
+        with 422 `ACCOUNT_DATA_INVALID`.
       operationId: updateAccount
       parameters:
         - $ref: './components/parameters.yaml#/AccountId'
@@ -288,6 +294,8 @@ paths:
                 $ref: './components/schemas/problem.yaml#/Problem'
         '415':
           $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
     delete:
       tags: [Accounts]
       summary: Delete an account
