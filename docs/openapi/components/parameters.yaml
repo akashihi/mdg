@@ -100,6 +100,11 @@ Limit:
   description: |
     Page size. Supplying it switches the response into paging mode, which
     populates the `first` and `next` cursors.
+
+    A value below one is rejected with `400` `REQUEST_PARAMETER_INVALID`, which
+    is also what an unparseable one gets. That holds for every way a page size
+    can arrive: one carried inside a `cursor`, and one passed here alongside a
+    `cursor` that makes it ignored.
   schema:
     type: integer
     format: int32

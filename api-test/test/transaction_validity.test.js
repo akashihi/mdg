@@ -182,3 +182,82 @@ it('Unbalanced multi currency transactions are not allowed', async () => {
             }
         });
 });
+
+it('Operations without an account are not allowed', async () => {
+    await prepareAccounts(false);
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'TRANSACTION_DATA_INVALID', instance: '/transactions' })
+        .post('/transactions')
+        .withJson({
+            timestamp: '2017-02-04T16:45:36',
+            comment: 'Test transaction',
+            tags: [],
+            operations: [
+                {
+                    amount: -100
+                },
+                {
+                    account_id: '$S{AssetAccountID}',
+                    amount: 100
+                }
+            ]
+        });
+});
+
+it('An explicitly null account on an operation is not allowed', async () => {
+    await prepareAccounts(false);
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'TRANSACTION_DATA_INVALID', instance: '/transactions' })
+        .post('/transactions')
+        .withJson({
+            timestamp: '2017-02-04T16:45:36',
+            comment: 'Test transaction',
+            tags: [],
+            operations: [
+                {
+                    account_id: null,
+                    amount: -100
+                }
+            ]
+        });
+});
+
+it('Operations without an account are not allowed on update either', async () => {
+    await prepareAccounts(false);
+
+    const txID = tracker.transaction(await pactum.spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Rent:V1' })
+        .returns('id'));
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'TRANSACTION_DATA_INVALID' })
+        .put('/transactions/{id}')
+        .withPathParams('id', txID)
+        .withJson({
+            timestamp: '2017-02-04T16:45:36',
+            comment: 'Test transaction',
+            tags: [],
+            operations: [
+                {
+                    amount: -100
+                }
+            ]
+        });
+});
+
+it('A null operation is not allowed', async () => {
+    await prepareAccounts(false);
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'TRANSACTION_DATA_INVALID', instance: '/transactions' })
+        .post('/transactions')
+        .withJson({
+            timestamp: '2017-02-04T16:45:36',
+            comment: 'Test transaction',
+            tags: [],
+            operations: [
+                null,
+                {
+                    account_id: '$S{AssetAccountID}',
+                    amount: 100
+                }
+            ]
+        });
+});

@@ -37,7 +37,8 @@ open class TransactionService(
 
         // Propagate accounts
         tx.operations.forEach {
-            val account = accountRepository.findByIdOrNull(it.account_id) ?: throw MdgException("ACCOUNT_NOT_FOUND")
+            val accountId = it.account_id ?: throw MdgException("TRANSACTION_DATA_INVALID")
+            val account = accountRepository.findByIdOrNull(accountId) ?: throw MdgException("ACCOUNT_NOT_FOUND")
             it.account = account
         }
 
@@ -124,6 +125,7 @@ open class TransactionService(
         if (limit == null) {
             return ListResult(transactionRepository.findAll(spec, sorting), 0L)
         }
+        validatePageLimit(limit)
         val pageLimit = PageRequest.of(0, limit, sorting)
         val page = transactionRepository.findAll(spec, pageLimit)
         var left = page.totalElements - limit

@@ -12,6 +12,7 @@ import org.akashihi.mdg.service.BudgetService
 import org.akashihi.mdg.service.CategoryService
 import org.akashihi.mdg.service.RateService
 import org.akashihi.mdg.service.SettingService
+import org.akashihi.mdg.service.validatePageLimit
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -101,6 +102,7 @@ open class BudgetController(private val budgetService: BudgetService, private va
 
     @GetMapping(value = ["/budgets"], produces = ["application/vnd.mdg+json;version=1"])
     fun list(@RequestParam("limit") limit: Int?, @RequestParam("cursor") cursor: String?): Budgets {
+        limit?.let(::validatePageLimit) // A cursor makes the parameter ignored, but not acceptable
         val budgetCursor = cursor?.let { cursorHelper.cursorFromString(it, BudgetCursor::class.java) } ?: BudgetCursor(limit, null)
         val budgets = budgetService.list(budgetCursor.limit, budgetCursor.pointer)
         val self = cursorHelper.cursorToString(budgetCursor) ?: ""

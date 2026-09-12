@@ -20,6 +20,20 @@ const NON_NUMERIC_IDS = [
     { name: 'budget cashflow report', url: '/reports/budget/cashflow/abc', code: 'BUDGET_NOT_FOUND' }
 ];
 
+const ZERO_LIMIT_CURSOR = 'eyJsaW1pdCI6MH0=';
+const GOOD_CURSOR = 'eyJsaW1pdCI6MywicG9pbnRlciI6N30=';
+
+const BAD_LIMITS = [
+    { name: 'zero limit on transactions', url: '/transactions?limit=0', instance: '/transactions' },
+    { name: 'negative limit on transactions', url: '/transactions?limit=-1', instance: '/transactions' },
+    { name: 'zero limit on budgets', url: '/budgets?limit=0', instance: '/budgets' },
+    { name: 'negative limit on budgets', url: '/budgets?limit=-1', instance: '/budgets' },
+    { name: 'zero limit inside a transactions cursor', url: `/transactions?cursor=${ZERO_LIMIT_CURSOR}`, instance: '/transactions' },
+    { name: 'zero limit inside a budgets cursor', url: `/budgets?cursor=${ZERO_LIMIT_CURSOR}`, instance: '/budgets' },
+    { name: 'zero limit next to a transactions cursor', url: `/transactions?limit=0&cursor=${GOOD_CURSOR}`, instance: '/transactions' },
+    { name: 'zero limit next to a budgets cursor', url: `/budgets?limit=0&cursor=${GOOD_CURSOR}`, instance: '/budgets' }
+];
+
 describe('Request errors', () => {
     itParam('Non-numeric ${value.name} id is not found', NON_NUMERIC_IDS, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 404, code: params.code, instance: params.url })
@@ -37,6 +51,11 @@ describe('Request errors', () => {
         await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_PARAMETER_INVALID' })
             .get('/transactions')
             .withQueryParams('limit', 'abc');
+    });
+
+    itParam('A ${value.name} is a request error', BAD_LIMITS, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_PARAMETER_INVALID', instance: params.instance })
+            .get(params.url);
     });
 
     it('Non-numeric granularity is a request error', async () => {

@@ -33,7 +33,8 @@ info:
     `GET /transactions` and `GET /budgets` are cursor-paged. Pass `limit` to
     start paging, then follow the `next` cursor. Cursors are **self-contained** —
     they carry the original filter, sort, embed and limit — so when `cursor` is
-    supplied every other query parameter is ignored. `first` and `next` come
+    supplied every other query parameter is ignored, though a `limit` below one
+    is still rejected rather than quietly dropped. `first` and `next` come
     back as the empty string when there is no such page, and handing an empty
     `cursor` back reads as *no cursor* rather than as an error. Any other cursor
     this API did not issue is rejected with `422` `CURSOR_DATA_INVALID`.
@@ -131,7 +132,9 @@ paths:
       summary: Create a new account
       description: |
         `account_type`, `currency_id` and `name` are required; a `name` that is
-        absent, `null` or blank is rejected with 422 `ACCOUNT_DATA_INVALID`.
+        absent, `null` or blank, and a `currency_id` that is absent or `null`,
+        are rejected with 422 `ACCOUNT_DATA_INVALID`. A `currency_id` naming no
+        currency is 404 `CURRENCY_NOT_FOUND`.
       operationId: createAccount
       requestBody:
         required: true
@@ -537,6 +540,10 @@ paths:
         * Operations with an amount of exactly zero are **dropped** before
           validation, not rejected.
         * At least one non-zero operation must remain — `TRANSACTION_EMPTY`.
+        * Every surviving operation must name an account. An `account_id` that is
+          absent or `null` is rejected with 422 `TRANSACTION_DATA_INVALID`; one
+          that names no account is 404 `ACCOUNT_NOT_FOUND`. A `null` in place of
+          an operation object is the same 422.
         * `Σ(amount × rate)` over the remaining operations must be zero —
           `TRANSACTION_NOT_BALANCED`.
         * A rate may not be zero — `TRANSACTION_ZERO_RATE`.

@@ -80,3 +80,39 @@ it('Leaves the name alone when an update omits it', async () => {
         })
         .expectJson('name', 'Rent');
 });
+
+it("Can't create an account without a currency", async () => {
+    await pactum.spec('expect error', { statusCode: 422, code: 'ACCOUNT_DATA_INVALID', instance: '/accounts' })
+        .post('/accounts')
+        .withJson({
+            account_type: 'EXPENSE',
+            name: 'Rent'
+        });
+});
+
+it("Can't drop the currency of an existing non-asset account", async () => {
+    const accountID = tracker.account(await pactum.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Expense:V1' })
+        .returns('id'));
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'ACCOUNT_DATA_INVALID' })
+        .put('/accounts/{id}')
+        .withPathParams('id', accountID)
+        .withJson({
+            account_type: 'EXPENSE',
+            name: 'Rent'
+        });
+});
+
+
+it("Can't drop the currency of an existing asset account", async () => {
+    const accountID = tracker.account(await pactum.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:V1' })
+        .returns('id'));
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'ACCOUNT_DATA_INVALID' })
+        .put('/accounts/{id}')
+        .withPathParams('id', accountID)
+        .withJson({
+            account_type: 'ASSET',
+            name: 'Rent'
+        });
+});

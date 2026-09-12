@@ -1,5 +1,6 @@
 package org.akashihi.mdg.service
 
+import org.akashihi.mdg.api.v1.MdgException
 import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.OperationRepository
 import org.akashihi.mdg.dao.TagRepository
@@ -103,5 +104,43 @@ internal class TransactionServiceTest(@Mock private val accountRepository: Accou
         Assertions.assertEquals(BigDecimal("4999"), replaced.amount.stripTrailingZeros())
         val eurSum = newTx.operations.stream().map { o: Operation -> o.amount.multiply(o.rate) }.reduce(BigDecimal.ZERO) { obj: BigDecimal, augend: BigDecimal? -> obj.add(augend) }
         Assertions.assertEquals(BigDecimal.ZERO, eurSum.setScale(2, RoundingMode.DOWN).stripTrailingZeros())
+    }
+
+    // A limit below one used to reach PageRequest.of, which raises IllegalArgumentException and
+    // ends up in the catch-all handler as a 500. See MIGRATION-NOTES.md #25.
+    @Test
+    fun rejectsPageLimitBelowOne() {
+        listOf(0, -1).forEach { limit ->
+            val e = Assertions.assertThrows(MdgException::class.java) {
+                transactionService.list(mapOf(), listOf(), limit, null)
+            }
+            Assertions.assertEquals("REQUEST_PARAMETER_INVALID", e.code)
+        }
+    }
+
+    // An operation without an account_id used to reach findByIdOrNull with a null id, which
+    // Spring Data rejects before any lookup happens, ending in the catch-all handler as a
+    // 500. See MIGRATION-NOTES.md #30.
+    @Test
+    fun rejectsOperationWithoutAccount() {
+        val tx = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        tx.operations = mutableListOf(Operation(rate = null, amount = BigDecimal.ONE, transaction = tx))
+
+        val e = Assertions.assertThrows(MdgException::class.java) { transactionService.create(tx) }
+        Assertions.assertEquals("TRANSACTION_DATA_INVALID", e.code)
+    }
+
+    // Jackson accepts a null array element past a declared element type that forbids one, so
+    // `"operations": [null]` used to reach the first dereference and end in the catch-all
+    // handler as a 500. See MIGRATION-NOTES.md #30.
+    @Test
+    fun rejectsNullOperation() {
+        val tx = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        // Erasure is how Jackson gets a null past the declared element type in the first place.
+        @Suppress("UNCHECKED_CAST")
+        tx.operations = mutableListOf<Operation?>(null) as MutableCollection<Operation>
+
+        val e = Assertions.assertThrows(MdgException::class.java) { transactionService.create(tx) }
+        Assertions.assertEquals("TRANSACTION_DATA_INVALID", e.code)
     }
 }

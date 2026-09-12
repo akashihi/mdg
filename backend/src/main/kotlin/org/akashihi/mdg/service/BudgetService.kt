@@ -28,6 +28,12 @@ import javax.transaction.Transactional
 
 data class ListResult<T>(val items: List<T>, val left: Long)
 
+internal fun validatePageLimit(limit: Int) {
+    if (limit < 1) {
+        throw MdgException("REQUEST_PARAMETER_INVALID")
+    }
+}
+
 @Service
 open class BudgetService(private val accountRepository: AccountRepository, private val budgetRepository: BudgetRepository, private val budgetEntryRepository: BudgetEntryRepository, private val transactionService: TransactionService, private val rateService: RateService) {
     private fun validateBudget(budget: Budget, selfId: Long? = null): Boolean {
@@ -74,6 +80,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         if (limit == null) {
             return ListResult(budgetRepository.findAll(sorting), 0L)
         }
+        validatePageLimit(limit)
         val pageLimit = PageRequest.of(0, limit, sorting)
         val page = if (pointer == null) {
             budgetRepository.findAll(pageLimit)
