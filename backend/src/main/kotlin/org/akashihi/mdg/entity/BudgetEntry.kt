@@ -33,6 +33,7 @@ class BudgetEntry(
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var account: Account? = null,
 
     @JsonProperty("category_id")
@@ -42,6 +43,7 @@ class BudgetEntry(
 
     @Transient
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var category: Category? = null,
 
     @Column(name = "dt")

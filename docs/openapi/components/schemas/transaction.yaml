@@ -27,8 +27,11 @@ Operation:
     account:
       allOf:
         - $ref: './account.yaml#/Account'
+      readOnly: true
       description: |
-        The account object itself. 
+        The account object itself. Server-populated, and present only when the
+        request asked for `embed=account`. An `account` object in a request body
+        is ignored; `account_id` is the writable half.
 
 Transaction:
   type: object

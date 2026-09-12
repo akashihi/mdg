@@ -2,6 +2,7 @@ package org.akashihi.mdg.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.hibernate.Hibernate
 import org.hibernate.annotations.Formula
 import java.math.BigDecimal
@@ -24,6 +25,7 @@ class Operation(
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var account: Account? = null,
 
     @Formula("account_id")

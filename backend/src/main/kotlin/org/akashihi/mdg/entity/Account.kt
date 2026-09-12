@@ -26,6 +26,7 @@ class Account(
     @ManyToOne
     @JoinColumn(name = "currency_id", nullable = false)
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var currency: Currency? = null,
 
     @Formula("currency_id")
@@ -35,6 +36,7 @@ class Account(
     @ManyToOne
     @JoinColumn(name = "category_id")
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var category: Category? = null,
 
     @Formula("category_id")

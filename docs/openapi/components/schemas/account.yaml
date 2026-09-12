@@ -36,8 +36,11 @@ Account:
     currency:
       allOf:
         - $ref: './currency.yaml#/Currency'
+      readOnly: true
       description: |
-        The currency object itself.
+        The currency object itself. Server-populated, and present only when the
+        request asked for `embed=currency`. A `currency` object in a request body
+        is ignored; `currency_id` is the writable half.
     category_id:
       type: integer
       format: int64
@@ -47,8 +50,11 @@ Account:
     category:
       allOf:
         - $ref: './category.yaml#/Category'
+      readOnly: true
       description: |
-        The category object itself.
+        The category object itself. Server-populated, and present only when the
+        request asked for `embed=category`. A `category` object in a request body
+        is ignored; `category_id` is the writable half.
     balance:
       allOf:
         - $ref: './common.yaml#/MoneyOrNull'
@@ -92,11 +98,9 @@ AccountCreate:
     `category_id` is filed under the seeded `Current` category. `hidden` is not
     read here: a new account is never hidden.
 
-    The embedded `currency` and `category` objects are writable, because entities
-    double as API payloads and an embedded association deserializes straight onto
-    the entity. Only the `*_id` fields are validated, so an embedded object naming
-    a row that does not exist reaches the database unchecked and comes back as a
-    500. That is documented rather than tidied away — see `AccountService.create`.
+    The embedded `currency` and `category` objects of the `Account` response shape
+    have no counterpart here: they are read-only, so a create body names its
+    currency and category by id only.
   required: [account_type, currency_id, name]
   properties:
     account_type:
@@ -113,11 +117,6 @@ AccountCreate:
         - $ref: './common.yaml#/CurrencyId'
       description: |
         The account's currency. It must exist, else `CURRENCY_NOT_FOUND`.
-    currency:
-      allOf:
-        - $ref: './currency.yaml#/Currency'
-      description: |
-        The currency object itself. Unvalidated — see the note above.
     category_id:
       type: integer
       format: int64
@@ -126,11 +125,6 @@ AccountCreate:
         `account_type` has to match this account's, else `CATEGORY_INVALID_TYPE`.
         Omit it on an asset account to get the default `Current` category.
       example: 1
-    category:
-      allOf:
-        - $ref: './category.yaml#/Category'
-      description: |
-        The category object itself. Unvalidated — see the note above.
     operational:
       type: [boolean, 'null']
       description: |

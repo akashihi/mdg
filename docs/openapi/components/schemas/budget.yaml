@@ -144,8 +144,10 @@ BudgetEntry:
     account:
       allOf:
         - $ref: './account.yaml#/Account'
+      readOnly: true
       description: |
-        The account object itself.
+        The account object itself. Server-populated, and present only when the
+        request asked for `embed=account`.
     category_id:
       type: integer
       format: int64
@@ -156,8 +158,11 @@ BudgetEntry:
     category:
       allOf:
         - $ref: './category.yaml#/Category'
+      readOnly: true
       description: |
-        The category object itself.
+        The category object itself — the related account's category.
+        Server-populated, and present only when the request asked for
+        `embed=account,category`.
     dt:
       type: string
       format: date
