@@ -15,27 +15,44 @@ request-timeout = 300
 negative_data_rejection.enabled = false
 
 # MDG answers business-rule rejections with 412 and data-validation rejections with 422,
-# and `positive_data_acceptance` accepts neither by default — so a correct rejection of a
-# schema-compliant body reads as "API rejected schema-compliant request". Several of these
-# rules cannot be expressed in OpenAPI at all: `term_end` after `term_beginning` is
-# cross-field, TRANSACTION_NOT_BALANCED is arithmetic over an array, and BUDGET_OVERLAPPING
-# depends on rows this run created earlier. Each allowance below is derived from the
-# MdgException throw sites the operation can actually reach; `expected-statuses` replaces
-# the default rather than extending it, so the whole list is spelled out every time.
+# and 412 is in the default status list of neither `positive_data_acceptance` nor
+# `negative_data_rejection`. That reads wrong in both directions, so the operations that can
+# reach a 412 carry an allowance for both checks:
 #
-# 5xx is deliberately absent everywhere: `server_error` is the check that should report a
-# 500, and listing it here only hides one. See MIGRATION-NOTES.md #25 and #26.
+#   - `positive_data_acceptance` — a correct rejection of a schema-compliant body reads as
+#     "API rejected schema-compliant request". Several of these rules cannot be expressed in
+#     OpenAPI at all: `term_end` after `term_beginning` is cross-field,
+#     TRANSACTION_NOT_BALANCED is arithmetic over an array, and BUDGET_OVERLAPPING depends on
+#     rows this run created earlier.
+#   - `negative_data_rejection` — a correct *rejection* of a schema-violating body reads as
+#     "API accepted schema-violating request", quoting the 412 Problem body back in the
+#     report. The check asks only whether the request was rejected, and a 412 is a rejection;
+#     it is simply not in the list schemathesis ships. See MIGRATION-NOTES.md #31.
+#
+# Each allowance below is derived from the MdgException throw sites the operation can
+# actually reach; `expected-statuses` replaces the default rather than extending it, so the
+# whole list is spelled out every time. The negative lists are therefore schemathesis's own
+# twelve defaults plus 412, and nothing else.
+#
+# 5xx is deliberately absent from every `positive_data_acceptance` allowance: `server_error`
+# is the check that should report a 500, and listing it there only hides one. It stays in the
+# negative lists because it is part of that check's own default and `server_error` reports a
+# 500 independently of either. See MIGRATION-NOTES.md #25 and #26.
 
 # BUDGET_INVALID_TERM, BUDGET_SHORT_RANGE, BUDGET_OVERLAPPING — BudgetService.kt:35-47.
 [[operations]]
 include-name = "POST /budgets"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 [[operations]]
 include-name = "PUT /budgets/{id}"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 # BUDGETENTRY_IS_NEGATIVE — BudgetService.kt:220.
 [[operations]]
@@ -59,11 +76,15 @@ include-name = "POST /accounts"
 "body.operational" = false
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412", "422"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 [[operations]]
 include-name = "PUT /accounts/{id}"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412", "422"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 # CATEGORY_DATA_INVALID, CATEGORY_INVALID_TYPE, CATEGORY_TREE_CYCLED — CategoryService.kt:18-23
 # and :78-87. On create it is reached through a generated `parent_id` naming no category.
@@ -71,11 +92,15 @@ expected-statuses = ["2xx", "401", "403", "404", "409", "412", "422"]
 include-name = "POST /categories"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 [[operations]]
 include-name = "PUT /categories/{id}"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 # TRANSACTION_EMPTY, _ZERO_RATE, _NO_DEFAULT_RATE, _AMBIGUOUS_RATE, _NOT_BALANCED —
 # TransactionService.kt:57-77.
@@ -91,6 +116,8 @@ include-name = "POST /transactions"
 "body.timestamp" = "2017-02-04T16:45:36"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 [[operations]]
 include-name = "PUT /transactions/{id}"
@@ -98,6 +125,8 @@ include-name = "PUT /transactions/{id}"
 "body.timestamp" = "2017-02-04T16:45:36"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
 
 # SETTING_DATA_INVALID — SettingService.kt:39. A generated value almost never names a
 # currency that exists in the currency table. The three sibling settings need no allowance:

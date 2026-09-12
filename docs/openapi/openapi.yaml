@@ -209,6 +209,8 @@ paths:
           $ref: './components/responses.yaml#/BadRequest'
         '404':
           $ref: './components/responses.yaml#/NotFound'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
         '415':
           $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
@@ -295,6 +297,8 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/problem.yaml#/Problem'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
         '415':
           $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
