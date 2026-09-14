@@ -896,14 +896,51 @@ paths:
           $ref: './components/responses.yaml#/UnsupportedMediaType'
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
+  /budgets/current:
+    get:
+      tags: [Budgets]
+      summary: View the current budget
+      description: |
+        The budget whose term covers today or, when today falls between two
+        budgets, the most recent budget that has already begun — a budget stays
+        current after its term ends, until the next one begins. A budget that
+        begins after today is never returned; with none that has begun, the
+        answer is 404.
+
+        This is the budget the web UI shows as current. `GET /budgets/{id}` with
+        today's date is not a substitute for it: that answers 404 between terms.
+
+        Like `GET /budgets/{id}`, this response carries the computed
+        `incoming_amount`, `outgoing_amount` and `state`.
+      operationId: getCurrentBudget
+      responses:
+        '200':
+          description: The current budget, with its computed totals.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/Budget'
+          links:
+            ListCurrentBudgetEntries:
+              operationId: listBudgetEntries
+              description: List the entries of the current budget.
+              parameters:
+                path.budgetId: '$response.body#/id'
+        '404':
+          description: No budget has begun yet
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
   /budgets/{id}:
     get:
       tags: [Budgets]
       summary: View a budget
       description: |
         The path segment may be a budget id or **any date inside a budget's term**
-        in `YYYYMMDD` form; the budget whose `term_beginning` is closest to and
-        not after that date is returned.
+        in `YYYYMMDD` form. An exact id match wins; otherwise the budget whose
+        term covers that date is returned, and a date outside every term is a
+        404. The budget the web UI calls current is `GET /budgets/current`.
 
         Unlike the collection, this response carries the computed
         `incoming_amount`, `outgoing_amount` and `state`.
@@ -931,8 +968,8 @@ paths:
 
         The path segment resolves exactly as it does on `GET` and `DELETE`: it
         may be a budget id or **any date inside a budget's term** in `YYYYMMDD`
-        form, and the budget whose `term_beginning` is closest to and not after
-        that date is the one updated.
+        form. An exact id match wins; otherwise the budget whose term covers that
+        date is the one updated.
 
         The same three term rules as on create apply, except that the overlap
         check ignores the budget being updated — a term may be kept as-is,
@@ -940,7 +977,8 @@ paths:
         `BUDGET_OVERLAPPING`.
 
         The budget's `id` is **not** recomputed from a new `term_beginning`; it
-        keeps the id it was created with.
+        keeps the id it was created with, which is why an exact id is tried
+        before a date.
       operationId: updateBudget
       parameters:
         - $ref: './components/parameters.yaml#/BudgetIdPath'
@@ -981,10 +1019,11 @@ paths:
         All of the budget's entries are deleted with it.
 
         The path segment resolves exactly as it does on `GET`: it may be a budget
-        id or **any date inside a budget's term** in `YYYYMMDD` form, and the
-        budget whose `term_beginning` is closest to and not after that date is the
-        one deleted. `DELETE /budgets/20170205` therefore deletes the budget that
-        began on `2017-02-04`.
+        id or **any date inside a budget's term** in `YYYYMMDD` form. An exact id
+        match wins; otherwise the budget whose term covers that date is the one
+        deleted. `DELETE /budgets/20170205` therefore deletes a budget running
+        from `2017-02-04` to `2017-02-28`, and nothing at all if no term covers
+        that day.
       operationId: deleteBudget
       parameters:
         - $ref: './components/parameters.yaml#/BudgetIdPath'
@@ -1004,6 +1043,10 @@ paths:
       description: |
         Every entry of the budget, flat. Entries exist for income and expense
         accounts only — never for asset accounts.
+
+        `budgetId` resolves as the path segment of `GET /budgets/{id}` does — an
+        exact id, or any date inside the budget's term — and a budget that does
+        not exist is 404 `BUDGET_NOT_FOUND`, never an empty list.
       operationId: listBudgetEntries
       parameters:
         - $ref: './components/parameters.yaml#/OwningBudgetId'
@@ -1045,6 +1088,9 @@ paths:
         The budget's entries arranged into the category forest, split into
         `expense` and `income`. Every node carries the totals of everything
         beneath it.
+
+        `budgetId` resolves as the path segment of `GET /budgets/{id}` does — an
+        exact id, or any date inside the budget's term.
 
         A category node's distribution semantics are derived from its children: if
         any descendant entry is `SINGLE` the whole category is treated as

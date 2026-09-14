@@ -38,6 +38,14 @@ describe('Budget entries operations', () => {
             .expectJsonMatch('budget_entries[*].account_id', expression('$S{ExpenseUSDAccountID}', '$V.includes($S{ExpenseUSDAccountID})'));
     });
 
+    it('Budget entries are listed by a date inside the budget term', async () => {
+        await e2e.step('List budget entries by date')
+            .spec('read')
+            .get('/budgets/{id}/entries')
+            .withPathParams('id', '20170210')
+            .expectJsonMatch('budget_entries[*].account_id', expression('$S{ExpenseAccountID}', '$V.includes($S{ExpenseAccountID})'));
+    });
+
     it('Read budget entry by id', async () => {
         await e2e.step('List budget entries')
             .spec('read')

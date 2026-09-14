@@ -253,9 +253,9 @@ BudgetIdPath:
   in: path
   required: true
   description: |
-    A budget id, or **any date inside a budget's term**, as `YYYYMMDD`. The
-    budget whose `term_beginning` is closest to and not after the given date is
-    the one the operation acts on.
+    A budget id, or **any date inside a budget's term**, as `YYYYMMDD`. An
+    exact id match wins; otherwise the budget whose term covers the date is the
+    one the operation acts on, and a date outside every term matches nothing.
   schema:
     type: integer
     format: int64

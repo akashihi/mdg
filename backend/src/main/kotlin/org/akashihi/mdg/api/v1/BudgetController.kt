@@ -121,6 +121,9 @@ open class BudgetController(private val budgetService: BudgetService, private va
         return Budgets(budgets.items, self, first, next, budgets.left)
     }
 
+    @GetMapping(value = ["/budgets/current"], produces = ["application/vnd.mdg+json;version=1"])
+    fun current(): Budget = budgetService.getCurrent() ?: throw MdgException("BUDGET_NOT_FOUND")
+
     @GetMapping(value = ["/budgets/{id}"], produces = ["application/vnd.mdg+json;version=1"])
     operator fun get(@PathVariable("id") id: Long): Budget = budgetService[id] ?: throw MdgException("BUDGET_NOT_FOUND")
 
@@ -137,9 +140,8 @@ open class BudgetController(private val budgetService: BudgetService, private va
 
     @GetMapping(value = ["/budgets/{budgetId}/entries/tree"], produces = ["application/vnd.mdg+json;version=1"])
     fun tree(@PathVariable("budgetId") budgetId: Long, @RequestParam("embed") embed: Collection<String>?, @RequestParam("filter") filter: String?): BudgetEntryTree {
-        budgetService[budgetId] ?: throw MdgException("BUDGET_NOT_FOUND")
-        val categories = categoryService.list()
         var entries = budgetService.listEntries(budgetId)
+        val categories = categoryService.list()
         val leaveEmpty = filter?.let { "all".equals(it, ignoreCase = true) } ?: false
         if (!leaveEmpty) {
             entries = entries.filter { e: BudgetEntry -> !(e.actualAmount.compareTo(BigDecimal.ZERO) == 0 && e.expectedAmount.compareTo(BigDecimal.ZERO) == 0) }.toList()

@@ -122,6 +122,25 @@ describe('Budget operations', () => {
       .expectJson('term_end', '2017-02-26');
   });
 
+  it('Read budget by date outside its term', async () => {
+    await pactum.spec('expect error', { statusCode: 404, code: 'BUDGET_NOT_FOUND', instance: '/budgets/20170227' })
+      .get('/budgets/20170227');
+  });
+
+  it('Read current budget', async () => {
+    /* The term is long over, but no later budget has begun, so it is still current */
+    await e2e.step('Read current budget')
+      .spec('read')
+      .get('/budgets/current')
+      .expectJsonMatch('id', expression('$S{BudgetID}', '$V === $S{BudgetID}'))
+      .expectJsonMatch({
+        '@DATA:TEMPLATE@': 'Budget:Feb:V1',
+        '@OVERRIDES@': {
+          id: int()
+        }
+      });
+  });
+
   it('Update non-existent budget', async () => {
     await pactum.spec('expect error', { statusCode: 404, code: 'BUDGET_NOT_FOUND', instance: '/budgets/1' })
       .put('/budgets/1')
@@ -146,5 +165,9 @@ describe('Budget operations', () => {
       .spec('read')
       .get('/budgets')
       .expectJsonMatch('budgets[*].id', expression('$S{BudgetID}', '!$V.includes($S{BudgetID})'));
+
+    await pactum.spec('expect error', { statusCode: 404, code: 'BUDGET_NOT_FOUND' })
+      .get('/budgets/{id}/entries')
+      .withPathParams('id', '$S{BudgetID}');
   });
 });

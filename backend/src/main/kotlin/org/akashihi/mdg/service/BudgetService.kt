@@ -22,6 +22,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.transaction.Transactional
@@ -136,11 +137,24 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
     private fun getActualExpectedForBudget(budget: Budget, entries: Collection<BudgetEntry>, type: AccountType): BudgetPair = getActualExpectedForDate(budget.beginning, budget.end, entries, type)
 
+    private fun budgetDate(id: Long): LocalDate? = try {
+        LocalDate.parse(id.toString(), DateTimeFormatter.BASIC_ISO_DATE)
+    } catch (e: DateTimeParseException) {
+        null // Not a YYYYMMDD date, so it could only have been an id
+    }
+
     @Transactional
-    open fun simplifiedGet(id: Long): Budget? = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id)
+    open fun simplifiedGet(id: Long): Budget? =
+        // An exact id goes first, as a budget keeps its id when its term is moved
+        budgetRepository.findByIdOrNull(id) ?: budgetDate(id)?.let { budgetRepository.findFirstByBeginningLessThanEqualAndEndGreaterThanEqual(it, it) }
 
     @Transactional
     open operator fun get(id: Long): Budget? = simplifiedGet(id)?.also { enrichBudget(it) }
+
+    @Transactional
+    open fun getCurrent(): Budget? =
+        // Between two budgets the last started one stays current until the next one begins
+        budgetRepository.findFirstByBeginningLessThanEqualOrderByBeginningDesc(LocalDate.now())?.also { enrichBudget(it) }
 
     private fun enrichBudget(budget: Budget): Budget {
         val incomingDay = if (budget.beginning > LocalDate.now()) {
@@ -243,12 +257,13 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     @Transactional
-    open fun listSimplifiedEntries(budgetId: Long): Collection<BudgetEntry> = budgetEntryRepository.findByBudgetId(budgetId)
+    open fun listSimplifiedEntries(budget: Budget): Collection<BudgetEntry> = budgetEntryRepository.findByBudget(budget)
 
     @Transactional
     open fun listEntries(budgetId: Long): Collection<BudgetEntry> {
+        val budget = simplifiedGet(budgetId) ?: throw MdgException("BUDGET_NOT_FOUND")
         val today = LocalDate.now()
-        val entries = listSimplifiedEntries(budgetId)
+        val entries = listSimplifiedEntries(budget)
         entries.forEach {
             analyzeSpendings(it, today)
         }

@@ -190,7 +190,7 @@ open class ReportService(
         val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
-        val entries = budgetService.listSimplifiedEntries(budgetId)
+        val entries = budgetService.listSimplifiedEntries(budget)
         val expandedEntries = entries.map { e ->
             val dailyEntries = dates.map { dt ->
                 budgetService.applyActualAmountForPeriod(e, dt, dt).copy()
