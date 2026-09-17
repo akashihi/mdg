@@ -31,7 +31,13 @@ const BAD_LIMITS = [
     { name: 'zero limit inside a transactions cursor', url: `/transactions?cursor=${ZERO_LIMIT_CURSOR}`, instance: '/transactions' },
     { name: 'zero limit inside a budgets cursor', url: `/budgets?cursor=${ZERO_LIMIT_CURSOR}`, instance: '/budgets' },
     { name: 'zero limit next to a transactions cursor', url: `/transactions?limit=0&cursor=${GOOD_CURSOR}`, instance: '/transactions' },
-    { name: 'zero limit next to a budgets cursor', url: `/budgets?limit=0&cursor=${GOOD_CURSOR}`, instance: '/budgets' }
+    { name: 'zero limit next to a budgets cursor', url: `/budgets?limit=0&cursor=${GOOD_CURSOR}`, instance: '/budgets' },
+    { name: 'empty limit on transactions', url: '/transactions?limit=', instance: '/transactions' },
+    { name: 'empty limit on budgets', url: '/budgets?limit=', instance: '/budgets' },
+    { name: 'repeated limit on transactions', url: '/transactions?limit=3&limit=4', instance: '/transactions' },
+    { name: 'repeated limit on budgets', url: '/budgets?limit=3&limit=4', instance: '/budgets' },
+    { name: 'repeated limit with an empty first value on transactions', url: '/transactions?limit=&limit=3', instance: '/transactions' },
+    { name: 'repeated limit with an empty first value on budgets', url: '/budgets?limit=&limit=3', instance: '/budgets' }
 ];
 
 // PostgreSQL refuses U+0000 in a text column, so a NUL anywhere in a string used to reach the

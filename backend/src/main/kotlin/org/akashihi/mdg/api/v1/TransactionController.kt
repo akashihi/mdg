@@ -8,7 +8,7 @@ import org.akashihi.mdg.api.v1.filtering.Embedding.embedOperationObjects
 import org.akashihi.mdg.entity.Operation
 import org.akashihi.mdg.entity.Transaction
 import org.akashihi.mdg.service.TransactionService
-import org.akashihi.mdg.service.validatePageLimit
+import org.akashihi.mdg.service.pageLimitOf
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -52,10 +52,10 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
         @RequestParam("q") query: String?,
         @RequestParam("sort") sort: Collection<String>?,
         @RequestParam("embed") embed: Collection<String>?,
-        @RequestParam("limit") limit: Int?,
+        @RequestParam("limit") limits: List<Int?>?,
         @RequestParam("cursor") cursor: String?
     ): Transactions {
-        limit?.let(::validatePageLimit) // A cursor makes the parameter ignored, but not acceptable
+        val limit = pageLimitOf(limits) // A cursor makes the parameter ignored, but not acceptable
         val txCursor = cursor?.let { cursorHelper.cursorFromString(it, TransactionCursor::class.java) } ?: buildCursor(query, sort, embed, limit, null)
         val listResult = transactionService.list(txCursor.filter ?: Collections.emptyMap(), txCursor.sort ?: Collections.emptyList(), txCursor.limit, txCursor.pointer)
         val transactions = listResult.items

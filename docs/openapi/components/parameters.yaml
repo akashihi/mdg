@@ -104,7 +104,8 @@ Limit:
     A value below one is rejected with `400` `REQUEST_PARAMETER_INVALID`, which
     is also what an unparseable one gets. That holds for every way a page size
     can arrive: one carried inside a `cursor`, and one passed here alongside a
-    `cursor` that makes it ignored.
+    `cursor` that makes it ignored. An empty `limit`, or one given more than
+    once, is rejected the same way.
   schema:
     type: integer
     format: int32

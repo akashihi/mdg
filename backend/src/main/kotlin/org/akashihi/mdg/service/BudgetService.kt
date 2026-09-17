@@ -35,6 +35,12 @@ internal fun validatePageLimit(limit: Int) {
     }
 }
 
+internal fun pageLimitOf(limit: List<Int?>?): Int? = limit?.let {
+    val value = it.singleOrNull() ?: throw MdgException("REQUEST_PARAMETER_INVALID") // empty or repeated
+    validatePageLimit(value)
+    value
+}
+
 @Service
 open class BudgetService(private val accountRepository: AccountRepository, private val budgetRepository: BudgetRepository, private val budgetEntryRepository: BudgetEntryRepository, private val transactionService: TransactionService, private val rateService: RateService) {
     private fun validateBudget(budget: Budget, selfId: Long? = null): Boolean {

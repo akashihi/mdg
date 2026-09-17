@@ -1,5 +1,6 @@
 package org.akashihi.mdg.service
 
+import org.akashihi.mdg.api.v1.MdgException
 import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.BudgetEntryRepository
 import org.akashihi.mdg.dao.BudgetRepository
@@ -9,6 +10,7 @@ import org.akashihi.mdg.entity.BudgetEntryMode
 import org.akashihi.mdg.service.BudgetService.Companion.getAllowedSpendings
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -80,5 +82,23 @@ internal class BudgetServiceTest(@Mock private val accountRepository: AccountRep
     fun doesNotResolveIdThatIsNotADate(id: Long) {
         Mockito.lenient().`when`(budgetRepository.findFirstByBeginningLessThanEqualAndEndGreaterThanEqual(any(), any())).thenReturn(januaryBudget)
         Assertions.assertNull(budgetService.simplifiedGet(id))
+    }
+
+    @Test
+    fun absentPageLimitMeansNoPaging() {
+        Assertions.assertNull(pageLimitOf(null))
+    }
+
+    @Test
+    fun singlePageLimitIsAccepted() {
+        Assertions.assertEquals(10, pageLimitOf(listOf(10)))
+    }
+
+    @Test
+    fun emptyOrRepeatedPageLimitIsRejected() {
+        listOf(listOf(), listOf(5, 6), listOf(null), listOf(0)).forEach {
+            val e = assertThrows<MdgException> { pageLimitOf(it) }
+            Assertions.assertEquals("REQUEST_PARAMETER_INVALID", e.code)
+        }
     }
 }
