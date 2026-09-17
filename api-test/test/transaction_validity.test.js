@@ -261,3 +261,51 @@ it('A null operation is not allowed', async () => {
             ]
         });
 });
+
+it('A null tag is not allowed', async () => {
+    await prepareAccounts(false);
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'TRANSACTION_DATA_INVALID', instance: '/transactions' })
+        .post('/transactions')
+        .withJson({
+            timestamp: '2017-02-04T16:45:36',
+            comment: 'Test transaction',
+            tags: ['test', null],
+            operations: [
+                {
+                    account_id: '$S{IncomeAccountID}',
+                    amount: -100
+                },
+                {
+                    account_id: '$S{AssetAccountID}',
+                    amount: 100
+                }
+            ]
+        });
+});
+
+it('A null tag is not allowed on update', async () => {
+    await prepareAccounts(false);
+    const transactionID = await pactum.spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' })
+        .returns('id');
+    tracker.transaction(transactionID);
+
+    await pactum.spec('expect error', { statusCode: 422, code: 'TRANSACTION_DATA_INVALID' })
+        .put('/transactions/{id}')
+        .withPathParams('id', transactionID)
+        .withJson({
+            timestamp: '2017-02-04T16:45:36',
+            comment: 'Test transaction',
+            tags: [null],
+            operations: [
+                {
+                    account_id: '$S{IncomeAccountID}',
+                    amount: -100
+                },
+                {
+                    account_id: '$S{AssetAccountID}',
+                    amount: 100
+                }
+            ]
+        });
+});

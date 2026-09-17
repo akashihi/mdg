@@ -27,6 +27,7 @@ import org.mockito.kotlin.eq
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
+import java.util.Optional
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension::class)
@@ -141,6 +142,30 @@ internal class TransactionServiceTest(@Mock private val accountRepository: Accou
         tx.operations = mutableListOf<Operation?>(null) as MutableCollection<Operation>
 
         val e = Assertions.assertThrows(MdgException::class.java) { transactionService.create(tx) }
+        Assertions.assertEquals("TRANSACTION_DATA_INVALID", e.code)
+    }
+
+    // `"tags": [null]` gets past Jackson the same way, and both create and update dereferenced
+    // the tag before anything checked it. See MIGRATION-NOTES.md #35.
+    @Test
+    fun rejectsNullTag() {
+        val tx = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        @Suppress("UNCHECKED_CAST")
+        tx.tags = mutableSetOf<Tag?>(null) as MutableSet<Tag>
+
+        val e = Assertions.assertThrows(MdgException::class.java) { transactionService.create(tx) }
+        Assertions.assertEquals("TRANSACTION_DATA_INVALID", e.code)
+    }
+
+    @Test
+    fun rejectsNullTagOnUpdate() {
+        val stored = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        Mockito.`when`(transactionRepository.findById(1L)).thenReturn(Optional.of(stored))
+        val tx = Transaction(ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        @Suppress("UNCHECKED_CAST")
+        tx.tags = mutableSetOf<Tag?>(null) as MutableSet<Tag>
+
+        val e = Assertions.assertThrows(MdgException::class.java) { transactionService.update(1L, tx) }
         Assertions.assertEquals("TRANSACTION_DATA_INVALID", e.code)
     }
 }

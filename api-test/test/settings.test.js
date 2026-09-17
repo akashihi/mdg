@@ -72,6 +72,18 @@ describe('Settings', () => {
             });
     });
 
+    // ui.language is not validated, so a locale without analyzer settings of its own used to
+    // make the next reindex a 500. The after hook puts the language back.
+    it('Reindex falls back to the default analyzer settings for an unknown language', async () => {
+        await pactum.spec('Set setting value', { id: 'ui.language', value: 'xx' });
+
+        await pactum.spec('update')
+            .put('/settings/{id}')
+            .withPathParams('id', 'mnt.transaction.reindex')
+            .withJson({})
+            .withRequestTimeout(10000);
+    }).timeout(15000);
+
     itParam('Setting update without a value is rejected: ${value}', SETTINGS, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID' })
             .put('/settings/{id}')

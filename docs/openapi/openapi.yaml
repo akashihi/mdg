@@ -1703,7 +1703,10 @@ paths:
       description: |
         A maintenance trigger.
 
-        Recreates the Elasticsearch index using.
+        Deletes and recreates the Elasticsearch index with the analyzer settings
+        of the current `ui.language`, then re-streams every transaction into it.
+        A locale that has no analyzer settings of its own — `ui.language` is not
+        validated — gets the default `en-US` ones.
 
         The call is synchronous and can take a while on a large database; the
         response only returns once the reindex completes.

@@ -34,6 +34,17 @@ const BAD_LIMITS = [
     { name: 'zero limit next to a budgets cursor', url: `/budgets?limit=0&cursor=${GOOD_CURSOR}`, instance: '/budgets' }
 ];
 
+// PostgreSQL refuses U+0000 in a text column, so a NUL anywhere in a string used to reach the
+// insert and come back as a 500. It is now refused while the body is read. Nothing here creates
+// a row: the body is rejected before it reaches a service.
+const NUL_BODIES = [
+    { name: 'account name', method: 'post', url: '/accounts', body: { account_type: 'EXPENSE', currency_id: 978, name: '\u0000' } },
+    { name: 'category name', method: 'post', url: '/categories', body: { account_type: 'EXPENSE', name: 'a\u0000b', priority: 1 } },
+    { name: 'transaction comment', method: 'post', url: '/transactions', body: { timestamp: '2017-02-04T16:45:36', comment: '\u0000', operations: [] } },
+    { name: 'transaction tag', method: 'post', url: '/transactions', body: { timestamp: '2017-02-04T16:45:36', tags: ['\u0000'], operations: [] } },
+    { name: 'setting value', method: 'put', url: '/settings/ui.language', body: { id: 'ui.language', value: '\u0000' } }
+];
+
 describe('Request errors', () => {
     itParam('Non-numeric ${value.name} id is not found', NON_NUMERIC_IDS, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 404, code: params.code, instance: params.url })
@@ -77,6 +88,11 @@ describe('Request errors', () => {
         await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID' })
             .post('/accounts')
             .withBody('{nope');
+    });
+
+    itParam('A NUL character in ${value.name} is a request body error', NUL_BODIES, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID', instance: params.url })[params.method](params.url)
+            .withJson(params.body);
     });
 
     // The only place in the suite that sends a media type this API does not consume.

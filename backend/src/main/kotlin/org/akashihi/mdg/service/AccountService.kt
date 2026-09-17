@@ -37,7 +37,7 @@ open class AccountService(private val accountRepository: AccountRepository, priv
             account.category = defaultCategory
             account.categoryId = defaultCategory.id
         }
-        val currencyId = account.currencyId ?: throw MdgException("ACCOUNT_CURRENCY_ASSET")
+        val currencyId = account.currencyId ?: throw MdgException("ACCOUNT_DATA_INVALID")
         val currency = currencyRepository.findByIdOrNull(currencyId) ?: throw MdgException("CURRENCY_NOT_FOUND")
         account.currency = currency
         account.categoryId?.also {
@@ -75,7 +75,7 @@ open class AccountService(private val accountRepository: AccountRepository, priv
     @Transactional
     open fun update(id: Long, newAccount: Account): Account? {
         val account = accountRepository.findByIdOrNull(id) ?: return null
-        val newCurrencyId = newAccount.currencyId ?: throw MdgException("ACCOUNT_CURRENCY_ASSET")
+        val newCurrencyId = newAccount.currencyId ?: throw MdgException("ACCOUNT_DATA_INVALID")
         if (newAccount.hidden != null) {
             account.hidden = newAccount.hidden
         }

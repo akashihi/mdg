@@ -26,6 +26,7 @@ Category:
       example: 1
     name:
       type: string
+      pattern: '^[^\u0000]*$'
       example: Pet expenses
     priority:
       type: integer
@@ -65,6 +66,7 @@ CategoryCreate:
         `CATEGORY_INVALID_TYPE`. Omit for a top-level category.
     name:
       type: string
+      pattern: '^[^\u0000]*$'
       description: Category name. Not required to be unique.
     priority:
       type: integer

@@ -20,6 +20,7 @@ Account:
       $ref: './common.yaml#/AccountType'
     name:
       type: [string, 'null']
+      pattern: '^[^\u0000]*$'
       minLength: 1
       description: |
         The account's name. Never empty on a stored account, so it is never empty
@@ -109,6 +110,7 @@ AccountCreate:
       $ref: './common.yaml#/AccountType'
     name:
       type: string
+      pattern: '^[^\u0000]*$'
       minLength: 1
       description: |
         Account name. Not required to be unique, but it may not be absent, `null`

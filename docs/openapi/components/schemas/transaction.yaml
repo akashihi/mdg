@@ -52,6 +52,7 @@ Transaction:
       $ref: './common.yaml#/LocalDateTime'
     comment:
       type: [string, 'null']
+      pattern: '^[^\u0000]*$'
       description: |
         Free-text description.
       example: Salary payment
@@ -62,6 +63,7 @@ Transaction:
         before are created implicitly.
       items:
         type: string
+        pattern: '^[^\u0000]*$'
       example: [income, salary]
     operations:
       type: array

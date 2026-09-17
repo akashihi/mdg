@@ -10,12 +10,14 @@ Currency:
       $ref: './common.yaml#/CurrencyId'
     code:
       type: string
+      pattern: '^[^\u0000]*$'
       minLength: 3
       maxLength: 3
       description: ISO 4217 alpha-3 currency code.
       example: EUR
     name:
       type: string
+      pattern: '^[^\u0000]*$'
       description: Human friendly currency name.
       example: "€"
     active:
