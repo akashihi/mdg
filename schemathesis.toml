@@ -2,6 +2,21 @@
 
 base-url = "http://localhost:8080"
 
+# Values the generator has to use for two properties it cannot invent: an existing currency
+# code and a real calendar date. They are *dictionaries* rather than literal `parameters`
+# pins because the two substitute differently where it matters. A literal pin re-creates a
+# property the negative phase removed (`_walk_substitute(..., create_missing=True)` in
+# `generation/body_overrides.py`), so a valid request goes out under a `required`-violation
+# report and the API's correct 201 is filed as "API accepted schema-violating request". A
+# dictionary binding walks the same path *without* `create_missing`, and is inert in negative
+# generation altogether — `_classify_entries` keeps only entries that violate the schema, and
+# a pinned value never does. See MIGRATION-NOTES.md #38.
+[dictionaries.currency-ids]
+values = [978]
+
+[dictionaries.timestamps]
+values = ["2017-02-04T16:45:36"]
+
 [[operations]]
 include-name = "PUT /settings/mnt.transaction.reindex"
 request-timeout = 300
@@ -68,10 +83,15 @@ expected-statuses = ["2xx", "401", "403", "404", "409", "422"]
 # a code that is not in the currency table (`CURRENCY_NOT_FOUND`), and a generated
 # `favorite`/`operational` on a non-asset account is `ACCOUNT_NONASSET_INVALIDFLAG`.
 # These pins apply to generated bodies only — explicit examples are never overridden.
+#
+# `currency_id` is bound to a dictionary, not pinned literally, because it is a *required*
+# property: a literal pin puts it back after the negative phase removes it. `favorite` and
+# `operational` stay literal — a dictionary entry may only be a string, integer or number,
+# never a boolean — and neither is required, so neither can produce that artifact.
 [[operations]]
 include-name = "POST /accounts"
 [operations.parameters]
-"body.currency_id" = 978
+"body.currency_id" = { dictionary = "currency-ids" }
 "body.favorite" = false
 "body.operational" = false
 [operations.checks.positive_data_acceptance]
@@ -105,15 +125,17 @@ expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "41
 # TRANSACTION_EMPTY, _ZERO_RATE, _NO_DEFAULT_RATE, _AMBIGUOUS_RATE, _NOT_BALANCED —
 # TransactionService.kt:57-77.
 #
-# `timestamp` is pinned for the same reason `body.currency_id` is pinned above. Transaction.ts
-# is a LocalDateTime, and common.yaml#/LocalDateTime can only constrain the *shape* of the
-# string — a generated value matching that pattern is still free to be 9999-99-99T99:99, which
-# is a 400 REQUEST_BODY_INVALID. `format: date-time` is not the answer either: it mandates an
+# `timestamp` is bound to a dictionary for the same reason `body.currency_id` is: it is a
+# required property, so a literal pin would re-create it after the negative phase drops it.
+# It needs a value at all because `Transaction.ts` is a LocalDateTime, and
+# common.yaml#/LocalDateTime can only constrain the *shape* of the string — a generated value
+# matching that pattern is still free to be 9999-99-99T99:99, which is a 400
+# REQUEST_BODY_INVALID. `format: date-time` is not the answer either: it mandates an
 # RFC 3339 offset, which Jackson's LocalDateTimeDeserializer rejects outright.
 [[operations]]
 include-name = "POST /transactions"
 [operations.parameters]
-"body.timestamp" = "2017-02-04T16:45:36"
+"body.timestamp" = { dictionary = "timestamps" }
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
 [operations.checks.negative_data_rejection]
@@ -122,7 +144,7 @@ expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "41
 [[operations]]
 include-name = "PUT /transactions/{id}"
 [operations.parameters]
-"body.timestamp" = "2017-02-04T16:45:36"
+"body.timestamp" = { dictionary = "timestamps" }
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
 [operations.checks.negative_data_rejection]
@@ -167,8 +189,7 @@ include-name = "GET /budgets"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "422"]
 
-# Longer scenarios so a created resource is read and updated before the link that deletes it
-# fires. `allow-extra-parameters` governs query and header parameters only — unknown *body*
+# `allow-extra-parameters` governs query and header parameters only — unknown *body*
 # properties are held back by `additionalProperties: false` in the schemas instead, which the
 # spec declares on every object reachable from a request body. Note that is a deliberately
 # stricter contract than the server enforces: MDG's ObjectMapper has FAIL_ON_UNKNOWN_PROPERTIES
@@ -184,9 +205,17 @@ expected-statuses = ["2xx", "422"]
 # which is the only reason the schemas can state it. See MIGRATION-NOTES.md #28.
 allow-extra-parameters = false
 
+# Scenario count of the stateful phase — the knob that trades runtime against how often each
+# linked operation is reached. It has to live in this section: `[phases.<phase>.generation]`
+# parses without complaint, but `generation_for()` drops it, because the merged phase config
+# reports `_is_default` (`config/_projects.py`), so a generation knob written under a phase
+# never reaches the run. Verified against schemathesis 4.27.3; a `mode = "positive"` that used
+# to sit there was inert for the same reason, and the stateful phase has always generated
+# negative cases as well. See MIGRATION-NOTES.md #38.
+max-examples = 75
+
+# Longer scenarios so a created resource is read and updated before the link that deletes it
+# fires. `max-steps` is read straight from this section, so unlike a generation knob it does
+# take effect here.
 [phases.stateful]
 max-steps = 12
-
-[phases.stateful.generation]
-mode = "positive"
-max-examples = 75
