@@ -137,6 +137,21 @@ include-name = "PUT /settings/currency.primary"
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "422"]
 
+# `mnt.transaction.reindex` and `mnt.reporting.refresh` are maintenance triggers, not rows in
+# the `SETTING` table, so a read of either is a 404 by construction and the specification
+# documents nothing else for them. They exist as reads only because every `/settings/*` GET is
+# served by one handler, and documenting them is what keeps the `Allow` header consistent with
+# the declared methods on those two paths — see MIGRATION-NOTES.md #40. There is no "realistic
+# parameter value" that could make them succeed, which is what the `missing_test_data` warning
+# asks for, so it is switched off for exactly these two operations rather than answered.
+[[operations]]
+include-name = "GET /settings/mnt.transaction.reindex"
+warnings = false
+
+[[operations]]
+include-name = "GET /settings/mnt.reporting.refresh"
+warnings = false
+
 # A generated `cursor` is a schema-conforming string but not a cursor this API ever issued,
 # so 422 CURSOR_DATA_INVALID is the correct answer and `positive_data_acceptance` would
 # otherwise read it as an API rejecting valid data. OpenAPI has no way to say "only values

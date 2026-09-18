@@ -22,3 +22,15 @@ rules:
   operation-tag-defined: error
   oas3-valid-media-example: error
   oas3-valid-schema-example: error
+
+# `GET /settings/mnt.transaction.reindex` and `GET /settings/mnt.reporting.refresh` document
+# a 404 and nothing else, on purpose. Both names are maintenance triggers rather than rows in
+# the `SETTING` table, and every `/settings/*` read is served by the one handler over that
+# table, so neither read can ever succeed — but both URLs do answer `GET`, and saying so is
+# what keeps the `Allow` header consistent with the declared methods. See MIGRATION-NOTES #40.
+overrides:
+  - files:
+      - 'openapi.yaml#/paths/~1settings~1mnt.transaction.reindex/get'
+      - 'openapi.yaml#/paths/~1settings~1mnt.reporting.refresh/get'
+    rules:
+      operation-success-response: off

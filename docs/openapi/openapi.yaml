@@ -1584,13 +1584,11 @@ paths:
                   - { id: ui.transaction.closedialog, value: 'true' }
                   - { id: ui.language, value: en-US }
                   - { id: ui.overviewpanel.widgets, value: '{}' }
-  /settings/{id}:
+  /settings/currency.primary:
     get:
       tags: [Settings]
-      summary: View a setting
-      operationId: getSetting
-      parameters:
-        - $ref: './components/parameters.yaml#/SettingId'
+      summary: View the primary currency
+      operationId: getPrimaryCurrency
       responses:
         '200':
           description: The setting.
@@ -1598,7 +1596,7 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/setting.yaml#/Setting'
-  /settings/currency.primary:
+              example: { id: currency.primary, value: '840' }
     put:
       tags: [Settings]
       summary: Set the primary currency
@@ -1624,6 +1622,18 @@ paths:
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/ui.transaction.closedialog:
+    get:
+      tags: [Settings]
+      summary: View the transaction dialog auto-closing flag
+      operationId: getTransactionCloseDialog
+      responses:
+        '200':
+          description: The setting.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Setting'
+              example: { id: ui.transaction.closedialog, value: 'true' }
     put:
       tags: [Settings]
       summary: Configure transaction dialog auto-closing
@@ -1647,6 +1657,18 @@ paths:
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/ui.language:
+    get:
+      tags: [Settings]
+      summary: View the system locale
+      operationId: getUiLanguage
+      responses:
+        '200':
+          description: The setting.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Setting'
+              example: { id: ui.language, value: en-US }
     put:
       tags: [Settings]
       summary: Set the system locale
@@ -1671,6 +1693,18 @@ paths:
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/ui.overviewpanel.widgets:
+    get:
+      tags: [Settings]
+      summary: View the overview panel widgets
+      operationId: getOverviewPanelWidgets
+      responses:
+        '200':
+          description: The setting.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Setting'
+              example: { id: ui.overviewpanel.widgets, value: '{"lt":"TotalsWidget","rt":"BudgetWidget","lb":"EvaluationWidget","rb":"RatesWidget"}' }
     put:
       tags: [Settings]
       summary: Configure the overview panel widgets
@@ -1697,6 +1731,18 @@ paths:
         '422':
           $ref: './components/responses.yaml#/UnprocessableEntity'
   /settings/mnt.transaction.reindex:
+    get:
+      tags: [Settings]
+      summary: Read the reindex trigger
+      description: |
+        Always `404` `SETTING_NOT_FOUND`. Every `/settings/*` read is served by one
+        handler over the `SETTING` table, and `mnt.transaction.reindex` is a
+        maintenance trigger rather than a stored variable, so there is no row to
+        return and no way to create one.
+      operationId: getReindexTrigger
+      responses:
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
     put:
       tags: [Settings]
       summary: Rebuild the full-text index
@@ -1728,6 +1774,18 @@ paths:
         '415':
           $ref: './components/responses.yaml#/UnsupportedMediaType'
   /settings/mnt.reporting.refresh:
+    get:
+      tags: [Settings]
+      summary: Read the reporting refresh trigger
+      description: |
+        Always `404` `SETTING_NOT_FOUND`. Every `/settings/*` read is served by one
+        handler over the `SETTING` table, and `mnt.reporting.refresh` is a
+        maintenance trigger rather than a stored variable, so there is no row to
+        return and no way to create one.
+      operationId: getReportingRefreshTrigger
+      responses:
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
     put:
       tags: [Settings]
       summary: Refresh the reporting materialized views

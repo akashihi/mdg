@@ -32,6 +32,14 @@ describe('Settings', () => {
             .expectJson("id", params);
     });
 
+    const MAINTENANCE_TRIGGERS = ['mnt.transaction.reindex', 'mnt.reporting.refresh'];
+
+    itParam('Maintenance trigger ${value} is not a readable setting', MAINTENANCE_TRIGGERS, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('expect error', { statusCode: 404, code: 'SETTING_NOT_FOUND' })
+            .get('/settings/{id}')
+            .withPathParams('id', params);
+    });
+
     const SETTINGS_TRIGGERS = [
         {
             id: 'ui.transaction.closedialog',

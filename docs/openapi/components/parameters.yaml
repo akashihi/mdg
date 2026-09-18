@@ -234,22 +234,6 @@ CurrencyId:
     maximum: 999
   example: 978
 
-SettingId:
-  name: id
-  in: path
-  required: true
-  description: Setting name.
-  schema:
-    type: string
-    enum:
-      - currency.primary
-      - ui.transaction.closedialog
-      - ui.language
-      - ui.overviewpanel.widgets
-      - mnt.transaction.reindex
-      - mnt.reporting.refresh
-  example: currency.primary
-
 BudgetIdPath:
   name: id
   in: path
