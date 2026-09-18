@@ -68,7 +68,7 @@ describe('Settings', () => {
             .withPathParams('id', 'currency.primary')
             .withJson({
                 id: 'currency.primary',
-                value: -1
+                value: '-1'
             });
     });
 

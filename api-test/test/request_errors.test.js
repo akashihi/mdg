@@ -59,6 +59,29 @@ const NUL_BODIES = [
     { name: 'setting value', method: 'put', url: '/settings/ui.language', body: { id: 'ui.language', value: '\u0000' } }
 ];
 
+// Jackson used to convert a scalar of the wrong JSON type rather than refuse it, so a property
+// the specification types as a string took a number, one typed as a date took an integer — read
+// as days since the epoch, which turned -43115 into a perfectly plausible 1851-12-16 — and an
+// integer property took a string. Every one of them answered 201. They are now refused while the
+// body is read, so nothing here creates a row either.
+const WRONG_TYPE_BODIES = [
+    { name: 'a date given as an integer', method: 'post', url: '/budgets', body: { term_beginning: '2031-03-01', term_end: -43115 } },
+    { name: 'a date given as an array', method: 'post', url: '/budgets', body: { term_beginning: [1970, 1, 1], term_end: [1970, 1, 2] } },
+    { name: 'a date-time given as an array', method: 'post', url: '/transactions', body: { timestamp: [2020, 1, 1, 0, 0], operations: [] } },
+    { name: 'a string given as a number', method: 'post', url: '/accounts', body: { account_type: 'expense', currency_id: 978, name: 42 } },
+    { name: 'a string given as a boolean', method: 'post', url: '/accounts', body: { account_type: 'expense', currency_id: 978, name: false } },
+    { name: 'a tag given as a number', method: 'post', url: '/transactions', body: { timestamp: '2017-02-04T16:45:36', tags: [42], operations: [] } },
+    { name: 'a setting value given as a number', method: 'put', url: '/settings/ui.language', body: { id: 'ui.language', value: 42 } },
+    { name: 'an integer given as a string', method: 'post', url: '/accounts', body: { account_type: 'expense', currency_id: '978', name: 'Probe' } },
+    // Fractional only. A whole float is a valid integer — the test below this table covers that
+    { name: 'an integer given as a fractional float', method: 'post', url: '/accounts', body: { account_type: 'expense', currency_id: 978.5, name: 'Probe' } },
+    { name: 'an integer given as an empty string', method: 'post', url: '/accounts', body: { account_type: 'expense', currency_id: 978, name: 'Probe', category_id: '' } },
+    { name: 'a boolean given as a string', method: 'post', url: '/accounts', body: { account_type: 'asset', currency_id: 978, name: 'Probe', favorite: 'true' } },
+    { name: 'a boolean given as a number', method: 'post', url: '/accounts', body: { account_type: 'asset', currency_id: 978, name: 'Probe', favorite: 1 } },
+    { name: 'an enum given as its ordinal', method: 'post', url: '/accounts', body: { account_type: 0, currency_id: 978, name: 'Probe' } },
+    { name: 'an amount given as a string', method: 'post', url: '/transactions', body: { timestamp: '2017-02-04T16:45:36', operations: [{ account_id: 1, amount: '100' }] } }
+];
+
 describe('Request errors', () => {
     itParam('Non-numeric ${value.name} id is not found', NON_NUMERIC_IDS, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 404, code: params.code, instance: params.url })
@@ -115,6 +138,29 @@ describe('Request errors', () => {
     itParam('A NUL character in ${value.name} is a request body error', NUL_BODIES, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID', instance: params.url })[params.method](params.url)
             .withJson(params.body);
+    });
+
+    itParam('A body with ${value.name} is a request body error', WRONG_TYPE_BODIES, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID', instance: params.url })[params.method](params.url)
+            .withJson(params.body);
+    });
+
+    // The other side of that rule, and the reason it needs a deserializer rather than a coercion
+    // setting: JSON has one number type, so `type: integer` covers any number with a zero
+    // fractional part. 978.0 is a currency id, 978.5 is not.
+    it('A whole float is still an integer', async () => {
+        await pactum.spec()
+            .post('/accounts')
+            .withHeaders('Content-Type', 'application/vnd.mdg+json;version=1')
+            .withJson({ account_type: 'expense', currency_id: 978.0, name: 'Whole float account' })
+            .expectStatus(201)
+            .expectJson('currency_id', 978)
+            .stores('WholeFloatAccountID', 'id');
+
+        await pactum.spec()
+            .delete('/accounts/{id}')
+            .withPathParams('id', '$S{WholeFloatAccountID}')
+            .expectStatus(204);
     });
 
     // The only place in the suite that sends a media type this API does not consume.

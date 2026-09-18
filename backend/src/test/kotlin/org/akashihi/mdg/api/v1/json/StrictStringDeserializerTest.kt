@@ -13,9 +13,9 @@ import org.junit.jupiter.api.assertThrows
 data class TestNamed(val name: String?, val tags: List<String>?)
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class NulRejectingStringDeserializerTest {
+class StrictStringDeserializerTest {
 
-    private val objectMapper = jacksonObjectMapper().registerModule(SimpleModule().addDeserializer(String::class.java, NulRejectingStringDeserializer()))
+    private val objectMapper = jacksonObjectMapper().registerModule(SimpleModule().addDeserializer(String::class.java, StrictStringDeserializer()))
 
     @Test
     fun plainStringsAreAccepted() {
@@ -26,6 +26,32 @@ class NulRejectingStringDeserializerTest {
     @Test
     fun nullIsAccepted() {
         objectMapper.readValue<TestNamed>("""{"name":null}""") shouldBe TestNamed(null, null)
+    }
+
+    @Test
+    fun numberIsNotAString() {
+        // Jackson's own reader would have taken the textual form and stored the account name "42"
+        val e = assertThrows<JsonMappingException> { objectMapper.readValue<TestNamed>("""{"name":42}""") }
+        e.message shouldContain "A string is expected"
+    }
+
+    @Test
+    fun floatIsNotAString() {
+        val e = assertThrows<JsonMappingException> { objectMapper.readValue<TestNamed>("""{"name":1.5}""") }
+        e.message shouldContain "A string is expected"
+    }
+
+    @Test
+    fun booleanIsNotAString() {
+        val e = assertThrows<JsonMappingException> { objectMapper.readValue<TestNamed>("""{"name":false}""") }
+        e.message shouldContain "A string is expected"
+    }
+
+    @Test
+    fun numberIsNotAStringInAListElementEither() {
+        // Tags go through the same deserializer, by way of TagDeserializer.readValue
+        val e = assertThrows<JsonMappingException> { objectMapper.readValue<TestNamed>("""{"name":"Wallet","tags":[42]}""") }
+        e.message shouldContain "A string is expected"
     }
 
     @Test
