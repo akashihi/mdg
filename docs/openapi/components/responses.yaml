@@ -80,9 +80,10 @@ MaintenanceAccepted:
 BadRequest:
   description: |
     The request could not be bound to the operation — a parameter that does not
-    convert to the declared type, a required parameter that is absent, or a body
-    that could not be read. A body string carrying a NUL character (U+0000)
-    counts as unreadable: `REQUEST_BODY_INVALID`. Read `code` to find out which.
+    convert to the declared type, a parameter whose value falls outside the range
+    the schema declares, a required parameter that is absent, or a body that could
+    not be read. A body string carrying a NUL character (U+0000) counts as
+    unreadable: `REQUEST_BODY_INVALID`. Read `code` to find out which.
   content:
     application/vnd.mdg+json;version=1:
       schema:

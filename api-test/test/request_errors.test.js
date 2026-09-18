@@ -40,6 +40,14 @@ const BAD_LIMITS = [
     { name: 'repeated limit with an empty first value on budgets', url: '/budgets?limit=&limit=3', instance: '/budgets' }
 ];
 
+const BAD_GRANULARITIES = [
+    { name: 'simple asset report', instance: '/reports/assets/simple' },
+    { name: 'asset report by currency', instance: '/reports/assets/currency' },
+    { name: 'asset report by type', instance: '/reports/assets/type' },
+    { name: 'income events report', instance: '/reports/income/events' },
+    { name: 'expense events report', instance: '/reports/expense/events' }
+];
+
 // PostgreSQL refuses U+0000 in a text column, so a NUL anywhere in a string used to reach the
 // insert and come back as a 500. It is now refused while the body is read. Nothing here creates
 // a row: the body is rejected before it reaches a service.
@@ -81,6 +89,14 @@ describe('Request errors', () => {
             .withQueryParams('startDate', '2017-02-01')
             .withQueryParams('endDate', '2017-02-28')
             .withQueryParams('granularity', 'abc');
+    });
+
+    itParam('Negative granularity on the ${value.name} is a request error', BAD_GRANULARITIES, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_PARAMETER_INVALID', instance: params.instance })
+            .get(params.instance)
+            .withQueryParams('startDate', '2017-02-01')
+            .withQueryParams('endDate', '2017-02-28')
+            .withQueryParams('granularity', '-1');
     });
 
     it('Missing required parameter is reported', async () => {

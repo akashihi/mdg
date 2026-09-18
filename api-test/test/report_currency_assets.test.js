@@ -31,6 +31,18 @@ describe('Assets by currency report test', () => {
             .stores('UsdTotals','series[name=USD].data[0].y');
     });
 
+    // A granularity of 0 means the whole range in a single bucket, and a granularity wider than
+    // the range itself means the same thing.
+    it('Collapsing granularities produce a single bucket', async () => {
+        await e2e.step('Retrieve zero granularity report')
+            .spec('read')
+            .get("/reports/assets/currency?startDate=2017-03-01&endDate=2017-03-15&granularity=0");
+
+        await e2e.step('Retrieve oversized granularity report')
+            .spec('read')
+            .get("/reports/assets/currency?startDate=2017-03-01&endDate=2017-03-15&granularity=2147483647");
+    });
+
    it('Transaction updates simple report', async () => {
         await e2e.step('Create transaction')
             .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' })

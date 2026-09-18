@@ -157,7 +157,8 @@ Granularity:
   description: |
     Distance in days between report datapoints inside the range. `startDate` and
     `endDate` are always included even if the step does not land on them. A
-    granularity of `0` collapses the whole range into a single bucket.
+    granularity of `0` collapses the whole range into a single bucket, and so does
+    any granularity wider than the range itself.
   schema:
     type: integer
     format: int32
