@@ -12,9 +12,6 @@ it('Load list of currencies', async () => {
 });
 
 it('Request non-existent currency', async () => {
-    /* By definition all currency ids
-       * are between 100 and 999 inclusive
-       */
     await pactum.spec('expect error', { statusCode: 404, code: 'CURRENCY_NOT_FOUND', instance: '/currencies/1'})
         .get('/currencies/1');
 });

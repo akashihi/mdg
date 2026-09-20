@@ -264,7 +264,8 @@ paths:
         
         `currency_id` on an **asset** account is rejected with
         `ACCOUNT_CURRENCY_ASSET`. Changing the currency of a non-asset account rewrites the `rate` of every
-        existing operation on it and recomputes the balance.
+        existing operation on it and recomputes the balance; a `currency_id` naming
+        no currency is 404 `CURRENCY_NOT_FOUND`.
 
         An absent or `null` `name` keeps the current one; a blank one is rejected
         with 422 `ACCOUNT_DATA_INVALID`.
@@ -292,7 +293,7 @@ paths:
         '400':
           $ref: './components/responses.yaml#/BadRequest'
         '404':
-          description: No account found
+          description: No account found, or the body's `currency_id` names no currency
           content:
             application/vnd.mdg+json;version=1:
               schema:
@@ -1332,7 +1333,9 @@ paths:
       tags: [Rates]
       summary: View one currency pair's rate
       description: |
-        When no rate is on file for the pair at that instant the server synthesises one with `rate: 1` and `id: -1`.
+        Both `from` and `to` have to name a currency the system knows, else
+        404 `CURRENCY_NOT_FOUND`. When both exist but no rate is on file for the
+        pair at that instant the server synthesises one with `rate: 1` and `id: -1`.
       operationId: getRate
       parameters:
         - $ref: './components/parameters.yaml#/RateTimestamp'
@@ -1341,16 +1344,14 @@ paths:
           required: true
           description: ISO 4217 numeric code of the "sell" currency.
           schema:
-            type: integer
-            format: int64
+            $ref: './components/schemas/common.yaml#/CurrencyId'
           example: 978
         - name: to
           in: path
           required: true
           description: ISO 4217 numeric code of the "buy" currency.
           schema:
-            type: integer
-            format: int64
+            $ref: './components/schemas/common.yaml#/CurrencyId'
           example: 840
       responses:
         '200':
@@ -1362,6 +1363,8 @@ paths:
 
         '400':
           $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
   # All reporting endpoints are read-only.
   /reports/totals:
     get:

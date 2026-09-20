@@ -20,7 +20,6 @@ open class StrictIntegralDeserializer(delegatee: JsonDeserializer<*>) : Delegati
     }
 }
 
-
 internal val INTEGRAL_TYPES: List<Class<*>> = listOf(
     Long::class.javaObjectType,
     Long::class.javaPrimitiveType!!,

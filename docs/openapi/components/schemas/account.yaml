@@ -32,8 +32,9 @@ Account:
       allOf:
         - $ref: './common.yaml#/CurrencyId'
       description: |
-        The account's currency. Writable on create; on update it is only
-        accepted for non-asset accounts.
+        The account's currency. It must exist, else `CURRENCY_NOT_FOUND`.
+        Writable on create; on update it is only accepted for non-asset
+        accounts.
     currency:
       allOf:
         - $ref: './currency.yaml#/Currency'

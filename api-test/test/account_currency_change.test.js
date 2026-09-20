@@ -142,3 +142,23 @@ it('Transaction with multiple currencies have rate recalculated', async () => {
         .withPathParams('id', '$S{TransactionID}')
         .expectJsonLike('operations[*].rate', [1.19, 1, 1]);
 }).timeout(15000);
+
+it('Currency change to an unknown currency is not found', async () => {
+    const accountId = tracker.account(await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:V1'})
+        .returns('id'));
+
+    await pactum.spec('expect error', { statusCode: 404, code: 'CURRENCY_NOT_FOUND', instance: `/accounts/${accountId}` })
+        .put('/accounts/{id}')
+        .withPathParams('id', accountId)
+        .withJson({
+            '@DATA:TEMPLATE@': 'Account:Expense:V1',
+            '@OVERRIDES@': {
+                currency_id: 1
+            }
+        });
+
+    await pactum.spec('read')
+        .get('/accounts/{id}')
+        .withPathParams('id', accountId)
+        .expectJson('currency_id', 978);
+});

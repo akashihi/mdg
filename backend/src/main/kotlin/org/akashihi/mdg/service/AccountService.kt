@@ -105,10 +105,10 @@ open class AccountService(private val accountRepository: AccountRepository, priv
             }
         } else {
             if (account.currency!!.id != newCurrencyId) {
-                val currencyValue = currencyRepository.findByIdOrNull(newCurrencyId)
-                currencyValue?.also { transactionService.updateTransactionsCurrencyForAccount(account, it) }
-                currencyValue?.also { budgetService.updateCurrencyForAccount(account, it) }
-                currencyValue?.also { account.currency = it }
+                val currencyValue = currencyRepository.findByIdOrNull(newCurrencyId) ?: throw MdgException("CURRENCY_NOT_FOUND")
+                transactionService.updateTransactionsCurrencyForAccount(account, currencyValue)
+                budgetService.updateCurrencyForAccount(account, currencyValue)
+                account.currency = currencyValue
             }
             if (newAccount.favorite == true || newAccount.operational == true) {
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
