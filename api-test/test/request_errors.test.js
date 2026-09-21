@@ -20,6 +20,18 @@ const NON_NUMERIC_IDS = [
     { name: 'budget cashflow report', url: '/reports/budget/cashflow/abc', code: 'BUDGET_NOT_FOUND' }
 ];
 
+// A literal path that its sibling `{id}` mapping also matches. Spring routes PUT and
+// DELETE to the instance handler, so `OPTIONS` advertises them and the specification has to
+// declare them; the segment is not a number, so each one is the 404 above before any service
+// is reached. Nothing here deletes anything.
+const SHADOWED_LITERAL_PATHS = [
+    { name: 'PUT /accounts/tree', method: 'put', url: '/accounts/tree', code: 'ACCOUNT_NOT_FOUND' },
+    { name: 'DELETE /accounts/tree', method: 'delete', url: '/accounts/tree', code: 'ACCOUNT_NOT_FOUND' },
+    { name: 'PUT /budgets/current', method: 'put', url: '/budgets/current', code: 'BUDGET_NOT_FOUND' },
+    { name: 'DELETE /budgets/current', method: 'delete', url: '/budgets/current', code: 'BUDGET_NOT_FOUND' },
+    { name: 'PUT /budgets/{budgetId}/entries/tree', method: 'put', url: '/budgets/20170201/entries/tree', code: 'BUDGETENTRY_NOT_FOUND' }
+];
+
 const ZERO_LIMIT_CURSOR = 'eyJsaW1pdCI6MH0=';
 const GOOD_CURSOR = 'eyJsaW1pdCI6MywicG9pbnRlciI6N30=';
 
@@ -86,6 +98,14 @@ describe('Request errors', () => {
     itParam('Non-numeric ${value.name} id is not found', NON_NUMERIC_IDS, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 404, code: params.code, instance: params.url })
             .get(params.url);
+    });
+
+    itParam('${value.name} is a shadowed literal path and is not found', SHADOWED_LITERAL_PATHS, async (params) => { // eslint-disable-line no-template-curly-in-string
+        const spec = pactum.spec('expect error', { statusCode: 404, code: params.code, instance: params.url })[params.method](params.url);
+        if (params.method === 'put') {
+            spec.withJson({});
+        }
+        await spec;
     });
 
     // A rate timestamp is a moment in time rather than a resource id, so an unparseable

@@ -34,3 +34,22 @@ overrides:
       - 'openapi.yaml#/paths/~1settings~1mnt.reporting.refresh/get'
     rules:
       operation-success-response: off
+
+  # The same thing from the other direction. `/accounts/tree`, `/budgets/current` and
+  # `/budgets/{budgetId}/entries/tree` are matched by their sibling `{id}` mappings as well,
+  # so the server really serves `PUT` and `DELETE` on them and `OPTIONS` advertises both. The
+  # segment is not a number, so every one of these answers that resource's 404 and can never
+  # answer a 2xx. They are documented to keep the declared methods consistent with the `Allow`
+  # header. See MIGRATION-NOTES #42.
+  #
+  # `{` and `}` are not legal in a URI fragment, and spectral matches the pointer exactly —
+  # no globbing — so the braces of a templated path have to be percent-encoded here or the
+  # override silently matches nothing.
+  - files:
+      - 'openapi.yaml#/paths/~1accounts~1tree/put'
+      - 'openapi.yaml#/paths/~1accounts~1tree/delete'
+      - 'openapi.yaml#/paths/~1budgets~1current/put'
+      - 'openapi.yaml#/paths/~1budgets~1current/delete'
+      - 'openapi.yaml#/paths/~1budgets~1%7BbudgetId%7D~1entries~1tree/put'
+    rules:
+      operation-success-response: off

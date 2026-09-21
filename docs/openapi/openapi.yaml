@@ -234,6 +234,56 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/account.yaml#/CategoryTree'
+    put:
+      tags: [Accounts]
+      summary: Not an account — always 404
+      description: |
+        `/accounts/tree` matches the `/accounts/{id}` mappings as well, so the
+        server really does route `PUT` here and `OPTIONS` advertises it. `tree`
+        is not a number, so the request is answered with 404 `ACCOUNT_NOT_FOUND`
+        before any account is looked up — there is no success case. The path
+        variable is resolved before the body, so the 400 `REQUEST_BODY_INVALID`
+        of the sibling operation can not happen here.
+
+        Documented so that the declared methods agree with the `Allow` header,
+        which is the union of every mapping that matches the path. See
+        MIGRATION-NOTES.md #42.
+      operationId: updateAccountTree
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/account.yaml#/Account'
+            example:
+              account_type: ASSET
+              currency_id: 978
+              name: Wallet
+              hidden: true
+      responses:
+        '404':
+          description: '`tree` names no account.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+    delete:
+      tags: [Accounts]
+      summary: Not an account — always 404
+      description: |
+        `DELETE /accounts/{id}` matches this path too, so `OPTIONS` advertises
+        `DELETE`. `tree` is not a number, so nothing is ever deleted and the
+        answer is 404 `ACCOUNT_NOT_FOUND`. See MIGRATION-NOTES.md #42.
+      operationId: deleteAccountTree
+      responses:
+        '404':
+          description: '`tree` names no account.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
   /accounts/{id}:
     get:
       tags: [Accounts]
@@ -933,6 +983,57 @@ paths:
             application/vnd.mdg+json;version=1:
               schema:
                 $ref: './components/schemas/problem.yaml#/Problem'
+    put:
+      tags: [Budgets]
+      summary: Not a budget — always 404
+      description: |
+        `/budgets/current` matches the `/budgets/{id}` mappings as well, so the
+        server really does route `PUT` here and `OPTIONS` advertises it.
+        `current` is neither a budget id nor a `YYYYMMDD` date, so the request is
+        answered with 404 `BUDGET_NOT_FOUND` before any budget is looked up —
+        there is no success case, and the path variable is resolved before the
+        body, so the 400 `REQUEST_BODY_INVALID` of the sibling operation can not
+        happen here. Use `PUT /budgets/{id}` with the id that
+        `GET /budgets/current` returned.
+
+        Documented so that the declared methods agree with the `Allow` header,
+        which is the union of every mapping that matches the path. See
+        MIGRATION-NOTES.md #42.
+      operationId: updateCurrentBudget
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/budget.yaml#/Budget'
+            example:
+              term_beginning: '2017-02-04'
+              term_end: '2017-02-28'
+      responses:
+        '404':
+          description: '`current` names no budget.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+    delete:
+      tags: [Budgets]
+      summary: Not a budget — always 404
+      description: |
+        `DELETE /budgets/{id}` matches this path too, so `OPTIONS` advertises
+        `DELETE`. `current` is neither a budget id nor a date, so nothing is ever
+        deleted and the answer is 404 `BUDGET_NOT_FOUND`. See
+        MIGRATION-NOTES.md #42.
+      operationId: deleteCurrentBudget
+      responses:
+        '404':
+          description: '`current` names no budget.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
   /budgets/{id}:
     get:
       tags: [Budgets]
@@ -1114,6 +1215,46 @@ paths:
                 $ref: './components/schemas/budget.yaml#/BudgetEntryTree'
         '404':
           $ref: './components/responses.yaml#/NotFound'
+    put:
+      tags: [Budget entries]
+      summary: Not a budget entry — always 404
+      description: |
+        `/budgets/{budgetId}/entries/tree` matches the
+        `/budgets/{budgetId}/entries/{entryId}` mapping as well, so the server
+        really does route `PUT` here and `OPTIONS` advertises it. `tree` is not a
+        number, so the request is answered with 404 `BUDGETENTRY_NOT_FOUND` — it
+        is `entryId` that fails to convert, not `budgetId`, and the failure comes
+        before any entry is looked up. There is no success case, and the path
+        variables are resolved before the body, so the 400 `REQUEST_BODY_INVALID`
+        of the sibling operation can not happen here.
+
+        Documented so that the declared methods agree with the `Allow` header,
+        which is the union of every mapping that matches the path. See
+        MIGRATION-NOTES.md #42.
+      operationId: updateBudgetEntryTree
+      parameters:
+        - $ref: './components/parameters.yaml#/OwningBudgetId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/budget.yaml#/BudgetEntry'
+            example:
+              id: 291
+              account_id: 2065
+              distribution: SINGLE
+              expected_amount: 1000
+              dt: '2017-02-15'
+      responses:
+        '404':
+          description: '`tree` names no budget entry.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
   /budgets/{budgetId}/entries/{entryId}:
     get:
       tags: [Budget entries]
