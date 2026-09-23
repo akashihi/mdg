@@ -1412,6 +1412,11 @@ paths:
       description: |
         Only `active` can be changed. Values in the other fields are silently
         ignored — currencies cannot be created, renamed or deleted.
+
+        The request body is therefore `CurrencyUpdate` and not the `Currency` of the
+        response: `code` and `name` still have to be present, but they are discarded
+        unread, so none of the response's constraints on them apply to a request. A
+        client may still PUT back the object it GET'd.
       operationId: updateCurrency
       parameters:
         - $ref: './components/parameters.yaml#/CurrencyId'
@@ -1420,7 +1425,7 @@ paths:
         content:
           application/vnd.mdg+json;version=1:
             schema:
-              $ref: './components/schemas/currency.yaml#/Currency'
+              $ref: './components/schemas/currency.yaml#/CurrencyUpdate'
             example:
               id: 978
               code: EUR

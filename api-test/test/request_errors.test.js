@@ -104,6 +104,14 @@ const NULL_BODIES = [
     { name: 'currency active flag', method: 'put', url: '/currencies/978', body: { active: null, code: 'EUR', id: 978, name: '\u20ac' } }
 ];
 
+const UNPARSEABLE_FILTERS = [
+    { name: 'accounts', url: '/accounts' },
+    { name: 'the account tree', url: '/accounts/tree' },
+    { name: 'transactions', url: '/transactions' }
+];
+
+const UNPARSEABLE_FILTER_VALUES = ['null', 'fail', '123', '"a string"', 'true'];
+
 describe('Request errors', () => {
     itParam('Non-numeric ${value.name} id is not found', NON_NUMERIC_IDS, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 404, code: params.code, instance: params.url })
@@ -150,6 +158,16 @@ describe('Request errors', () => {
             .withQueryParams('startDate', '2017-02-01')
             .withQueryParams('endDate', '2017-02-28')
             .withQueryParams('granularity', '-1');
+    });
+
+    itParam('An unparseable filter on ${value.name} is ignored', UNPARSEABLE_FILTERS, async (params) => { // eslint-disable-line no-template-curly-in-string
+        for (const filter of UNPARSEABLE_FILTER_VALUES) {
+            await pactum.spec()
+                .get(params.url)
+                .withQueryParams('q', filter)
+                .expectStatus(200)
+                .expectHeader('content-type', 'application/vnd.mdg+json;version=1');
+        }
     });
 
     it('Missing required parameter is reported', async () => {

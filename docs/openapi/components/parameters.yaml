@@ -43,6 +43,9 @@ AccountQuery:
   description: |
     A filter, expressed as a **URL-encoded JSON object string**.
 
+    A value that is not a JSON object — including the literal `null` — is ignored and
+    the unfiltered collection is returned. So are the object's own members whose value
+    is not a string.
   schema:
     type: string
   examples:
@@ -61,8 +64,11 @@ TransactionQuery:
   in: query
   required: false
   description: |
-    A filter, expressed as a **URL-encoded JSON object string**. 
+    A filter, expressed as a **URL-encoded JSON object string**.
 
+    A value that is not a JSON object — including the literal `null` — is ignored and
+    the unfiltered collection is returned. So are the object's own members whose value
+    is not a string.
   schema:
     type: string
   examples:
