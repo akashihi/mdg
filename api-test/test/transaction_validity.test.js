@@ -207,7 +207,7 @@ it('Operations without an account are not allowed', async () => {
 it('An explicitly null account on an operation is not allowed', async () => {
     await prepareAccounts(false);
 
-    await pactum.spec('expect error', { statusCode: 422, code: 'TRANSACTION_DATA_INVALID', instance: '/transactions' })
+    await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID', instance: '/transactions' })
         .post('/transactions')
         .withJson({
             timestamp: '2017-02-04T16:45:36',

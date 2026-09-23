@@ -3,6 +3,8 @@ package org.akashihi.mdg.entity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import org.hibernate.Hibernate
 import org.hibernate.annotations.Formula
 import java.math.BigDecimal
@@ -19,6 +21,7 @@ class Operation(
     @JoinColumn(name = "tx_id", nullable = false)
     @JsonIgnore
     var transaction: Transaction? = null,
+    @JsonSetter(nulls = Nulls.SET)
     var rate: BigDecimal?,
     var amount: BigDecimal,
 

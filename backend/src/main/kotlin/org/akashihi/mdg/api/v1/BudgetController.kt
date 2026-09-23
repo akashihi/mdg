@@ -178,7 +178,14 @@ open class BudgetController(private val budgetService: BudgetService, private va
         @PathVariable("mode") mode: String,
         @PathVariable("sourceBudgetId")
         sourceBudgetId: Long
-    ) = budgetService.copyEntries(sourceBudgetId, budgetId, mode.lowercase() == "overwrite") ?: throw MdgException("BUDGET_NOT_FOUND")
+    ): Collection<BudgetEntry> {
+        val overwrite = when (mode) {
+            "overwrite" -> true
+            "preserve" -> false
+            else -> throw MdgException("REQUEST_PARAMETER_INVALID")
+        }
+        return budgetService.copyEntries(sourceBudgetId, budgetId, overwrite) ?: throw MdgException("BUDGET_NOT_FOUND")
+    }
 
     companion object {
         protected fun getCategoryTotals(f: (BudgetEntryTreeEntry) -> BigDecimal, entries: Collection<BudgetEntryTreeEntry>): BigDecimal {

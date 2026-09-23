@@ -10,8 +10,8 @@ Operation:
       format: int64
       description: |
         Account whose balance this operation changes. Required on every operation
-        that survives the zero-amount drop: absent or `null` is rejected with 422
-        `TRANSACTION_DATA_INVALID`, and an id naming no account with 404
+        that survives the zero-amount drop: absent is rejected with 422
+        `TRANSACTION_DATA_INVALID`, an explicit `null` with 400 `REQUEST_BODY_INVALID`, and an id naming no account with 404
         `ACCOUNT_NOT_FOUND`.
       example: 1
     amount:

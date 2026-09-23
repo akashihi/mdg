@@ -3,6 +3,8 @@ package org.akashihi.mdg.entity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import org.akashihi.mdg.dao.BudgetEntryModeConverter
 import org.hibernate.annotations.Formula
 import java.math.BigDecimal
@@ -28,7 +30,7 @@ class BudgetEntry(
 
     @JsonProperty("account_id")
     @Formula("account_id")
-    var accountId: Long,
+    var accountId: Long = 0,
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
@@ -61,10 +63,12 @@ class BudgetEntry(
     var actualAmount: BigDecimal = BigDecimal.ZERO,
 
     @JsonProperty("allowed_spendings")
+    @JsonSetter(nulls = Nulls.SET)
     @Transient
     var allowedSpendings: BigDecimal?,
 
     @JsonProperty("spending_percent")
+    @JsonSetter(nulls = Nulls.SET)
     @Transient
     var spendingPercent: BigDecimal?,
 

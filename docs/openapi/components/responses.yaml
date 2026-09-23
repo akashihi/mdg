@@ -83,7 +83,9 @@ BadRequest:
     convert to the declared type, a parameter whose value falls outside the range
     the schema declares, a required parameter that is absent, or a body that could
     not be read. A body string carrying a NUL character (U+0000) counts as
-    unreadable: `REQUEST_BODY_INVALID`. Read `code` to find out which.
+    unreadable: `REQUEST_BODY_INVALID`, and so does an explicit `null` on a body
+    property whose schema does not admit `null` — an optional property may be
+    left out, but not sent as `null`. Read `code` to find out which.
   content:
     application/vnd.mdg+json;version=1:
       schema:

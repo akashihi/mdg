@@ -94,6 +94,16 @@ const WRONG_TYPE_BODIES = [
     { name: 'an amount given as a string', method: 'post', url: '/transactions', body: { timestamp: '2017-02-04T16:45:36', operations: [{ account_id: 1, amount: '100' }] } }
 ];
 
+// An optional property may be left out, but its schema still does not admit null. Jackson used to
+// read an explicit null like an absent value on a nullable Kotlin property, and as 0 or false on a
+// primitive one, so every one of these answered 2xx. Nothing here creates or changes a row.
+const NULL_BODIES = [
+    { name: 'category parent', method: 'post', url: '/categories', body: { account_type: 'EXPENSE', name: 'Bonuses', parent_id: null, priority: 1 } },
+    { name: 'category priority', method: 'put', url: '/categories/5', body: { account_type: 'EXPENSE', id: 2, name: 'Pet expenses', parent_id: 1, priority: null } },
+    { name: 'budget id', method: 'put', url: '/budgets/20170205', body: { id: null, term_beginning: '2017-02-04', term_end: '2017-02-26' } },
+    { name: 'currency active flag', method: 'put', url: '/currencies/978', body: { active: null, code: 'EUR', id: 978, name: '\u20ac' } }
+];
+
 describe('Request errors', () => {
     itParam('Non-numeric ${value.name} id is not found', NON_NUMERIC_IDS, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 404, code: params.code, instance: params.url })
@@ -163,6 +173,16 @@ describe('Request errors', () => {
     itParam('A body with ${value.name} is a request body error', WRONG_TYPE_BODIES, async (params) => { // eslint-disable-line no-template-curly-in-string
         await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID', instance: params.url })[params.method](params.url)
             .withJson(params.body);
+    });
+
+    itParam('A null ${value.name} is a request body error', NULL_BODIES, async (params) => { // eslint-disable-line no-template-curly-in-string
+        await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_BODY_INVALID', instance: params.url })[params.method](params.url)
+            .withJson(params.body);
+    });
+
+    it('Unknown budget entry copy mode is a request error', async () => {
+        await pactum.spec('expect error', { statusCode: 400, code: 'REQUEST_PARAMETER_INVALID', instance: '/budgets/20170206/entries/copy/OVERWRITE/20170206' })
+            .put('/budgets/20170206/entries/copy/OVERWRITE/20170206');
     });
 
     // The other side of that rule, and the reason it needs a deserializer rather than a coercion

@@ -595,10 +595,11 @@ paths:
         * Operations with an amount of exactly zero are **dropped** before
           validation, not rejected.
         * At least one non-zero operation must remain — `TRANSACTION_EMPTY`.
-        * Every surviving operation must name an account. An `account_id` that is
-          absent or `null` is rejected with 422 `TRANSACTION_DATA_INVALID`; one
-          that names no account is 404 `ACCOUNT_NOT_FOUND`. A `null` in place of
-          an operation object is the same 422.
+        * Every surviving operation must name an account. An absent `account_id`
+          is rejected with 422 `TRANSACTION_DATA_INVALID`, an explicit `null` with
+          400 `REQUEST_BODY_INVALID`; one that names no account is 404
+          `ACCOUNT_NOT_FOUND`. A `null` in place of an operation object is the
+          same 422.
         * `Σ(amount × rate)` over the remaining operations must be zero —
           `TRANSACTION_NOT_BALANCED`.
         * A rate may not be zero — `TRANSACTION_ZERO_RATE`.
@@ -1347,11 +1348,9 @@ paths:
           in: path
           required: true
           description: |
-            `overwrite` replaces the target's values; **any other value**, `preserve`
-            by convention, keeps values the target has already customised. The
-            comparison is a case-insensitive equality test against the literal
-            `overwrite`, so an unrecognised mode behaves as `preserve` rather than
-            erroring.
+            `overwrite` replaces the target's values; `preserve` keeps values the
+            target has already customised. The comparison is case-sensitive, and
+            any other value is rejected with 400 `REQUEST_PARAMETER_INVALID`.
           schema:
             type: string
             enum: [preserve, overwrite]
@@ -1367,6 +1366,8 @@ paths:
       responses:
         '204':
           description: The entries were copied.
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
         '404':
           description: Source budget could not be found
           content:

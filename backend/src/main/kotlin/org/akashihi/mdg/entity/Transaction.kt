@@ -1,6 +1,8 @@
 package org.akashihi.mdg.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -16,6 +18,7 @@ import javax.persistence.Table
 @Entity
 @Table(name = "tx")
 class Transaction(
+    @JsonSetter(nulls = Nulls.SET)
     var comment: String? = null,
 
     @JsonProperty("timestamp")

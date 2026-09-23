@@ -52,10 +52,12 @@ class StrictCoercionTest {
     }
 
     @Test
-    fun absentPrimitiveKeepsItsJacksonDefault() {
-        // A non-nullable Kotlin Int is a primitive, and an absent one takes the deserializer's own
-        // getNullValue. Delegating is what keeps that Jackson's 0 rather than an unassignable null.
-        objectMapper.readValue<TestPrimitive>("""{"name":"x"}""") shouldBe TestPrimitive("x", 0)
+    fun absentPrimitiveIsRejected() {
+        // A non-nullable Kotlin Int without a default is a primitive, and the Kotlin module resolves an
+        // absent one through the same null provider as an explicit null. With nulls failing by default
+        // that is a rejection, not Jackson's 0 - which suits every such property the specification has,
+        // since each of them is required.
+        assertThrows<JsonMappingException> { objectMapper.readValue<TestPrimitive>("""{"name":"x"}""") }
     }
 
     @Test
