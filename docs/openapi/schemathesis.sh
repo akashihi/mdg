@@ -17,7 +17,7 @@ if [ "${SKIP_RESET:-0}" != "1" ]; then
 fi
 
 if [ "$#" -eq 0 ]; then
-    set -- --phases examples,stateful,coverage
+    set -- --phases examples,stateful,coverage,fuzzing
 fi
 
 # schemathesis.toml is discovered by walking up from the working directory.

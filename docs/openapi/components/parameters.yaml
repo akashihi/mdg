@@ -277,7 +277,10 @@ RateTimestamp:
   name: ts
   in: path
   required: true
-  description: Point in time at which the rates should be valid.
+  description: |
+    Point in time at which the rates should be valid, as a local date-time with no
+    offset — the same form as every other timestamp in this API. A value that matches
+    the pattern but names no real instant, such as `2017-02-30T00:00`, is still a 400.
   schema:
-    type: string
+    $ref: './schemas/common.yaml#/LocalDateTime'
   example: '2017-09-20T13:29:00'

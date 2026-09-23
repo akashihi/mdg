@@ -17,6 +17,8 @@ values = [978]
 [dictionaries.timestamps]
 values = ["2017-02-04T16:45:36"]
 
+# The two maintenance triggers read no body and declare no `consumes`, so any body — or none —
+# is answered 202 and there is nothing a negative case could get rejected for.
 [[operations]]
 include-name = "PUT /settings/mnt.transaction.reindex"
 request-timeout = 300
@@ -149,6 +151,22 @@ include-name = "PUT /transactions/{id}"
 expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
 [operations.checks.negative_data_rejection]
 expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+# `ts` is a LocalDateTime path variable, and common.yaml#/LocalDateTime constrains its shape
+# only: `2017-02-30T00:00` matches the pattern and is still 400 REQUEST_PARAMETER_INVALID. Bound
+# to the `timestamps` dictionary for the same reason `body.timestamp` is above; a binding is
+# inert in negative generation, so a pattern-violating `ts` still gets sent and rejected. No
+# 400 allowance on `positive_data_acceptance` — that would hide a real rejection. See
+# MIGRATION-NOTES.md #44.
+[[operations]]
+include-name = "GET /rates/{ts}"
+[operations.parameters]
+"path.ts" = { dictionary = "timestamps" }
+
+[[operations]]
+include-name = "GET /rates/{ts}/{from}/{to}"
+[operations.parameters]
+"path.ts" = { dictionary = "timestamps" }
 
 # SETTING_DATA_INVALID — SettingService.kt:39. A generated value almost never names a
 # currency that exists in the currency table. The three sibling settings need no allowance:

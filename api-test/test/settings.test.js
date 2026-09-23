@@ -40,6 +40,15 @@ describe('Settings', () => {
             .withPathParams('id', params);
     });
 
+    MAINTENANCE_TRIGGERS.forEach((trigger) => {
+        it(`Maintenance trigger ${trigger} runs without a request body`, async () => {
+            await pactum.spec('update')
+                .put('/settings/{id}')
+                .withPathParams('id', trigger)
+                .withRequestTimeout(10000);
+        }).timeout(15000);
+    });
+
     const SETTINGS_TRIGGERS = [
         {
             id: 'ui.transaction.closedialog',

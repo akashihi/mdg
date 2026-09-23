@@ -1907,9 +1907,10 @@ paths:
         The call is synchronous and can take a while on a large database; the
         response only returns once the reindex completes.
 
-        The controller method takes no request body. The vendor content type is
-        still required, but the payload itself is never parsed — any bytes at all
-        are accepted. Send `{}`.
+        The controller method takes no request body and declares no `consumes`, so
+        the body is optional and never read: no body at all, any bytes and any media
+        type are all accepted. `{}` under the vendor media type is the conventional
+        call.
       operationId: reindexTransactions
       requestBody:
         required: false
@@ -1921,8 +1922,6 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/MaintenanceAccepted'
-        '415':
-          $ref: './components/responses.yaml#/UnsupportedMediaType'
   /settings/mnt.reporting.refresh:
     get:
       tags: [Settings]
@@ -1944,9 +1943,10 @@ paths:
 
         Refreshes the materialized query tables.
 
-        The controller method takes no request body. The vendor content type is
-        still required, but the payload itself is never parsed — any bytes at all
-        are accepted. Send `{}`.
+        The controller method takes no request body and declares no `consumes`, so
+        the body is optional and never read: no body at all, any bytes and any media
+        type are all accepted. `{}` under the vendor media type is the conventional
+        call.
       operationId: refreshReporting
       requestBody:
         required: false
@@ -1958,5 +1958,3 @@ paths:
       responses:
         '202':
           $ref: './components/responses.yaml#/MaintenanceAccepted'
-        '415':
-          $ref: './components/responses.yaml#/UnsupportedMediaType'
