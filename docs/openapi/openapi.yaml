@@ -837,6 +837,11 @@ paths:
               description: List the entries of the first budget of this page.
               parameters:
                 path.budgetId: '$response.body#/budgets/0/id'
+            GetListedBudgetEntryTree:
+              operationId: getBudgetEntryTree
+              description: The first budget's entries, arranged into the category tree.
+              parameters:
+                path.budgetId: '$response.body#/budgets/0/id'
             CopyListedBudgetEntries:
               operationId: copyBudgetEntries
               description: |
@@ -976,6 +981,11 @@ paths:
             ListCurrentBudgetEntries:
               operationId: listBudgetEntries
               description: List the entries of the current budget.
+              parameters:
+                path.budgetId: '$response.body#/id'
+            GetCurrentBudgetEntryTree:
+              operationId: getBudgetEntryTree
+              description: The current budget's entries, arranged into the category tree.
               parameters:
                 path.budgetId: '$response.body#/id'
         '404':

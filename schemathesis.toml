@@ -14,6 +14,11 @@ base-url = "http://localhost:8080"
 [dictionaries.currency-ids]
 values = [978]
 
+# The same code as a string, for `currency.primary`, whose `value` is a string like every
+# other setting's.
+[dictionaries.currency-codes]
+values = ["978"]
+
 [dictionaries.timestamps]
 values = ["2017-02-04T16:45:36"]
 
@@ -195,11 +200,15 @@ include-name = "GET /reports/expense/events"
 "query.endDate" = { dictionary = "report-dates" }
 
 # SETTING_DATA_INVALID — SettingService.kt:39. A generated value almost never names a
-# currency that exists in the currency table. The three sibling settings need no allowance:
+# currency that exists in the currency table, so `value` is bound to `currency-codes`; the
+# binding is inert in negative generation, so an unknown code is still sent and rejected, and
+# the 422 allowance stays for exactly that case. The three sibling settings need no allowance:
 # `ui.transaction.closedialog` is already pinned down by an enum in its schema, and neither
 # `ui.language` nor `ui.overviewpanel.widgets` validates its value at all.
 [[operations]]
 include-name = "PUT /settings/currency.primary"
+[operations.parameters]
+"body.value" = { dictionary = "currency-codes" }
 [operations.checks.positive_data_acceptance]
 expected-statuses = ["2xx", "401", "403", "404", "409", "422"]
 
