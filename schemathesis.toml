@@ -17,6 +17,11 @@ values = [978]
 [dictionaries.timestamps]
 values = ["2017-02-04T16:45:36"]
 
+# Report range bounds for the two events reports below. The widest span is 364 days, and
+# `2017-02-04` is the `timestamps` date, so a range that covers it has data to report.
+[dictionaries.report-dates]
+values = ["2017-01-01", "2017-02-04", "2017-12-31"]
+
 # The two maintenance triggers read no body and declare no `consumes`, so any body — or none —
 # is answered 202 and there is nothing a negative case could get rejected for.
 [[operations]]
@@ -167,6 +172,27 @@ include-name = "GET /rates/{ts}"
 include-name = "GET /rates/{ts}/{from}/{to}"
 [operations.parameters]
 "path.ts" = { dictionary = "timestamps" }
+
+# `eventsByAccountReport` (ReportService.kt:126) runs one SQL query per bucket, so a generated
+# range such as 0067-01-03..3377-11-01 at granularity 1 is over a million queries and a read
+# timeout, not a finding. The bound is cross-parameter — `endDate - startDate` — which OpenAPI
+# cannot express, so the dates are drawn from `report-dates` instead. Drawing both from one
+# dictionary still produces same-day and reversed ranges. `granularity` stays free:
+# `effectiveGranularity` clamps it to the span, so it cannot enlarge the work. No
+# `request-timeout` bump, which would hide the cost rather than bound it. The binding is inert
+# in negative generation, so malformed dates are still sent and rejected. See
+# MIGRATION-NOTES.md #45.
+[[operations]]
+include-name = "GET /reports/income/events"
+[operations.parameters]
+"query.startDate" = { dictionary = "report-dates" }
+"query.endDate" = { dictionary = "report-dates" }
+
+[[operations]]
+include-name = "GET /reports/expense/events"
+[operations.parameters]
+"query.startDate" = { dictionary = "report-dates" }
+"query.endDate" = { dictionary = "report-dates" }
 
 # SETTING_DATA_INVALID — SettingService.kt:39. A generated value almost never names a
 # currency that exists in the currency table. The three sibling settings need no allowance:
