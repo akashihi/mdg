@@ -49,6 +49,7 @@ jobs:
     needs:
       - api-test-lint
       - backend-lint
+      - spec-lint
     services:
       postgres:
         image: postgres
@@ -96,6 +97,24 @@ jobs:
       - name: Run API tests
         working-directory: ./api-test
         run: npx gulp test
+      - uses: astral-sh/setup-uv@v6
+      - name: Reset database for schemathesis
+        env:
+          PGPASSWORD: mdg
+        run: psql -h localhost -U mdg -d mdg -q -v ON_ERROR_STOP=1 -f docs/openapi/reset.sql
+      - name: Run schemathesis
+        continue-on-error: true
+        timeout-minutes: 20
+        env:
+          SKIP_RESET: '1'
+        run: docs/openapi/schemathesis.sh --phases examples,stateful,coverage,fuzzing --report junit,har
+      - name: Upload schemathesis report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schemathesis-report
+          path: schemathesis-report/
+          if-no-files-found: ignore
       - name: Stop MDG service
         if: always()
         working-directory: ./backend
