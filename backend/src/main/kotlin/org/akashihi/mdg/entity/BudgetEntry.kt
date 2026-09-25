@@ -3,6 +3,8 @@ package org.akashihi.mdg.entity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import org.akashihi.mdg.dao.BudgetEntryModeConverter
 import org.hibernate.annotations.Formula
 import java.math.BigDecimal
@@ -24,15 +26,16 @@ class BudgetEntry(
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "budget_id", nullable = false)
-    val budget: Budget,
+    val budget: Budget? = null,
 
     @JsonProperty("account_id")
     @Formula("account_id")
-    var accountId: Long,
+    var accountId: Long = 0,
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var account: Account? = null,
 
     @JsonProperty("category_id")
@@ -42,6 +45,7 @@ class BudgetEntry(
 
     @Transient
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var category: Category? = null,
 
     @Column(name = "dt")
@@ -56,13 +60,15 @@ class BudgetEntry(
 
     @JsonProperty("actual_amount")
     @Formula("coalesce((select case when a.account_type = 'income' then -1*sum(o.amount) else sum(o.amount) end from operation as o join tx on (o.tx_id = tx.id) join budget as b on (b.id = budget_id) join account as a on (a.id = account_id) where o.account_id = account_id and tx.ts between b.term_beginning and ((b.term_end + '1 day'::interval)::timestamp - '1 second'::interval) group by a.account_type), 0)")
-    var actualAmount: BigDecimal,
+    var actualAmount: BigDecimal = BigDecimal.ZERO,
 
     @JsonProperty("allowed_spendings")
+    @JsonSetter(nulls = Nulls.SET)
     @Transient
     var allowedSpendings: BigDecimal?,
 
     @JsonProperty("spending_percent")
+    @JsonSetter(nulls = Nulls.SET)
     @Transient
     var spendingPercent: BigDecimal?,
 

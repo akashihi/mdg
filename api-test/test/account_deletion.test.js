@@ -5,6 +5,10 @@ const { createAccountForTransaction } = require('./transaction.handler');
 describe('Account deletion clearance', () => {
   const e2e = pactum.e2e('Account deletion clearance');
 
+  after(async () => {
+      await e2e.cleanup();
+  });
+
   it('Create Account and add Ops', async () => {
     await createAccountForTransaction(e2e);
 
@@ -60,7 +64,5 @@ describe('Account deletion clearance', () => {
       .spec('read')
       .get('/accounts')
       .expectJsonMatch('accounts[*].id', expression('$S{AccountID}', '!$V.includes($S{AssetAccountID})'));
-
-    await e2e.cleanup();
   });
 });

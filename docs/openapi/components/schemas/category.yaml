@@ -1,0 +1,94 @@
+Category:
+  type: object
+  additionalProperties: false
+  description: |
+    An account category. Categories form a forest — one tree per account type —
+    and a category may only ever hold children and accounts of its own
+    `account_type`.
+  required: [account_type, name, priority, children]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Category id.
+      example: 2
+    parent_id:
+      type: integer
+      format: int64
+      description: |
+        Parent category id. Empty for top-level categories.
+
+        On update this field re-parents the category, moving all of its
+        descendants with it. Setting it to the category's own id promotes the
+        category to top level. Re-parenting under a descendant of itself fails
+        with `CATEGORY_TREE_CYCLED`; re-parenting under a category of a
+        different `account_type` fails with `CATEGORY_INVALID_TYPE`.
+      example: 1
+    name:
+      type: string
+      pattern: '^[^\u0000]*$'
+      example: Pet expenses
+    priority:
+      type: integer
+      format: int32
+      minimum: -2147483648
+      maximum: 2147483647
+      description: |
+        Ordering weight. Categories  are sorted
+        ascending by this value.
+      example: 7
+    account_type:
+      allOf:
+        - $ref: './common.yaml#/AccountType'
+      description: |
+        Type of account this category may hold.
+    children:
+      type: ['array', 'null']
+      readOnly: true
+      description: |
+        Sub-categories, recursively.
+      items:
+        $ref: './category.yaml#/Category'
+
+CategoryCreate:
+  type: object
+  additionalProperties: false
+  description: |
+    The body of a category create.
+  required: [account_type, name, priority]
+  properties:
+    parent_id:
+      type: integer
+      format: int64
+      description: |
+        Parent category. It must already exist — `CATEGORY_DATA_INVALID`
+        otherwise — and be of the same `account_type`, else
+        `CATEGORY_INVALID_TYPE`. Omit for a top-level category.
+    name:
+      type: string
+      pattern: '^[^\u0000]*$'
+      description: Category name. Not required to be unique.
+    priority:
+      type: integer
+      format: int32
+      minimum: -2147483648
+      maximum: 2147483647
+      description: |
+        Ordering weight. Categories are sorted ascending by this value.
+    account_type:
+      type: string
+      enum: [EXPENSE, INCOME]
+      description: |
+        Type of account this category may hold. `ASSET` is rejected with
+        `CATEGORY_INVALID_TYPE` — asset categories cannot be created through the
+        API.
+
+Categories:
+  type: object
+  required: [categories]
+  properties:
+    categories:
+      type: array
+      description: The full category forest — root categories with nested `children`.
+      items:
+        $ref: './category.yaml#/Category'

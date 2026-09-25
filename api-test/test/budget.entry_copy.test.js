@@ -5,6 +5,10 @@ const {stash} = require("pactum");
 describe('Budget entries copying', () => {
     const e2e = pactum.e2e('Budget entries copying');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Prepare budgets and accounts', async () => {
         await createAccountForTransaction(e2e);
         await e2e.step('Post Source budget')
@@ -129,7 +133,5 @@ describe('Budget entries copying', () => {
             .get('/budgets/{id}/entries/{entryId}')
             .withPathParams({id: '$S{BudgetTargetID}', entryId: '$S{TargetIncomeEntryId}'})
             .expectJson('expected_amount', 9000);
-
-        await e2e.cleanup();
     });
 });

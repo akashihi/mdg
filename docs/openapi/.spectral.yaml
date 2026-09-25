@@ -1,0 +1,55 @@
+# Spectral ruleset for the MDG API specification.
+#
+#   Lint:
+#   npx @stoplight/spectral-cli lint docs/openapi/openapi.yaml \
+#     --ruleset docs/openapi/.spectral.yaml
+#
+#   Render the docs in a browser, with live reload.
+#   npx @redocly/cli preview-docs docs/openapi/openapi.yaml
+#
+#   Flatten to a single self-contained file, for a tool that wants one.
+#   npx @redocly/cli bundle docs/openapi/openapi.yaml -o mdg-openapi.yaml
+
+extends: [[spectral:oas, recommended]]
+
+rules:
+  oas3-server-not-example.com: off
+  oas3-server-trailing-slash: error
+  operation-description: off
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-tags: error
+  operation-tag-defined: error
+  oas3-valid-media-example: error
+  oas3-valid-schema-example: error
+
+# `GET /settings/mnt.transaction.reindex` and `GET /settings/mnt.reporting.refresh` document
+# a 404 and nothing else, on purpose. Both names are maintenance triggers rather than rows in
+# the `SETTING` table, and every `/settings/*` read is served by the one handler over that
+# table, so neither read can ever succeed — but both URLs do answer `GET`, and saying so is
+# what keeps the `Allow` header consistent with the declared methods. See MIGRATION-NOTES #40.
+overrides:
+  - files:
+      - 'openapi.yaml#/paths/~1settings~1mnt.transaction.reindex/get'
+      - 'openapi.yaml#/paths/~1settings~1mnt.reporting.refresh/get'
+    rules:
+      operation-success-response: off
+
+  # The same thing from the other direction. `/accounts/tree`, `/budgets/current` and
+  # `/budgets/{budgetId}/entries/tree` are matched by their sibling `{id}` mappings as well,
+  # so the server really serves `PUT` and `DELETE` on them and `OPTIONS` advertises both. The
+  # segment is not a number, so every one of these answers that resource's 404 and can never
+  # answer a 2xx. They are documented to keep the declared methods consistent with the `Allow`
+  # header. See MIGRATION-NOTES #42.
+  #
+  # `{` and `}` are not legal in a URI fragment, and spectral matches the pointer exactly —
+  # no globbing — so the braces of a templated path have to be percent-encoded here or the
+  # override silently matches nothing.
+  - files:
+      - 'openapi.yaml#/paths/~1accounts~1tree/put'
+      - 'openapi.yaml#/paths/~1accounts~1tree/delete'
+      - 'openapi.yaml#/paths/~1budgets~1current/put'
+      - 'openapi.yaml#/paths/~1budgets~1current/delete'
+      - 'openapi.yaml#/paths/~1budgets~1%7BbudgetId%7D~1entries~1tree/put'
+    rules:
+      operation-success-response: off

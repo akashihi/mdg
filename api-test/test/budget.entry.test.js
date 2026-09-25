@@ -5,6 +5,10 @@ const {createAccountForTransaction, createUSDExpenseAccountForTransaction} = req
 describe('Budget entries operations', () => {
     const e2e = pactum.e2e('Budget operations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Prepare budget and accounts', async () => {
         await createAccountForTransaction(e2e);
         await e2e.step('Post budget')
@@ -32,6 +36,14 @@ describe('Budget entries operations', () => {
             .get('/budgets/{id}/entries')
             .withPathParams('id', '$S{BudgetID}')
             .expectJsonMatch('budget_entries[*].account_id', expression('$S{ExpenseUSDAccountID}', '$V.includes($S{ExpenseUSDAccountID})'));
+    });
+
+    it('Budget entries are listed by a date inside the budget term', async () => {
+        await e2e.step('List budget entries by date')
+            .spec('read')
+            .get('/budgets/{id}/entries')
+            .withPathParams('id', '20170210')
+            .expectJsonMatch('budget_entries[*].account_id', expression('$S{ExpenseAccountID}', '$V.includes($S{ExpenseAccountID})'));
     });
 
     it('Read budget entry by id', async () => {
@@ -68,6 +80,5 @@ describe('Budget entries operations', () => {
             .get('/budgets/{id}/entries/{entryId}')
             .withPathParams({id: '$S{BudgetID}', entryId: '$S{BudgetEntryID}'})
             .expectJson('expected_amount', 9000);
-        await e2e.cleanup();
     });
 });

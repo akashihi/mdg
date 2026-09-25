@@ -1,16 +1,38 @@
 package org.akashihi.mdg.service
 
+import org.akashihi.mdg.api.v1.MdgException
+import org.akashihi.mdg.dao.AccountRepository
+import org.akashihi.mdg.dao.BudgetEntryRepository
+import org.akashihi.mdg.dao.BudgetRepository
 import org.akashihi.mdg.entity.Budget
 import org.akashihi.mdg.entity.BudgetEntry
 import org.akashihi.mdg.entity.BudgetEntryMode
 import org.akashihi.mdg.service.BudgetService.Companion.getAllowedSpendings
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.Optional
 
-internal class BudgetServiceTest {
+@ExtendWith(MockitoExtension::class)
+internal class BudgetServiceTest(@Mock private val accountRepository: AccountRepository,
+                                 @Mock private val budgetRepository: BudgetRepository,
+                                 @Mock private val budgetEntryRepository: BudgetEntryRepository,
+                                 @Mock private val transactionService: TransactionService,
+                                 @Mock private val rateService: RateService) {
+
+    private val budgetService = BudgetService(accountRepository, budgetRepository, budgetEntryRepository, transactionService, rateService)
+
+    private val januaryBudget = Budget(LocalDate.of(2031, 1, 1), LocalDate.of(2031, 1, 31), id = 20310101L)
     @ParameterizedTest
     @CsvSource("25,100,25", "0,0,100", "0,100,0", "100,0,100", "100,100,100", "150,100,100")
     fun testGetSpendingPercent(actualAmount: Long, expectedAmount: Long, expectedPercent: Long) {
@@ -37,5 +59,46 @@ internal class BudgetServiceTest {
         val actualAllowed =
             getAllowedSpendings(entry, LocalDate.of(2022, 5, 1), LocalDate.of(2022, 5, 31), LocalDate.of(2022, 5, 5))
         Assertions.assertEquals(BigDecimal.valueOf(expectedSpendings), actualAllowed)
+    }
+
+    @Test
+    fun resolvesExactIdBeforeDate() {
+        // A budget created on 2031-01-15 and later moved to March keeps its id
+        val movedBudget = Budget(LocalDate.of(2031, 3, 1), LocalDate.of(2031, 3, 31), id = 20310115L)
+        Mockito.`when`(budgetRepository.findById(20310115L)).thenReturn(Optional.of(movedBudget))
+        Mockito.lenient().`when`(budgetRepository.findFirstByBeginningLessThanEqualAndEndGreaterThanEqual(any(), any())).thenReturn(januaryBudget)
+        Assertions.assertSame(movedBudget, budgetService.simplifiedGet(20310115L))
+    }
+
+    @Test
+    fun resolvesDateToCoveringBudget() {
+        val date = LocalDate.of(2031, 1, 15)
+        Mockito.`when`(budgetRepository.findFirstByBeginningLessThanEqualAndEndGreaterThanEqual(date, date)).thenReturn(januaryBudget)
+        Assertions.assertSame(januaryBudget, budgetService.simplifiedGet(20310115L))
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = [1L, 999999L, 20171345L, 20170229L, -20310101L, 123450101L])
+    fun doesNotResolveIdThatIsNotADate(id: Long) {
+        Mockito.lenient().`when`(budgetRepository.findFirstByBeginningLessThanEqualAndEndGreaterThanEqual(any(), any())).thenReturn(januaryBudget)
+        Assertions.assertNull(budgetService.simplifiedGet(id))
+    }
+
+    @Test
+    fun absentPageLimitMeansNoPaging() {
+        Assertions.assertNull(pageLimitOf(null))
+    }
+
+    @Test
+    fun singlePageLimitIsAccepted() {
+        Assertions.assertEquals(10, pageLimitOf(listOf(10)))
+    }
+
+    @Test
+    fun emptyOrRepeatedPageLimitIsRejected() {
+        listOf(listOf(), listOf(5, 6), listOf(null), listOf(0)).forEach {
+            val e = assertThrows<MdgException> { pageLimitOf(it) }
+            Assertions.assertEquals("REQUEST_PARAMETER_INVALID", e.code)
+        }
     }
 }

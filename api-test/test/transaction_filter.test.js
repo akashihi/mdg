@@ -5,6 +5,10 @@ const { createAccountForTransaction } = require('./transaction.handler');
 describe('Transaction filtering', () => {
     const e2e = pactum.e2e('Transaction filtering');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create multiple transactions', async () => {
         await createAccountForTransaction(e2e);
 
@@ -14,7 +18,11 @@ describe('Transaction filtering', () => {
                 '@OVERRIDES@': {
                     timestamp: '2017-02-05T16:45:36'
                 }
-            });
+            })
+            .stores('FilterTransactionID1', 'id')
+            .clean()
+            .delete('/transactions/{id}')
+            .withPathParams('id', '$S{FilterTransactionID1}');
 
         await e2e.step('Create transaction')
             .spec('Create Transaction', {
@@ -22,9 +30,17 @@ describe('Transaction filtering', () => {
                 '@OVERRIDES@': {
                     timestamp: '2017-02-06T16:45:36'
                 }
-            });
+            })
+            .stores('FilterTransactionID2', 'id')
+            .clean()
+            .delete('/transactions/{id}')
+            .withPathParams('id', '$S{FilterTransactionID2}');
         await e2e.step('Create transaction')
-            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Rent:V1' });
+            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Rent:V1' })
+            .stores('FilterTransactionID3', 'id')
+            .clean()
+            .delete('/transactions/{id}')
+            .withPathParams('id', '$S{FilterTransactionID3}');
     });
 
     it('Transaction timestamp descending sort', async () => {
@@ -112,7 +128,5 @@ describe('Transaction filtering', () => {
             .get('/transactions')
             .withQueryParams('q', '%7B%22account_id%22%3A%20%22%5B$S{AssetAccountID}%5D%22%7D')
             .expectJsonMatch('transactions', expression('1', '$V.length === 3')); // We use new account ids and create 3 transactions with the same account
-
-        await e2e.cleanup();
     });
 });

@@ -22,22 +22,41 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.transaction.Transactional
 
 data class ListResult<T>(val items: List<T>, val left: Long)
 
+internal fun validatePageLimit(limit: Int) {
+    if (limit < 1) {
+        throw MdgException("REQUEST_PARAMETER_INVALID")
+    }
+}
+
+internal fun pageLimitOf(limit: List<Int?>?): Int? = limit?.let {
+    val value = it.singleOrNull() ?: throw MdgException("REQUEST_PARAMETER_INVALID") // empty or repeated
+    validatePageLimit(value)
+    value
+}
+
 @Service
 open class BudgetService(private val accountRepository: AccountRepository, private val budgetRepository: BudgetRepository, private val budgetEntryRepository: BudgetEntryRepository, private val transactionService: TransactionService, private val rateService: RateService) {
-    private fun validateBudget(budget: Budget): Boolean {
+    private fun validateBudget(budget: Budget, selfId: Long? = null): Boolean {
         if (budget.beginning.isAfter(budget.end)) {
             throw MdgException("BUDGET_INVALID_TERM")
         }
         if (ChronoUnit.DAYS.between(budget.beginning, budget.end) < 1) {
             throw MdgException("BUDGET_SHORT_RANGE")
         }
-        if (budgetRepository.existsByEndGreaterThanEqualAndBeginningLessThanEqual(budget.beginning, budget.end)) {
+        val overlapping = if (selfId == null) {
+            budgetRepository.existsByEndGreaterThanEqualAndBeginningLessThanEqual(budget.beginning, budget.end)
+        } else {
+            // The budget being updated is allowed to overlap its own current term
+            budgetRepository.existsByEndGreaterThanEqualAndBeginningLessThanEqualAndIdNot(budget.beginning, budget.end, selfId)
+        }
+        if (overlapping) {
             throw MdgException("BUDGET_OVERLAPPING")
         }
         return true
@@ -68,6 +87,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         if (limit == null) {
             return ListResult(budgetRepository.findAll(sorting), 0L)
         }
+        validatePageLimit(limit)
         val pageLimit = PageRequest.of(0, limit, sorting)
         val page = if (pointer == null) {
             budgetRepository.findAll(pageLimit)
@@ -123,11 +143,24 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
     private fun getActualExpectedForBudget(budget: Budget, entries: Collection<BudgetEntry>, type: AccountType): BudgetPair = getActualExpectedForDate(budget.beginning, budget.end, entries, type)
 
+    private fun budgetDate(id: Long): LocalDate? = try {
+        LocalDate.parse(id.toString(), DateTimeFormatter.BASIC_ISO_DATE)
+    } catch (e: DateTimeParseException) {
+        null // Not a YYYYMMDD date, so it could only have been an id
+    }
+
     @Transactional
-    open fun simplifiedGet(id: Long): Budget? = budgetRepository.findFirstByIdLessThanEqualOrderByIdDesc(id)
+    open fun simplifiedGet(id: Long): Budget? =
+        // An exact id goes first, as a budget keeps its id when its term is moved
+        budgetRepository.findByIdOrNull(id) ?: budgetDate(id)?.let { budgetRepository.findFirstByBeginningLessThanEqualAndEndGreaterThanEqual(it, it) }
 
     @Transactional
     open operator fun get(id: Long): Budget? = simplifiedGet(id)?.also { enrichBudget(it) }
+
+    @Transactional
+    open fun getCurrent(): Budget? =
+        // Between two budgets the last started one stays current until the next one begins
+        budgetRepository.findFirstByBeginningLessThanEqualOrderByBeginningDesc(LocalDate.now())?.also { enrichBudget(it) }
 
     private fun enrichBudget(budget: Budget): Budget {
         val incomingDay = if (budget.beginning > LocalDate.now()) {
@@ -172,8 +205,8 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
     @Transactional
     open fun update(id: Long, newBudget: Budget): Budget? {
-        validateBudget(newBudget)
-        val budget = budgetRepository.findByIdOrNull(id) ?: return null
+        val budget = simplifiedGet(id) ?: return null
+        validateBudget(newBudget, budget.id)
         budget.beginning = newBudget.beginning
         budget.end = newBudget.end
         budgetRepository.save(budget)
@@ -216,7 +249,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         entry.distribution = newEntry.distribution
         if (entry.distribution == BudgetEntryMode.SINGLE || entry.account?.accountType == AccountType.INCOME) {
             if (newEntry.dt != null) {
-                if (entry.budget.beginning > newEntry.dt || entry.budget.end < newEntry.dt) {
+                if (entry.budget!!.beginning > newEntry.dt || entry.budget!!.end < newEntry.dt) {
                     throw MdgException("BUDGETENTRY_DT_OUT_OF_BUDGET")
                 }
             }
@@ -230,12 +263,13 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     @Transactional
-    open fun listSimplifiedEntries(budgetId: Long): Collection<BudgetEntry> = budgetEntryRepository.findByBudgetId(budgetId)
+    open fun listSimplifiedEntries(budget: Budget): Collection<BudgetEntry> = budgetEntryRepository.findByBudget(budget)
 
     @Transactional
     open fun listEntries(budgetId: Long): Collection<BudgetEntry> {
+        val budget = simplifiedGet(budgetId) ?: throw MdgException("BUDGET_NOT_FOUND")
         val today = LocalDate.now()
-        val entries = listSimplifiedEntries(budgetId)
+        val entries = listSimplifiedEntries(budget)
         entries.forEach {
             analyzeSpendings(it, today)
         }
@@ -243,7 +277,10 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
     }
 
     @Transactional
-    open fun delete(id: Long) = budgetRepository.deleteById(id)
+    open fun delete(id: Long) {
+        val budget = simplifiedGet(id) ?: throw MdgException("BUDGET_NOT_FOUND")
+        budgetRepository.delete(budget)
+    }
 
     @Transactional
     open fun copyEntries(sourceBudgetId: Long, targetBudgetId: Long, overwrite: Boolean): Collection<BudgetEntry>? {
@@ -257,7 +294,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
         val source = sourceEntries
             .filter { it.expectedAmount.compareTo(BigDecimal.ZERO) != 0 || it.actualAmount.compareTo(BigDecimal.ZERO) != 0 }
             .map { if (it.expectedAmount.compareTo(BigDecimal.ZERO) == 0) { it.expectedAmount = it.actualAmount }; it }
-            .associate { Pair(it.account?.id, Triple(it.expectedAmount, it.distribution, it.dt?.let { dt -> ChronoUnit.DAYS.between(it.budget.beginning, dt) })) }
+            .associate { Pair(it.account?.id, Triple(it.expectedAmount, it.distribution, it.dt?.let { dt -> ChronoUnit.DAYS.between(it.budget!!.beginning, dt) })) }
 
         targetEntries.filter { overwrite || it.expectedAmount.compareTo(BigDecimal.ZERO) == 0 }
             .forEach {
@@ -267,9 +304,9 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
                     it.distribution = value.second
                     if (it.distribution == BudgetEntryMode.SINGLE) {
                         it.dt = value.third?.let { dt ->
-                            val adjustedDate = it.budget.beginning.plusDays(dt)
-                            if (adjustedDate > it.budget.end) {
-                                return@let it.budget.end
+                            val adjustedDate = it.budget!!.beginning.plusDays(dt)
+                            if (adjustedDate > it.budget!!.end) {
+                                return@let it.budget!!.end
                             }
                             return@let adjustedDate
                         }
@@ -323,8 +360,8 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
         fun analyzeSpendings(entry: BudgetEntry, forDay: LocalDate): BudgetEntry {
             entry.spendingPercent = getSpendingPercent(entry.actualAmount, entry.expectedAmount)
-            val from = entry.budget.beginning
-            val to = entry.budget.end
+            val from = entry.budget!!.beginning
+            val to = entry.budget!!.end
             entry.allowedSpendings = getAllowedSpendings(entry, from, to, forDay)
             return entry
         }

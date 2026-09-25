@@ -1,0 +1,108 @@
+Setting:
+  type: object
+  description: |
+    A single configuration variable.
+  required: [id, value]
+  properties:
+    id:
+      type: string
+      description: Setting name.
+      example: currency.primary
+    value:
+      type: string
+      description: Setting value, always a string.
+      example: '978'
+
+SettingUpdateCurrency:
+  type: object
+  additionalProperties: false
+  description: The body of a `currency.primary` update.
+  required: [value]
+  properties:
+    value:
+      type: string
+      pattern: '^[^\u0000]*$'
+      description: |
+        ISO 4217 numeric code of a currency that exists in the currency table,
+        always as a string: `Setting.value` is a Kotlin `String`, and a JSON
+        number is rejected with 400 `REQUEST_BODY_INVALID` rather than coerced
+        into one. A string that names no currency in the table — including a
+        non-numeric one — is rejected with 422 `SETTING_DATA_INVALID`.
+      example: '840'
+
+SettingUpdateCloseDialog:
+  type: object
+  additionalProperties: false
+  description: The body of a `ui.transaction.closedialog` update.
+  required: [value]
+  properties:
+    value:
+      type: string
+      enum: ['true', 'false']
+      description: |
+        Whether the transaction dialog closes itself, always as a string: a JSON
+        boolean is rejected with 400 `REQUEST_BODY_INVALID` rather than coerced
+        into one. The comparison is case-insensitive, so `"true"` and `"TRUE"`
+        are equivalent. Any other value is rejected with 422
+        `SETTING_DATA_INVALID`.
+      example: 'true'
+
+SettingUpdateLanguage:
+  type: object
+  additionalProperties: false
+  description: The body of a `ui.language` update.
+  required: [value]
+  properties:
+    value:
+      type: string
+      pattern: '^[^\u0000]*$'
+      description: |
+        A locale name. The backend does not validate it, but it selects the
+        Elasticsearch analyzer settings used by the next
+        `mnt.transaction.reindex` — `cz`, `de`, `en-US`, `lt` and `ru` have their
+        own; any other locale falls back to `en-US`.
+      example: en-US
+
+SettingUpdateWidgets:
+  type: object
+  additionalProperties: false
+  description: The body of a `ui.overviewpanel.widgets` update.
+  required: [value]
+  properties:
+    value:
+      type: string
+      pattern: '^[^\u0000]*$'
+      description: |
+        The overview panel layout as a JSON object **encoded as a string**. The
+        backend does not validate it; the frontend owns the format.
+      example: '{"lt":"TotalsWidget","rt":"BudgetWidget","lb":"EvaluationWidget","rb":"RatesWidget"}'
+
+Settings:
+  type: object
+  required: [settings]
+  properties:
+    settings:
+      type: array
+      items:
+        $ref: './setting.yaml#/Setting'
+
+OverviewWidgets:
+  type: object
+  description: |
+    Tthis is the structure the frontend stores,
+    JSON-encoded. The backend does not validate it.
+  properties:
+    lt: { $ref: './setting.yaml#/OverviewWidgetName' }
+    rt: { $ref: './setting.yaml#/OverviewWidgetName' }
+    lb: { $ref: './setting.yaml#/OverviewWidgetName' }
+    rb: { $ref: './setting.yaml#/OverviewWidgetName' }
+  example:
+    lt: TotalsWidget
+    rt: BudgetWidget
+    lb: EvaluationWidget
+    rb: RatesWidget
+
+OverviewWidgetName:
+  type: string
+  description: Name of a widget that can be placed in an overview panel slot.
+  example: TotalsWidget

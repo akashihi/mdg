@@ -2,6 +2,9 @@ package org.akashihi.mdg.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import org.hibernate.Hibernate
 import org.hibernate.annotations.Formula
 import java.math.BigDecimal
@@ -17,13 +20,15 @@ class Operation(
     @ManyToOne
     @JoinColumn(name = "tx_id", nullable = false)
     @JsonIgnore
-    var transaction: Transaction,
+    var transaction: Transaction? = null,
+    @JsonSetter(nulls = Nulls.SET)
     var rate: BigDecimal?,
     var amount: BigDecimal,
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var account: Account? = null,
 
     @Formula("account_id")

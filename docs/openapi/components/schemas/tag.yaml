@@ -1,0 +1,13 @@
+Tags:
+  type: object
+  description: |
+    All tags currently in use.
+  required: [tags]
+  properties:
+    tags:
+      type: array
+      description: |
+        This is an array of strings, not of objects. Sorted ascending.
+      items:
+        type: string
+      example: [car, food, salary]

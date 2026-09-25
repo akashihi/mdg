@@ -2,6 +2,8 @@ package org.akashihi.mdg.entity
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import org.akashihi.mdg.dao.AccountTypeConverter
 import org.hibernate.annotations.Formula
 import java.math.BigDecimal
@@ -21,11 +23,13 @@ class Account(
     @JsonProperty("account_type")
     val accountType: AccountType,
 
+    @JsonSetter(nulls = Nulls.SET)
     var name: String?,
 
     @ManyToOne
     @JoinColumn(name = "currency_id", nullable = false)
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var currency: Currency? = null,
 
     @Formula("currency_id")
@@ -35,9 +39,11 @@ class Account(
     @ManyToOne
     @JoinColumn(name = "category_id")
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     var category: Category? = null,
 
     @Formula("category_id")
+    @JsonSetter(nulls = Nulls.SET)
     @JsonProperty("category_id")
     @field:JsonInclude(JsonInclude.Include.NON_NULL)
     var categoryId: Long? = null,
@@ -48,8 +54,11 @@ class Account(
     @Formula("to_current_default_currency(currency_id, $BALANCE_QUERY)")
     @JsonProperty("primary_balance")
     var primaryBalance: BigDecimal = BigDecimal.ZERO,
+    @JsonSetter(nulls = Nulls.SET)
     var hidden: Boolean? = null,
+    @JsonSetter(nulls = Nulls.SET)
     var operational: Boolean? = null,
+    @JsonSetter(nulls = Nulls.SET)
     var favorite: Boolean? = null,
 
     @Id

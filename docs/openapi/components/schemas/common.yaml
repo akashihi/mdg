@@ -1,0 +1,69 @@
+# Shared primitives used across more than one resource.
+
+AccountType:
+  type: string
+  enum: [ASSET, EXPENSE, INCOME]
+  description: |
+    Type of an account.
+  example: ASSET
+
+BudgetEntryMode:
+  type: string
+  enum: [SINGLE, EVEN, PRORATED]
+  description: |
+    Cashflow/spending estimation mode of a budget entry.
+
+    * `SINGLE` — transactions for this entry happen occasionally, possibly only
+      once, during the budget period (rent, for example). This is the only mode
+      in which `dt` is meaningful.
+    * `EVEN` — transactions happen evenly across the budget period. 
+    * `PRORATED` — like `EVEN`, but a cumulative total is tracked instead.
+  example: EVEN
+
+Money:
+  type: number
+  description: |
+    A monetary amount.
+  example: 100.50
+
+MoneyOrNull:
+  type: ['number', 'null']
+  description: |
+    A monetary amount that the server may leave unpopulated.
+  example: 100.50
+
+CurrencyId:
+  type: integer
+  format: int64
+  minimum: 1
+  maximum: 999
+  description: |
+    ISO 4217 numeric currency code.
+  example: 978
+
+BudgetId:
+  type: integer
+  format: int64
+  description: |
+    Budget identifier.
+  example: 20220101
+
+LocalDateTime:
+  type: string
+  pattern: '^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d(:[0-5]\d(\.\d{1,9})?)?$'
+  description: |
+    A local date-time, in `ISO_LOCAL_DATE_TIME` form — **no offset and no trailing
+    `Z`**. Seconds and a fractional part are optional.
+
+    This is deliberately not `format: date-time`: RFC 3339 mandates an offset, and
+    Jackson's `LocalDateTimeDeserializer` rejects an offset outright, so a
+    `format: date-time` value would be answered with 400 `REQUEST_BODY_INVALID`.
+    The pattern is the contract; note that it constrains shape only, so a
+    syntactically matching but non-existent date is still a 400.
+  example: '2017-02-04T16:45:36'
+
+ZuluDateTime:
+  type: string
+  description: |
+    A local date-time.
+  example: '2017-02-04T16:45:36Z'

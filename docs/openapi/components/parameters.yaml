@@ -1,0 +1,286 @@
+# Reusable parameter objects.
+#
+
+EmbedAccount:
+  name: embed
+  in: query
+  required: false
+  description: |
+    Objects to inline into the response. The corresponding `*_id` fields are
+    always populated; the objects themselves are omitted unless requested.
+
+    Tokens nest: `embed=account,currency` inlines the account *and* its currency.
+  schema:
+    type: array
+    items:
+      type: string
+      enum: [account, currency, category]
+  style: form
+  explode: false
+  example: [account, currency]
+
+EmbedAccountObjects:
+  name: embed
+  in: query
+  required: false
+  description: |
+    Objects to inline into the returned account(s). The `currency_id` and
+    `category_id` fields are always populated; the objects themselves are
+    omitted unless requested.
+  schema:
+    type: array
+    items:
+      type: string
+      enum: [currency, category]
+  style: form
+  explode: false
+  example: [currency, category]
+
+AccountQuery:
+  name: q
+  in: query
+  required: false
+  description: |
+    A filter, expressed as a **URL-encoded JSON object string**.
+
+    A value that is not a JSON object — including the literal `null` — is ignored and
+    the unfiltered collection is returned. So are the object's own members whose value
+    is not a string.
+  schema:
+    type: string
+  examples:
+    visibleOnly:
+      summary: Exclude hidden accounts
+      value: '{"hidden":"false"}'
+    byName:
+      summary: One account by exact name
+      value: '{"name":"Monthly rent"}'
+    assetsInEur:
+      summary: Asset accounts denominated in EUR
+      value: '{"account_type":"asset","currency_id":"978"}'
+
+TransactionQuery:
+  name: q
+  in: query
+  required: false
+  description: |
+    A filter, expressed as a **URL-encoded JSON object string**.
+
+    A value that is not a JSON object — including the literal `null` — is ignored and
+    the unfiltered collection is returned. So are the object's own members whose value
+    is not a string.
+  schema:
+    type: string
+  examples:
+    dateRange:
+      summary: A closed date range
+      value: '{"notEarlier":"2017-02-01T00:00:00","notLater":"2017-02-28T23:59:59"}'
+    byAccounts:
+      summary: Several accounts at once
+      value: '{"account_id":"[1,2,3]"}'
+    fuzzyComment:
+      summary: Comment search — this matches "Income transaction"
+      value: '{"comment":"incme"}'
+
+TransactionSort:
+  name: sort
+  in: query
+  required: false
+  description: |
+    Sort order. The **only** honoured value is `-timestamp`; anything else is
+    silently ignored.
+
+  schema:
+    type: array
+    items:
+      type: string
+      enum: ['-timestamp']
+  style: form
+  explode: false
+  example: ['-timestamp']
+
+Limit:
+  name: limit
+  in: query
+  required: false
+  description: |
+    Page size. Supplying it switches the response into paging mode, which
+    populates the `first` and `next` cursors.
+
+    A value below one is rejected with `400` `REQUEST_PARAMETER_INVALID`, which
+    is also what an unparseable one gets. That holds for every way a page size
+    can arrive: one carried inside a `cursor`, and one passed here alongside a
+    `cursor` that makes it ignored. An empty `limit`, or one given more than
+    once, is rejected the same way.
+  schema:
+    type: integer
+    format: int32
+    minimum: 1
+    maximum: 2147483647
+  example: 10
+
+Cursor:
+  name: cursor
+  in: query
+  required: false
+  description: |
+    A page pointer previously handed out by the server in `self`, `first` or
+    `next`. Treat it as opaque; the encoding is not part of the contract.
+
+    Only a cursor this API issued is accepted. Anything else — a corrupted or
+    truncated one, or a value the client made up — is rejected with `422`
+    `CURSOR_DATA_INVALID`. The empty string is the exception: it reads as *no
+    cursor* and returns the first page, which is what following an exhausted
+    `next` does.
+  schema:
+    type: string
+  example: eyJsaW1pdCI6MywicG9pbnRlciI6N30=
+
+StartDate:
+  name: startDate
+  in: query
+  required: true
+  description: First day of the report, inclusive.
+  schema:
+    type: string
+    format: date
+  example: '2017-03-01'
+
+EndDate:
+  name: endDate
+  in: query
+  required: true
+  description: Last day of the report, inclusive.
+  schema:
+    type: string
+    format: date
+  example: '2017-03-15'
+
+Granularity:
+  name: granularity
+  in: query
+  required: true
+  description: |
+    Distance in days between report datapoints inside the range. `startDate` and
+    `endDate` are always included even if the step does not land on them. A
+    granularity of `0` collapses the whole range into a single bucket, and so does
+    any granularity wider than the range itself.
+  schema:
+    type: integer
+    format: int32
+    minimum: 0
+    maximum: 2147483647
+  example: 1
+
+BudgetEntryFilter:
+  name: filter
+  in: query
+  required: false
+  description: |
+    Whether to keep entries that have neither actual nor expected spendings.
+    Only the literal `all` (case-insensitive) is recognised.
+
+    In `nonzero` mode empty entries are dropped along with any category left
+    empty by their removal.
+  schema:
+    type: string
+    enum: [nonzero, all]
+    default: nonzero
+  example: all
+
+IfNoneMatch:
+  name: If-None-Match
+  in: header
+  required: false
+  description: |
+    An `ETag` from a previous response. When it matches, the server answers 304
+    with an empty body.
+  schema:
+    type: string
+  example: '"5C7B8C8E0A1B2C3D4E5F60718293A4B5"'
+
+AccountId:
+  name: id
+  in: path
+  required: true
+  schema:
+    type: integer
+    format: int64
+  example: 2
+
+TransactionId:
+  name: id
+  in: path
+  required: true
+  schema:
+    type: integer
+    format: int64
+  example: 42
+
+CategoryId:
+  name: id
+  in: path
+  required: true
+  schema:
+    type: integer
+    format: int64
+  example: 5
+
+CurrencyId:
+  name: id
+  in: path
+  required: true
+  description: |
+    ISO 4217 numeric code. Zero-padded forms such as `068` are accepted, and so
+    are codes below 100 — `8` is ALL, `12` is DZD, `50` is BDT.
+  schema:
+    type: integer
+    format: int64
+    minimum: 1
+    maximum: 999
+  example: 978
+
+BudgetIdPath:
+  name: id
+  in: path
+  required: true
+  description: |
+    A budget id, or **any date inside a budget's term**, as `YYYYMMDD`. An
+    exact id match wins; otherwise the budget whose term covers the date is the
+    one the operation acts on, and a date outside every term matches nothing.
+  schema:
+    type: integer
+    format: int64
+  example: 20170205
+
+OwningBudgetId:
+  name: budgetId
+  in: path
+  required: true
+  description: |
+    Id of the owning budget.
+  schema:
+    type: integer
+    format: int64
+  example: 20170204
+
+BudgetEntryId:
+  name: entryId
+  in: path
+  required: true
+  schema:
+    type: integer
+    format: int64
+  example: 291
+
+RateTimestamp:
+  name: ts
+  in: path
+  required: true
+  description: |
+    Point in time at which the rates should be valid, as a local date-time with no
+    offset — the same form as every other timestamp in this API. A value that matches
+    the pattern but names no real instant, such as `2017-02-30T00:00`, is still a 400.
+  schema:
+    $ref: './schemas/common.yaml#/LocalDateTime'
+  example: '2017-09-20T13:29:00'

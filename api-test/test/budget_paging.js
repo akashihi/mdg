@@ -38,6 +38,10 @@ const IDS = ['20220101','20210101','20200101','20190101','20180101','20170101'];
 describe('Budget paging', () => {
     const e2e = pactum.e2e('Budget paging');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create series of budgets', async () => {
         for (let b of BUDGETS_SERIES) {
             await e2e.step('Post budget')
@@ -71,6 +75,20 @@ describe('Budget paging', () => {
             .expectJsonMatch('left', 0);
     });
 
+    it('Reject a cursor this API never issued', async () => {
+        await e2e.step('List budgets')
+            .spec('expect error', { statusCode: 422, code: 'CURSOR_DATA_INVALID', instance: '/budgets' })
+            .get('/budgets?cursor=%C2%AC%C3%9E');
+    });
+
+    it('Read an exhausted cursor as no cursor at all', async () => {
+        // The UI hands the empty `next` straight back, so it has to answer the first page
+        await e2e.step('List budgets')
+            .spec('read')
+            .get('/budgets?cursor=')
+            .expectJsonMatch('budgets[0].id', 20220101);
+    });
+
     it('Delete budgets', async () => {
         for (let id in IDS) {
             await e2e.step('Delete budget')
@@ -78,7 +96,5 @@ describe('Budget paging', () => {
                 .delete('/budgets/{id}')
                 .withPathParams('id', IDS[id]);
         }
-
-        await e2e.cleanup();
     });
 });

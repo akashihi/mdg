@@ -2,6 +2,7 @@ package org.akashihi.mdg.api.util
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.akashihi.mdg.api.v1.MdgException
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -9,12 +10,16 @@ import java.util.*
 @Service
 open class CursorHelper(private val objectMapper: ObjectMapper) {
     fun <T> cursorFromString(cursor: String?, clazz: Class<T>?): T? {
-        val cursorBytes = Base64.getUrlDecoder().decode(cursor)
-        val cursorString = String(cursorBytes)
+        if (cursor.isNullOrEmpty()) {
+            return null // No cursor at all, callers fall back to a fresh first page
+        }
         return try {
-            objectMapper.readValue(cursorString, clazz)
+            val cursorBytes = Base64.getUrlDecoder().decode(cursor)
+            objectMapper.readValue(String(cursorBytes, StandardCharsets.UTF_8), clazz)
+        } catch (e: IllegalArgumentException) {
+            throw MdgException("CURSOR_DATA_INVALID", e) // Not a base64 string at all
         } catch (e: JsonProcessingException) {
-            null
+            throw MdgException("CURSOR_DATA_INVALID", e)
         }
     }
 

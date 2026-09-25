@@ -99,7 +99,7 @@ open class CategoryService(private val categoryRepository: CategoryRepository, p
 
     @Transactional
     open fun delete(id: Long) {
-        val category = categoryRepository.findByIdOrNull(id) ?: return
+        val category = categoryRepository.findByIdOrNull(id) ?: throw MdgException("CATEGORY_NOT_FOUND")
         if (category.accountType != AccountType.ASSET) { // Silently ignore deletion request for ASSET categories
             accountRepository.dropCategory(id)
             categoryRepository.deleteById(id)

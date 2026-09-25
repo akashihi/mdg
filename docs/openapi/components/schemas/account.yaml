@@ -1,0 +1,209 @@
+Account:
+  type: object
+  additionalProperties: false
+  description: |
+    An account. Accounts of type `ASSET` hold money.
+
+    This is the response shape and the body of an update; a create body is
+    `AccountCreate`. On update, only `hidden`, `name`, `category_id`, `favorite`
+    and `operational` are applied; everything else is silently ignored, except
+    `currency_id`, which is rejected with `ACCOUNT_CURRENCY_ASSET` on an asset
+    account and re-rates existing operations on a non-asset one.
+  required: [account_type, currency_id, balance, primary_balance]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Account id. Absent on create requests.
+      example: 2
+    account_type:
+      $ref: './common.yaml#/AccountType'
+    name:
+      type: [string, 'null']
+      pattern: '^[^\u0000]*$'
+      minLength: 1
+      description: |
+        The account's name. Never empty on a stored account, so it is never empty
+        in a response. In an update body it may be absent or `null`, which keeps
+        the current name; a string has to be a non-blank one, else
+        `ACCOUNT_DATA_INVALID`.
+      example: Wallet
+    currency_id:
+      allOf:
+        - $ref: './common.yaml#/CurrencyId'
+      description: |
+        The account's currency. It must exist, else `CURRENCY_NOT_FOUND`.
+        Writable on create; on update it is only accepted for non-asset
+        accounts.
+    currency:
+      allOf:
+        - $ref: './currency.yaml#/Currency'
+      readOnly: true
+      description: |
+        The currency object itself. Server-populated, and present only when the
+        request asked for `embed=currency`. A `currency` object in a request body
+        is ignored; `currency_id` is the writable half.
+    category_id:
+      type: [integer, 'null']
+      format: int64
+      description: |
+        The account's category. Explicitly `null` on update **drops** the
+        account's category (`AccountService.kt:88`); omitting the property does
+        the same, since an absent value deserializes to `null` too.
+      example: 1
+    category:
+      allOf:
+        - $ref: './category.yaml#/Category'
+      readOnly: true
+      description: |
+        The category object itself. Server-populated, and present only when the
+        request asked for `embed=category`. A `category` object in a request body
+        is ignored; `category_id` is the writable half.
+    balance:
+      allOf:
+        - $ref: './common.yaml#/MoneyOrNull'
+      readOnly: true
+      description: |
+        Current account balance in the account's own currency.
+    primary_balance:
+      allOf:
+        - $ref: './common.yaml#/MoneyOrNull'
+      readOnly: true
+      description: |
+        `balance` converted to the primary currency at the current rate.
+    hidden:
+      type: [boolean, 'null']
+      description: |
+        Marks a soft-deleted account.
+      example: false
+    operational:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is an operational one. Valid for asset
+        accounts only — setting it on any other type fails with
+        `ACCOUNT_NONASSET_INVALIDFLAG`.
+      example: true
+    favorite:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is a favorite. Valid for asset accounts only;
+        same error as `operational` otherwise. Favorite accounts additionally
+        appear under the synthetic `Favorite` category in `GET /accounts/tree`.
+      example: true
+
+AccountCreate:
+  type: object
+  additionalProperties: false
+  description: |
+    The body of an account create.
+
+    `favorite` and `operational` are asset-only — sending either as `true` on any
+    other type fails with `ACCOUNT_NONASSET_INVALIDFLAG`. An asset account with no
+    `category_id` is filed under the seeded `Current` category. `hidden` is not
+    read here: a new account is never hidden.
+
+    The embedded `currency` and `category` objects of the `Account` response shape
+    have no counterpart here: they are read-only, so a create body names its
+    currency and category by id only.
+  required: [account_type, currency_id, name]
+  properties:
+    account_type:
+      $ref: './common.yaml#/AccountType'
+    name:
+      type: string
+      pattern: '^[^\u0000]*$'
+      minLength: 1
+      description: |
+        Account name. Not required to be unique, but it may not be absent, `null`
+        or blank — any of those fails with `ACCOUNT_DATA_INVALID`.
+      example: Wallet
+    currency_id:
+      allOf:
+        - $ref: './common.yaml#/CurrencyId'
+      description: |
+        The account's currency. It must exist, else `CURRENCY_NOT_FOUND`.
+    category_id:
+      type: [integer, 'null']
+      format: int64
+      description: |
+        The account's category. It must exist, else `CATEGORY_NOT_FOUND`, and its
+        `account_type` has to match this account's, else `CATEGORY_INVALID_TYPE`.
+        Omit it — or send `null` — on an asset account to get the default
+        `Current` category; on any other type the account is simply left
+        uncategorized.
+      example: 1
+    operational:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is an operational one. Asset accounts only.
+      example: true
+    favorite:
+      type: [boolean, 'null']
+      description: |
+        Whether this asset account is a favorite. Asset accounts only.
+      example: true
+
+Accounts:
+  type: object
+  required: [accounts]
+  properties:
+    accounts:
+      type: array
+      description: Flat list of accounts.
+      items:
+        $ref: './account.yaml#/Account'
+
+AccountStatus:
+  type: object
+  description: Whether an account may be deleted.
+  required: [id, deletable]
+  properties:
+    id:
+      type: integer
+      format: int64
+      example: 2
+    deletable:
+      type: boolean
+      description: |
+        `false` when at least one operation references the account. Deleting
+        such an account fails with 409 `ACCOUNT_IN_USE`.
+      example: false
+
+CategoryTreeEntry:
+  type: object
+  description: |
+    One node of the account tree.
+  required: [accounts, categories]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: |
+        Category id.
+      example: 2
+    name:
+      type: string
+      example: cash
+    accounts:
+      type: array
+      description: Accounts directly in this category.
+      items:
+        $ref: './account.yaml#/Account'
+    categories:
+      type: array
+      description: Sub-categories, recursively.
+      items:
+        $ref: './account.yaml#/CategoryTreeEntry'
+
+CategoryTree:
+  type: object
+  description: |
+    The account tree, split by account type.
+  required: [asset, expense, income]
+  properties:
+    asset:
+      $ref: './account.yaml#/CategoryTreeEntry'
+    expense:
+      $ref: './account.yaml#/CategoryTreeEntry'
+    income:
+      $ref: './account.yaml#/CategoryTreeEntry'

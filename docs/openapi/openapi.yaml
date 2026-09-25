@@ -1,0 +1,1970 @@
+openapi: 3.1.0
+
+info:
+  title: MDG
+  version: '1'
+  summary: Self-hosted personal accounting service.
+  description: |
+    MDG ("Moi.Den.Gi") is a self-hosted personal accounting web service. This
+    document describes API v1 and is the only specification of that API — it is
+    hand-written and hand-maintained, and nothing in the build verifies it
+    against the code. If you change a controller, change this too.
+
+    ## Content type
+
+    Every request and response uses the media type
+    `application/vnd.mdg+json;version=1` — errors included, and with no
+    `charset` parameter. Write operations require it as a `Content-Type` request
+    header, even the two maintenance triggers that take no body.
+
+    The only responses without it are the `204 No Content` ones.
+
+    ## Errors
+
+    Errors are RFC 7807-shaped but carry the vendor media type rather than
+    `application/problem+json`, and add a machine-readable `code` field.
+
+    ## Authentication
+
+    There is none. 
+    
+    ## Paging
+
+    `GET /transactions` and `GET /budgets` are cursor-paged. Pass `limit` to
+    start paging, then follow the `next` cursor. Cursors are **self-contained** —
+    they carry the original filter, sort, embed and limit — so when `cursor` is
+    supplied every other query parameter is ignored, though a `limit` below one
+    is still rejected rather than quietly dropped. `first` and `next` come
+    back as the empty string when there is no such page, and handing an empty
+    `cursor` back reads as *no cursor* rather than as an error. Any other cursor
+    this API did not issue is rejected with `422` `CURSOR_DATA_INVALID`.
+
+    ## Embedding
+
+    Objects referenced by an `*_id` field are not inlined unless asked for with
+    `embed`. The `*_id` fields themselves are always populated.
+
+  license:
+    name: GPL-3.0-or-later
+    identifier: GPL-3.0-or-later
+  contact:
+    name: MDG on GitHub
+    url: https://github.com/akashihi/mdg
+
+servers:
+  - url: http://localhost:8080
+    description: |
+      A backend started directly, the
+      API lives at the root — there is no context path.
+  - url: https://{host}/api
+    description: |
+      A standard deployment, where nginx proxies `/api/` to the backend root. 
+      The `/api` prefix belongs to that proxy, not to the application.
+    variables:
+      host:
+        default: localhost
+
+tags:
+  - name: Accounts
+    description: |
+      Accounts hold money.
+  - name: Categories
+    description: |
+      Category labels for accounts.
+  - name: Transactions
+    description: |
+      Double-entry transactions.
+  - name: Tags
+    description: Free-form transaction labels.
+  - name: Budgets
+    description: Non-overlapping, inclusive date ranges with planned and actual totals.
+  - name: Budget entries
+    description: |
+      Per-account lines of a budget. Created and destroyed with their budget and
+      with their account; only updatable.
+  - name: Currencies
+    description: |
+      ISO 4217 currencies. Only the `active` flag is writable.
+  - name: Rates
+    description: Currency exchange rates, Read-only.
+  - name: Reports
+    description: Aggregated read-only reports.
+  - name: Settings
+    description: |
+      System configuration/maintenance variables.
+
+paths:
+  /accounts:
+    get:
+      tags: [Accounts]
+      summary: List all accounts
+      description: |
+        Returns a flat list of accounts.
+      operationId: listAccounts
+      parameters:
+        - $ref: './components/parameters.yaml#/AccountQuery'
+        - $ref: './components/parameters.yaml#/EmbedAccountObjects'
+      responses:
+        '200':
+          description: The matching accounts.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/account.yaml#/Accounts'
+          links:
+            GetListedAccount:
+              operationId: getAccount
+              description: Read the first account of this listing.
+              parameters:
+                path.id: '$response.body#/accounts/0/id'
+            GetListedAccountStatus:
+              operationId: getAccountStatus
+              description: Check whether the first account of this listing may be deleted.
+              parameters:
+                path.id: '$response.body#/accounts/0/id'
+            DeleteListedAccount:
+              operationId: deleteAccount
+              description: Delete the first account of this listing.
+              parameters:
+                path.id: '$response.body#/accounts/0/id'
+    post:
+      tags: [Accounts]
+      summary: Create a new account
+      description: |
+        `account_type`, `currency_id` and `name` are required; a `name` that is
+        absent, `null` or blank, and a `currency_id` that is absent or `null`,
+        are rejected with 422 `ACCOUNT_DATA_INVALID`. A `currency_id` naming no
+        currency is 404 `CURRENCY_NOT_FOUND`.
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/account.yaml#/AccountCreate'
+            example:
+              account_type: ASSET
+              currency_id: 978
+              name: Wallet
+              favorite: true
+              operational: true
+      responses:
+        '201':
+          description: The created account.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/account.yaml#/Account'
+          links:
+            GetAccount:
+              operationId: getAccount
+              description: Read the account that was just created.
+              parameters:
+                path.id: '$response.body#/id'
+            GetAccountStatus:
+              operationId: getAccountStatus
+              description: Check whether the new account may still be deleted.
+              parameters:
+                path.id: '$response.body#/id'
+            UpdateAccount:
+              operationId: updateAccount
+              description: |
+                Rename the new account. The body echoes the account's own `account_type`
+                and `currency_id`, because an asset account rejects a different currency
+                with `ACCOUNT_CURRENCY_ASSET`, and it omits `favorite`/`operational`,
+                which a non-asset account rejects with `ACCOUNT_NONASSET_INVALIDFLAG`.
+              parameters:
+                path.id: '$response.body#/id'
+              requestBody:
+                account_type: '$response.body#/account_type'
+                currency_id: '$response.body#/currency_id'
+                name: Renamed account
+              x-schemathesis:
+                merge_body: false
+            DeleteAccount:
+              operationId: deleteAccount
+              description: |
+                Delete the new account, which succeeds while it carries no operations.
+              parameters:
+                path.id: '$response.body#/id'
+            CreateTransaction:
+              operationId: createTransaction
+              description: |
+                Book a transaction against the new account. Both operations sit on that
+                one account, which keeps the transaction single-currency and balanced
+                without needing a second account to exist.
+              requestBody:
+                timestamp: '2017-02-04T16:45:36'
+                comment: Booked through a link
+                operations:
+                  - account_id: '$response.body#/id'
+                    amount: -100
+                    rate: 1
+                  - account_id: '$response.body#/id'
+                    amount: 100
+                    rate: 1
+              x-schemathesis:
+                merge_body: false
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /accounts/tree:
+    get:
+      tags: [Accounts]
+      summary: Get all accounts as a category tree
+      description: |
+        Two synthetic categories with **negative ids** may appear at the top of a
+        type: `Favorite` (id `-1`, asset accounts flagged favorite) and `Popular`
+        (a negated hash id, expense and income only). Neither is a real category.
+      operationId: getAccountTree
+      parameters:
+        - $ref: './components/parameters.yaml#/AccountQuery'
+        - $ref: './components/parameters.yaml#/EmbedAccountObjects'
+      responses:
+        '200':
+          description: The account tree.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/account.yaml#/CategoryTree'
+    put:
+      tags: [Accounts]
+      summary: Not an account — always 404
+      description: |
+        `/accounts/tree` matches the `/accounts/{id}` mappings as well, so the
+        server really does route `PUT` here and `OPTIONS` advertises it. `tree`
+        is not a number, so the request is answered with 404 `ACCOUNT_NOT_FOUND`
+        before any account is looked up — there is no success case. The path
+        variable is resolved before the body, so the 400 `REQUEST_BODY_INVALID`
+        of the sibling operation can not happen here.
+
+        Documented so that the declared methods agree with the `Allow` header,
+        which is the union of every mapping that matches the path. See
+        MIGRATION-NOTES.md #42.
+      operationId: updateAccountTree
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/account.yaml#/Account'
+            example:
+              account_type: ASSET
+              currency_id: 978
+              name: Wallet
+              hidden: true
+      responses:
+        '404':
+          description: '`tree` names no account.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+    delete:
+      tags: [Accounts]
+      summary: Not an account — always 404
+      description: |
+        `DELETE /accounts/{id}` matches this path too, so `OPTIONS` advertises
+        `DELETE`. `tree` is not a number, so nothing is ever deleted and the
+        answer is 404 `ACCOUNT_NOT_FOUND`. See MIGRATION-NOTES.md #42.
+      operationId: deleteAccountTree
+      responses:
+        '404':
+          description: '`tree` names no account.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+  /accounts/{id}:
+    get:
+      tags: [Accounts]
+      summary: View an account
+      operationId: getAccount
+      parameters:
+        - $ref: './components/parameters.yaml#/AccountId'
+        - $ref: './components/parameters.yaml#/EmbedAccountObjects'
+      responses:
+        '200':
+          description: The account.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/account.yaml#/Account'
+        '404':
+          description: No account found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+    put:
+      tags: [Accounts]
+      summary: Modify account data
+      description: |
+        Only `hidden`, `name`, `category_id`, `favorite` and `operational` are
+        applied. Other fields are silently ignored
+        
+        `currency_id` on an **asset** account is rejected with
+        `ACCOUNT_CURRENCY_ASSET`. Changing the currency of a non-asset account rewrites the `rate` of every
+        existing operation on it and recomputes the balance; a `currency_id` naming
+        no currency is 404 `CURRENCY_NOT_FOUND`.
+
+        An absent or `null` `name` keeps the current one; a blank one is rejected
+        with 422 `ACCOUNT_DATA_INVALID`.
+      operationId: updateAccount
+      parameters:
+        - $ref: './components/parameters.yaml#/AccountId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/account.yaml#/Account'
+            example:
+              account_type: ASSET
+              currency_id: 978
+              name: Wallet
+              hidden: true
+      responses:
+        '202':
+          description: The updated account.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/account.yaml#/Account'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          description: No account found, or the body's `currency_id` names no currency
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+    delete:
+      tags: [Accounts]
+      summary: Delete an account
+      description: |
+        Only accounts with no operations can be deleted; anything else fails with
+        409 `ACCOUNT_IN_USE`. Check `GET /accounts/{id}/status` first, or mark the
+        account `hidden` instead.
+      operationId: deleteAccount
+      parameters:
+        - $ref: './components/parameters.yaml#/AccountId'
+      responses:
+        '204':
+          description: The account was deleted.
+        '404':
+          description: No account found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '409':
+          $ref: './components/responses.yaml#/Conflict'
+  /accounts/{id}/status:
+    get:
+      tags: [Accounts]
+      summary: Retrieve account status
+      description: Reports whether the account can be deleted.
+      operationId: getAccountStatus
+      parameters:
+        - $ref: './components/parameters.yaml#/AccountId'
+      responses:
+        '200':
+          description: The account status.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/account.yaml#/AccountStatus'
+        '404':
+          description: No account found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List all categories
+      description: The full category forest — root categories with nested `children`.
+      operationId: listCategories
+      responses:
+        '200':
+          description: The category forest.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/category.yaml#/Categories'
+    post:
+      tags: [Categories]
+      summary: Create a new category
+      description: |
+        A category may only be parented under one of the same `account_type`;
+        otherwise the request fails with `CATEGORY_INVALID_TYPE`. Omit `parent_id`
+        to create a top-level category; a `parent_id` that does not exist fails
+        with `CATEGORY_DATA_INVALID`.
+
+        `account_type: ASSET` is rejected with `CATEGORY_INVALID_TYPE` — asset
+        categories cannot be created through the API.
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/category.yaml#/CategoryCreate'
+            example:
+              account_type: EXPENSE
+              name: Bonuses
+              priority: 1
+      responses:
+        '201':
+          description: The created category.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/category.yaml#/Category'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+  /categories/{id}:
+    get:
+      tags: [Categories]
+      summary: View a category
+      description: Returns the category with its `children` nested recursively.
+      operationId: getCategory
+      parameters:
+        - $ref: './components/parameters.yaml#/CategoryId'
+      responses:
+        '200':
+          description: The category.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/category.yaml#/Category'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+    put:
+      tags: [Categories]
+      summary: Modify category data
+      description: |
+        Only `parent_id`, `name` and `priority` are applied.
+
+        Changing `parent_id` moves the category and all of its descendants. Three
+        rules apply:
+
+        * parenting under a descendant of itself fails with `CATEGORY_TREE_CYCLED`;
+        * parenting under a category of a different `account_type` fails with
+          `CATEGORY_INVALID_TYPE`;
+        * setting `parent_id` to the category's **own id** promotes it to top
+          level.
+      operationId: updateCategory
+      parameters:
+        - $ref: './components/parameters.yaml#/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/category.yaml#/Category'
+            example:
+              account_type: EXPENSE
+              name: Bonuses
+              priority: 2
+              parent_id: 1
+      responses:
+        '202':
+          description: The updated category.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/category.yaml#/Category'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+    delete:
+      tags: [Categories]
+      summary: Delete a category
+      description: |
+        First-degree descendants are re-parented to this category's parent, or
+        promoted to top level if it had none.
+
+        Accounts that belonged to the category are uncategorized.
+      operationId: deleteCategory
+      parameters:
+        - $ref: './components/parameters.yaml#/CategoryId'
+      responses:
+        '204':
+          description: The category was deleted.
+
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: List all transactions
+      description: |
+        Embedded accounts in this response always report `balance: 0` and
+        `primary_balance: 0`; the balances are zeroed deliberately rather than
+        computed per row.
+      operationId: listTransactions
+      parameters:
+        - $ref: './components/parameters.yaml#/TransactionQuery'
+        - $ref: './components/parameters.yaml#/TransactionSort'
+        - $ref: './components/parameters.yaml#/EmbedAccount'
+        - $ref: './components/parameters.yaml#/Limit'
+        - $ref: './components/parameters.yaml#/Cursor'
+      responses:
+        '200':
+          description: One page of transactions.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/transaction.yaml#/Transactions'
+          links:
+            GetListedTransaction:
+              operationId: getTransaction
+              description: Read the first transaction of this page.
+              parameters:
+                path.id: '$response.body#/transactions/0/id'
+            UpdateListedTransaction:
+              operationId: updateTransaction
+              description: |
+                Rewrite the first transaction of this page as a balanced pair of operations
+                on the account it already touches.
+              parameters:
+                path.id: '$response.body#/transactions/0/id'
+              requestBody:
+                timestamp: '$response.body#/transactions/0/timestamp'
+                comment: Updated through a link
+                operations:
+                  - account_id: '$response.body#/transactions/0/operations/0/account_id'
+                    amount: -100
+                    rate: 1
+                  - account_id: '$response.body#/transactions/0/operations/0/account_id'
+                    amount: 100
+                    rate: 1
+              x-schemathesis:
+                merge_body: false
+            DeleteListedTransaction:
+              operationId: deleteTransaction
+              description: Delete the first transaction of this page.
+              parameters:
+                path.id: '$response.body#/transactions/0/id'
+            NextTransactionPage:
+              operationId: listTransactions
+              description: |
+                Follow this page's `next` cursor. An exhausted page carries the empty
+                string, which reads as *no cursor* and returns the first page again.
+              parameters:
+                query.cursor: '$response.body#/next'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+    post:
+      tags: [Transactions]
+      summary: Create a new transaction
+      description: |
+        A transaction is a balanced set of operations. The rules, each with the
+        `code` it fails under:
+
+        * Operations with an amount of exactly zero are **dropped** before
+          validation, not rejected.
+        * At least one non-zero operation must remain — `TRANSACTION_EMPTY`.
+        * Every surviving operation must name an account. An absent `account_id`
+          is rejected with 422 `TRANSACTION_DATA_INVALID`, an explicit `null` with
+          400 `REQUEST_BODY_INVALID`; one that names no account is 404
+          `ACCOUNT_NOT_FOUND`. A `null` in place of an operation object is the
+          same 422.
+        * `Σ(amount × rate)` over the remaining operations must be zero —
+          `TRANSACTION_NOT_BALANCED`.
+        * A rate may not be zero — `TRANSACTION_ZERO_RATE`.
+        * In a multi-currency transaction **exactly one** currency acts as the
+          conversion base and carries no rate. Every operation carrying a rate:
+          `TRANSACTION_NO_DEFAULT_RATE`. No operation carrying one, or a mix of
+          rate-less operations and operations with `rate: 1` across different
+          currencies: `TRANSACTION_AMBIGUOUS_RATE`.
+
+        For a single-currency transaction `rate` may be omitted throughout. The
+        recommendation is to always send it, using `1` for the primary currency,
+        so the base is explicit.
+
+        Tags that do not exist yet are created.
+
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/transaction.yaml#/Transaction'
+            examples:
+              singleCurrency:
+                summary: Three rows, one currency, no rates needed
+                value:
+                  timestamp: '2017-02-04T16:45:36'
+                  comment: Test transaction
+                  tags: [test, transaction]
+                  operations:
+                    - { account_id: 1, amount: -150 }
+                    - { account_id: 2, amount: 50 }
+                    - { account_id: 3, amount: 100 }
+              multiCurrency:
+                summary: Two currencies — exactly one row omits `rate`
+                value:
+                  timestamp: '2017-02-05T13:54:35'
+                  comment: Test transaction
+                  tags: [test, transaction]
+                  operations:
+                    - { account_id: 2, amount: -100 }
+                    - { account_id: 4, amount: 200, rate: 0.5 }
+      responses:
+        '201':
+          description: The created transaction.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/transaction.yaml#/Transaction'
+          links:
+            GetTransaction:
+              operationId: getTransaction
+              description: Read the transaction that was just created.
+              parameters:
+                path.id: '$response.body#/id'
+            UpdateTransaction:
+              operationId: updateTransaction
+              description: |
+                Rewrite the transaction as a balanced pair of operations on the account it
+                already touches, which re-runs every validation rule against a body that
+                is known to pass them.
+              parameters:
+                path.id: '$response.body#/id'
+              requestBody:
+                timestamp: '$response.body#/timestamp'
+                comment: Updated through a link
+                operations:
+                  - account_id: '$response.body#/operations/0/account_id'
+                    amount: -100
+                    rate: 1
+                  - account_id: '$response.body#/operations/0/account_id'
+                    amount: 100
+                    rate: 1
+              x-schemathesis:
+                merge_body: false
+            DeleteTransaction:
+              operationId: deleteTransaction
+              description: Delete the transaction that was just created.
+              parameters:
+                path.id: '$response.body#/id'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /transactions/{id}:
+    get:
+      tags: [Transactions]
+      summary: View a transaction
+      operationId: getTransaction
+      parameters:
+        - $ref: './components/parameters.yaml#/TransactionId'
+        - $ref: './components/parameters.yaml#/EmbedAccount'
+      responses:
+        '200':
+          description: The transaction.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/transaction.yaml#/Transaction'
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+    put:
+      tags: [Transactions]
+      summary: Modify transaction data
+      description: |
+        Replaces the transaction wholesale, re-running every validation rule
+        listed on `POST /transactions`. Account balances and any affected budget
+        entries are recalculated.
+
+      operationId: updateTransaction
+      parameters:
+        - $ref: './components/parameters.yaml#/TransactionId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/transaction.yaml#/Transaction'
+            example:
+              timestamp: '2017-02-04T16:45:36'
+              comment: Updated transaction
+              tags: [test]
+              operations:
+                - { account_id: 1, amount: -80 }
+                - { account_id: 3, amount: 80 }
+      responses:
+        '202':
+          description: The updated transaction.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/transaction.yaml#/Transaction'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+    delete:
+      tags: [Transactions]
+      summary: Delete a transaction
+      description: |
+        Tags left unused by the deletion are not removed from the tag dictionary.
+      operationId: deleteTransaction
+      parameters:
+        - $ref: './components/parameters.yaml#/TransactionId'
+      responses:
+        '204':
+          description: The transaction was deleted.
+        '404':
+          description: No transaction found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+
+  /tags:
+    get:
+      tags: [Tags]
+      summary: List all tags
+      description: |
+        Every tag currently used by a transaction, sorted ascending. Tags are
+        managed entirely through transactions — they cannot be created, renamed or
+        deleted directly.
+      operationId: listTags
+      responses:
+        '200':
+          description: The tags.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/tag.yaml#/Tags'
+
+  /budgets:
+    get:
+      tags: [Budgets]
+      summary: List all budgets
+      description: |
+        Ordered by `term_beginning` descending.
+
+        Only `id`, `term_beginning` and `term_end` are populated here — the
+        computed fields (`incoming_amount`, `outgoing_amount`, `state`) are
+        omitted from the collection and must be read from a single budget.
+      operationId: listBudgets
+      parameters:
+        - $ref: './components/parameters.yaml#/Limit'
+        - $ref: './components/parameters.yaml#/Cursor'
+      responses:
+        '200':
+          description: One page of budgets.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/Budgets'
+          links:
+            GetListedBudget:
+              operationId: getBudget
+              description: Read the first budget of this page, with its computed totals.
+              parameters:
+                path.id: '$response.body#/budgets/0/id'
+            UpdateListedBudget:
+              operationId: updateBudget
+              description: Submit the first budget's own term back to it.
+              parameters:
+                path.id: '$response.body#/budgets/0/id'
+              requestBody:
+                term_beginning: '$response.body#/budgets/0/term_beginning'
+                term_end: '$response.body#/budgets/0/term_end'
+              x-schemathesis:
+                merge_body: false
+            ListListedBudgetEntries:
+              operationId: listBudgetEntries
+              description: List the entries of the first budget of this page.
+              parameters:
+                path.budgetId: '$response.body#/budgets/0/id'
+            GetListedBudgetEntryTree:
+              operationId: getBudgetEntryTree
+              description: The first budget's entries, arranged into the category tree.
+              parameters:
+                path.budgetId: '$response.body#/budgets/0/id'
+            CopyListedBudgetEntries:
+              operationId: copyBudgetEntries
+              description: |
+                Copy the first budget's entry amounts onto itself — the one source that
+                is guaranteed to exist for any budget in the page.
+              parameters:
+                path.budgetId: '$response.body#/budgets/0/id'
+                path.sourceBudgetId: '$response.body#/budgets/0/id'
+                path.mode: preserve
+            DeleteListedBudget:
+              operationId: deleteBudget
+              description: Delete the first budget of this page and all of its entries.
+              parameters:
+                path.id: '$response.body#/budgets/0/id'
+            NextBudgetPage:
+              operationId: listBudgets
+              description: |
+                Follow this page's `next` cursor. An exhausted page carries the empty
+                string, which reads as *no cursor* and returns the first page again.
+              parameters:
+                query.cursor: '$response.body#/next'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+    post:
+      tags: [Budgets]
+      summary: Create a new budget
+      description: |
+        Only `term_beginning` and `term_end` are read; every other field is
+        computed. Terms are **inclusive** at both ends.
+
+        Three rules apply, each with the `code` it fails under:
+
+        * `term_end` must not precede `term_beginning` — `BUDGET_INVALID_TERM`;
+        * the term must span at least two days — `BUDGET_SHORT_RANGE`;
+        * terms of different budgets must not overlap — `BUDGET_OVERLAPPING`.
+
+        Creating a budget also creates one budget entry per income and expense
+        account. The budget's `id` is derived from `term_beginning` as `YYYYMMDD`.
+      operationId: createBudget
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/budget.yaml#/Budget'
+            example:
+              term_beginning: '2017-02-04'
+              term_end: '2017-02-26'
+      responses:
+        '201':
+          description: The created budget.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/Budget'
+          links:
+            GetBudget:
+              operationId: getBudget
+              description: Read the new budget together with its computed totals.
+              parameters:
+                path.id: '$response.body#/id'
+            UpdateBudget:
+              operationId: updateBudget
+              description: |
+                Submit the budget's own term back to it. The overlap check ignores the
+                budget being updated, so an unchanged term is accepted rather than
+                failing with `BUDGET_OVERLAPPING`.
+              parameters:
+                path.id: '$response.body#/id'
+              requestBody:
+                term_beginning: '$response.body#/term_beginning'
+                term_end: '$response.body#/term_end'
+              x-schemathesis:
+                merge_body: false
+            ListBudgetEntries:
+              operationId: listBudgetEntries
+              description: |
+                List the entries created together with the budget — one per income and
+                expense account that existed when it was created.
+              parameters:
+                path.budgetId: '$response.body#/id'
+            GetBudgetEntryTree:
+              operationId: getBudgetEntryTree
+              description: The same entries, arranged into the category tree.
+              parameters:
+                path.budgetId: '$response.body#/id'
+            CopyBudgetEntries:
+              operationId: copyBudgetEntries
+              description: |
+                Copy entry amounts into the new budget. Source and target are the same
+                budget here, that being the only source guaranteed to exist at this
+                point; both ids are resolved exactly, so the call answers 204.
+              parameters:
+                path.budgetId: '$response.body#/id'
+                path.sourceBudgetId: '$response.body#/id'
+                path.mode: preserve
+            DeleteBudget:
+              operationId: deleteBudget
+              description: Delete the new budget and every entry belonging to it.
+              parameters:
+                path.id: '$response.body#/id'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /budgets/current:
+    get:
+      tags: [Budgets]
+      summary: View the current budget
+      description: |
+        The budget whose term covers today or, when today falls between two
+        budgets, the most recent budget that has already begun — a budget stays
+        current after its term ends, until the next one begins. A budget that
+        begins after today is never returned; with none that has begun, the
+        answer is 404.
+
+        This is the budget the web UI shows as current. `GET /budgets/{id}` with
+        today's date is not a substitute for it: that answers 404 between terms.
+
+        Like `GET /budgets/{id}`, this response carries the computed
+        `incoming_amount`, `outgoing_amount` and `state`.
+      operationId: getCurrentBudget
+      responses:
+        '200':
+          description: The current budget, with its computed totals.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/Budget'
+          links:
+            ListCurrentBudgetEntries:
+              operationId: listBudgetEntries
+              description: List the entries of the current budget.
+              parameters:
+                path.budgetId: '$response.body#/id'
+            GetCurrentBudgetEntryTree:
+              operationId: getBudgetEntryTree
+              description: The current budget's entries, arranged into the category tree.
+              parameters:
+                path.budgetId: '$response.body#/id'
+        '404':
+          description: No budget has begun yet
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+    put:
+      tags: [Budgets]
+      summary: Not a budget — always 404
+      description: |
+        `/budgets/current` matches the `/budgets/{id}` mappings as well, so the
+        server really does route `PUT` here and `OPTIONS` advertises it.
+        `current` is neither a budget id nor a `YYYYMMDD` date, so the request is
+        answered with 404 `BUDGET_NOT_FOUND` before any budget is looked up —
+        there is no success case, and the path variable is resolved before the
+        body, so the 400 `REQUEST_BODY_INVALID` of the sibling operation can not
+        happen here. Use `PUT /budgets/{id}` with the id that
+        `GET /budgets/current` returned.
+
+        Documented so that the declared methods agree with the `Allow` header,
+        which is the union of every mapping that matches the path. See
+        MIGRATION-NOTES.md #42.
+      operationId: updateCurrentBudget
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/budget.yaml#/Budget'
+            example:
+              term_beginning: '2017-02-04'
+              term_end: '2017-02-28'
+      responses:
+        '404':
+          description: '`current` names no budget.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+    delete:
+      tags: [Budgets]
+      summary: Not a budget — always 404
+      description: |
+        `DELETE /budgets/{id}` matches this path too, so `OPTIONS` advertises
+        `DELETE`. `current` is neither a budget id nor a date, so nothing is ever
+        deleted and the answer is 404 `BUDGET_NOT_FOUND`. See
+        MIGRATION-NOTES.md #42.
+      operationId: deleteCurrentBudget
+      responses:
+        '404':
+          description: '`current` names no budget.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+  /budgets/{id}:
+    get:
+      tags: [Budgets]
+      summary: View a budget
+      description: |
+        The path segment may be a budget id or **any date inside a budget's term**
+        in `YYYYMMDD` form. An exact id match wins; otherwise the budget whose
+        term covers that date is returned, and a date outside every term is a
+        404. The budget the web UI calls current is `GET /budgets/current`.
+
+        Unlike the collection, this response carries the computed
+        `incoming_amount`, `outgoing_amount` and `state`.
+      operationId: getBudget
+      parameters:
+        - $ref: './components/parameters.yaml#/BudgetIdPath'
+      responses:
+        '200':
+          description: The budget, with its computed totals.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/Budget'
+        '404':
+          description: No budget found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+    put:
+      tags: [Budgets]
+      summary: Modify a budget
+      description: |
+        Changes the budget's term.
+
+        The path segment resolves exactly as it does on `GET` and `DELETE`: it
+        may be a budget id or **any date inside a budget's term** in `YYYYMMDD`
+        form. An exact id match wins; otherwise the budget whose term covers that
+        date is the one updated.
+
+        The same three term rules as on create apply, except that the overlap
+        check ignores the budget being updated — a term may be kept as-is,
+        shrunk, or extended into free space without tripping
+        `BUDGET_OVERLAPPING`.
+
+        The budget's `id` is **not** recomputed from a new `term_beginning`; it
+        keeps the id it was created with, which is why an exact id is tried
+        before a date.
+      operationId: updateBudget
+      parameters:
+        - $ref: './components/parameters.yaml#/BudgetIdPath'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/budget.yaml#/Budget'
+            example:
+              term_beginning: '2017-02-04'
+              term_end: '2017-02-28'
+      responses:
+        '202':
+          description: The updated budget.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/Budget'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          description: No budget found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '412':
+          $ref: './components/responses.yaml#/PreconditionFailed'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+    delete:
+      tags: [Budgets]
+      summary: Delete a budget
+      description: |
+        All of the budget's entries are deleted with it.
+
+        The path segment resolves exactly as it does on `GET`: it may be a budget
+        id or **any date inside a budget's term** in `YYYYMMDD` form. An exact id
+        match wins; otherwise the budget whose term covers that date is the one
+        deleted. `DELETE /budgets/20170205` therefore deletes a budget running
+        from `2017-02-04` to `2017-02-28`, and nothing at all if no term covers
+        that day.
+      operationId: deleteBudget
+      parameters:
+        - $ref: './components/parameters.yaml#/BudgetIdPath'
+      responses:
+        '204':
+          description: The budget was deleted.
+        '404':
+          description: No budget found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+  /budgets/{budgetId}/entries:
+    get:
+      tags: [Budget entries]
+      summary: List budget entries
+      description: |
+        Every entry of the budget, flat. Entries exist for income and expense
+        accounts only — never for asset accounts.
+
+        `budgetId` resolves as the path segment of `GET /budgets/{id}` does — an
+        exact id, or any date inside the budget's term — and a budget that does
+        not exist is 404 `BUDGET_NOT_FOUND`, never an empty list.
+      operationId: listBudgetEntries
+      parameters:
+        - $ref: './components/parameters.yaml#/OwningBudgetId'
+        - $ref: './components/parameters.yaml#/EmbedAccount'
+      responses:
+        '200':
+          description: The budget's entries.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/BudgetEntries'
+          links:
+            GetBudgetEntry:
+              operationId: getBudgetEntry
+              description: Read the first entry of this listing.
+              parameters:
+                path.budgetId: '$request.path.budgetId'
+                path.entryId: '$response.body#/budget_entries/0/id'
+            UpdateBudgetEntry:
+              operationId: updateBudgetEntry
+              description: |
+                Put an expected amount on the first entry of this listing. Only
+                `distribution`, `expected_amount` and `dt` are writable.
+              parameters:
+                path.budgetId: '$request.path.budgetId'
+                path.entryId: '$response.body#/budget_entries/0/id'
+              requestBody:
+                distribution: EVEN
+                expected_amount: 100
+              x-schemathesis:
+                merge_body: false
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+  /budgets/{budgetId}/entries/tree:
+    get:
+      tags: [Budget entries]
+      summary: Get budget entries as a category tree
+      description: |
+        The budget's entries arranged into the category forest, split into
+        `expense` and `income`. Every node carries the totals of everything
+        beneath it.
+
+        `budgetId` resolves as the path segment of `GET /budgets/{id}` does — an
+        exact id, or any date inside the budget's term.
+
+        A category node's distribution semantics are derived from its children: if
+        any descendant entry is `SINGLE` the whole category is treated as
+        `SINGLE`; failing that, if any is `EVEN` the category is `EVEN`; otherwise
+        `PRORATED`.
+
+        Accounts embedded here are not populated with their categories, and report
+        `balance: 0` / `primary_balance: 0` like every other embedded account.
+      operationId: getBudgetEntryTree
+      parameters:
+        - $ref: './components/parameters.yaml#/OwningBudgetId'
+        - $ref: './components/parameters.yaml#/EmbedAccount'
+        - $ref: './components/parameters.yaml#/BudgetEntryFilter'
+      responses:
+        '200':
+          description: The budget entry tree.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/BudgetEntryTree'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+    put:
+      tags: [Budget entries]
+      summary: Not a budget entry — always 404
+      description: |
+        `/budgets/{budgetId}/entries/tree` matches the
+        `/budgets/{budgetId}/entries/{entryId}` mapping as well, so the server
+        really does route `PUT` here and `OPTIONS` advertises it. `tree` is not a
+        number, so the request is answered with 404 `BUDGETENTRY_NOT_FOUND` — it
+        is `entryId` that fails to convert, not `budgetId`, and the failure comes
+        before any entry is looked up. There is no success case, and the path
+        variables are resolved before the body, so the 400 `REQUEST_BODY_INVALID`
+        of the sibling operation can not happen here.
+
+        Documented so that the declared methods agree with the `Allow` header,
+        which is the union of every mapping that matches the path. See
+        MIGRATION-NOTES.md #42.
+      operationId: updateBudgetEntryTree
+      parameters:
+        - $ref: './components/parameters.yaml#/OwningBudgetId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/budget.yaml#/BudgetEntry'
+            example:
+              id: 291
+              account_id: 2065
+              distribution: SINGLE
+              expected_amount: 1000
+              dt: '2017-02-15'
+      responses:
+        '404':
+          description: '`tree` names no budget entry.'
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+  /budgets/{budgetId}/entries/{entryId}:
+    get:
+      tags: [Budget entries]
+      summary: View a budget entry
+      operationId: getBudgetEntry
+      parameters:
+        - $ref: './components/parameters.yaml#/OwningBudgetId'
+        - $ref: './components/parameters.yaml#/BudgetEntryId'
+        - $ref: './components/parameters.yaml#/EmbedAccount'
+      responses:
+        '200':
+          description: The budget entry.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/BudgetEntry'
+        '404':
+          description: No entry found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+    put:
+      tags: [Budget entries]
+      summary: Modify a budget entry
+      description: |
+        Only `distribution`, `expected_amount` and `dt` are applied — everything
+        else is computed or immutable. A negative `expected_amount` is rejected
+        with 422 `BUDGETENTRY_IS_NEGATIVE`, and a `dt` outside the budget's term
+        with 409 `BUDGETENTRY_DT_OUT_OF_BUDGET`.
+
+        `dt` only means anything for `SINGLE` distribution: it is silently dropped
+        for `EVEN` and `PRORATED`, and switching an entry away from `SINGLE`
+        removes a previously stored value.
+
+      operationId: updateBudgetEntry
+      parameters:
+        - $ref: './components/parameters.yaml#/OwningBudgetId'
+        - $ref: './components/parameters.yaml#/BudgetEntryId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/budget.yaml#/BudgetEntry'
+            example:
+              id: 291
+              account_id: 2065
+              distribution: SINGLE
+              expected_amount: 1000
+              dt: '2017-02-15'
+      responses:
+        '202':
+          description: The updated budget entry.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/budget.yaml#/BudgetEntry'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          description: No entry found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+        '409':
+          $ref: './components/responses.yaml#/Conflict'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /budgets/{budgetId}/entries/copy/{mode}/{sourceBudgetId}:
+    put:
+      tags: [Budget entries]
+      summary: Copy budget entries from another budget
+      description: |
+        Copies `expected_amount` values from the source budget's entries into this
+        budget's entries, matching on account.
+
+        Takes no request body and returns no content. A `Content-Type`
+        header is not required here, unlike on the other write operations.
+
+        Entries that are set in the target but zero in the source are left alone
+        in both modes.
+      operationId: copyBudgetEntries
+      parameters:
+        - $ref: './components/parameters.yaml#/OwningBudgetId'
+        - name: mode
+          in: path
+          required: true
+          description: |
+            `overwrite` replaces the target's values; `preserve` keeps values the
+            target has already customised. The comparison is case-sensitive, and
+            any other value is rejected with 400 `REQUEST_PARAMETER_INVALID`.
+          schema:
+            type: string
+            enum: [preserve, overwrite]
+          example: preserve
+        - name: sourceBudgetId
+          in: path
+          required: true
+          description: Id of the budget to copy from, as `YYYYMMDD`.
+          schema:
+            type: integer
+            format: int64
+          example: 20170101
+      responses:
+        '204':
+          description: The entries were copied.
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          description: Source budget could not be found
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/problem.yaml#/Problem'
+
+  /currencies:
+    get:
+      tags: [Currencies]
+      summary: List all currencies
+      description: |
+        Every currency known to the system, active or not. The list is fixed
+        data covering the ISO 4217 numeric codes.
+      operationId: listCurrencies
+      responses:
+        '200':
+          description: The currencies.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/currency.yaml#/Currencies'
+  /currencies/{id}:
+    get:
+      tags: [Currencies]
+      summary: View a currency
+      operationId: getCurrency
+      parameters:
+        - $ref: './components/parameters.yaml#/CurrencyId'
+      responses:
+        '200':
+          description: The currency.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/currency.yaml#/Currency'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+    put:
+      tags: [Currencies]
+      summary: Modify currency data
+      description: |
+        Only `active` can be changed. Values in the other fields are silently
+        ignored — currencies cannot be created, renamed or deleted.
+
+        The request body is therefore `CurrencyUpdate` and not the `Currency` of the
+        response: `code` and `name` still have to be present, but they are discarded
+        unread, so none of the response's constraints on them apply to a request. A
+        client may still PUT back the object it GET'd.
+      operationId: updateCurrency
+      parameters:
+        - $ref: './components/parameters.yaml#/CurrencyId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/currency.yaml#/CurrencyUpdate'
+            example:
+              id: 978
+              code: EUR
+              name: "€"
+              active: false
+      responses:
+        '202':
+          description: The updated currency.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/currency.yaml#/Currency'
+
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+  /rates/status:
+    get:
+      tags: [Rates]
+      summary: View rate update status
+      description: |
+        A `dt` of `0001-01-01T00:00:00` means rate was never updated.
+      operationId: getRateStatus
+      responses:
+        '200':
+          description: The rate update status.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/rate.yaml#/RateStatus'
+  /rates/{ts}:
+    get:
+      tags: [Rates]
+      summary: List all rates at a point in time
+      operationId: listRates
+      parameters:
+        - $ref: './components/parameters.yaml#/RateTimestamp'
+      responses:
+        '200':
+          description: Every rate whose validity period covers the given instant.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/rate.yaml#/Rates'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /rates/{ts}/{from}/{to}:
+    get:
+      tags: [Rates]
+      summary: View one currency pair's rate
+      description: |
+        Both `from` and `to` have to name a currency the system knows, else
+        404 `CURRENCY_NOT_FOUND`. When both exist but no rate is on file for the
+        pair at that instant the server synthesises one with `rate: 1` and `id: -1`.
+      operationId: getRate
+      parameters:
+        - $ref: './components/parameters.yaml#/RateTimestamp'
+        - name: from
+          in: path
+          required: true
+          description: ISO 4217 numeric code of the "sell" currency.
+          schema:
+            $ref: './components/schemas/common.yaml#/CurrencyId'
+          example: 978
+        - name: to
+          in: path
+          required: true
+          description: ISO 4217 numeric code of the "buy" currency.
+          schema:
+            $ref: './components/schemas/common.yaml#/CurrencyId'
+          example: 840
+      responses:
+        '200':
+          description: The rate, real or synthesised.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/rate.yaml#/Rate'
+
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+  # All reporting endpoints are read-only.
+  /reports/totals:
+    get:
+      tags: [Reports]
+      summary: Assets overview
+      description: |
+        Totals per asset category, each broken down by currency.
+      operationId: getTotalsReport
+      responses:
+        '200':
+          description: The totals report.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/report.yaml#/TotalsReport'
+  /reports/evaluation:
+    get:
+      tags: [Reports]
+      summary: Financial status evaluation
+      description: |
+        Five integer scores summarising financial health over recent months.
+
+      operationId: getEvaluationReport
+      parameters:
+        - $ref: './components/parameters.yaml#/IfNoneMatch'
+      responses:
+        '200':
+          description: The evaluation report.
+          headers:
+            ETag:
+              description: Quoted uppercase hex MD5 of today's date.
+              schema:
+                type: string
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/report.yaml#/EvaluationReport'
+        '304':
+          description: The report has not changed since the supplied `ETag`.
+          headers:
+            ETag:
+              description: Quoted uppercase hex MD5 of today's date.
+              schema:
+                type: string
+  /reports/assets/simple:
+    get:
+      tags: [Reports]
+      summary: Total assets over time
+      description: A single series of total asset value, converted to the primary currency.
+      operationId: getSimpleAssetReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+        - $ref: './components/parameters.yaml#/Granularity'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/assets/currency:
+    get:
+      tags: [Reports]
+      summary: Assets over time, by currency
+      description: |
+        One series per currency, named by its ISO code. Only currencies that
+        actually hold assets in the range get a series.
+      operationId: getAssetsByCurrencyReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+        - $ref: './components/parameters.yaml#/Granularity'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/assets/type:
+    get:
+      tags: [Reports]
+      summary: Assets over time, by asset category
+      description: One series per asset category.
+      operationId: getAssetsByTypeReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+        - $ref: './components/parameters.yaml#/Granularity'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/income/events:
+    get:
+      tags: [Reports]
+      summary: Income events over time
+      description: One series per income account, of the amounts received in each bucket.
+      operationId: getIncomeEventsReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+        - $ref: './components/parameters.yaml#/Granularity'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/expense/events:
+    get:
+      tags: [Reports]
+      summary: Expense events over time
+      description: One series per expense account, of the amounts spent in each bucket.
+      operationId: getExpenseEventsReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+        - $ref: './components/parameters.yaml#/Granularity'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/SeriesReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/income/accounts:
+    get:
+      tags: [Reports]
+      summary: Income structure
+      description: |
+        Income over the range as a flattened tree of categories and accounts.
+      operationId: getIncomeStructureReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/HierarchicalReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/expense/accounts:
+    get:
+      tags: [Reports]
+      summary: Expense structure
+      description: |
+        Expenses over the range as a flattened tree of categories and accounts.
+      operationId: getExpenseStructureReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/HierarchicalReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/budget/execution:
+    get:
+      tags: [Reports]
+      summary: Budget execution over time
+      description: |
+        Actual and expected income and expense, plus profit, for every budget
+        overlapping the range. A budget that starts before `startDate` but ends
+        inside it is included, and vice versa.
+
+      operationId: getBudgetExecutionReport
+      parameters:
+        - $ref: './components/parameters.yaml#/StartDate'
+        - $ref: './components/parameters.yaml#/EndDate'
+      responses:
+        '200':
+          description: The budget execution report.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/report.yaml#/BudgetExecutionReport'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+  /reports/budget/cashflow/{budget_id}:
+    get:
+      tags: [Reports]
+      summary: Budget cashflow
+      description: |
+        Daily cumulative balances on all operational accounts across one budget's
+        term — actual against expected, where expected is projected from the
+        budget's scheduled entries and daily allowances.
+
+      operationId: getBudgetCashflowReport
+      parameters:
+        - name: budget_id
+          in: path
+          required: true
+          description: Budget to report on, as `YYYYMMDD`.
+          schema:
+            type: integer
+            format: int64
+          example: 20170204
+      responses:
+        '200':
+          description: The budget cashflow report.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/report.yaml#/BudgetCashflowReport'
+
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+  /settings:
+    get:
+      tags: [Settings]
+      summary: List all settings
+      description: |
+        Every configuration variable and its current value.
+      operationId: listSettings
+      responses:
+        '200':
+          description: The settings.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Settings'
+              example:
+                settings:
+                  - { id: currency.primary, value: '978' }
+                  - { id: ui.transaction.closedialog, value: 'true' }
+                  - { id: ui.language, value: en-US }
+                  - { id: ui.overviewpanel.widgets, value: '{}' }
+  /settings/currency.primary:
+    get:
+      tags: [Settings]
+      summary: View the primary currency
+      operationId: getPrimaryCurrency
+      responses:
+        '200':
+          description: The setting.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Setting'
+              example: { id: currency.primary, value: '840' }
+    put:
+      tags: [Settings]
+      summary: Set the primary currency
+      description: |
+        `value` must be the ISO 4217 numeric code of a currency that exists in the
+        currency table; anything else is rejected with 422
+        `SETTING_DATA_INVALID`.
+      operationId: setPrimaryCurrency
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/setting.yaml#/SettingUpdateCurrency'
+            example: { value: '840' }
+      responses:
+        '202':
+          $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /settings/ui.transaction.closedialog:
+    get:
+      tags: [Settings]
+      summary: View the transaction dialog auto-closing flag
+      operationId: getTransactionCloseDialog
+      responses:
+        '200':
+          description: The setting.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Setting'
+              example: { id: ui.transaction.closedialog, value: 'true' }
+    put:
+      tags: [Settings]
+      summary: Configure transaction dialog auto-closing
+      description: |
+        `value` must be `true` or `false`.
+      operationId: setTransactionCloseDialog
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/setting.yaml#/SettingUpdateCloseDialog'
+            example: { value: 'true' }
+      responses:
+        '202':
+          $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /settings/ui.language:
+    get:
+      tags: [Settings]
+      summary: View the system locale
+      operationId: getUiLanguage
+      responses:
+        '200':
+          description: The setting.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Setting'
+              example: { id: ui.language, value: en-US }
+    put:
+      tags: [Settings]
+      summary: Set the system locale
+      description: |
+        A locale name such as `en-US`.
+
+      operationId: setUiLanguage
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/setting.yaml#/SettingUpdateLanguage'
+            example: { value: en-US }
+      responses:
+        '202':
+          $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /settings/ui.overviewpanel.widgets:
+    get:
+      tags: [Settings]
+      summary: View the overview panel widgets
+      operationId: getOverviewPanelWidgets
+      responses:
+        '200':
+          description: The setting.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                $ref: './components/schemas/setting.yaml#/Setting'
+              example: { id: ui.overviewpanel.widgets, value: '{"lt":"TotalsWidget","rt":"BudgetWidget","lb":"EvaluationWidget","rb":"RatesWidget"}' }
+    put:
+      tags: [Settings]
+      summary: Configure the overview panel widgets
+      description: |
+        `value` is a JSON object **encoded as a string**, naming the widget in
+        each of the four overview slots — `lt`, `rt`, `lb`, `rb`. The backend does
+        not validate it; the frontend owns the format.
+      operationId: setOverviewPanelWidgets
+      requestBody:
+        required: true
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              $ref: './components/schemas/setting.yaml#/SettingUpdateWidgets'
+            example:
+              value: '{"lt":"TotalsWidget","rt":"BudgetWidget","lb":"EvaluationWidget","rb":"RatesWidget"}'
+      responses:
+        '202':
+          $ref: './components/responses.yaml#/SettingAccepted'
+        '400':
+          $ref: './components/responses.yaml#/BadRequest'
+        '415':
+          $ref: './components/responses.yaml#/UnsupportedMediaType'
+        '422':
+          $ref: './components/responses.yaml#/UnprocessableEntity'
+  /settings/mnt.transaction.reindex:
+    get:
+      tags: [Settings]
+      summary: Read the reindex trigger
+      description: |
+        Always `404` `SETTING_NOT_FOUND`. Every `/settings/*` read is served by one
+        handler over the `SETTING` table, and `mnt.transaction.reindex` is a
+        maintenance trigger rather than a stored variable, so there is no row to
+        return and no way to create one.
+      operationId: getReindexTrigger
+      responses:
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+    put:
+      tags: [Settings]
+      summary: Rebuild the full-text index
+      description: |
+        A maintenance trigger.
+
+        Deletes and recreates the Elasticsearch index with the analyzer settings
+        of the current `ui.language`, then re-streams every transaction into it.
+        A locale that has no analyzer settings of its own — `ui.language` is not
+        validated — gets the default `en-US` ones.
+
+        The call is synchronous and can take a while on a large database; the
+        response only returns once the reindex completes.
+
+        The controller method takes no request body and declares no `consumes`, so
+        the body is optional and never read: no body at all, any bytes and any media
+        type are all accepted. `{}` under the vendor media type is the conventional
+        call.
+      operationId: reindexTransactions
+      requestBody:
+        required: false
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '202':
+          $ref: './components/responses.yaml#/MaintenanceAccepted'
+  /settings/mnt.reporting.refresh:
+    get:
+      tags: [Settings]
+      summary: Read the reporting refresh trigger
+      description: |
+        Always `404` `SETTING_NOT_FOUND`. Every `/settings/*` read is served by one
+        handler over the `SETTING` table, and `mnt.reporting.refresh` is a
+        maintenance trigger rather than a stored variable, so there is no row to
+        return and no way to create one.
+      operationId: getReportingRefreshTrigger
+      responses:
+        '404':
+          $ref: './components/responses.yaml#/NotFound'
+    put:
+      tags: [Settings]
+      summary: Refresh the reporting materialized views
+      description: |
+        A maintenance trigger.
+
+        Refreshes the materialized query tables.
+
+        The controller method takes no request body and declares no `consumes`, so
+        the body is optional and never read: no body at all, any bytes and any media
+        type are all accepted. `{}` under the vendor media type is the conventional
+        call.
+      operationId: refreshReporting
+      requestBody:
+        required: false
+        content:
+          application/vnd.mdg+json;version=1:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '202':
+          $ref: './components/responses.yaml#/MaintenanceAccepted'

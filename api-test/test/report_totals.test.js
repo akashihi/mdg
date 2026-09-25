@@ -5,11 +5,18 @@ const { notIncludes } = require('pactum-matchers');
 describe('Totals report test', () => {
     const e2e = pactum.e2e('Totals report test');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Prepare accounts', async () => {
         await createAccountForTransaction(e2e);
         await e2e.step('Post CZK/Debt accout')
             .spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:CZK:V1' })
-            .stores('CZKAccountID', 'id');
+            .stores('CZKAccountID', 'id')
+            .clean()
+            .delete('/accounts/{id}')
+            .withPathParams('id', '$S{CZKAccountID}');
 
         await e2e.step('Check that empty categories are not present in the totals report')
             .spec('read')
@@ -21,14 +28,12 @@ describe('Totals report test', () => {
             .stores('TransactionID', 'id')
             .clean()
             .delete("/transactions/{id}")
-            .withPathParams("id", "$S{CZKAccountID}");
+            .withPathParams("id", "$S{TransactionID}");
 
         await e2e.step('Check that transactions on assets are reported in totals report')
             .spec('read')
             .get("/reports/totals")
             .expectJsonMatch("report[category_name=Debt].amounts[name=CZK].amount", 2500);
-
-        await e2e.cleanup();
     });
 
 });

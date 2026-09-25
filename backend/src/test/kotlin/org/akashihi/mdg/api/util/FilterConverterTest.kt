@@ -24,6 +24,12 @@ class FilterConverterTest {
     }
 
     @Test
+    fun buildFilterNullLiteral() {
+        val actual = FilterConverter.buildFilter("null", objectMapper)
+        actual shouldBe Collections.emptyMap()
+    }
+
+    @Test
     fun buildFilterCorrect() {
         val actual = FilterConverter.buildFilter("{\"field\": \"value\", \"test\": \"pass\"}", objectMapper)
         actual["field"] shouldBe "value"

@@ -1,5 +1,3 @@
-import moment from 'moment';
-
 import { wrap } from './base';
 import * as API from '../api/api';
 import {
@@ -15,8 +13,7 @@ import { ShortBudget } from '../api/models/Budget';
 
 export function loadCurrentBudget() {
     return wrap(async dispatch => {
-        const id = parseInt(moment().format('YYYYMMDD'));
-        const result = await API.loadBudget(id);
+        const result = await API.loadCurrentBudget();
         if (result.ok) {
             dispatch(StoreCurrentBudget(result.val));
         } else {

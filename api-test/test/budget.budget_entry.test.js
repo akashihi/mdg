@@ -4,6 +4,10 @@ const {stash} = require("pactum");
 describe('Budget <-> entry calculations', () => {
     const e2e = pactum.e2e('Budget <-> entry calculations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Prepare budget and accounts', async () => {
         await createAccountForTransaction(e2e);
         await e2e.step('Post budget')
@@ -82,7 +86,10 @@ describe('Budget <-> entry calculations', () => {
 
         await e2e.step('Create transaction')
             .spec('Create Transaction', {'@DATA:TEMPLATE@': 'Transaction:Rent:V1'})
-            .stores('TransactionID', 'id');
+            .stores('TransactionID', 'id')
+            .clean()
+            .delete('/transactions/{id}')
+            .withPathParams('id', '$S{TransactionID}');
 
         const budgetActualIncome = stash.getDataStore().BudgetActualIncome;
         const budgetActualExpense = stash.getDataStore().BudgetActualExpense;
@@ -93,6 +100,5 @@ describe('Budget <-> entry calculations', () => {
             .withPathParams('id', '20170205')
             .expectJsonMatch('state.income.actual', Math.round((budgetActualIncome + 150)*100)/100)
             .expectJsonMatch('state.expense.actual', Math.round((budgetActualExpense + 100)*100)/100);
-        await e2e.cleanup();
     }).timeout(15000);
 });

@@ -1,0 +1,70 @@
+ErrorCode:
+  type: string
+  description: |
+    Machine-readable error code.
+  enum:
+    - ACCOUNT_NOT_FOUND
+    - ACCOUNT_DATA_INVALID
+    - ACCOUNT_NOT_UPDATED
+    - ACCOUNT_NONASSET_INVALIDFLAG
+    - ACCOUNT_CURRENCY_ASSET
+    - ACCOUNT_IN_USE
+    - BUDGET_NOT_FOUND
+    - BUDGET_DATA_INVALID
+    - BUDGET_INVALID_TERM
+    - BUDGET_SHORT_RANGE
+    - BUDGET_OVERLAPPING
+    - BUDGETENTRY_NOT_FOUND
+    - BUDGETENTRY_IS_NEGATIVE
+    - BUDGETENTRY_DT_OUT_OF_BUDGET
+    - CATEGORY_NOT_FOUND
+    - CATEGORY_DATA_INVALID
+    - CATEGORY_INVALID_TYPE
+    - CATEGORY_TREE_CYCLED
+    - CURRENCY_NOT_FOUND
+    - CURSOR_DATA_INVALID
+    - SETTING_NOT_FOUND
+    - SETTING_DATA_INVALID
+    - SETTING_NOT_UPDATED
+    - TRANSACTION_NOT_FOUND
+    - TRANSACTION_DATA_INVALID
+    - TRANSACTION_EMPTY
+    - TRANSACTION_NOT_BALANCED
+    - TRANSACTION_ZERO_RATE
+    - TRANSACTION_NO_DEFAULT_RATE
+    - TRANSACTION_AMBIGUOUS_RATE
+    - REQUEST_PARAMETER_INVALID
+    - REQUEST_PARAMETER_MISSING
+    - REQUEST_BODY_INVALID
+    - REQUEST_METHOD_UNSUPPORTED
+    - REQUEST_MEDIATYPE_UNACCEPTABLE
+    - REQUEST_MEDIATYPE_UNSUPPORTED
+    - UNHANDLED_EXCEPTION
+  example: CURRENCY_NOT_FOUND
+
+Problem:
+  type: object
+  description: |
+    Error body. RFC 7807-shaped,
+  required: [title, status, code, detail]
+  properties:
+    title:
+      type: string
+      description: Human-friendly error description.
+      example: Requested currency could not be found
+    status:
+      type: integer
+      description: HTTP status code. Always mirrors the response status.
+      example: 404
+    instance:
+      type: [string, 'null']
+      description: |
+        Request URI that produced the error. `null` when the failing request was
+        not a servlet request.
+      example: /currencies/1
+    code:
+      $ref: './problem.yaml#/ErrorCode'
+    detail:
+      type: string
+      description: Longer explanation of the error.
+      example: We can not find currency with specified code in the database, check its id please.

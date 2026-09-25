@@ -12,6 +12,7 @@ import org.akashihi.mdg.service.BudgetService
 import org.akashihi.mdg.service.CategoryService
 import org.akashihi.mdg.service.RateService
 import org.akashihi.mdg.service.SettingService
+import org.akashihi.mdg.service.pageLimitOf
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -100,7 +101,8 @@ open class BudgetController(private val budgetService: BudgetService, private va
     fun create(@RequestBody budget: Budget): Budget = budgetService.create(budget)
 
     @GetMapping(value = ["/budgets"], produces = ["application/vnd.mdg+json;version=1"])
-    fun list(@RequestParam("limit") limit: Int?, @RequestParam("cursor") cursor: String?): Budgets {
+    fun list(@RequestParam("limit") limits: List<Int?>?, @RequestParam("cursor") cursor: String?): Budgets {
+        val limit = pageLimitOf(limits) // A cursor makes the parameter ignored, but not acceptable
         val budgetCursor = cursor?.let { cursorHelper.cursorFromString(it, BudgetCursor::class.java) } ?: BudgetCursor(limit, null)
         val budgets = budgetService.list(budgetCursor.limit, budgetCursor.pointer)
         val self = cursorHelper.cursorToString(budgetCursor) ?: ""
@@ -119,6 +121,9 @@ open class BudgetController(private val budgetService: BudgetService, private va
         return Budgets(budgets.items, self, first, next, budgets.left)
     }
 
+    @GetMapping(value = ["/budgets/current"], produces = ["application/vnd.mdg+json;version=1"])
+    fun current(): Budget = budgetService.getCurrent() ?: throw MdgException("BUDGET_NOT_FOUND")
+
     @GetMapping(value = ["/budgets/{id}"], produces = ["application/vnd.mdg+json;version=1"])
     operator fun get(@PathVariable("id") id: Long): Budget = budgetService[id] ?: throw MdgException("BUDGET_NOT_FOUND")
 
@@ -135,9 +140,8 @@ open class BudgetController(private val budgetService: BudgetService, private va
 
     @GetMapping(value = ["/budgets/{budgetId}/entries/tree"], produces = ["application/vnd.mdg+json;version=1"])
     fun tree(@PathVariable("budgetId") budgetId: Long, @RequestParam("embed") embed: Collection<String>?, @RequestParam("filter") filter: String?): BudgetEntryTree {
-        budgetService[budgetId] ?: throw MdgException("BUDGET_NOT_FOUND")
-        val categories = categoryService.list()
         var entries = budgetService.listEntries(budgetId)
+        val categories = categoryService.list()
         val leaveEmpty = filter?.let { "all".equals(it, ignoreCase = true) } ?: false
         if (!leaveEmpty) {
             entries = entries.filter { e: BudgetEntry -> !(e.actualAmount.compareTo(BigDecimal.ZERO) == 0 && e.expectedAmount.compareTo(BigDecimal.ZERO) == 0) }.toList()
@@ -174,7 +178,14 @@ open class BudgetController(private val budgetService: BudgetService, private va
         @PathVariable("mode") mode: String,
         @PathVariable("sourceBudgetId")
         sourceBudgetId: Long
-    ) = budgetService.copyEntries(sourceBudgetId, budgetId, mode.lowercase() == "overwrite") ?: throw MdgException("BUDGET_NOT_FOUND")
+    ): Collection<BudgetEntry> {
+        val overwrite = when (mode) {
+            "overwrite" -> true
+            "preserve" -> false
+            else -> throw MdgException("REQUEST_PARAMETER_INVALID")
+        }
+        return budgetService.copyEntries(sourceBudgetId, budgetId, overwrite) ?: throw MdgException("BUDGET_NOT_FOUND")
+    }
 
     companion object {
         protected fun getCategoryTotals(f: (BudgetEntryTreeEntry) -> BigDecimal, entries: Collection<BudgetEntryTreeEntry>): BigDecimal {

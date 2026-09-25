@@ -1,0 +1,128 @@
+# Shared responses.
+
+Conflict:
+  description: |
+    The request conflicts with the current state — an account that still has
+    operations, or a budget entry date outside its budget's term.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Used accounts can not be deleted
+        status: 409
+        instance: /accounts/2
+        code: ACCOUNT_IN_USE
+        detail: Account has operations and can not be deleted
+
+PreconditionFailed:
+  description: |
+    A business rule was violated. This is the status this API uses for most
+    validation failures — read `code` to find out which rule.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Transaction is not in balance
+        status: 412
+        instance: /transactions
+        code: TRANSACTION_NOT_BALANCED
+        detail: Sum of transaction operations is not equal to zero
+
+UnprocessableEntity:
+  description: The submitted attributes are individually invalid.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Setting value is invalid
+        status: 422
+        instance: /settings/currency.primary
+        code: SETTING_DATA_INVALID
+        detail: Setting value is invalid
+
+
+# --- Success responses shared by more than one operation ---------------------
+
+SeriesReport:
+  description: The report.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/report.yaml#/SimpleReportSeries'
+
+HierarchicalReport:
+  description: The report.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/report.yaml#/SimpleReportHierarchical'
+
+SettingAccepted:
+  description: The updated setting.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/setting.yaml#/Setting'
+
+MaintenanceAccepted:
+  description: |
+    The maintenance action ran.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/setting.yaml#/Setting'
+
+# --- Failures the framework reports before the application is reached -------
+
+BadRequest:
+  description: |
+    The request could not be bound to the operation — a parameter that does not
+    convert to the declared type, a parameter whose value falls outside the range
+    the schema declares, a required parameter that is absent, or a body that could
+    not be read. A body string carrying a NUL character (U+0000) counts as
+    unreadable: `REQUEST_BODY_INVALID`, and so does an explicit `null` on a body
+    property whose schema does not admit `null` — an optional property may be
+    left out, but not sent as `null`. Read `code` to find out which.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Request parameter is invalid
+        status: 400
+        instance: /transactions
+        code: REQUEST_PARAMETER_INVALID
+        detail: A request parameter could not be converted to the type this operation expects, check the specification for its format
+
+NotFound:
+  description: |
+    No such resource. A path id that is not a number is reported here as well,
+    since it can not name an existing resource.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Requested account could not be found
+        status: 404
+        instance: /accounts/2
+        code: ACCOUNT_NOT_FOUND
+        detail: We can not find account with specified code in the database, check it's id please.
+
+UnsupportedMediaType:
+  description: |
+    The request body was sent with a media type other than
+    `application/vnd.mdg+json;version=1`, which is the only one this API consumes.
+  content:
+    application/vnd.mdg+json;version=1:
+      schema:
+        $ref: './schemas/problem.yaml#/Problem'
+      example:
+        title: Media type is not supported
+        status: 415
+        instance: /accounts
+        code: REQUEST_MEDIATYPE_UNSUPPORTED
+        detail: This API only consumes application/vnd.mdg+json;version=1

@@ -53,3 +53,14 @@ itParam('Check ${value.ratename} rate value', RATES, async (params) => { // esli
             rate: params.rate
         });
 });
+
+const UNKNOWN_CURRENCY_PAIRS = [
+    { name: 'sell', from: -1, to: EUR },
+    { name: 'buy', from: EUR, to: -1 }
+];
+
+itParam('A rate with an unknown ${value.name} currency is not found', UNKNOWN_CURRENCY_PAIRS, async (params) => { // eslint-disable-line no-template-curly-in-string
+    const instance = `/rates/2017-09-20T13:29:00/${params.from}/${params.to}`;
+    await pactum.spec('expect error', { statusCode: 404, code: 'CURRENCY_NOT_FOUND', instance: instance })
+        .get(instance);
+});

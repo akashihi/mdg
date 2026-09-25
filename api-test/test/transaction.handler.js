@@ -1,4 +1,5 @@
 const pactum = require('pactum');
+const { stash } = require('pactum');
 
 pactum.handler.addSpecHandler('Create Transaction', (ctx) => {
     const { spec, data } = ctx;
@@ -6,6 +7,18 @@ pactum.handler.addSpecHandler('Create Transaction', (ctx) => {
     spec.withJson(data);
     spec.use('create');
 });
+
+// Registers a delete for an account this helper just created.
+//
+// The clean goes on the step rather than being chained onto the create spec, so
+// the spec's own return value stays intact, and it is registered with the literal
+// id rather than $S{key}: several suites call these helpers more than once, which
+// overwrites the store key, and a clean written as $S{key} would then resolve to
+// the last account for every registration and leave the earlier ones behind.
+function cleanAccount (step, storeKey) {
+    const id = stash.getDataStore()[storeKey];
+    step.clean().delete('/accounts/{id}').withPathParams('id', id);
+}
 
 async function createAccountForTransaction (e2e) {
     let firstStep = pactum;
@@ -25,6 +38,12 @@ async function createAccountForTransaction (e2e) {
 
     await thirdStep.spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Expense:V1' })
         .stores('ExpenseAccountID', 'id');
+
+    if (e2e) {
+        cleanAccount(firstStep, 'IncomeAccountID');
+        cleanAccount(secondStep, 'AssetAccountID');
+        cleanAccount(thirdStep, 'ExpenseAccountID');
+    }
 }
 
 async function checkAccountsBalances (e2e, income, assets, expense) {
@@ -45,10 +64,16 @@ async function createUSDAccountForTransaction (e2e) {
         usdStep = e2e.step('Prepare USD asset account');
     }
 
-    return usdStep
+    const id = await usdStep
         .spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Asset:USD:V1' })
         .stores('AssetUSDAccountID', 'id')
         .returns('id');
+
+    if (e2e) {
+        cleanAccount(usdStep, 'AssetUSDAccountID');
+    }
+
+    return id;
 }
 
 async function createUSDExpenseAccountForTransaction (e2e) {
@@ -58,10 +83,16 @@ async function createUSDExpenseAccountForTransaction (e2e) {
         usdStep = e2e.step('Prepare USD expense account');
     }
 
-    return usdStep
+    const id = await usdStep
         .spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Expense:USD:V1' })
         .stores('ExpenseUSDAccountID', 'id')
         .returns('id');
+
+    if (e2e) {
+        cleanAccount(usdStep, 'ExpenseUSDAccountID');
+    }
+
+    return id;
 }
 
 module.exports = { createAccountForTransaction, checkAccountsBalances, createUSDAccountForTransaction, createUSDExpenseAccountForTransaction };

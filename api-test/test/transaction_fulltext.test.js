@@ -4,6 +4,10 @@ const { createAccountForTransaction } = require('./transaction.handler');
 describe('Transaction full text search', () => {
     const e2e = pactum.e2e('Transaction operations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Force transactions full text re-index', async () => {
         await e2e.step('Force transactions full text re-index')
             .spec('update')
@@ -17,7 +21,11 @@ describe('Transaction full text search', () => {
         await createAccountForTransaction(e2e);
 
         await e2e.step('Create transaction')
-            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' });
+            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' })
+            .stores('TransactionID', 'id')
+            .clean()
+            .delete('/transactions/{id}')
+            .withPathParams('id', '$S{TransactionID}');
     });
 
     it('Transaction search by malformed comment', async () => {
@@ -37,7 +45,5 @@ describe('Transaction full text search', () => {
             .get('/transactions')
             .withQueryParams('q', '%7B%22tag%22%3A%20%22incme%22%7D')
             .expectJsonLike('transactions[*].tags', ['income', 'transaction']);
-
-        await e2e.cleanup();
     });
 });

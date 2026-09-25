@@ -32,12 +32,19 @@ open class TransactionService(
     private val rateService: RateService
 ) {
     private fun enrichOperations(tx: Transaction): Transaction {
+        // Jackson lets a null element past the declared element type, so check before the first dereference
+        @Suppress("SENSELESS_COMPARISON")
+        if (tx.operations.any { it == null }) {
+            throw MdgException("TRANSACTION_DATA_INVALID")
+        }
+
         // Drop empty operations
         tx.operations = tx.operations.filter { it.amount != BigDecimal.ZERO }.toMutableList()
 
         // Propagate accounts
         tx.operations.forEach {
-            val account = accountRepository.findByIdOrNull(it.account_id) ?: throw MdgException("ACCOUNT_NOT_FOUND")
+            val accountId = it.account_id ?: throw MdgException("TRANSACTION_DATA_INVALID")
+            val account = accountRepository.findByIdOrNull(accountId) ?: throw MdgException("ACCOUNT_NOT_FOUND")
             it.account = account
         }
 
@@ -79,6 +86,14 @@ open class TransactionService(
         return tx
     }
 
+    private fun rejectNullTags(tags: Collection<Tag>) {
+        // Same as with operations: Jackson lets `"tags": [null]` past the declared element type
+        @Suppress("SENSELESS_COMPARISON")
+        if (tags.any { it == null }) {
+            throw MdgException("TRANSACTION_DATA_INVALID")
+        }
+    }
+
     private fun enrichTags(tags: Collection<Tag>): MutableSet<Tag> {
         return tags.map {
             val candidate = tagRepository.findByTag(it.tag)
@@ -99,6 +114,7 @@ open class TransactionService(
 
     @Transactional
     open fun create(newTx: Transaction): Transaction {
+        rejectNullTags(newTx.tags)
         var tx = newTx
         tx = enrichOperations(tx)
         tx = validateTransaction(tx)
@@ -124,6 +140,7 @@ open class TransactionService(
         if (limit == null) {
             return ListResult(transactionRepository.findAll(spec, sorting), 0L)
         }
+        validatePageLimit(limit)
         val pageLimit = PageRequest.of(0, limit, sorting)
         val page = transactionRepository.findAll(spec, pageLimit)
         var left = page.totalElements - limit
@@ -149,6 +166,7 @@ open class TransactionService(
     @Transactional
     open fun update(id: Long, newTx: Transaction): Transaction? {
         val tx = transactionRepository.findByIdOrNull(id) ?: return null
+        rejectNullTags(newTx.tags)
         tx.ts = newTx.ts
         tx.comment = newTx.comment
         val newTxTagValues = newTx.tags.map { obj: Tag -> obj.tag }.toSet()
@@ -234,6 +252,9 @@ open class TransactionService(
 
     @Transactional
     open fun delete(id: Long) {
+        if (!transactionRepository.existsById(id)) {
+            throw MdgException("TRANSACTION_NOT_FOUND")
+        }
         operationRepository.deleteOperationsForTransaction(id)
         transactionRepository.deleteById(id)
         indexingService.removeTransaction(id)

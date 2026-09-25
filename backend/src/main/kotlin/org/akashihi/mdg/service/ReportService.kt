@@ -1,5 +1,6 @@
 package org.akashihi.mdg.service
 
+import org.akashihi.mdg.api.v1.MdgException
 import org.akashihi.mdg.dao.AccountRepository
 import org.akashihi.mdg.dao.projections.AmountAndName
 import org.akashihi.mdg.dao.projections.AmountDateName
@@ -77,7 +78,7 @@ open class ReportService(
 
     @Transactional
     open fun simpleAssetReport(from: LocalDate, to: LocalDate, granularity: Int): SimpleReport<ReportSeries> {
-        val report = accountRepository.getTotalAssetsReport(from, to, granularity)
+        val report = accountRepository.getTotalAssetsReport(from, to, effectiveGranularity(from, to, granularity))
         val dates = report.map { it.dt }
         val amounts = report.map { ReportSeriesEntry(it.amount, it.amount) }
         val series = ReportSeries("Total assets", amounts, "area")
@@ -110,7 +111,7 @@ open class ReportService(
     }
 
     private fun typedAssetReportReport(from: LocalDate, to: LocalDate, granularity: Int, query: (LocalDate, LocalDate, Int) -> List<AmountDateName>): SimpleReport<ReportSeries> {
-        val report = query.invoke(from, to, granularity)
+        val report = query.invoke(from, to, effectiveGranularity(from, to, granularity))
         val dates = report.map { it.dt }.distinct()
         return SimpleReport(dates, amountToSeries(report, "area"))
     }
@@ -190,7 +191,7 @@ open class ReportService(
         val actualSeries = actualBalances.map { ReportSeriesEntry(it.amount, it.amount) }
         val actual = ReportSeries("Actual operational assets", actualSeries, "area")
 
-        val entries = budgetService.listSimplifiedEntries(budgetId)
+        val entries = budgetService.listSimplifiedEntries(budget)
         val expandedEntries = entries.map { e ->
             val dailyEntries = dates.map { dt ->
                 budgetService.applyActualAmountForPeriod(e, dt, dt).copy()
@@ -319,12 +320,18 @@ open class ReportService(
     }
 
     companion object {
-        fun expandPeriod(from: LocalDate, to: LocalDate, granularity: Int): List<LocalDate> {
-            if (granularity == 0) {
-                return listOf(from, to)
+        fun effectiveGranularity(from: LocalDate, to: LocalDate, granularity: Int): Int {
+            if (granularity < 0) {
+                throw MdgException("REQUEST_PARAMETER_INVALID")
             }
-            val numberOfDays = ChronoUnit.DAYS.between(from, to) / granularity
-            val days = (0 until numberOfDays).map { from.plusDays(it * granularity) }
+            val span = ChronoUnit.DAYS.between(from, to).coerceIn(1L, Int.MAX_VALUE.toLong()) // A single day range is still a day long
+            return if (granularity == 0 || granularity > span) span.toInt() else granularity
+        }
+
+        fun expandPeriod(from: LocalDate, to: LocalDate, granularity: Int): List<LocalDate> {
+            val step = effectiveGranularity(from, to, granularity)
+            val numberOfDays = ChronoUnit.DAYS.between(from, to) / step
+            val days = (0 until numberOfDays).map { from.plusDays(it * step) }
             return days + to
         }
 

@@ -315,6 +315,11 @@ export async function loadBudget(id: number): Promise<Result<Model.Budget, Model
     return parseResponse(response, budgetParse);
 }
 
+export async function loadCurrentBudget(): Promise<Result<Model.Budget, Model.Problem>> {
+    const response = await fetch('/api/budgets/current');
+    return parseResponse(response, budgetParse);
+}
+
 export async function saveBudget(budget: Model.ShortBudget): Promise<Result<Model.ShortBudget, Model.Problem>> {
     let url = '/api/budgets';
     let method = 'POST';

@@ -1,0 +1,68 @@
+Currency:
+  type: object
+  additionalProperties: false
+  description: |
+    A currency known to the system. The currency list is fixed data — there
+    is no create or delete operation, and only `active` can be changed.
+  required: [code, name, active, id]
+  properties:
+    id:
+      $ref: './common.yaml#/CurrencyId'
+    code:
+      type: string
+      pattern: '^[^\u0000]*$'
+      minLength: 3
+      maxLength: 3
+      description: ISO 4217 alpha-3 currency code.
+      example: EUR
+    name:
+      type: string
+      pattern: '^[^\u0000]*$'
+      description: Human friendly currency name.
+      example: "€"
+    active:
+      type: boolean
+      description: |
+        Whether this currency is in use.
+      example: true
+
+CurrencyUpdate:
+  type: object
+  additionalProperties: false
+  description: |
+    A currency update. Only `active` is written.
+
+    `code` and `name` have to be *present* — the body is read into the same object the
+    response is written from, and neither field is nullable there — but their values are
+    discarded, so they carry none of the constraints the response does. `id` may be
+    omitted entirely and is discarded too: the path parameter selects the currency.
+    Currencies cannot be created, renamed or deleted.
+  required: [code, name, active]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Ignored. The path parameter is what selects the currency.
+      example: 978
+    code:
+      type: string
+      description: Required, ignored. Currencies cannot be renamed.
+      example: EUR
+    name:
+      type: string
+      description: Required, ignored. Currencies cannot be renamed.
+      example: "€"
+    active:
+      type: boolean
+      description: |
+        Whether this currency is in use. The only field this operation writes.
+      example: true
+
+Currencies:
+  type: object
+  required: [currencies]
+  properties:
+    currencies:
+      type: array
+      items:
+        $ref: './currency.yaml#/Currency'

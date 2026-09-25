@@ -1,0 +1,262 @@
+BudgetPair:
+  type: object
+  additionalProperties: false
+  description: |
+    A budget deals with a predicted future and the actual present at the same
+    time, so most of its numbers come in pairs.
+  required: [actual, expected]
+  properties:
+    actual:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: Amount actually reached during budget execution.
+    expected:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: Amount planned to be reached during budget execution.
+
+BudgetState:
+  type: object
+  additionalProperties: false
+  description: |
+    Budget totals, all expressed in the primary currency.
+  required: [income, expense, allowed]
+  properties:
+    income:
+      allOf:
+        - $ref: './budget.yaml#/BudgetPair'
+      description: |
+        Expected: sum of the expected values of budget entries on income
+        accounts. Actual: sum of income account operations that happened during
+        the budget's validity period.
+    expense:
+      allOf:
+        - $ref: './budget.yaml#/BudgetPair'
+      description: |
+        Expected: sum of the expected values of budget entries on expense
+        accounts. Actual: sum of expense account operations that happened during
+        the budget's validity period.
+    allowed:
+      allOf:
+        - $ref: './budget.yaml#/BudgetPair'
+      description: |
+        Expected and actual change on expense account amounts for today. Zero
+        for a budget that is not the current one.
+
+Budget:
+  type: object
+  additionalProperties: false
+  description: |
+    A budget covering an inclusive date range. Budget ranges may not overlap and
+    must span at least two days.
+  required: [term_beginning, term_end]
+  properties:
+    id:
+      $ref: './common.yaml#/BudgetId'
+    term_beginning:
+      type: string
+      format: date
+      description: First day on which the budget is effective, inclusive.
+      example: '2017-02-04'
+    term_end:
+      type: string
+      format: date
+      description: Last day on which the budget is effective, inclusive.
+      example: '2017-02-26'
+    incoming_amount:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      readOnly: true
+      description: |
+        Sum of all asset account balances at the start of the term, in the
+        primary currency. Not fixed until `term_beginning` arrives..
+    outgoing_amount:
+      allOf:
+        - $ref: './budget.yaml#/BudgetPair'
+      readOnly: true
+      description: |
+        Sum of all asset account balances after budget completion, in the
+        primary currency.
+    state:
+      allOf:
+        - $ref: './budget.yaml#/BudgetState'
+      readOnly: true
+      description: Budget totals.
+
+Budgets:
+  type: object
+  required: [budgets, self, first, next, left]
+  properties:
+    budgets:
+      type: array
+      description: |
+        Budgets, ordered by `term_beginning` descending. Only `id`,
+        `term_beginning` and `term_end` are populated here — read a single
+        budget for the computed fields.
+      items:
+        $ref: './budget.yaml#/Budget'
+    self:
+      type: string
+      description: Cursor of the current page. Always present.
+      example: eyJsaW1pdCI6M30=
+    first:
+      type: string
+      description: Cursor of the first page. Empty string when not paging.
+      example: eyJsaW1pdCI6MywicG9pbnRlciI6MH0=
+    next:
+      type: string
+      description: |
+        Cursor of the following page. Empty string when not paging, when the
+        page is empty, or when `left` is zero.
+      example: eyJsaW1pdCI6MywicG9pbnRlciI6MjAyMjAxMDF9
+    left:
+      type: integer
+      format: int64
+      description: Number of items left after the current page.
+      example: 3
+
+BudgetEntry:
+  type: object
+  additionalProperties: false
+  description: |
+    A per-account line of a budget.
+
+    Entry lifecycle is fully automatic: entries are created with the budget,
+    deleted with it, and exist only for **income and expense** accounts — never
+    for asset accounts. Creating a new non-asset account retroactively adds a
+    corresponding entry to every existing budget. There is therefore no create
+    or delete operation, only update.
+
+    Only `distribution`, `expected_amount` and `dt` are writable.
+  required: [account_id, distribution, expected_amount, actual_amount]
+  properties:
+    id:
+      type: integer
+      format: int64
+      example: 291
+    account_id:
+      type: integer
+      format: int64
+      description: |
+        Account this entry budgets for. Each account appears at most once per
+        budget.
+      example: 2065
+    account:
+      allOf:
+        - $ref: './account.yaml#/Account'
+      readOnly: true
+      description: |
+        The account object itself. Server-populated, and present only when the
+        request asked for `embed=account`.
+    category_id:
+      type: integer
+      format: int64
+      readOnly: true
+      description: |
+        The related account's category.
+      example: 1
+    category:
+      allOf:
+        - $ref: './category.yaml#/Category'
+      readOnly: true
+      description: |
+        The category object itself — the related account's category.
+        Server-populated, and present only when the request asked for
+        `embed=account,category`.
+    dt:
+      type: string
+      format: date
+      description: |
+        Estimated payment date. Meaningful **only** for `SINGLE` distribution;
+        supplying it for `EVEN` or `PRORATED` is accepted but silently discarded,
+        and switching an entry away from `SINGLE` drops a previously stored
+        value.
+
+        A date outside the budget's term is
+        rejected with 409 `BUDGETENTRY_DT_OUT_OF_BUDGET`.
+      example: '2017-02-15'
+    distribution:
+      $ref: './common.yaml#/BudgetEntryMode'
+    expected_amount:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: |
+        Expected change on the account during the budget's term. Negative values
+        are rejected with 422 `BUDGETENTRY_IS_NEGATIVE`.
+      example: 1000
+    actual_amount:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      readOnly: true
+      description: |
+        Actual change on the account during the budget's term.
+      example: 50
+    allowed_spendings:
+      oneOf:
+        - type: number
+        - type: 'null'
+      readOnly: true
+      description: |
+        How much may still be spent today while staying within
+        `expected_amount`.
+      example: 5
+    spending_percent:
+      oneOf:
+        - type: number
+        - type: 'null'
+      readOnly: true
+      description: |
+        Ratio of actual to expected spending.
+      example: 2
+
+BudgetEntries:
+  type: object
+  required: [budget_entries]
+  properties:
+    budget_entries:
+      type: array
+      items:
+        $ref: './budget.yaml#/BudgetEntry'
+
+BudgetEntryTreeEntry:
+  type: object
+  description: |
+    One node of the budget entry tree.
+  required: [actual_amount, expected_amount, allowed_spendings, spending_percent, entries, categories]
+  properties:
+    id:
+      type: integer
+      format: int64
+      example: 2
+    name:
+      type: string
+      example: pets
+    actual_amount:
+      $ref: './common.yaml#/Money'
+    expected_amount:
+      $ref: './common.yaml#/Money'
+    allowed_spendings:
+      $ref: './common.yaml#/Money'
+    spending_percent:
+      $ref: './common.yaml#/Money'
+    entries:
+      type: array
+      description: Budget entries directly in this category.
+      items:
+        $ref: './budget.yaml#/BudgetEntry'
+    categories:
+      type: array
+      description: Sub-categories, recursively.
+      items:
+        $ref: './budget.yaml#/BudgetEntryTreeEntry'
+
+BudgetEntryTree:
+  type: object
+  description: |
+    The budget entry tree, split by account type.
+  required: [expense, income]
+  properties:
+    expense:
+      $ref: './budget.yaml#/BudgetEntryTreeEntry'
+    income:
+      $ref: './budget.yaml#/BudgetEntryTreeEntry'

@@ -4,13 +4,20 @@ const { int, expression } = require('pactum-matchers');
 describe('Account operations', () => {
     const e2e = pactum.e2e('Account operations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create account', async () => {
         await e2e.step('Post account')
             .spec('Create Account', { '@DATA:TEMPLATE@': 'Account:Expense:V1' })
             .stores('AccountID', 'id')
             .expectJson("name", "Rent")
             .expectJson("account_type", "EXPENSE")
-            .expectJsonMatch("id",int());
+            .expectJsonMatch("id",int())
+            .clean()
+            .delete('/accounts/{id}')
+            .withPathParams('id', '$S{AccountID}');
     });
 
     it('List accounts', async () => {
@@ -102,13 +109,28 @@ describe('Account operations', () => {
             .expectJsonMatch('accounts[*].id', expression('$S{AccountID}', '!$V.includes($S{AccountID})'));
     });
 
+    it('Accounts can be filtered by currency', async () => {
+        // {"currency_id":"978"} - the account is denominated in EUR
+        await e2e.step('Account is in its own currency list')
+            .spec('read')
+            .get('/accounts')
+            .withQueryParams({ q: '%7B%22currency_id%22%3A%22978%22%7D' })
+            .expectJsonMatch('accounts[*].id', expression('$S{AccountID}', '$V.includes($S{AccountID})'))
+            .expectJsonMatch('accounts[*].currency_id', expression('$V.every(id => id === 978)'));
+
+        // {"currency_id":"203"} - CZK, a currency this account does not use
+        await e2e.step('Account is not in another currency list')
+            .spec('read')
+            .get('/accounts')
+            .withQueryParams({ q: '%7B%22currency_id%22%3A%22203%22%7D' })
+            .expectJsonMatch('accounts[*].id', expression('$S{AccountID}', '!$V.includes($S{AccountID})'));
+    });
+
     it('Specific filtering ignores hidden flag', async () => {
         await e2e.step('Specific filtering ignores hidden flag')
             .spec('read')
             .get('/accounts')
             .withQueryParams({ q: '%7B%22name%22%3A%22Monthly%20rent%22%7D'})
             .expectJsonMatch('accounts[*].id', expression('$S{AccountID}', '$V.includes($S{AccountID})'));
-
-        await e2e.cleanup();
     });
 });

@@ -1,0 +1,101 @@
+Operation:
+  type: object
+  additionalProperties: false
+  description: |
+    A single entry of a transaction — one account's balance change.
+  required: [account_id, amount]
+  properties:
+    account_id:
+      type: integer
+      format: int64
+      description: |
+        Account whose balance this operation changes. Required on every operation
+        that survives the zero-amount drop: absent is rejected with 422
+        `TRANSACTION_DATA_INVALID`, an explicit `null` with 400 `REQUEST_BODY_INVALID`, and an id naming no account with 404
+        `ACCOUNT_NOT_FOUND`.
+      example: 1
+    amount:
+      allOf:
+        - $ref: './common.yaml#/Money'
+      description: |
+        Balance change. Operations with an amount of exactly zero are dropped on
+        submission — they are not stored and not returned.
+      example: 7.40
+    rate:
+      oneOf:
+        - type: number
+        - type: 'null'
+      description: |
+        Exchange rate applied to `amount` during balance validation.
+      example: 0.04
+    account:
+      allOf:
+        - $ref: './account.yaml#/Account'
+      readOnly: true
+      description: |
+        The account object itself. Server-populated, and present only when the
+        request asked for `embed=account`. An `account` object in a request body
+        is ignored; `account_id` is the writable half.
+
+Transaction:
+  type: object
+  additionalProperties: false
+  description: A double-entry transaction.
+  required: [timestamp, operations]
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Transaction id.
+      example: 42
+    timestamp:
+      $ref: './common.yaml#/LocalDateTime'
+    comment:
+      type: [string, 'null']
+      pattern: '^[^\u0000]*$'
+      description: |
+        Free-text description.
+      example: Salary payment
+    tags:
+      type: array
+      description: |
+        Tags associated with the transaction, as bare strings. Tags not seen
+        before are created implicitly.
+      items:
+        type: string
+        pattern: '^[^\u0000]*$'
+      example: [income, salary]
+    operations:
+      type: array
+      description: |
+        The content of the transaction.
+      items:
+        $ref: './transaction.yaml#/Operation'
+
+Transactions:
+  type: object
+  required: [transactions, self, first, next, left]
+  properties:
+    transactions:
+      type: array
+      items:
+        $ref: './transaction.yaml#/Transaction'
+    self:
+      type: string
+      description: Cursor of the current page. Always present.
+      example: eyJsaW1pdCI6M30=
+    first:
+      type: string
+      description: |
+        Cursor of the first page.
+      example: eyJsaW1pdCI6MywicG9pbnRlciI6MH0=
+    next:
+      type: string
+      description: |
+        Cursor of the following page.
+      example: eyJsaW1pdCI6MywicG9pbnRlciI6N30=
+    left:
+      type: integer
+      format: int64
+      description: Number of items left after the current page. Never negative.
+      example: 15

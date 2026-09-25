@@ -19,6 +19,14 @@ jobs:
         working-directory: ./api-test
         run: npm run lint
 
+  spec-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: Lint the OpenAPI specification
+        run: npx @stoplight/spectral-cli lint docs/openapi/openapi.yaml --ruleset docs/openapi/.spectral.yaml
+
   backend-lint:
     runs-on: ubuntu-latest
 
@@ -41,6 +49,7 @@ jobs:
     needs:
       - api-test-lint
       - backend-lint
+      - spec-lint
     services:
       postgres:
         image: postgres
@@ -73,13 +82,13 @@ jobs:
           sudo sysctl -w fs.file-max=262144
           sudo sysctl -w vm.max_map_count=262144
       - name: Start elasticsearch
-        run: docker run -d --name es -e "discovery.type=single-node" -e "http.publish_host=localhost" -e "http.publish_port=9200" -p 9200:9200 -p 9300:9300 -v ./dictionaries:/usr/share/elasticsearch/config/hunspell library/elasticsearch:7.16.2 
+        run: docker run -d --name es -e "discovery.type=single-node" -e "http.publish_host=localhost" -e "http.publish_port=9200"  -e ES_JAVA_OPTS="-Xms1g -Xmx1g"  -e ES_JAVA_HOME=/opt/java/openjdk -v "$JAVA_HOME_17_X64:/opt/java/openjdk:ro" -p 9200:9200 -p 9300:9300 -v ./dictionaries:/usr/share/elasticsearch/config/hunspell library/elasticsearch:7.16.2
       - name: Install dependencies
         working-directory: ./api-test
         run: npm ci
       - name: Start MDG service
         working-directory: ./backend
-        run: mvn --batch-mode --update-snapshots clean compile spring-boot:start
+        run: JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport mvn --batch-mode --update-snapshots clean compile spring-boot:start
       - name: Install API test dependencies
         working-directory: ./api-test
         run: npm ci
@@ -88,6 +97,24 @@ jobs:
       - name: Run API tests
         working-directory: ./api-test
         run: npx gulp test
+      - uses: astral-sh/setup-uv@v6
+      - name: Reset database for schemathesis
+        env:
+          PGPASSWORD: mdg
+        run: psql -h localhost -U mdg -d mdg -q -v ON_ERROR_STOP=1 -f docs/openapi/reset.sql
+      - name: Run schemathesis
+        continue-on-error: true
+        timeout-minutes: 20
+        env:
+          SKIP_RESET: '1'
+        run: docs/openapi/schemathesis.sh --phases examples,stateful,coverage,fuzzing --report junit,har
+      - name: Upload schemathesis report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schemathesis-report
+          path: schemathesis-report/
+          if-no-files-found: ignore
       - name: Stop MDG service
         if: always()
         working-directory: ./backend

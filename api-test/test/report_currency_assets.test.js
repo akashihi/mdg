@@ -6,6 +6,10 @@ const {stash} = require("pactum");
 describe('Assets by currency report test', () => {
     const e2e = pactum.e2e('Assets by currency report test');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Prepare accounts', async () => {
         await createAccountForTransaction(e2e);
     });
@@ -27,9 +31,25 @@ describe('Assets by currency report test', () => {
             .stores('UsdTotals','series[name=USD].data[0].y');
     });
 
+    // A granularity of 0 means the whole range in a single bucket, and a granularity wider than
+    // the range itself means the same thing.
+    it('Collapsing granularities produce a single bucket', async () => {
+        await e2e.step('Retrieve zero granularity report')
+            .spec('read')
+            .get("/reports/assets/currency?startDate=2017-03-01&endDate=2017-03-15&granularity=0");
+
+        await e2e.step('Retrieve oversized granularity report')
+            .spec('read')
+            .get("/reports/assets/currency?startDate=2017-03-01&endDate=2017-03-15&granularity=2147483647");
+    });
+
    it('Transaction updates simple report', async () => {
         await e2e.step('Create transaction')
-            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' });
+            .spec('Create Transaction', { '@DATA:TEMPLATE@': 'Transaction:Income:V1' })
+            .stores('TransactionID', 'id')
+            .clean()
+            .delete('/transactions/{id}')
+            .withPathParams('id', '$S{TransactionID}');
 
         await e2e.step('Force historical balances re index')
             .spec('update')
@@ -48,7 +68,5 @@ describe('Assets by currency report test', () => {
             .get("/reports/assets/currency?startDate=2017-03-01&endDate=2017-03-15&granularity=1")
             .expectJson('series[name=EUR].data[0].y', initialEurValue + 150)
             .expectJson('series[name=USD].data[0].y', initialUsdValue);
-
-        await e2e.cleanup();
     });
 });

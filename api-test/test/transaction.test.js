@@ -12,6 +12,9 @@ before(() => {
 
 describe('Transaction operations', () => {
     const e2e = pactum.e2e('Transaction operations');
+    after(async () => {
+        await e2e.cleanup();
+    });
 
     it('Get transactions count', async () => {
         await e2e.step('List transactions')
@@ -96,6 +99,11 @@ describe('Transaction operations', () => {
         await checkAccountsBalances(e2e, -150, 80, 70);
     });
 
+    it('Delete non-existent transaction', async () => {
+        await pactum.spec('expect error', { statusCode: 404, code: 'TRANSACTION_NOT_FOUND', instance: '/transactions/999999999' })
+            .delete('/transactions/999999999');
+    });
+
     it('Delete transaction', async () => {
         await e2e.step('Delete transaction')
             .spec('delete')
@@ -117,7 +125,5 @@ describe('Transaction operations', () => {
 
     it('Transaction deletion reverts accounts balances', async () => {
         await checkAccountsBalances(e2e, 0, 0, 0);
-
-        await e2e.cleanup();
     });
 });

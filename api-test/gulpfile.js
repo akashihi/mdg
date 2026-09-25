@@ -7,7 +7,7 @@ const jshint = require('gulp-jshint');
 
 function standardjs() {
     return gulp.src(['test/**/*.js'])
-        .pipe(standard({fix: true, env: "mocha"}))
+        .pipe(standard({fix: true, env: ["mocha", "node", "browser"]}))
         .pipe(standard.reporter('default', {
             breakOnError: true,
             quiet: true
@@ -40,5 +40,13 @@ function test_api() {
         .pipe(mocha({reporter: 'list'}));
 }
 
+// Removes everything the suite creates, without running any test. The suite does
+// this for itself around every run; this task is for cleaning up a database that
+// an earlier, failing run already polluted.
+function clean_api() {
+    return require('./test/cleanup').purge();
+}
+
 exports.default = series(standardjs, jshint_task, lint)
 exports.test = test_api
+exports.clean = clean_api

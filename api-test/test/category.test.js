@@ -4,6 +4,10 @@ const { int, expression } = require('pactum-matchers');
 describe('Category operations', () => {
     const e2e = pactum.e2e('Category operations');
 
+    after(async () => {
+        await e2e.cleanup();
+    });
+
     it('Create category', async () => {
         await e2e.step('Post category')
             .spec('Create Category', { '@DATA:TEMPLATE@': 'Category:Basic:V1' })
@@ -44,6 +48,11 @@ describe('Category operations', () => {
             .expectJson('name', 'Salary');
     });
 
+    it('Delete non-existent category', async () => {
+        await pactum.spec('expect error', { statusCode: 404, code: 'CATEGORY_NOT_FOUND', instance: '/categories/999999999' })
+            .delete('/categories/999999999');
+    });
+
     it('Delete category', async () => {
         await e2e.step('Delete category')
             .spec('delete')
@@ -54,7 +63,5 @@ describe('Category operations', () => {
             .spec('read')
             .get('/categories')
             .expectJsonMatch('categories[*].id', expression('$S{CategoryID}', '!$V.includes($S{CategoryID})'));
-
-        await e2e.cleanup();
     });
 });

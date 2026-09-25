@@ -14,6 +14,7 @@ MDG (acronym of Moi.Den.Gi, that means "my money" in Russian) is a truly persona
   - [Docker compose](#docker-compose)
   - [From source](#deploy-from-source-codes)
 - [Usage](#usage)
+- [API documentation](#api-documentation)
 - [Development](#development)
 - [Versioning](#versioning)
 - [Authors](#authors)
@@ -172,6 +173,21 @@ Check that everything works by accessing web user interface.
 ## Usage
 
 TBD
+
+## API documentation
+
+MDG exposes a REST API, described by an OpenAPI 3.1 specification at
+[docs/openapi/openapi.yaml](docs/openapi/openapi.yaml). It covers every endpoint
+the backend serves and is the only specification of that API.
+
+Render it in a browser with:
+
+```
+npx @redocly/cli preview-docs docs/openapi/openapi.yaml
+```
+
+The specification is written and maintained by hand — nothing generates it from
+the code, so a change to a controller has to be mirrored there in the same commit.
 
 ## Development
 

@@ -1,14 +1,22 @@
 const pactum = require('pactum');
 const {createAccountForTransaction} = require('./transaction.handler');
+const { createTracker } = require('./cleanup');
+
+const tracker = createTracker();
+
+after(async () => {
+    await tracker.cleanup();
+});
 
 it('Transaction with same currency is rebalanced precisely on currency change', async () => {
     await createAccountForTransaction();
-    const usdAccountId = await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:USD:V1'})
+    tracker.accountsFromStore('IncomeAccountID', 'AssetAccountID', 'ExpenseAccountID');
+    const usdAccountId = tracker.account(await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:USD:V1'})
         .stores('AssetUSDAccountID', 'id')
-        .returns('id');
+        .returns('id'));
 
-    const transactionId = await pactum.spec('Create Transaction', {'@DATA:TEMPLATE@': 'Transaction:MultiCurrency:V1'})
-        .returns('id');
+    const transactionId = tracker.transaction(await pactum.spec('Create Transaction', {'@DATA:TEMPLATE@': 'Transaction:MultiCurrency:V1'})
+        .returns('id'));
 
     await pactum.spec('update')
         .put('/accounts/{id}')
@@ -29,15 +37,15 @@ it('Transaction with same currency is rebalanced precisely on currency change', 
 }).timeout(15000);
 
 it('Transaction with default currency is rebalanced correctly on currency change', async () => {
-    const accountId = await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:V1'})
+    const accountId = tracker.account(await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:V1'})
         .stores('AssetAccountID', 'id')
-        .returns('id');
-    await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:USD:V1'})
+        .returns('id'));
+    tracker.account(await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:USD:V1'})
         .stores('AssetUSDAccountID', 'id')
-        .returns('id');
+        .returns('id'));
 
-    const transactionId = await pactum.spec('Create Transaction', {'@DATA:TEMPLATE@': 'Transaction:MultiCurrency:V1'})
-        .returns('id');
+    const transactionId = tracker.transaction(await pactum.spec('Create Transaction', {'@DATA:TEMPLATE@': 'Transaction:MultiCurrency:V1'})
+        .returns('id'));
 
     await pactum.spec('update')
         .put('/accounts/{id}')
@@ -58,28 +66,28 @@ it('Transaction with default currency is rebalanced correctly on currency change
 }).timeout(15000);
 
 it('Transaction with multiple currencies have rate recalculated', async () => {
-    const usdAccountId = await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:USD:V1'})
+    const usdAccountId = tracker.account(await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:USD:V1'})
         .stores('AssetUSDAccountID', 'id')
-        .returns('id');
-    const eurAccountId = await pactum.spec('Create Account', {
+        .returns('id'));
+    const eurAccountId = tracker.account(await pactum.spec('Create Account', {
         '@DATA:TEMPLATE@': 'Account:Expense:USD:V1',
         '@OVERRIDES@': {
             currency_id: 978
         }
     })
         .stores('AssetEURAccountID', 'id')
-        .returns('id');
+        .returns('id'));
 
-    const czkAccountId = await pactum.spec('Create Account', {
+    const czkAccountId = tracker.account(await pactum.spec('Create Account', {
         '@DATA:TEMPLATE@': 'Account:Expense:USD:V1',
         '@OVERRIDES@': {
             currency_id: 203
         }
     })
         .stores('AssetCZKAccountID', 'id')
-        .returns('id');
+        .returns('id'));
 
-    await pactum.spec('Create Transaction', {
+    tracker.transaction(await pactum.spec('Create Transaction', {
                 "timestamp": "2017-02-06T16:45:36",
                 "comment": "Multi currency",
                 "tags": [
@@ -104,7 +112,8 @@ it('Transaction with multiple currencies have rate recalculated', async () => {
                     }
                 ]
     })
-        .stores('TransactionID', 'id');
+        .stores('TransactionID', 'id')
+        .returns('id'));
 
     await pactum.spec('update')
         .put('/accounts/{id}')
@@ -133,3 +142,23 @@ it('Transaction with multiple currencies have rate recalculated', async () => {
         .withPathParams('id', '$S{TransactionID}')
         .expectJsonLike('operations[*].rate', [1.19, 1, 1]);
 }).timeout(15000);
+
+it('Currency change to an unknown currency is not found', async () => {
+    const accountId = tracker.account(await pactum.spec('Create Account', {'@DATA:TEMPLATE@': 'Account:Expense:V1'})
+        .returns('id'));
+
+    await pactum.spec('expect error', { statusCode: 404, code: 'CURRENCY_NOT_FOUND', instance: `/accounts/${accountId}` })
+        .put('/accounts/{id}')
+        .withPathParams('id', accountId)
+        .withJson({
+            '@DATA:TEMPLATE@': 'Account:Expense:V1',
+            '@OVERRIDES@': {
+                currency_id: 1
+            }
+        });
+
+    await pactum.spec('read')
+        .get('/accounts/{id}')
+        .withPathParams('id', accountId)
+        .expectJson('currency_id', 978);
+});

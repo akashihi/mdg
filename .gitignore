@@ -108,3 +108,10 @@ fabric.properties
 
 spring-boot-ehcache/
 *.ign
+
+.mcp.json
+CLAUDE.md
+codegraph.json
+
+
+.schemathesis/

@@ -1,0 +1,307 @@
+# Schemathesis configuration for the MDG API.
+
+base-url = "http://localhost:8080"
+
+# Values the generator has to use for two properties it cannot invent: an existing currency
+# code and a real calendar date. They are *dictionaries* rather than literal `parameters`
+# pins because the two substitute differently where it matters. A literal pin re-creates a
+# property the negative phase removed (`_walk_substitute(..., create_missing=True)` in
+# `generation/body_overrides.py`), so a valid request goes out under a `required`-violation
+# report and the API's correct 201 is filed as "API accepted schema-violating request". A
+# dictionary binding walks the same path *without* `create_missing`, and is inert in negative
+# generation altogether — `_classify_entries` keeps only entries that violate the schema, and
+# a pinned value never does. See MIGRATION-NOTES.md #38.
+[dictionaries.currency-ids]
+values = [978]
+
+# The same code as a string, for `currency.primary`, whose `value` is a string like every
+# other setting's.
+[dictionaries.currency-codes]
+values = ["978"]
+
+[dictionaries.timestamps]
+values = ["2017-02-04T16:45:36"]
+
+# Report range bounds for the two events reports below. The widest span is 364 days, and
+# `2017-02-04` is the `timestamps` date, so a range that covers it has data to report.
+[dictionaries.report-dates]
+values = ["2017-01-01", "2017-02-04", "2017-12-31"]
+
+# The two maintenance triggers read no body and declare no `consumes`, so any body — or none —
+# is answered 202 and there is nothing a negative case could get rejected for.
+[[operations]]
+include-name = "PUT /settings/mnt.transaction.reindex"
+request-timeout = 300
+[operations.checks]
+negative_data_rejection.enabled = false
+
+[[operations]]
+include-name = "PUT /settings/mnt.reporting.refresh"
+request-timeout = 300
+[operations.checks]
+negative_data_rejection.enabled = false
+
+# MDG answers business-rule rejections with 412 and data-validation rejections with 422,
+# and 412 is in the default status list of neither `positive_data_acceptance` nor
+# `negative_data_rejection`. That reads wrong in both directions, so the operations that can
+# reach a 412 carry an allowance for both checks:
+#
+#   - `positive_data_acceptance` — a correct rejection of a schema-compliant body reads as
+#     "API rejected schema-compliant request". Several of these rules cannot be expressed in
+#     OpenAPI at all: `term_end` after `term_beginning` is cross-field,
+#     TRANSACTION_NOT_BALANCED is arithmetic over an array, and BUDGET_OVERLAPPING depends on
+#     rows this run created earlier.
+#   - `negative_data_rejection` — a correct *rejection* of a schema-violating body reads as
+#     "API accepted schema-violating request", quoting the 412 Problem body back in the
+#     report. The check asks only whether the request was rejected, and a 412 is a rejection;
+#     it is simply not in the list schemathesis ships. See MIGRATION-NOTES.md #31.
+#
+# Each allowance below is derived from the MdgException throw sites the operation can
+# actually reach; `expected-statuses` replaces the default rather than extending it, so the
+# whole list is spelled out every time. The negative lists are therefore schemathesis's own
+# twelve defaults plus 412, and nothing else.
+#
+# 5xx is deliberately absent from every `positive_data_acceptance` allowance: `server_error`
+# is the check that should report a 500, and listing it there only hides one. It stays in the
+# negative lists because it is part of that check's own default and `server_error` reports a
+# 500 independently of either. See MIGRATION-NOTES.md #25 and #26.
+
+# BUDGET_INVALID_TERM, BUDGET_SHORT_RANGE, BUDGET_OVERLAPPING — BudgetService.kt:35-47.
+[[operations]]
+include-name = "POST /budgets"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+[[operations]]
+include-name = "PUT /budgets/{id}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+# BUDGETENTRY_IS_NEGATIVE — BudgetService.kt:220.
+[[operations]]
+include-name = "PUT /budgets/{budgetId}/entries/{entryId}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "422"]
+
+# ACCOUNT_NONASSET_INVALIDFLAG and CATEGORY_INVALID_TYPE (412), ACCOUNT_DATA_INVALID and
+# ACCOUNT_CURRENCY_ASSET (422) — AccountService.kt:25-45 and :82-112.
+#
+# The stateful phase walks the OpenAPI links in docs/openapi/openapi.yaml, so it needs
+# `POST /accounts` to actually succeed: a generated `currency_id` in 1..999 usually names
+# a code that is not in the currency table (`CURRENCY_NOT_FOUND`), and a generated
+# `favorite`/`operational` on a non-asset account is `ACCOUNT_NONASSET_INVALIDFLAG`.
+# These pins apply to generated bodies only — explicit examples are never overridden.
+#
+# `currency_id` is bound to a dictionary, not pinned literally, because it is a *required*
+# property: a literal pin puts it back after the negative phase removes it. `favorite` and
+# `operational` stay literal — a dictionary entry may only be a string, integer or number,
+# never a boolean — and neither is required, so neither can produce that artifact.
+[[operations]]
+include-name = "POST /accounts"
+[operations.parameters]
+"body.currency_id" = { dictionary = "currency-ids" }
+"body.favorite" = false
+"body.operational" = false
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412", "422"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+[[operations]]
+include-name = "PUT /accounts/{id}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412", "422"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+# CATEGORY_DATA_INVALID, CATEGORY_INVALID_TYPE, CATEGORY_TREE_CYCLED — CategoryService.kt:18-23
+# and :78-87. On create it is reached through a generated `parent_id` naming no category.
+[[operations]]
+include-name = "POST /categories"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+[[operations]]
+include-name = "PUT /categories/{id}"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+# TRANSACTION_EMPTY, _ZERO_RATE, _NO_DEFAULT_RATE, _AMBIGUOUS_RATE, _NOT_BALANCED —
+# TransactionService.kt:57-77.
+#
+# `timestamp` is bound to a dictionary for the same reason `body.currency_id` is: it is a
+# required property, so a literal pin would re-create it after the negative phase drops it.
+# It needs a value at all because `Transaction.ts` is a LocalDateTime, and
+# common.yaml#/LocalDateTime can only constrain the *shape* of the string — a generated value
+# matching that pattern is still free to be 9999-99-99T99:99, which is a 400
+# REQUEST_BODY_INVALID. `format: date-time` is not the answer either: it mandates an
+# RFC 3339 offset, which Jackson's LocalDateTimeDeserializer rejects outright.
+[[operations]]
+include-name = "POST /transactions"
+[operations.parameters]
+"body.timestamp" = { dictionary = "timestamps" }
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+[[operations]]
+include-name = "PUT /transactions/{id}"
+[operations.parameters]
+"body.timestamp" = { dictionary = "timestamps" }
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "412"]
+[operations.checks.negative_data_rejection]
+expected-statuses = ["400", "401", "403", "404", "405", "406", "409", "412", "415", "422", "428", "429", "5xx"]
+
+# `ts` is a LocalDateTime path variable, and common.yaml#/LocalDateTime constrains its shape
+# only: `2017-02-30T00:00` matches the pattern and is still 400 REQUEST_PARAMETER_INVALID. Bound
+# to the `timestamps` dictionary for the same reason `body.timestamp` is above; a binding is
+# inert in negative generation, so a pattern-violating `ts` still gets sent and rejected. No
+# 400 allowance on `positive_data_acceptance` — that would hide a real rejection. See
+# MIGRATION-NOTES.md #44.
+[[operations]]
+include-name = "GET /rates/{ts}"
+[operations.parameters]
+"path.ts" = { dictionary = "timestamps" }
+
+[[operations]]
+include-name = "GET /rates/{ts}/{from}/{to}"
+[operations.parameters]
+"path.ts" = { dictionary = "timestamps" }
+
+# `eventsByAccountReport` (ReportService.kt:126) runs one SQL query per bucket, so a generated
+# range such as 0067-01-03..3377-11-01 at granularity 1 is over a million queries and a read
+# timeout, not a finding. The bound is cross-parameter — `endDate - startDate` — which OpenAPI
+# cannot express, so the dates are drawn from `report-dates` instead. Drawing both from one
+# dictionary still produces same-day and reversed ranges. `granularity` stays free:
+# `effectiveGranularity` clamps it to the span, so it cannot enlarge the work. No
+# `request-timeout` bump, which would hide the cost rather than bound it. The binding is inert
+# in negative generation, so malformed dates are still sent and rejected. See
+# MIGRATION-NOTES.md #45.
+[[operations]]
+include-name = "GET /reports/income/events"
+[operations.parameters]
+"query.startDate" = { dictionary = "report-dates" }
+"query.endDate" = { dictionary = "report-dates" }
+
+[[operations]]
+include-name = "GET /reports/expense/events"
+[operations.parameters]
+"query.startDate" = { dictionary = "report-dates" }
+"query.endDate" = { dictionary = "report-dates" }
+
+# SETTING_DATA_INVALID — SettingService.kt:39. A generated value almost never names a
+# currency that exists in the currency table, so `value` is bound to `currency-codes`; the
+# binding is inert in negative generation, so an unknown code is still sent and rejected, and
+# the 422 allowance stays for exactly that case. The three sibling settings need no allowance:
+# `ui.transaction.closedialog` is already pinned down by an enum in its schema, and neither
+# `ui.language` nor `ui.overviewpanel.widgets` validates its value at all.
+[[operations]]
+include-name = "PUT /settings/currency.primary"
+[operations.parameters]
+"body.value" = { dictionary = "currency-codes" }
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "401", "403", "404", "409", "422"]
+
+# `mnt.transaction.reindex` and `mnt.reporting.refresh` are maintenance triggers, not rows in
+# the `SETTING` table, so a read of either is a 404 by construction and the specification
+# documents nothing else for them. They exist as reads only because every `/settings/*` GET is
+# served by one handler, and documenting them is what keeps the `Allow` header consistent with
+# the declared methods on those two paths — see MIGRATION-NOTES.md #40. There is no "realistic
+# parameter value" that could make them succeed, which is what the `missing_test_data` warning
+# asks for, so it is switched off for exactly these two operations rather than answered.
+[[operations]]
+include-name = "GET /settings/mnt.transaction.reindex"
+warnings = false
+
+[[operations]]
+include-name = "GET /settings/mnt.reporting.refresh"
+warnings = false
+
+# `/accounts/tree`, `/budgets/current` and `/budgets/{budgetId}/entries/tree` are matched by
+# their sibling `{id}` mappings as well, so Spring really does route `PUT` — and `DELETE` on
+# the first two — to `AccountController.update`, `BudgetController.update`/`delete` and
+# `BudgetController.updateEntry`. The literal segment is not a number, so the path variable
+# fails to convert and every one of them is that resource's own 404 (MIGRATION-NOTES #8),
+# before any service is reached. They are documented for the same reason the two `mnt.*` reads
+# above are: the `Allow` header is the union of every mapping that matches the path, and
+# `unsupported_method` only checks it once the status is a 405. See MIGRATION-NOTES #42.
+#
+# As with `mnt.*` there is no realistic parameter value that could make any of them succeed,
+# which is what `missing_test_data` asks for, so the warning is switched off rather than
+# answered. No `positive_data_acceptance` allowance is needed: 404 is in that check's default
+# list, and a generated body with the vendor content type lands exactly there.
+[[operations]]
+include-name = "PUT /accounts/tree"
+warnings = false
+
+[[operations]]
+include-name = "DELETE /accounts/tree"
+warnings = false
+
+[[operations]]
+include-name = "PUT /budgets/current"
+warnings = false
+
+[[operations]]
+include-name = "DELETE /budgets/current"
+warnings = false
+
+[[operations]]
+include-name = "PUT /budgets/{budgetId}/entries/tree"
+warnings = false
+
+# A generated `cursor` is a schema-conforming string but not a cursor this API ever issued,
+# so 422 CURSOR_DATA_INVALID is the correct answer and `positive_data_acceptance` would
+# otherwise read it as an API rejecting valid data. OpenAPI has no way to say "only values
+# the server handed out", so the check has to allow it. The `next` self-links on these two
+# operations are what make the stateful phase follow real, server-issued cursors as well.
+[[operations]]
+include-name = "GET /transactions"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "422"]
+
+[[operations]]
+include-name = "GET /budgets"
+[operations.checks.positive_data_acceptance]
+expected-statuses = ["2xx", "422"]
+
+# `allow-extra-parameters` governs query and header parameters only — unknown *body*
+# properties are held back by `additionalProperties: false` in the schemas instead, which the
+# spec declares on every object reachable from a request body. Note that is a deliberately
+# stricter contract than the server enforces: MDG's ObjectMapper has FAIL_ON_UNKNOWN_PROPERTIES
+# off, so it silently ignores unknown body properties rather than rejecting them. Saying so in
+# the schema is what stops the generator burying real failures under junk fields at every
+# nesting level. See MIGRATION-NOTES.md #28.
+[generation]
+# `additionalProperties: false` in the schemas is a contract for clients, not a claim about
+# the server: MDG's ObjectMapper has FAIL_ON_UNKNOWN_PROPERTIES off and answers an unknown
+# body property with 201, not 400. Left at its default of `true`, `negative_data_rejection`
+# would negate that keyword, send a body with an extra property and demand a 4xx it can never
+# get. Turning it off here keeps `additionalProperties` out of the negative phase entirely,
+# which is the only reason the schemas can state it. See MIGRATION-NOTES.md #28.
+allow-extra-parameters = false
+
+# Scenario count of the stateful phase — the knob that trades runtime against how often each
+# linked operation is reached. It has to live in this section: `[phases.<phase>.generation]`
+# parses without complaint, but `generation_for()` drops it, because the merged phase config
+# reports `_is_default` (`config/_projects.py`), so a generation knob written under a phase
+# never reaches the run. Verified against schemathesis 4.27.3; a `mode = "positive"` that used
+# to sit there was inert for the same reason, and the stateful phase has always generated
+# negative cases as well. See MIGRATION-NOTES.md #38.
+max-examples = 75
+
+# Longer scenarios so a created resource is read and updated before the link that deletes it
+# fires. `max-steps` is read straight from this section, so unlike a generation knob it does
+# take effect here.
+[phases.stateful]
+max-steps = 12

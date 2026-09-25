@@ -10,18 +10,27 @@ import org.springframework.data.elasticsearch.core.query.Criteria
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
 
 @Service
 open class IndexingService(private val elasticsearchOperations: ElasticsearchOperations, private val objectMapper: ObjectMapper, private val transactionRepository: TransactionRepository) {
     @Transactional(readOnly = true)
     open fun reIndex(language: String) {
         elasticsearchOperations.indexOps(TransactionDocument::class.java).delete()
-        val settingsStream = IndexingService::class.java.classLoader.getResourceAsStream("elasticsearch/settings.$language.json")
+        // ui.language is not validated, so a locale without its own analyzer settings gets the default ones
+        val settingsStream = settingsFor(language) ?: settingsFor(DEFAULT_LANGUAGE)
         val typeRef = object : TypeReference<HashMap<String, Any>>() {}
         val settings: Map<String, Any> = objectMapper.readValue(settingsStream, typeRef)
         elasticsearchOperations.indexOps(TransactionDocument::class.java).create(settings)
         elasticsearchOperations.indexOps(TransactionDocument::class.java).putMapping(TransactionDocument::class.java)
         transactionRepository.streamAllBy().forEach { tx: Transaction? -> storeTransaction(tx) }
+    }
+
+    private fun settingsFor(language: String): InputStream? {
+        if (!language.matches(LANGUAGE_PATTERN)) {
+            return null
+        }
+        return IndexingService::class.java.classLoader.getResourceAsStream("elasticsearch/settings.$language.json")
     }
 
     open fun storeTransaction(tx: Transaction?) {
@@ -42,5 +51,10 @@ open class IndexingService(private val elasticsearchOperations: ElasticsearchOpe
         val q = CriteriaQuery(Criteria("tags").matches(tag))
         return elasticsearchOperations.search(q, TransactionDocument::class.java).stream().map { obj: SearchHit<TransactionDocument?> -> obj.id }
             .map { s: String -> s.toLong() }.toList()
+    }
+
+    companion object {
+        private const val DEFAULT_LANGUAGE = "en-US"
+        private val LANGUAGE_PATTERN = Regex("[A-Za-z-]+")
     }
 }

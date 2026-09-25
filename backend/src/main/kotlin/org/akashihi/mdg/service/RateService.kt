@@ -1,6 +1,7 @@
 package org.akashihi.mdg.service
 
 import com.jayway.jsonpath.JsonPath
+import org.akashihi.mdg.api.v1.MdgException
 import org.akashihi.mdg.dao.RateRepository
 import org.akashihi.mdg.entity.Currency
 import org.akashihi.mdg.entity.Rate
@@ -23,11 +24,17 @@ import javax.transaction.Transactional
 open class RateService(private val currencyService: CurrencyService, private val rateRepository: RateRepository, private val settingService: SettingService) {
     open fun listForTs(dt: LocalDateTime): Collection<Rate> = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanOrderByFromAscToAsc(dt, dt)
 
-    open fun getPair(dt: LocalDateTime, from: Long, to: Long): Rate = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(dt, dt, from, to) ?: Rate(dt, dt, from, to, BigDecimal.ONE, -1L)
+    private fun findPair(dt: LocalDateTime, from: Long, to: Long): Rate = rateRepository.findByBeginningLessThanEqualAndEndGreaterThanAndFromEqualsAndToEquals(dt, dt, from, to) ?: Rate(dt, dt, from, to, BigDecimal.ONE, -1L)
 
-    open fun getPair(dt: LocalDateTime, from: Currency, to: Currency): Rate = this.getPair(dt, from.id ?: -1, to.id ?: -1)
+    open fun getPair(dt: LocalDateTime, from: Long, to: Long): Rate {
+        currencyService[from] ?: throw MdgException("CURRENCY_NOT_FOUND")
+        currencyService[to] ?: throw MdgException("CURRENCY_NOT_FOUND")
+        return findPair(dt, from, to)
+    }
 
-    open fun getCurrentRateForPair(from: Currency, to: Currency): Rate = this.getPair(LocalDateTime.now(), from.id ?: -1, to.id ?: -1)
+    open fun getPair(dt: LocalDateTime, from: Currency, to: Currency): Rate = this.findPair(dt, from.id ?: -1, to.id ?: -1)
+
+    open fun getCurrentRateForPair(from: Currency, to: Currency): Rate = this.findPair(LocalDateTime.now(), from.id ?: -1, to.id ?: -1)
 
     open fun toCurrentDefaultCurrency(from: Currency, amount: BigDecimal): BigDecimal {
         val primaryCurrency = settingService.currentCurrencyPrimary() ?: return amount

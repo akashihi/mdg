@@ -38,7 +38,7 @@ class SettingController(private val settingService: SettingService, private val 
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun updateUiLanguage(@RequestBody setting: Setting): Setting = settingService.updateUiLanguage(setting.value)
 
-    @PutMapping(value = ["/settings/mnt.transaction.reindex"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
+    @PutMapping(value = ["/settings/mnt.transaction.reindex"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun transactionReindex(): Setting {
         val language = settingService["ui.language"]?.let { it.value } ?: "en"
@@ -46,7 +46,7 @@ class SettingController(private val settingService: SettingService, private val 
         return Setting("mnt.transaction.reindex", "true")
     }
 
-    @PutMapping(value = ["/settings/mnt.reporting.refresh"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
+    @PutMapping(value = ["/settings/mnt.reporting.refresh"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun reportingRefresh(): Setting {
         reportService.refreshMQT()

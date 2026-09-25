@@ -21,6 +21,9 @@ import javax.persistence.PersistenceContext
 open class AccountService(private val accountRepository: AccountRepository, private val budgetService: BudgetService, private val categoryRepository: CategoryRepository, private val currencyRepository: CurrencyRepository, private val transactionService: TransactionService, private val operationRepository: OperationRepository, @PersistenceContext private val em: EntityManager) {
     @Transactional
     open fun create(account: Account): Account {
+        if (account.name.isNullOrBlank()) {
+            throw MdgException("ACCOUNT_DATA_INVALID")
+        }
         if (account.accountType != AccountType.ASSET) {
             if (account.operational == true) {
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
@@ -34,7 +37,8 @@ open class AccountService(private val accountRepository: AccountRepository, priv
             account.category = defaultCategory
             account.categoryId = defaultCategory.id
         }
-        val currency = currencyRepository.findByIdOrNull(account.currencyId) ?: throw MdgException("CURRENCY_NOT_FOUND")
+        val currencyId = account.currencyId ?: throw MdgException("ACCOUNT_DATA_INVALID")
+        val currency = currencyRepository.findByIdOrNull(currencyId) ?: throw MdgException("CURRENCY_NOT_FOUND")
         account.currency = currency
         account.categoryId?.also {
             val category = categoryRepository.findByIdOrNull(account.categoryId) ?: throw MdgException("CATEGORY_NOT_FOUND")
@@ -71,11 +75,15 @@ open class AccountService(private val accountRepository: AccountRepository, priv
     @Transactional
     open fun update(id: Long, newAccount: Account): Account? {
         val account = accountRepository.findByIdOrNull(id) ?: return null
+        val newCurrencyId = newAccount.currencyId ?: throw MdgException("ACCOUNT_DATA_INVALID")
         if (newAccount.hidden != null) {
             account.hidden = newAccount.hidden
         }
-        if (newAccount.name != null) {
-            account.name = newAccount.name
+        newAccount.name?.also {
+            if (it.isBlank()) {
+                throw MdgException("ACCOUNT_DATA_INVALID")
+            }
+            account.name = it
         }
         if (newAccount.categoryId == null) {
             account.category = null
@@ -92,15 +100,15 @@ open class AccountService(private val accountRepository: AccountRepository, priv
         if (account.accountType === AccountType.ASSET) {
             account.favorite = newAccount.favorite
             account.operational = newAccount.operational
-            if (account.currency!!.id != newAccount.currencyId) {
+            if (account.currency!!.id != newCurrencyId) {
                 throw MdgException("ACCOUNT_CURRENCY_ASSET")
             }
         } else {
-            if (account.currency!!.id != newAccount.currencyId) {
-                val currencyValue = currencyRepository.findByIdOrNull(newAccount.currencyId)
-                currencyValue?.also { transactionService.updateTransactionsCurrencyForAccount(account, it) }
-                currencyValue?.also { budgetService.updateCurrencyForAccount(account, it) }
-                currencyValue?.also { account.currency = it }
+            if (account.currency!!.id != newCurrencyId) {
+                val currencyValue = currencyRepository.findByIdOrNull(newCurrencyId) ?: throw MdgException("CURRENCY_NOT_FOUND")
+                transactionService.updateTransactionsCurrencyForAccount(account, currencyValue)
+                budgetService.updateCurrencyForAccount(account, currencyValue)
+                account.currency = currencyValue
             }
             if (newAccount.favorite == true || newAccount.operational == true) {
                 throw MdgException("ACCOUNT_NONASSET_INVALIDFLAG")
