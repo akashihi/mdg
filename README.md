@@ -188,7 +188,6 @@ npx @redocly/cli preview-docs docs/openapi/openapi.yaml
 
 The specification is written and maintained by hand — nothing generates it from
 the code, so a change to a controller has to be mirrored there in the same commit.
-See [docs/openapi/README.md](docs/openapi/README.md) for how it is organised.
 
 ## Development
 
