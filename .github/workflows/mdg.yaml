@@ -82,7 +82,7 @@ jobs:
           sudo sysctl -w fs.file-max=262144
           sudo sysctl -w vm.max_map_count=262144
       - name: Start elasticsearch
-        run: docker run -d --name es -e "discovery.type=single-node" -e "http.publish_host=localhost" -e "http.publish_port=9200" -p 9200:9200 -p 9300:9300 -v ./dictionaries:/usr/share/elasticsearch/config/hunspell library/elasticsearch:7.16.2 
+        run: docker run -d --name es -e "discovery.type=single-node" -e "http.publish_host=localhost" -e "http.publish_port=9200"  -e ES_JAVA_OPTS="-Xms1g -Xmx1g"  -e ES_JAVA_HOME=/opt/java/openjdk -v "$JAVA_HOME_17_X64:/opt/java/openjdk:ro" -p 9200:9200 -p 9300:9300 -v ./dictionaries:/usr/share/elasticsearch/config/hunspell library/elasticsearch:7.16.2
       - name: Install dependencies
         working-directory: ./api-test
         run: npm ci
