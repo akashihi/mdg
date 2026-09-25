@@ -88,7 +88,7 @@ jobs:
         run: npm ci
       - name: Start MDG service
         working-directory: ./backend
-        run: mvn --batch-mode --update-snapshots clean compile spring-boot:start
+        run: JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport mvn --batch-mode --update-snapshots clean compile spring-boot:start
       - name: Install API test dependencies
         working-directory: ./api-test
         run: npm ci
