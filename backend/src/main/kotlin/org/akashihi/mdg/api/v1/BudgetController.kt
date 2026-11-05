@@ -109,7 +109,7 @@ open class BudgetController(private val budgetService: BudgetService, private va
         var first = ""
         var next = ""
         if (limit != null || cursor != null) { // In both cases we are in paging mode, either for the first page or for the subsequent pages
-            val firstCursor = BudgetCursor(budgetCursor.limit, 0L)
+            val firstCursor = BudgetCursor(budgetCursor.limit, null)
             first = cursorHelper.cursorToString(firstCursor) ?: ""
             next = if (budgets.items.isEmpty() || budgets.left == 0L) {
                 "" // We may have no items at all or no items left, so no need to find next cursor

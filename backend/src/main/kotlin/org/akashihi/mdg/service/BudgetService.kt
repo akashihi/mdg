@@ -83,7 +83,7 @@ open class BudgetService(private val accountRepository: AccountRepository, priva
 
     @Transactional
     open fun list(limit: Int?, pointer: Long?): ListResult<Budget> {
-        val sorting = Sort.by("beginning").descending()
+        val sorting = Sort.by("id").descending()
         if (limit == null) {
             return ListResult(budgetRepository.findAll(sorting), 0L)
         }

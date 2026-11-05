@@ -88,12 +88,12 @@ Transactions:
       type: string
       description: |
         Cursor of the first page.
-      example: eyJsaW1pdCI6MywicG9pbnRlciI6MH0=
+      example: eyJsaW1pdCI6M30=
     next:
       type: string
       description: |
         Cursor of the following page.
-      example: eyJsaW1pdCI6MywicG9pbnRlciI6N30=
+      example: eyJsaW1pdCI6MywicG9pbnRlciI6NywicG9pbnRlclRzIjoiMjAxNy0wMi0wNFQxNjo0NTozNiJ9
     left:
       type: integer
       format: int64

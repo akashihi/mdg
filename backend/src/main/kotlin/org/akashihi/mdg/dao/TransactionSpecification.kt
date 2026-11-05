@@ -26,7 +26,7 @@ object TransactionSpecification {
         }
     }
 
-    fun filteredTransactions(indexingService: IndexingService, filter: Map<String, String>, pointer: Long?): Specification<Transaction> {
+    fun filteredTransactions(indexingService: IndexingService, filter: Map<String, String>, pointer: Pair<Long, LocalDateTime>?, ascending: Boolean = false): Specification<Transaction> {
         return Specification { root: Root<Transaction>, _: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
             val predicates: MutableCollection<Predicate> = ArrayList()
             val fulltextIds: MutableCollection<Long?> = ArrayList()
@@ -50,7 +50,11 @@ object TransactionSpecification {
                 val accounts = Arrays.stream(accountsString.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()).map { s: String -> s.toLong() }.toList()
                 predicates.add(root.join<Any, Any>("operations").get<String>("account").get<String>("id").`in`(accounts))
             }
-            pointer?.also { predicates.add(criteriaBuilder.lessThan(root.get("id"), pointer)) }
+            pointer?.also { (pointerId, pointerTs) ->
+                // Keyset predicate mirroring the sort: ts DESC, id DESC or ts ASC, id DESC
+                val tsAfter = if (ascending) criteriaBuilder.greaterThan(root.get("ts"), pointerTs) else criteriaBuilder.lessThan(root.get("ts"), pointerTs)
+                predicates.add(criteriaBuilder.or(tsAfter, criteriaBuilder.and(criteriaBuilder.equal(root.get<LocalDateTime>("ts"), pointerTs), criteriaBuilder.lessThan(root.get("id"), pointerId))))
+            }
             criteriaBuilder.and(*predicates.toTypedArray())
         }
     }

@@ -102,7 +102,7 @@ Budgets:
     first:
       type: string
       description: Cursor of the first page. Empty string when not paging.
-      example: eyJsaW1pdCI6MywicG9pbnRlciI6MH0=
+      example: eyJsaW1pdCI6M30=
     next:
       type: string
       description: |

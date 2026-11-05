@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.util.*
 
 data class TransactionCursor(
@@ -27,7 +30,8 @@ data class TransactionCursor(
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val sort: Collection<String>?,
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val embed: Collection<String>?,
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val limit: Int?,
-    @field:JsonInclude(JsonInclude.Include.NON_NULL) val pointer: Long?
+    @field:JsonInclude(JsonInclude.Include.NON_NULL) val pointer: Long?,
+    @field:JsonInclude(JsonInclude.Include.NON_NULL) val pointerTs: String? = null
 )
 
 data class Transactions(val transactions: Collection<Transaction>, val self: String, val first: String, val next: String, val left: Long)
@@ -37,6 +41,24 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
     private fun buildCursor(query: String?, sort: Collection<String>?, embed: Collection<String>?, limit: Int?, pointer: Long?): TransactionCursor {
         val filter = buildFilter(query, objectMapper)
         return TransactionCursor(filter, sort, embed, limit, pointer)
+    }
+
+    private fun parseCursorTs(value: String): LocalDateTime = try {
+        LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+    } catch (e: DateTimeParseException) {
+        throw MdgException("CURSOR_DATA_INVALID", e)
+    }
+
+    private fun cursorPointer(cursor: TransactionCursor): Pair<Long, LocalDateTime>? {
+        val id = cursor.pointer
+        val ts = cursor.pointerTs
+        if (id == null && ts == null) {
+            return null
+        }
+        if (id == null || ts == null) {
+            throw MdgException("CURSOR_DATA_INVALID") // Only cursors with both pointer fields are issued
+        }
+        return Pair(id, parseCursorTs(ts))
     }
 
     @PostMapping(value = ["/transactions"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
@@ -57,7 +79,7 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
     ): Transactions {
         val limit = pageLimitOf(limits) // A cursor makes the parameter ignored, but not acceptable
         val txCursor = cursor?.let { cursorHelper.cursorFromString(it, TransactionCursor::class.java) } ?: buildCursor(query, sort, embed, limit, null)
-        val listResult = transactionService.list(txCursor.filter ?: Collections.emptyMap(), txCursor.sort ?: Collections.emptyList(), txCursor.limit, txCursor.pointer)
+        val listResult = transactionService.list(txCursor.filter ?: Collections.emptyMap(), txCursor.sort ?: Collections.emptyList(), txCursor.limit, cursorPointer(txCursor))
         val transactions = listResult.items
         val left = listResult.left
         val operationEmbedded = embedOperationObjects(txCursor.embed)
@@ -72,12 +94,12 @@ open class TransactionController(private val objectMapper: ObjectMapper, private
         var first: String = ""
         var next: String = ""
         if (limit != null || cursor != null) { // In both cases we are in paging mode, either for the first page or for the subsequent pages
-            val firstCursor = TransactionCursor(txCursor.filter, txCursor.sort, txCursor.embed, txCursor.limit, 0L)
+            val firstCursor = TransactionCursor(txCursor.filter, txCursor.sort, txCursor.embed, txCursor.limit, null, null)
             first = cursorHelper.cursorToString(firstCursor) ?: ""
             next = if (transactions.isEmpty() || left == 0L) {
                 "" // We may have no items at all or no items left, so no need to find next cursor
             } else {
-                val nextCursor = TransactionCursor(txCursor.filter, txCursor.sort, txCursor.embed, txCursor.limit, transactions[transactions.size - 1].id)
+                val nextCursor = TransactionCursor(txCursor.filter, txCursor.sort, txCursor.embed, txCursor.limit, transactions[transactions.size - 1].id, transactions[transactions.size - 1].ts.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 cursorHelper.cursorToString(nextCursor) ?: ""
             }
         }
