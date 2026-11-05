@@ -536,7 +536,7 @@ paths:
         - $ref: './components/parameters.yaml#/TransactionSort'
         - $ref: './components/parameters.yaml#/EmbedAccount'
         - $ref: './components/parameters.yaml#/Limit'
-        - $ref: './components/parameters.yaml#/Cursor'
+        - $ref: './components/parameters.yaml#/TransactionCursor'
       responses:
         '200':
           description: One page of transactions.
@@ -808,7 +808,7 @@ paths:
       operationId: listBudgets
       parameters:
         - $ref: './components/parameters.yaml#/Limit'
-        - $ref: './components/parameters.yaml#/Cursor'
+        - $ref: './components/parameters.yaml#/BudgetCursor'
       responses:
         '200':
           description: One page of budgets.

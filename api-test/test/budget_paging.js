@@ -75,6 +75,22 @@ describe('Budget paging', () => {
             .expectJsonMatch('left', 0);
     });
 
+    it('Follow first back to the initial page', async () => {
+        await e2e.step('List budgets')
+            .spec('read')
+            .get('/budgets?limit=3')
+            .stores('FirstBudgetCursor', 'first');
+
+        await e2e.step('Load first budget cursor')
+            .spec('read')
+            .get('/budgets?cursor={cursor}')
+            .withPathParams('cursor', '$S{FirstBudgetCursor}')
+            .expectJsonMatch('budgets[0].id', 20220101)
+            .expectJsonMatch('budgets[1].id', 20210101)
+            .expectJsonMatch('budgets[2].id', 20200101)
+            .expectJsonMatch('left', 3);
+    });
+
     it('Reject a cursor this API never issued', async () => {
         await e2e.step('List budgets')
             .spec('expect error', { statusCode: 422, code: 'CURSOR_DATA_INVALID', instance: '/budgets' })

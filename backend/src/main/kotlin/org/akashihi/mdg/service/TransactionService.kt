@@ -130,8 +130,9 @@ open class TransactionService(
     }
 
     @Transactional
-    open fun list(filter: Map<String, String>, sort: Collection<String>, limit: Int?, pointer: Long?): ListResult<Transaction> {
-        val spec = TransactionSpecification.filteredTransactions(indexingService, filter, pointer)
+    open fun list(filter: Map<String, String>, sort: Collection<String>, limit: Int?, pointer: Pair<Long, LocalDateTime>?): ListResult<Transaction> {
+        val ascending = sort.contains("-timestamp")
+        val spec = TransactionSpecification.filteredTransactions(indexingService, filter, pointer, ascending)
         var sorting = Sort.by("ts").descending().and(Sort.by("id").descending()) // Sort by timestamp amd then id by default
         if (sort.contains("-timestamp")) {
             // Reverse sort requested

@@ -112,6 +112,7 @@ spring-boot-ehcache/
 .mcp.json
 CLAUDE.md
 codegraph.json
+.claude/
 
 
 .schemathesis/
