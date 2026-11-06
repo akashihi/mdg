@@ -40,16 +40,21 @@ interface OperationsEditorProps {
     setOperationsFunc: (ops: EditedOperation[]) => void;
 }
 
-function evaluateEquation(value: string): string {
+function evaluateEquation(value: string, decimals: number): string {
     if (value) {
         const strAmount = value.toString();
         if (strAmount.slice(-1) === '=') {
             //If it ends with =
             const expr = strAmount.slice(0, -1); //Strip the = and evaluate mathematical expression
             try {
-                value = evaluate(expr);
+                const result = evaluate(expr);
+                if (typeof result === 'number' && Number.isFinite(result)) {
+                    //Round to the precision the validators accept, to get rid of 0.1+0.2 artifacts
+                    return String(parseFloat(result.toFixed(decimals)));
+                }
+                return String(result);
             } catch (e) {
-                value = expr;
+                return expr;
             }
         }
     }
@@ -72,8 +77,8 @@ function SimpleOperationsEditor(props: OperationsEditorProps) {
     };
 
     const applyAmount = (value: string) => {
-        const evaluated = evaluateEquation(value);
-        amountValidity = validateOperationAmount(value);
+        const evaluated = evaluateEquation(value, 2);
+        amountValidity = validateOperationAmount(evaluated);
         let updatedOps = [
             { ...props.operations[0], amountValue: evaluated },
             { ...props.operations[1], amountValue: evaluated },
@@ -170,11 +175,11 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
     };
 
     const applyRate = (index: number, rate: string) => {
-        const evaluated = evaluateEquation(rate);
+        const evaluated = evaluateEquation(rate, 5);
         let updatedOps = produce((draft: EditedOperation[]) => {
             draft[index].rateValue = evaluated;
         })(props.operations);
-        if (validateRate(rate) === null) {
+        if (validateRate(evaluated) === null) {
             const parsed = parseFloat(evaluated);
             updatedOps = produce((draft: EditedOperation[]) => {
                 draft[index].rate = parsed;
@@ -184,11 +189,11 @@ function FullOperationsEditor(props: OperationsFullEditorProps) {
     };
 
     const applyAmount = (index: number, amount: string) => {
-        const evaluated = evaluateEquation(amount);
+        const evaluated = evaluateEquation(amount, 2);
         let updatedOps = produce((draft: EditedOperation[]) => {
             draft[index].amountValue = evaluated;
         })(props.operations);
-        if (validateOperationAmount(amount) === null) {
+        if (validateOperationAmount(evaluated) === null) {
             const parsed = parseFloat(evaluated);
             updatedOps = produce((draft: EditedOperation[]) => {
                 draft[index].amount = parsed;
