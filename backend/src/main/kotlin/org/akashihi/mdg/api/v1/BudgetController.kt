@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.util.*
+import javax.persistence.EntityManager
+import javax.persistence.PersistenceContext
 
 data class BudgetCursor(
     @field:JsonInclude(JsonInclude.Include.NON_NULL) val limit: Int?,
@@ -49,6 +51,9 @@ data class BudgetEntries(@field:JsonProperty("budget_entries") val budgetEntries
 
 @RestController
 open class BudgetController(private val budgetService: BudgetService, private val categoryService: CategoryService, private val rateService: RateService, private val settingService: SettingService, private val cursorHelper: CursorHelper) {
+    @PersistenceContext
+    private lateinit var entityManager: EntityManager
+
     private fun getEntryTotals(f: (BudgetEntry) -> BigDecimal, entries: Collection<BudgetEntry>): BigDecimal {
         val currentPrimaryCurrency = settingService.currentCurrencyPrimary()
         return entries.map { e: BudgetEntry ->
@@ -160,6 +165,11 @@ open class BudgetController(private val budgetService: BudgetService, private va
     fun tree(@PathVariable("budgetId") budgetId: Long, @RequestParam("embed") embed: Collection<String>?, @RequestParam("filter") filter: String?): BudgetEntryTree {
         var entries = budgetService.listEntries(budgetId)
         val categories = categoryService.list()
+        // Open-session-in-view keeps the loaded entities managed for the whole request, and the embedding below
+        // nulls out their account/currency/category and zeroes balances. The rate and setting lookups used for
+        // totals run in their own transactions, and would flush those edits (NOT NULL violation, or worse, a
+        // silently nulled column). Detach everything first: the tree is a read-only projection.
+        entityManager.clear()
         val leaveEmpty = filter?.let { "all".equals(it, ignoreCase = true) } ?: false
         if (!leaveEmpty) {
             entries = entries.filter { e: BudgetEntry -> !(e.actualAmount.compareTo(BigDecimal.ZERO) == 0 && e.expectedAmount.compareTo(BigDecimal.ZERO) == 0) }.toList()
