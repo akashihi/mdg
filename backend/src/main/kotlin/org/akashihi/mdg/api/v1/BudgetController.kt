@@ -80,7 +80,16 @@ open class BudgetController(private val budgetService: BudgetService, private va
         val expectedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, topCategories)
         val allowedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, topCategories)
         val percent = BudgetService.getSpendingPercent(actualSpendingsCategories, expectedSpendingsCategories)
-        return BudgetEntryTreeEntry(null, null, actualSpendingsCategories, expectedSpendingsCategories, percent, allowedSpendingsCategories, topEntries, topCategories)
+        return BudgetEntryTreeEntry(
+            id = null,
+            name = null,
+            actualAmount = actualSpendingsCategories,
+            expectedAmount = expectedSpendingsCategories,
+            allowedSpendings = allowedSpendingsCategories,
+            spendingPercent = percent,
+            entries = topEntries,
+            categories = topCategories
+        )
     }
 
     private fun convertCategory(category: Category, entries: Collection<BudgetEntry>, embed: Collection<String>?): BudgetEntryTreeEntry? {
@@ -93,7 +102,16 @@ open class BudgetController(private val budgetService: BudgetService, private va
         val expectedSpendings = getEntryTotals({ obj: BudgetEntry -> obj.expectedAmount }, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, subCategories))
         val allowedSpendings = getEntryTotals({ obj: BudgetEntry -> obj.allowedSpendings ?: BigDecimal.ZERO }, categoryEntries).add(getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, subCategories))
         val percent = BudgetService.getSpendingPercent(actualSpendings, expectedSpendings)
-        return BudgetEntryTreeEntry(category.id, category.name, actualSpendings, expectedSpendings, allowedSpendings, percent, categoryEntries, subCategories)
+        return BudgetEntryTreeEntry(
+            id = category.id,
+            name = category.name,
+            actualAmount = actualSpendings,
+            expectedAmount = expectedSpendings,
+            allowedSpendings = allowedSpendings,
+            spendingPercent = percent,
+            entries = categoryEntries,
+            categories = subCategories
+        )
     }
 
     @PostMapping(value = ["/budgets"], consumes = ["application/vnd.mdg+json;version=1"], produces = ["application/vnd.mdg+json;version=1"])
