@@ -1931,7 +1931,16 @@ paths:
             example: {}
       responses:
         '202':
-          $ref: './components/responses.yaml#/MaintenanceAccepted'
+          description: The reindex completed.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                allOf:
+                  - $ref: './components/schemas/setting.yaml#/MaintenanceResult'
+                  - properties:
+                      id:
+                        const: mnt.transaction.reindex
+              example: { id: mnt.transaction.reindex, value: 'true' }
   /settings/mnt.reporting.refresh:
     get:
       tags: [Settings]
@@ -1967,4 +1976,13 @@ paths:
             example: {}
       responses:
         '202':
-          $ref: './components/responses.yaml#/MaintenanceAccepted'
+          description: The refresh completed.
+          content:
+            application/vnd.mdg+json;version=1:
+              schema:
+                allOf:
+                  - $ref: './components/schemas/setting.yaml#/MaintenanceResult'
+                  - properties:
+                      id:
+                        const: mnt.reporting.refresh
+              example: { id: mnt.reporting.refresh, value: 'true' }

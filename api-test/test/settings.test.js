@@ -45,7 +45,8 @@ describe('Settings', () => {
             await pactum.spec('update')
                 .put('/settings/{id}')
                 .withPathParams('id', trigger)
-                .withRequestTimeout(10000);
+                .withRequestTimeout(10000)
+                .expectJson({ id: trigger, value: 'true' });
         }).timeout(15000);
     });
 
