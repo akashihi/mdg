@@ -13,6 +13,27 @@ Setting:
       description: Setting value, always a string.
       example: '978'
 
+MaintenanceResult:
+  type: object
+  description: |
+    The answer of a maintenance trigger (`mnt.*`). It has the shape of a
+    `Setting`, but nothing is stored: the trigger names itself in `id` and
+    reports that its action ran in `value`. Each operation pins `id` to its own
+    trigger's name.
+  required: [id, value]
+  properties:
+    id:
+      type: string
+      description: The trigger's own name — the last segment of the request path.
+      example: mnt.transaction.reindex
+    value:
+      type: string
+      const: 'true'
+      description: |
+        Always the string `"true"`. A trigger that fails answers with an error
+        instead of a `"false"`.
+      example: 'true'
+
 SettingUpdateCurrency:
   type: object
   additionalProperties: false

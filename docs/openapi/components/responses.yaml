@@ -67,14 +67,6 @@ SettingAccepted:
       schema:
         $ref: './schemas/setting.yaml#/Setting'
 
-MaintenanceAccepted:
-  description: |
-    The maintenance action ran.
-  content:
-    application/vnd.mdg+json;version=1:
-      schema:
-        $ref: './schemas/setting.yaml#/Setting'
-
 # --- Failures the framework reports before the application is reached -------
 
 BadRequest:

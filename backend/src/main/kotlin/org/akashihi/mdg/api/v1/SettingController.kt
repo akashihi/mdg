@@ -43,13 +43,13 @@ class SettingController(private val settingService: SettingService, private val 
     fun transactionReindex(): Setting {
         val language = settingService["ui.language"]?.let { it.value } ?: "en"
         indexingService.reIndex(language)
-        return Setting("mnt.transaction.reindex", "true")
+        return Setting(value = "true", id = "mnt.transaction.reindex")
     }
 
     @PutMapping(value = ["/settings/mnt.reporting.refresh"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun reportingRefresh(): Setting {
         reportService.refreshMQT()
-        return Setting("mnt.reporting.refresh", "true")
+        return Setting(value = "true", id = "mnt.reporting.refresh")
     }
 }
