@@ -1,9 +1,8 @@
-import { Result, Err, Ok, Option, None, Some } from 'ts-results';
+import { Result, Err, Ok, Option, Some } from 'ts-results';
 import * as Model from './model';
-import { parseError, parseListResponse, parseResponse } from './base';
+import { parseListResponse, parseResponse } from './base';
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import moment, { Moment } from 'moment/moment';
-import jQuery from 'jquery';
 import * as Errors from './errors';
 
 export interface ReportParams {
@@ -18,10 +17,10 @@ const ajv = new Ajv();
 const reportAmountDefinition = {
     properties: {
         amount: { type: 'float32' },
+        name: { type: 'string' },
     },
     optionalProperties: {
-        name: { type: 'string' },
-        data: { type: 'timestamp' },
+        date: { type: 'string' },
     },
 };
 
@@ -61,16 +60,101 @@ const evaluationReportSchema: JTDSchemaType<Model.EvaluationReport> = {
     },
 };
 
+const reportSeriesEntryDefinition = {
+    properties: {
+        y: { type: 'float32' },
+        custom: { type: 'float32' },
+    },
+};
+
+const reportSeriesDefinition = {
+    properties: {
+        name: { type: 'string' },
+        data: { elements: { ref: 'entry' } },
+        type: { enum: ['area', 'column', 'line'] },
+    },
+};
+
+const seriesDefinitions = { entry: reportSeriesEntryDefinition, series: reportSeriesDefinition };
+
+const reportSchema = {
+    definitions: seriesDefinitions,
+    properties: {
+        dates: { elements: { type: 'string' } },
+        series: { elements: { ref: 'series' } },
+    },
+};
+
+const hierarchicalReportSchema = {
+    properties: {
+        dates: { elements: { type: 'string' } },
+        series: {
+            elements: {
+                properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                },
+                optionalProperties: {
+                    parent: { type: 'string' },
+                    value: { type: 'float32' },
+                },
+            },
+        },
+    },
+};
+
+const budgetExecutionReportSchema = {
+    properties: {
+        dates: { elements: { type: 'string' } },
+        actual_income: { elements: { type: 'float32' } },
+        actual_expense: { elements: { type: 'float32' } },
+        expected_income: { elements: { type: 'float32' } },
+        expected_expense: { elements: { type: 'float32' } },
+        profit: { elements: { type: 'float32' } },
+    },
+};
+
+const budgetCashflowReportSchema = {
+    definitions: seriesDefinitions,
+    properties: {
+        dates: { elements: { type: 'string' } },
+        actual: { ref: 'series' },
+        expected: { ref: 'series' },
+    },
+};
+
 const totalsReportParse = ajv.compileParser<Record<string, Model.TotalsReport[]>>(totalsReportSchema);
 const evaluationReportParse = ajv.compileParser<Model.EvaluationReport>(evaluationReportSchema);
+const reportParse = ajv.compileParser<Model.Report>(reportSchema);
+const hierarchicalReportParse = ajv.compileParser<Model.HierarchicalReport>(hierarchicalReportSchema);
+const budgetExecutionReportParse = ajv.compileParser<Model.BudgetExecutionReport>(budgetExecutionReportSchema);
+const budgetCashflowReportParse = ajv.compileParser<Model.BudgetCashflowReport>(budgetCashflowReportSchema);
 
-function reportDatesToParams(dates: ReportParams): string {
-    const params = {
+export function reportDatesToParams(dates: ReportParams): string {
+    const params = new URLSearchParams({
         startDate: dates.startDate.format('YYYY-MM-DD'),
         endDate: dates.endDate.format('YYYY-MM-DD'),
-        granularity: dates.granularity,
-    };
-    return '?' + jQuery.param(params);
+        granularity: String(dates.granularity),
+    });
+    return '?' + params.toString();
+}
+
+export function formatDates(dates: string[]): Result<string[], Model.Problem> {
+    const formatted: string[] = [];
+    for (const date of dates) {
+        const parsed = moment(date, 'YYYY-MM-DD', true);
+        if (!parsed.isValid()) {
+            return new Err(Errors.InvalidObject(`Invalid report date: ${date}`));
+        }
+        formatted.push(parsed.format("DD. MMM' YY"));
+    }
+    return new Ok(formatted);
+}
+
+let evaluationCache: { etag: string; report: Model.EvaluationReport } | null = null;
+
+export function resetEvaluationCache(): void {
+    evaluationCache = null;
 }
 
 export async function loadTotalsReport(): Promise<Result<Model.TotalsReport[], Model.Problem>> {
@@ -81,19 +165,23 @@ export async function loadTotalsReport(): Promise<Result<Model.TotalsReport[], M
 export async function loadEvaluationReport(
     etag: string | null
 ): Promise<Result<readonly [Option<Model.EvaluationReport>, string], Model.Problem>> {
-    const requestParams = {
-        method: 'GET',
-    };
-    if (etag != null) {
-        requestParams['If-None-Match'] = etag;
+    const headers: Record<string, string> = {};
+    // Send the ETag only if the body it stands for is held here, otherwise a 304 would leave nothing to show.
+    if (etag != null && evaluationCache != null && evaluationCache.etag === etag) {
+        headers['If-None-Match'] = etag;
     }
-    const response = await fetch('/api/reports/evaluation', requestParams);
+    const response = await fetch('/api/reports/evaluation', { method: 'GET', headers: headers });
     const responseEtag = response.headers.get('etag') as string;
-    if (response.status == 304) {
-        console.log('Report from cache');
-        return new Ok([None, responseEtag]);
+    if (response.status == 304 && evaluationCache != null) {
+        return new Ok([Some(evaluationCache.report), responseEtag ?? evaluationCache.etag]);
     }
-    return parseResponse(response, evaluationReportParse).then(v => v.map(result => [Some(result), responseEtag]));
+    const parsed = await parseResponse(response, evaluationReportParse);
+    return parsed.map(result => {
+        if (responseEtag != null) {
+            evaluationCache = { etag: responseEtag, report: result };
+        }
+        return [Some(result), responseEtag] as const;
+    });
 }
 
 export async function loadAssetReport(
@@ -102,18 +190,8 @@ export async function loadAssetReport(
 ): Promise<Result<Model.Report, Model.Problem>> {
     const url = `/api/reports/${type}/${reportDatesToParams(params)}`;
     const response = await fetch(url);
-    const responseJson = JSON.parse(await response.text());
-    if (response.status >= 400) {
-        return new Err(parseError(response, responseJson));
-    } else {
-        // Should be fine, try to convert
-        try {
-            const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
-            return new Ok({ dates: dates, series: responseJson.series });
-        } catch (e) {
-            return new Err(Errors.InvalidObject(e as string));
-        }
-    }
+    const parsed = await parseResponse(response, reportParse);
+    return parsed.andThen(report => formatDates(report.dates).map(dates => ({ dates: dates, series: report.series })));
 }
 
 export async function loadEventsReport(
@@ -122,20 +200,8 @@ export async function loadEventsReport(
 ): Promise<Result<Model.PieData, Model.Problem>> {
     const url = `/api/reports/${type}/accounts/${reportDatesToParams(params)}`;
     const response = await fetch(url);
-    const responseJson = JSON.parse(await response.text());
-    if (response.status >= 400) {
-        return new Err(parseError(response, responseJson));
-    } else {
-        // Should be fine, try to convert
-        try {
-            const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-            const data = responseJson.series;
-            return new Ok({ dates: dates, data: data });
-        } catch (e) {
-            return new Err(Errors.InvalidObject(e as string));
-        }
-    }
+    const parsed = await parseResponse(response, hierarchicalReportParse);
+    return parsed.andThen(report => formatDates(report.dates).map(dates => ({ dates: dates, data: report.series })));
 }
 
 export async function loadBudgetReport(
@@ -143,46 +209,13 @@ export async function loadBudgetReport(
 ): Promise<Result<Model.BudgetExecutionReport, Model.Problem>> {
     const url = `/api/reports/budget/execution/${reportDatesToParams(params)}`;
     const response = await fetch(url);
-    const responseJson = JSON.parse(await response.text());
-    if (response.status >= 400) {
-        return new Err(parseError(response, responseJson));
-    } else {
-        // Should be fine, try to convert
-        try {
-            const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-            return new Ok({
-                dates: dates,
-                actual_income: responseJson.actual_income,
-                actual_expense: responseJson.actual_expense,
-                expected_income: responseJson.expected_income,
-                expected_expense: responseJson.expected_expense,
-                profit: responseJson.profit,
-            });
-        } catch (e) {
-            return new Err(Errors.InvalidObject(e as string));
-        }
-    }
+    const parsed = await parseResponse(response, budgetExecutionReportParse);
+    return parsed.andThen(report => formatDates(report.dates).map(dates => ({ ...report, dates: dates })));
 }
 
 export async function loadBudgetCashflowReport(id: number): Promise<Result<Model.BudgetCashflowReport, Model.Problem>> {
     const url = `/api/reports/budget/cashflow/${id}`;
     const response = await fetch(url);
-    const responseJson = JSON.parse(await response.text());
-    if (response.status >= 400) {
-        return new Err(parseError(response, responseJson));
-    } else {
-        // Should be fine, try to convert
-        try {
-            const dates = responseJson.dates.map(item => moment(item).format("DD. MMM' YY"));
-
-            return new Ok({
-                dates: dates,
-                actual: responseJson.actual,
-                expected: responseJson.expected,
-            });
-        } catch (e) {
-            return new Err(Errors.InvalidObject(e as string));
-        }
-    }
+    const parsed = await parseResponse(response, budgetCashflowReportParse);
+    return parsed.andThen(report => formatDates(report.dates).map(dates => ({ ...report, dates: dates })));
 }

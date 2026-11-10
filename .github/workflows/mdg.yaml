@@ -165,10 +165,13 @@ jobs:
         run: npm ci
       - name: Codestyle
         working-directory: ./frontend
-        run: npx prettier --check src/
+        run: npx prettier --check src/ tests/
       - name: Lint
         working-directory: ./frontend
-        run: npx eslint src/js/**
+        run: npx eslint src/js/** 'tests/**/*.ts'
+      - name: Unit tests
+        working-directory: ./frontend
+        run: npm test
 
   web-ui-build:
     runs-on: ubuntu-latest
