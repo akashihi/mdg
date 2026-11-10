@@ -8,8 +8,8 @@ import BudgetSelectorTool from '../../containers/BudgetSelectorTool';
 export function BudgetCashflowReport(props: { primaryCurrencyName: string }) {
     const [chartData, setChartData] = useState<Model.BudgetCashflowReport>({
         dates: [],
-        actual: { name: '', data: [], custom: [], type: '' },
-        expected: { name: '', data: [], custom: [], type: '' },
+        actual: { name: '', data: [], type: 'line' },
+        expected: { name: '', data: [], type: 'line' },
     });
     const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 

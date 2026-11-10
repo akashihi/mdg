@@ -1,7 +1,8 @@
 export interface ReportAmount {
     amount: number;
-    name?: string;
-    data?: Date;
+    name: string;
+    // "YYYY-MM-DD"
+    date?: string;
 }
 
 export interface TotalsReport {
@@ -18,11 +19,15 @@ export interface EvaluationReport {
     state: number;
 }
 
+export interface ReportSeriesEntry {
+    y: number;
+    custom: number;
+}
+
 export interface ReportSeries {
     name: string;
-    data: number[];
-    custom: number[];
-    type: string;
+    data: ReportSeriesEntry[];
+    type: 'area' | 'column' | 'line';
 }
 
 export interface Report {
@@ -50,6 +55,11 @@ export interface HierarchicalSeries {
     parent?: string;
     name: string;
     value?: number;
+}
+
+export interface HierarchicalReport {
+    dates: string[];
+    series: HierarchicalSeries[];
 }
 
 export interface PieData {

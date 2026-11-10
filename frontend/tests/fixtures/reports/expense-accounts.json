@@ -1,0 +1,1 @@
+{"dates":["2017-02-01"],"series":[{"id":"root","name":"EXPENSE"},{"id":"Rent","parent":"3112","name":"Rent","value":100.00},{"id":"3112","parent":"3111","name":"Utilities"},{"id":"3111","parent":"root","name":"Housing"}]}

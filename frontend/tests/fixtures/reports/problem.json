@@ -1,0 +1,1 @@
+{"title":"Request parameter is invalid","status":400,"instance":"/reports/assets/simple","code":"REQUEST_PARAMETER_INVALID","detail":"A request parameter could not be converted to the type this operation expects, check the specification for its format"}
