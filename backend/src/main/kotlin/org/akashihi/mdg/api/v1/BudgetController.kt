@@ -81,9 +81,9 @@ open class BudgetController(private val budgetService: BudgetService, private va
         val topCategories = categories.filter { it.accountType == accountType }
             .mapNotNull { convertCategory(it, enrichedEntries, embed) }
             .toList()
-        val actualSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::actualAmount, topCategories)
-        val expectedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, topCategories)
-        val allowedSpendingsCategories = getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, topCategories)
+        val actualSpendingsCategories = getEntryTotals({ obj: BudgetEntry -> obj.actualAmount }, topEntries).add(getCategoryTotals(BudgetEntryTreeEntry::actualAmount, topCategories))
+        val expectedSpendingsCategories = getEntryTotals({ obj: BudgetEntry -> obj.expectedAmount }, topEntries).add(getCategoryTotals(BudgetEntryTreeEntry::expectedAmount, topCategories))
+        val allowedSpendingsCategories = getEntryTotals({ obj: BudgetEntry -> obj.allowedSpendings ?: BigDecimal.ZERO }, topEntries).add(getCategoryTotals(BudgetEntryTreeEntry::allowedSpendings, topCategories))
         val percent = BudgetService.getSpendingPercent(actualSpendingsCategories, expectedSpendingsCategories)
         return BudgetEntryTreeEntry(
             id = null,
