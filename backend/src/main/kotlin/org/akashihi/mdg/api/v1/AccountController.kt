@@ -95,7 +95,7 @@ class AccountController(private val accountService: AccountService, private val 
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun update(@PathVariable("id") id: Long, @RequestBody account: Account): Account {
         val newAccount = accountService.update(id, account) ?: throw MdgException("ACCOUNT_NOT_FOUND")
-        newAccount.currencyId = newAccount.currency!!.id
+        newAccount.currencyId = newAccount.currency?.id
         newAccount.categoryId = newAccount.category?.id
         return newAccount
     }

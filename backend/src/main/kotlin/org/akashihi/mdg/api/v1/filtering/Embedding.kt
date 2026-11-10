@@ -11,7 +11,7 @@ object Embedding {
             if (!accounts) {
                 operation.account = null
             } else {
-                operation.account = embedAccountObjects(embed).invoke(operation.account!!)
+                operation.account = operation.account?.let { embedAccountObjects(embed).invoke(it) }
             }
             operation
         }
