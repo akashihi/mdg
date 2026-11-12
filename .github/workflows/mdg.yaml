@@ -52,7 +52,7 @@ jobs:
       - spec-lint
     services: &stack-services
       postgres:
-        image: postgres
+        image: postgres:18
         env:
           POSTGRES_USER: mdg
           POSTGRES_PASSWORD: mdg

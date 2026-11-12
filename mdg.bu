@@ -147,7 +147,7 @@ systemd:
 
         [Service]
         Type=oneshot
-        ExecStart=/bin/bash -c '/usr/bin/docker exec -t -e PGPASSWORD=mdg mdg-postgres-1 pg_dumpall -c -U mdg > /srv/mdgbackup/dump_mdg.sql'
+        ExecStart=/bin/bash -c '/usr/bin/docker exec -e PGPASSWORD=mdg mdg-postgres-1 pg_dumpall -c -U mdg > /srv/mdgbackup/dump_mdg.sql'
     - name: mdg-backup.timer
       enabled: true
       contents: |
