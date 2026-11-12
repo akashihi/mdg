@@ -9,7 +9,7 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { ReindexUiState } from '../../reducers/SettingReducer';
+import { ReindexUiState, ReportingRefreshUiState } from '../../reducers/SettingReducer';
 
 export function SettingEditorWidget(props: SettingsEditorProps) {
     const currencies = props.activeCurrencies.map(v => {
@@ -49,6 +49,12 @@ export function SettingEditorWidget(props: SettingsEditorProps) {
                     Indexing transactions content may take a while
                 </Typography>
             </Backdrop>
+            <Backdrop open={props.setting.reportingRefreshUi === ReportingRefreshUiState.InProgress}>
+                <CircularProgress color="inherit" />
+                <Typography color="info" paragraph={true} variant="inherit">
+                    Refreshing reporting data may take a while
+                </Typography>
+            </Backdrop>
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={6} lg={4}>
                     <p>Primary currency:</p>
@@ -81,6 +87,20 @@ export function SettingEditorWidget(props: SettingsEditorProps) {
                     {props.setting.indexingUi === ReindexUiState.Failed && (
                         <Typography color="error" paragraph={true} variant="inherit">
                             Reaindexing failed. Check logs and try one more time
+                        </Typography>
+                    )}
+                </Grid>
+                <Box width="100%" />
+                <Grid item xs={6} sm={6} md={6} lg={4}>
+                    <p>Refresh reporting data:</p>
+                </Grid>
+                <Grid item xs={6} sm={6} md={6} lg={4}>
+                    <Button variant="contained" color="primary" onClick={props.refreshReporting}>
+                        Start refresh
+                    </Button>
+                    {props.setting.reportingRefreshUi === ReportingRefreshUiState.Failed && (
+                        <Typography color="error" paragraph={true} variant="inherit">
+                            Refreshing reporting data failed. Check logs and try one more time
                         </Typography>
                     )}
                 </Grid>

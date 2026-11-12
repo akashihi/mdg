@@ -7,6 +7,7 @@ import {
     setCloseTransactionDialog,
     setLanguage,
     reindexTransactions,
+    refreshReporting,
     setOverviewWidget,
 } from '../actions/SettingActions';
 import { SettingState } from '../reducers/SettingReducer';
@@ -31,6 +32,7 @@ const mapDispatchToProps = {
     setCloseTransactionDialog,
     setLanguage,
     reindexTransactions,
+    refreshReporting,
     setOverviewWidget,
 };
 

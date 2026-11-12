@@ -1960,7 +1960,18 @@ paths:
       description: |
         A maintenance trigger.
 
-        Refreshes the materialized query tables.
+        Refreshes the `historical_balance` materialized view that the reports read,
+        and answers once the refresh has finished. `account_balance` is not touched
+        here: a database trigger keeps it current.
+
+        How the view is refreshed depends on whether it has ever been populated:
+
+        - A populated view gets a concurrent refresh, so reports keep reading the
+          previous contents while it runs.
+        - A view that has never been populated, for example after restoring a
+          database dump whose own refresh failed, cannot be refreshed concurrently.
+          It gets a full, blocking refresh instead, and reports wait for it to
+          finish. This is the way to recover reporting after such a restore.
 
         The controller method takes no request body and declares no `consumes`, so
         the body is optional and never read: no body at all, any bytes and any media
