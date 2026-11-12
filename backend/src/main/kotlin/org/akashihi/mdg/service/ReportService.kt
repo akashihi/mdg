@@ -41,7 +41,12 @@ open class ReportService(
     @Scheduled(cron = "* * 3 * * ?")
     open fun refreshMQT() {
         log.info("Refreshing reporting MQTs")
-        accountRepository.refreshHistoricalBalance()
+        if (accountRepository.isHistoricalBalancePopulated() == false) {
+            // A never populated view can't be refreshed concurrently, e.g. after a dump restore
+            accountRepository.populateHistoricalBalance()
+        } else {
+            accountRepository.refreshHistoricalBalance()
+        }
     }
 
     @Transactional
