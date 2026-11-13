@@ -7,7 +7,18 @@ export const SettingsStore = createAction<Record<string, string>>('SettingsStore
 export const InitiateReindex = createAction('InitiateReindex');
 export const ReindexFail = createAction('ReindexFail');
 
+export const InitiateReportingRefresh = createAction('InitiateReportingRefresh');
+export const ReportingRefreshComplete = createAction('ReportingRefreshComplete');
+export const ReportingRefreshFail = createAction('ReportingRefreshFail');
+
 export enum ReindexUiState {
+    NotRequested = 'NotRequested',
+    InProgress = 'InProgress',
+    Complete = 'Complete',
+    Failed = 'Failed',
+}
+
+export enum ReportingRefreshUiState {
     NotRequested = 'NotRequested',
     InProgress = 'InProgress',
     Complete = 'Complete',
@@ -20,6 +31,7 @@ export interface SettingState {
     readonly language: string;
     readonly available: boolean;
     readonly indexingUi: ReindexUiState;
+    readonly reportingRefreshUi: ReportingRefreshUiState;
     readonly overview: OverviewSetting;
 }
 
@@ -29,6 +41,7 @@ const initialState: SettingState = {
     language: 'en-US',
     available: false,
     indexingUi: ReindexUiState.NotRequested,
+    reportingRefreshUi: ReportingRefreshUiState.NotRequested,
     overview: { lt: 'finance', rt: 'asset', lb: 'budget', rb: 'transactions' },
 };
 
@@ -54,5 +67,14 @@ export default createReducer(initialState, builder => {
         })
         .addCase(ReindexFail, state => {
             state.indexingUi = ReindexUiState.Failed;
+        })
+        .addCase(InitiateReportingRefresh, state => {
+            state.reportingRefreshUi = ReportingRefreshUiState.InProgress;
+        })
+        .addCase(ReportingRefreshComplete, state => {
+            state.reportingRefreshUi = ReportingRefreshUiState.Complete;
+        })
+        .addCase(ReportingRefreshFail, state => {
+            state.reportingRefreshUi = ReportingRefreshUiState.Failed;
         });
 });

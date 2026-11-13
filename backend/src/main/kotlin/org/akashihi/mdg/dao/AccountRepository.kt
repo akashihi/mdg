@@ -21,6 +21,13 @@ interface AccountRepository : JpaRepository<Account, Long>, JpaSpecificationExec
     @Query(nativeQuery = true, value = "refresh materialized view concurrently historical_balance with data")
     fun refreshHistoricalBalance()
 
+    @Modifying
+    @Query(nativeQuery = true, value = "refresh materialized view historical_balance with data")
+    fun populateHistoricalBalance()
+
+    @Query(nativeQuery = true, value = "select ispopulated from pg_catalog.pg_matviews where schemaname = 'public' and matviewname = 'historical_balance'")
+    fun isHistoricalBalancePopulated(): Boolean?
+
     @Query(nativeQuery = true, value = "select sum(h.primaryamount) as amount, gs.dt as dt from generate_series(?1\\:\\:timestamp, ?2\\:\\:timestamp, make_interval(days \\:= ?3)) gs(dt) join historical_balance as h on h.dt=gs.dt group by gs.dt order by gs.dt")
     fun getTotalAssetsReport(from: LocalDate, to: LocalDate, interval: Int): List<AmountAndDate>
 

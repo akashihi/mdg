@@ -3,6 +3,7 @@ export type SettingKey =
     | 'ui.transaction.closedialog'
     | 'ui.language'
     | 'mnt.transaction.reindex'
+    | 'mnt.reporting.refresh'
     | 'ui.overviewpanel.widgets';
 
 export interface Setting {

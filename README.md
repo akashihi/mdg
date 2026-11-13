@@ -45,7 +45,7 @@ Duplicati web interface is available at http://VM.ip:8200/ and needs to be confi
 MDG database can be restored from the dump by running following commands:
 
     docker-compose -f /opt/mdg/docker-compose.yml stop mdg
-    docker run -i --rm --network mdg_backend --link mdg-postgres-1:postgres -ePGPASSWORD=mdg postgres:14.3 psql -h postgres -U mdg -d postgres < dump_mdg.sql
+    docker exec -i mdg-postgres-1 psql -U mdg -d postgres < dump_mdg.sql
     systemctl restart mdg
 
 It is your duty to upload MDG database dump to the system.
@@ -53,7 +53,7 @@ It is your duty to upload MDG database dump to the system.
 #### Upgrade procedure
 
 To upgrade your MDG appliance make a [backup](#database-backup), move it out of the VM, delete VM, [redeploy](#mdg-appliance)
-with the new image and [restore database](#database-restore)
+with the new image and [restore database](#database-restore).
 
 #### Building appliance from scratch
 
@@ -109,7 +109,7 @@ Other (and newer) versions should work too.
 
 Deployment:
 
-* [PostgreSQL 14.x](https://www.postgresql.org/)
+* [PostgreSQL 18](https://www.postgresql.org/)
 * [ElasticSearch 7.x](https://www.elastic.co/downloads/elasticsearch)
 * [Nginx](https://www.nginx.com/)
 
@@ -138,7 +138,8 @@ This will produce a `dist.tar.gz` archive.
 
 #### Environment preparation
 
-Start postgresql and create a database owned by some user. By default database `mdg` with user `mdg` and password `mdg` is expected. You can
+Start postgresql and create a database owned by some user (on PostgreSQL 15 and newer it is not enough to grant the user access: it has to own the database). 
+By default database `mdg` with user `mdg` and password `mdg` is expected. You can
 adjust database credentials in the `application-local.properties` file. 
 
 Put provided hunspell dictionaries to the elastic configuration directory, then start elastic.

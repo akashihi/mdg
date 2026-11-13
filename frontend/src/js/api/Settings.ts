@@ -12,6 +12,7 @@ const settingSchema: JTDSchemaType<Model.Setting> = {
                 'ui.transaction.closedialog',
                 'ui.language',
                 'mnt.transaction.reindex',
+                'mnt.reporting.refresh',
                 'ui.overviewpanel.widgets',
             ],
         },

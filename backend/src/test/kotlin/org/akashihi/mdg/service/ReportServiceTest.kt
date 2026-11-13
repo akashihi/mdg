@@ -5,16 +5,46 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.akashihi.mdg.api.v1.MdgException
+import org.akashihi.mdg.dao.AccountRepository
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension::class)
 class ReportServiceTest {
+    private fun reportService(accountRepository: AccountRepository) =
+        ReportService(mock(), mock(), accountRepository, mock(), mock())
+
+    @Test
+    fun testRefreshUnpopulatedViewIsBlocking() {
+        val repository = mock<AccountRepository>()
+        whenever(repository.isHistoricalBalancePopulated()).thenReturn(false)
+
+        reportService(repository).refreshMQT()
+
+        verify(repository).populateHistoricalBalance()
+        verify(repository, never()).refreshHistoricalBalance()
+    }
+
+    @Test
+    fun testRefreshPopulatedViewIsConcurrent() {
+        val repository = mock<AccountRepository>()
+        whenever(repository.isHistoricalBalancePopulated()).thenReturn(true)
+
+        reportService(repository).refreshMQT()
+
+        verify(repository).refreshHistoricalBalance()
+        verify(repository, never()).populateHistoricalBalance()
+    }
+
     @Test
     fun testDateExpansion() {
         val from = LocalDate.parse("2023-01-01")

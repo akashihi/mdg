@@ -5,7 +5,15 @@ import * as API from '../api/api';
 import * as Model from '../api/model';
 import { OverviewPanels, Setting } from '../api/model';
 import { wrap } from './base';
-import { InitiateReindex, ReindexFail, SettingsLoad, SettingsStore } from '../reducers/SettingReducer';
+import {
+    InitiateReindex,
+    InitiateReportingRefresh,
+    ReindexFail,
+    ReportingRefreshComplete,
+    ReportingRefreshFail,
+    SettingsLoad,
+    SettingsStore,
+} from '../reducers/SettingReducer';
 import { NotifyError } from '../reducers/ErrorReducer';
 import { GetStateFunc } from '../reducers/rootReducer';
 import { produce } from 'immer';
@@ -72,6 +80,21 @@ export function reindexTransactions() {
         } else {
             await dispatch(loadAccountList());
             dispatch(ReindexFail());
+            dispatch(NotifyError(result.val));
+        }
+    });
+}
+
+export function refreshReporting() {
+    return wrap(async dispatch => {
+        dispatch(InitiateReportingRefresh());
+
+        const setting: Setting = { id: 'mnt.reporting.refresh', value: 'true' };
+        const result = await API.saveSetting(setting);
+        if (result.ok) {
+            dispatch(ReportingRefreshComplete());
+        } else {
+            dispatch(ReportingRefreshFail());
             dispatch(NotifyError(result.val));
         }
     });
