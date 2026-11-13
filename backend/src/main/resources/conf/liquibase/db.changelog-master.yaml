@@ -69,3 +69,5 @@ databaseChangeLog:
       file: conf/liquibase/34-cursorerror.sql
   - include:
       file: conf/liquibase/35-requesterrors.sql
+  - include:
+      file: conf/liquibase/36-historicaltotals-fast.sql
