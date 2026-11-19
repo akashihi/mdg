@@ -15,24 +15,7 @@ storage:
       overwrite: true
     - path: /srv/duplicati
       overwrite: true
-    - path: /opt/mdg/dictionaries
-      overwrite: true
-    - path: /opt/mdg/dictionaries/cs_CZ
-      overwrite: true
-    - path: /opt/mdg/dictionaries/de
-      overwrite: true
-    - path: /opt/mdg/dictionaries/en
-      overwrite: true
-    - path: /opt/mdg/dictionaries/lt_LT
-      overwrite: true
-    - path: /opt/mdg/dictionaries/ru_RU
-      overwrite: true
   files:
-    - path: /etc/sysctl.d/90-vm.conf
-      overwrite: true
-      contents:
-        inline: |
-          vm.max_map_count = 262144
     - path: /etc/hostname
       mode: 0644
       contents:
@@ -59,56 +42,6 @@ storage:
       mode: 0555
       contents:
         source: https://github.com/docker/compose/releases/download/v2.6.1/docker-compose-linux-x86_64
-    - path: /opt/mdg/dictionaries/cs_CZ/cs_CZ.aff
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/cs_CZ/cs_CZ.aff
-    - path: /opt/mdg/dictionaries/cs_CZ/cs_CZ.dic
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/cs_CZ/cs_CZ.dic
-    - path: /opt/mdg/dictionaries/de/de_DE_frami.aff
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/de/de_DE_frami.aff
-    - path: /opt/mdg/dictionaries/de/de_DE_frami.dic
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/de/de_DE_frami.dic
-    - path: /opt/mdg/dictionaries/en/en_US.aff
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/en/en_US.aff
-    - path: /opt/mdg/dictionaries/en/en_US.dic
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/en/en_US.dic
-    - path: /opt/mdg/dictionaries/lt_LT/lt.aff
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/lt_LT/lt.aff
-    - path: /opt/mdg/dictionaries/lt_LT/lt.dic
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/lt_LT/lt.dic
-    - path: /opt/mdg/dictionaries/ru_RU/ru_RU.aff
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/ru_RU/ru_RU.aff
-    - path: /opt/mdg/dictionaries/ru_RU/ru_RU.dic
-      overwrite: true
-      mode: 0644
-      contents:
-        source: https://github.com/akashihi/mdg/raw/master/dictionaries/ru_RU/ru_RU.dic
 systemd:
   units:
     - name: mdg.service
@@ -129,7 +62,6 @@ systemd:
         ExecStartPre=/usr/local/bin/docker-compose -f /opt/mdg/docker-compose.yml rm
         ExecStartPre=-/bin/bash -c '/usr/bin/docker rmi $(/usr/bin/docker images | grep "<none>" | awk \'{print $3}\')'
         ExecStartPre=-/bin/bash -c '/usr/bin/docker rm -v $(/usr/bin/docker ps -aq)'
-        ExecStartPre=/bin/bash -c 'find /opt/mdg/dictionaries -type d  |xargs chmod a+rx && find /opt/mdg/dictionaries -type f  |xargs chmod a+rx && chcon -Rt svirt_sandbox_file_t /opt/mdg/dictionaries'
         
         # Compose up
         ExecStart=/usr/local/bin/docker-compose -f /opt/mdg/docker-compose.yml up

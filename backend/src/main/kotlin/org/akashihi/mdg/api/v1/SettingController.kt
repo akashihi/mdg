@@ -1,8 +1,8 @@
 package org.akashihi.mdg.api.v1
 
 import org.akashihi.mdg.entity.Setting
-import org.akashihi.mdg.indexing.IndexingService
 import org.akashihi.mdg.service.ReportService
+import org.akashihi.mdg.service.SearchService
 import org.akashihi.mdg.service.SettingService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 data class Settings(val settings: Collection<Setting>)
 
 @RestController
-class SettingController(private val settingService: SettingService, private val indexingService: IndexingService, private val reportService: ReportService) {
+class SettingController(private val settingService: SettingService, private val searchService: SearchService, private val reportService: ReportService) {
     @GetMapping(value = ["/settings"], produces = ["application/vnd.mdg+json;version=1"])
     fun list(): Settings = Settings(settingService.list())
 
@@ -41,8 +41,7 @@ class SettingController(private val settingService: SettingService, private val 
     @PutMapping(value = ["/settings/mnt.transaction.reindex"], produces = ["application/vnd.mdg+json;version=1"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun transactionReindex(): Setting {
-        val language = settingService["ui.language"]?.let { it.value } ?: "en"
-        indexingService.reIndex(language)
+        searchService.reindexAll()
         return Setting(value = "true", id = "mnt.transaction.reindex")
     }
 

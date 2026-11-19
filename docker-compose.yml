@@ -2,7 +2,6 @@ version: "3"
 
 volumes:
   db-data:
-  es-data:
 
 networks:
   frontend:
@@ -26,18 +25,6 @@ services:
       - POSTGRES_PASSWORD=mdg
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "postgresql://mdg:mdg@mdg"]
-  elasticsearch:
-    <<: *service
-    image: elasticsearch:7.16.2
-    volumes:
-      - es-data:/usr/share/elasticsearch/data
-      - ./dictionaries:/usr/share/elasticsearch/config/hunspell
-    networks:
-      - backend
-    environment:
-      - discovery.type=single-node
-    healthcheck:
-      test: ["CMD", "curl", "http://localhost:9200/_cluster/health"]
   mdg:
     <<: *service
     image: akashihi/mdg:${MDG_TAG}
@@ -47,7 +34,6 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
-      - elasticsearch
   ui:
     <<: *service
     image: akashihi/mdg-web-ui:${UI_TAG}

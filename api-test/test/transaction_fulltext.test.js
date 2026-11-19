@@ -29,8 +29,6 @@ describe('Transaction full text search', () => {
     });
 
     it('Transaction search by malformed comment', async () => {
-        // We need to wait for the index update
-        await new Promise(resolve => setTimeout(resolve, 2000));
         await e2e.step('List transactions')
             .spec('read')
             .get('/transactions')

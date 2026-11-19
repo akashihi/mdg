@@ -90,9 +90,9 @@ describe('Settings', () => {
             });
     });
 
-    // ui.language is not validated, so a locale without analyzer settings of its own used to
-    // make the next reindex a 500. The after hook puts the language back.
-    it('Reindex falls back to the default analyzer settings for an unknown language', async () => {
+    // The search data no longer depends on ui.language, so whatever the language
+    // is, the reindex completes. The after hook puts the language back.
+    it('Reindex completes whatever the ui.language is', async () => {
         await pactum.spec('Set setting value', { id: 'ui.language', value: 'xx' });
 
         await pactum.spec('update')

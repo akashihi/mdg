@@ -69,6 +69,28 @@ TransactionQuery:
     A value that is not a JSON object — including the literal `null` — is ignored and
     the unfiltered collection is returned. So are the object's own members whose value
     is not a string.
+
+    The members a request supplies combine with **AND**. In particular a `comment` and
+    a `tag` filter given together narrow the result: a transaction must match both.
+
+    **`comment`** searches transaction comments. A value that yields no words — the
+    empty string, or only spaces and punctuation — adds no constraint, as if the
+    member were absent.
+
+    **`tag`** is either one tag name or a bracketed, comma-separated list of names,
+    `"[food,household]"`; the names are trimmed. A value that yields no names —
+    `""`, `"[]"`, `"[ , ]"` — adds no constraint, as if the member were absent.
+    A transaction matches if it carries **any** of the listed tags. Each name
+    matches a tag ignoring case and diacritics, either exactly or within the same
+    edit-distance rule as a comment word. A name containing a digit matches exactly
+    only, with `,` and `.` equivalent inside it, as for a comment word.
+
+    When a `comment` does yield words, a required word that matches nothing makes
+    the result empty. When a `tag` does yield names, and none of them matches a
+    tag, the result is empty too.
+
+    Neither filter ranks results: the order and cursor pagination are the same as
+    for an unfiltered request.
   schema:
     type: string
   examples:
@@ -79,8 +101,20 @@ TransactionQuery:
       summary: Several accounts at once
       value: '{"account_id":"[1,2,3]"}'
     fuzzyComment:
-      summary: Comment search — this matches "Income transaction"
+      summary: A misspelled word — this matches "Income transaction"
       value: '{"comment":"incme"}'
+    inflectedComment:
+      summary: An inflected form — this would match "Купил молоко"
+      value: '{"comment":"молока"}'
+    compoundComment:
+      summary: A compound part — this would match "Ruokakauppa Prisma"
+      value: '{"comment":"kauppa"}'
+    anyOfTags:
+      summary: Transactions carrying either tag
+      value: '{"tag":"[income,transaction]"}'
+    commentAndTag:
+      summary: Comment and tag together — both must match
+      value: '{"comment":"income","tag":"transaction"}'
 
 TransactionSort:
   name: sort

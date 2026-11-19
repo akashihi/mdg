@@ -16,15 +16,12 @@
     <properties>
         <java.version>18</java.version>
         <kotlin.version>1.9.10</kotlin.version>
+        <lucene.version>9.12.3</lucene.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -45,6 +42,21 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-common</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fi.evident.raudikko</groupId>
+            <artifactId>raudikko</artifactId>
+            <version>0.1.4</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -139,6 +151,36 @@
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/main/kotlin</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/../dictionaries</directory>
+                <targetPath>dictionaries</targetPath>
+                <includes>
+                    <include>ru_RU/ru_RU.aff</include>
+                    <include>ru_RU/ru_RU.dic</include>
+                    <include>ru_RU/README_ru_RU.txt</include>
+                    <include>cs_CZ/cs_CZ.aff</include>
+                    <include>cs_CZ/cs_CZ.dic</include>
+                    <include>cs_CZ/README_en.txt</include>
+                    <include>de/de_DE_frami.aff</include>
+                    <include>de/de_DE_frami.dic</include>
+                    <include>de/COPYING_*</include>
+                    <include>de/README_de_DE_frami.txt</include>
+                    <include>en/en_US.aff</include>
+                    <include>en/en_US.dic</include>
+                    <include>en/README_en_US.txt</include>
+                    <include>en/license.txt</include>
+                    <include>lt_LT/lt.aff</include>
+                    <include>lt_LT/lt.dic</include>
+                    <include>lt_LT/COPYING</include>
+                    <include>lt_LT/AUTHORS</include>
+                    <include>lt_LT/README</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
