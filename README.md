@@ -55,6 +55,9 @@ It is your duty to upload MDG database dump to the system.
 To upgrade your MDG appliance make a [backup](#database-backup), move it out of the VM, delete VM, [redeploy](#mdg-appliance)
 with the new image and [restore database](#database-restore).
 
+After an upgrade, rebuild the transaction search data once: press *Start reindex* next to "Reindex transactions search data" 
+on the Settings page
+
 #### Building appliance from scratch
 
 Appliance is based on the [CoreOS](https://getfedora.org/en/coreos?stream=stable) distribution,a minimal operating system for running containerized workloads.
@@ -110,7 +113,6 @@ Other (and newer) versions should work too.
 Deployment:
 
 * [PostgreSQL 18](https://www.postgresql.org/)
-* [ElasticSearch 7.x](https://www.elastic.co/downloads/elasticsearch)
 * [Nginx](https://www.nginx.com/)
 
 #### Getting source code
@@ -142,7 +144,6 @@ Start postgresql and create a database owned by some user (on PostgreSQL 15 and 
 By default database `mdg` with user `mdg` and password `mdg` is expected. You can
 adjust database credentials in the `application-local.properties` file. 
 
-Put provided hunspell dictionaries to the elastic configuration directory, then start elastic.
 Configure nginx to serve web ui files and proxy mdg server. Sample server configuration is below:
 
     server {
