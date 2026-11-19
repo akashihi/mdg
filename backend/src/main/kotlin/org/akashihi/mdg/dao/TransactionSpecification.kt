@@ -2,7 +2,8 @@ package org.akashihi.mdg.dao
 
 import org.akashihi.mdg.entity.Account
 import org.akashihi.mdg.entity.Transaction
-import org.akashihi.mdg.indexing.IndexingService
+import org.akashihi.mdg.entity.TxSearchTerm
+import org.akashihi.mdg.service.SearchCriteria
 import org.springframework.data.jpa.domain.Specification
 import java.time.LocalDateTime
 import java.util.*
@@ -26,18 +27,22 @@ object TransactionSpecification {
         }
     }
 
-    fun filteredTransactions(indexingService: IndexingService, filter: Map<String, String>, pointer: Pair<Long, LocalDateTime>?, ascending: Boolean = false): Specification<Transaction> {
-        return Specification { root: Root<Transaction>, _: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
+    fun filteredTransactions(search: SearchCriteria, filter: Map<String, String>, pointer: Pair<Long, LocalDateTime>?, ascending: Boolean = false): Specification<Transaction> {
+        return Specification { root: Root<Transaction>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
             val predicates: MutableCollection<Predicate> = ArrayList()
-            val fulltextIds: MutableCollection<Long?> = ArrayList()
-            filter["comment"]?.also { fulltextIds.addAll(indexingService.lookupByComment(it)) }
-            filter["tag"]?.also { fulltextIds.addAll(indexingService.lookupByTag(it)) }
-            if (!fulltextIds.isEmpty()) {
-                predicates.add(root.get<Any>("id").`in`(fulltextIds))
-            } else {
-                if (filter.containsKey("comment") || filter.containsKey("tag")) {
-                    predicates.add(criteriaBuilder.equal(root.get<Any>("id"), -1)) // Prevent any results pickup
-                }
+            // Every comment word needs one of its terms linked to the transaction
+            search.words.forEach { termIds ->
+                val sub = query!!.subquery(Long::class.java)
+                val link = sub.from(TxSearchTerm::class.java)
+                sub.select(link.get("txId")).where(criteriaBuilder.equal(link.get<Long>("txId"), root.get<Long>("id")), link.get<Long>("termId").`in`(termIds))
+                predicates.add(criteriaBuilder.exists(sub))
+            }
+            // A transaction needs to carry any of the requested tags
+            search.tagIds?.also { tagIds ->
+                val sub = query!!.subquery(Long::class.java)
+                val tags = sub.correlate(root).join<Any, Any>("tags")
+                sub.select(tags.get("id")).where(tags.get<Long>("id").`in`(tagIds))
+                predicates.add(criteriaBuilder.exists(sub))
             }
             if (filter.containsKey("notEarlier")) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("ts"), LocalDateTime.parse(filter["notEarlier"])))
