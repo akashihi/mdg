@@ -11,7 +11,6 @@ import org.akashihi.mdg.entity.Currency
 import org.akashihi.mdg.entity.Operation
 import org.akashihi.mdg.entity.Tag
 import org.akashihi.mdg.entity.Transaction
-import org.akashihi.mdg.indexing.IndexingService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
@@ -28,7 +27,7 @@ open class TransactionService(
     private val transactionRepository: TransactionRepository,
     private val tagRepository: TagRepository,
     private val operationRepository: OperationRepository,
-    private val indexingService: IndexingService,
+    private val searchService: SearchService,
     private val rateService: RateService
 ) {
     private fun enrichOperations(tx: Transaction): Transaction {
@@ -124,15 +123,20 @@ open class TransactionService(
             it.transaction = savedTransaction
             operationRepository.save(it)
         }
-        indexingService.storeTransaction(tx)
         tx.id = savedTransaction.id
+        searchService.store(savedTransaction.id!!, tx.comment)
         return tx
     }
 
     @Transactional
     open fun list(filter: Map<String, String>, sort: Collection<String>, limit: Int?, pointer: Pair<Long, LocalDateTime>?): ListResult<Transaction> {
         val ascending = sort.contains("-timestamp")
-        val spec = TransactionSpecification.filteredTransactions(indexingService, filter, pointer, ascending)
+        limit?.also { validatePageLimit(it) }
+        val search = searchService.resolve(filter)
+        if (search.matchesNothing) {
+            return ListResult(emptyList(), 0L)
+        }
+        val spec = TransactionSpecification.filteredTransactions(search, filter, pointer, ascending)
         var sorting = Sort.by("ts").descending().and(Sort.by("id").descending()) // Sort by timestamp amd then id by default
         if (sort.contains("-timestamp")) {
             // Reverse sort requested
@@ -141,7 +145,6 @@ open class TransactionService(
         if (limit == null) {
             return ListResult(transactionRepository.findAll(spec, sorting), 0L)
         }
-        validatePageLimit(limit)
         val pageLimit = PageRequest.of(0, limit, sorting)
         val page = transactionRepository.findAll(spec, pageLimit)
         var left = page.totalElements - limit
@@ -188,7 +191,7 @@ open class TransactionService(
             operationRepository.save(it)
             it
         }.toMutableList()
-        indexingService.storeTransaction(tx)
+        searchService.store(id, tx.comment)
         return finalTx
     }
 
@@ -258,7 +261,6 @@ open class TransactionService(
         }
         operationRepository.deleteOperationsForTransaction(id)
         transactionRepository.deleteById(id)
-        indexingService.removeTransaction(id)
     }
 
     @Transactional

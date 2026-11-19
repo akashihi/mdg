@@ -12,7 +12,6 @@ import org.akashihi.mdg.entity.Operation
 import org.akashihi.mdg.entity.Rate
 import org.akashihi.mdg.entity.Tag
 import org.akashihi.mdg.entity.Transaction
-import org.akashihi.mdg.indexing.IndexingService
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,6 +23,9 @@ import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
@@ -35,10 +37,10 @@ internal class TransactionServiceTest(@Mock private val accountRepository: Accou
                                       @Mock private val transactionRepository: TransactionRepository,
                                       @Mock private val tagRepository: TagRepository,
                                       @Mock private val operationRepository: OperationRepository,
-                                      @Mock private val indexingService: IndexingService,
+                                      @Mock private val searchService: SearchService,
                                       @Mock private val rateService: RateService) {
 
-    private val transactionService: TransactionService = TransactionService(accountRepository, transactionRepository, tagRepository, operationRepository, indexingService, rateService)
+    private val transactionService: TransactionService = TransactionService(accountRepository, transactionRepository, tagRepository, operationRepository, searchService, rateService)
 
     private fun makeAccount(currencyId: Long): Account {
         val currency = Currency(code="", name="", active = true, id = currencyId)
@@ -167,5 +169,51 @@ internal class TransactionServiceTest(@Mock private val accountRepository: Accou
 
         val e = Assertions.assertThrows(MdgException::class.java) { transactionService.update(1L, tx) }
         Assertions.assertEquals("TRANSACTION_DATA_INVALID", e.code)
+    }
+
+    private fun balancedOperations(accountId: Long) = mutableListOf(
+        Operation(rate = BigDecimal.ONE, amount = BigDecimal("10"), account_id = accountId),
+        Operation(rate = BigDecimal.ONE, amount = BigDecimal("-10"), account_id = accountId)
+    )
+
+    @Test
+    fun listReturnsEmptyPageWithoutQueryWhenSearchMatchesNothing() {
+        val filter = mapOf("comment" to "nothing like this")
+        Mockito.`when`(searchService.resolve(filter)).thenReturn(SearchCriteria(matchesNothing = true))
+
+        val result = transactionService.list(filter, listOf(), 10, null)
+
+        Assertions.assertTrue(result.items.isEmpty())
+        Assertions.assertEquals(0L, result.left)
+        Mockito.verify(transactionRepository, Mockito.never()).findAll(any<Specification<Transaction>>(), any<Pageable>())
+        Mockito.verify(transactionRepository, Mockito.never()).findAll(any<Specification<Transaction>>(), any<Sort>())
+    }
+
+    @Test
+    fun createStoresSearchTermsOfTheSavedTransaction() {
+        Mockito.`when`(accountRepository.findById(11L)).thenReturn(Optional.of(makeAccount(840L)))
+        Mockito.`when`(transactionRepository.save(any<Transaction>())).thenAnswer {
+            val saved = it.arguments[0] as Transaction
+            saved.id = 42L
+            saved
+        }
+        val tx = Transaction(comment = "fresh milk", ts = LocalDateTime.now(), tags = mutableSetOf(), operations = balancedOperations(11L))
+
+        transactionService.create(tx)
+
+        Mockito.verify(searchService).store(42L, "fresh milk")
+    }
+
+    @Test
+    fun updateStoresSearchTermsOfTheNewComment() {
+        val stored = Transaction(comment = "old comment", ts = LocalDateTime.now(), tags = mutableSetOf(), operations = mutableListOf())
+        Mockito.`when`(transactionRepository.findById(7L)).thenReturn(Optional.of(stored))
+        Mockito.`when`(transactionRepository.save(stored)).thenReturn(stored)
+        Mockito.`when`(accountRepository.findById(12L)).thenReturn(Optional.of(makeAccount(840L)))
+        val newTx = Transaction(comment = "new comment", ts = LocalDateTime.now(), tags = mutableSetOf(), operations = balancedOperations(12L))
+
+        transactionService.update(7L, newTx)
+
+        Mockito.verify(searchService).store(7L, "new comment")
     }
 }
