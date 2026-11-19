@@ -38,7 +38,7 @@ open class ReportService(
 ) {
 
     @Transactional
-    @Scheduled(cron = "* * 3 * * ?")
+    @Scheduled(cron = "0 0 3 * * ?")
     open fun refreshMQT() {
         log.info("Refreshing reporting MQTs")
         if (accountRepository.isHistoricalBalancePopulated() == false) {
