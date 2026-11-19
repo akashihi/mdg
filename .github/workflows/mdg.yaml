@@ -32,7 +32,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 18
+      - &setup-jdk
+        name: Set up JDK 18
         uses: actions/setup-java@v3
         with:
           java-version: '18'
@@ -67,8 +68,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - name: Start MDG stack
-        uses: ./.github/actions/mdg-stack
+      - *setup-jdk
+      - &start-backend
+        name: Start MDG service
+        working-directory: ./backend
+        run: JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport mvn --batch-mode --update-snapshots clean compile spring-boot:start
       - name: Install API test dependencies
         working-directory: ./api-test
         run: npm ci
@@ -92,8 +96,8 @@ jobs:
     services: *stack-services
     steps:
       - uses: actions/checkout@v3
-      - name: Start MDG stack
-        uses: ./.github/actions/mdg-stack
+      - *setup-jdk
+      - *start-backend
       - uses: astral-sh/setup-uv@v6
       - name: Reset database for schemathesis
         env:
@@ -133,11 +137,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - name: Set up JDK 18
-        uses: actions/setup-java@v3
-        with:
-          java-version: '18'
-          distribution: 'adopt'
+      - *setup-jdk
       - name: Build with Maven
         working-directory: ./backend
         run: mvn --batch-mode --update-snapshots clean package spring-boot:repackage
