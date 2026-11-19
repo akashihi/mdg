@@ -1905,14 +1905,15 @@ paths:
           $ref: './components/responses.yaml#/NotFound'
     put:
       tags: [Settings]
-      summary: Rebuild the full-text index
+      summary: Rebuild the transaction search data
       description: |
         A maintenance trigger.
 
-        Deletes and recreates the Elasticsearch index with the analyzer settings
-        of the current `ui.language`, then re-streams every transaction into it.
-        A locale that has no analyzer settings of its own — `ui.language` is not
-        validated — gets the default `en-US` ones.
+        Rebuilds the data that the `comment` and `tag` filters of
+        `GET /transactions` search: the word vocabulary and the links from every
+        transaction to its words. Each transaction is analysed afresh from its
+        current comment. No setting affects the result; in particular
+        `ui.language` plays no part.
 
         The call is synchronous and can take a while on a large database; the
         response only returns once the reindex completes.

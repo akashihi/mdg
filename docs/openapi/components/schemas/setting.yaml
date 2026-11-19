@@ -78,10 +78,7 @@ SettingUpdateLanguage:
       type: string
       pattern: '^[^\u0000]*$'
       description: |
-        A locale name. The backend does not validate it, but it selects the
-        Elasticsearch analyzer settings used by the next
-        `mnt.transaction.reindex` — `cz`, `de`, `en-US`, `lt` and `ru` have their
-        own; any other locale falls back to `en-US`.
+        A locale name. The backend does not validate it.
       example: en-US
 
 SettingUpdateWidgets:
