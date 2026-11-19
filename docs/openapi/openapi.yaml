@@ -1909,9 +1909,10 @@ paths:
       description: |
         A maintenance trigger.
 
-        Rebuilds the data that the `comment` and `tag` filters of
-        `GET /transactions` search: the word vocabulary and the links from every
-        transaction to its words. Each transaction is analysed afresh from its
+        Rebuilds the data that the `comment` filter of `GET /transactions`
+        searches: the word vocabulary and the links from every transaction to its
+        words. The `tag` filter reads the transactions' tags directly and does not
+        depend on it. Each transaction is analysed afresh from its
         current comment. No setting affects the result; in particular
         `ui.language` plays no part.
 
